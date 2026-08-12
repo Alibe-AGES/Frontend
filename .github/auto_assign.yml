@@ -1,0 +1,18 @@
+# Set to true if you want to assign the PR author as an assignee
+addAssignees: true
+assignees:
+  - author
+
+# Reviewer configuration
+addReviewers: true
+reviewers:
+  - JPRCeia
+  
+
+# Number of reviewers to randomly select from the pool above
+numberOfReviewers: 1
+
+# Skip assignment for draft PRs
+skipKeywords:
+  - draft
+  - WIP
