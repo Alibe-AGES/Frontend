@@ -1,9 +1,9 @@
 // Cores e espaçamentos do app.
 export const theme = {
   colors: {
-    primary: '#000000',
-    background: '#FFFFFF',
-    text: '#1A1A1A',
+    primary: "#000000",
+    background: "#FFFFFF",
+    text: "#1A1A1A",
   },
   spacing: {
     sm: 8,
