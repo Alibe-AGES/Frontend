@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "Alibe",
+    "slug": "alibe",
+    "scheme": "alibe",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.alibe.app"
+    },
+    "android": {
+      "package": "com.alibe.app"
+    },
+    "plugins": ["expo-router"]
+  }
+}

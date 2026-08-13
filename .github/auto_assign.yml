@@ -7,7 +7,7 @@ assignees:
 addReviewers: true
 reviewers:
   - JPRCeia
-  
+  - BreBrizola
 
 # Number of reviewers to randomly select from the pool above
 numberOfReviewers: 1
