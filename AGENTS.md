@@ -41,6 +41,7 @@
 - Always define explicit types or interfaces for component props and state.
 - Avoid using `any`; use `unknown` if a type is truly uncertain.
 - Keep components clean using functional components and hooks.
+- Use paths aliases and absolute imports for import and export of components.
 
 ### NativeWind & Styling
 

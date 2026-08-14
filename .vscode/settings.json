@@ -4,14 +4,18 @@
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
   },
-  "tailwindCSS.classAttributes": [
-    "class",
-    "className",
-    "tw",
-    "style"
-  ],
-  "tailwindCSS.experimental.classRegex": [
-    ["tw`([^`]*)", "tw`([^`]*)`"]
-  ],
-  "js/ts.tsdk.path": "node_modules/typescript/lib"
+
+  "compilerOptions": {
+    "types": ["jest"]
+  },
+
+  "tailwindCSS.classAttributes": ["class", "className", "tw", "style"],
+  "tailwindCSS.experimental.classRegex": [["tw`([^`]*)", "tw`([^`]*)`"]],
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.enable": true,
+  "prettier.requireConfig": true,
+  "prettier.configPath": ".prettierrc"
 }
