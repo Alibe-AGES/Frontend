@@ -3,5 +3,15 @@
     "source.fixAll": "explicit",
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
-  }
+  },
+  "tailwindCSS.classAttributes": [
+    "class",
+    "className",
+    "tw",
+    "style"
+  ],
+  "tailwindCSS.experimental.classRegex": [
+    ["tw`([^`]*)", "tw`([^`]*)`"]
+  ],
+  "js/ts.tsdk.path": "node_modules/typescript/lib"
 }
