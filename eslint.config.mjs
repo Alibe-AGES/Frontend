@@ -13,6 +13,10 @@ export default defineConfig([
       'modules/**',
       '**/*.config.*',
       '**/*.module.*',
+      'agents/**',
+      'node_modules/**',
+      'dist',
+      'build',
     ],
   },
   {
@@ -48,4 +52,3 @@ export default defineConfig([
   },
   eslintConfigPrettier,
 ]);
-

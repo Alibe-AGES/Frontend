@@ -54,8 +54,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --ignore-pattern '.agents/**' --ignore-pattern '.eslintrc.js'",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix --ignore-pattern '.agents/**' --ignore-pattern '.eslintrc.js'",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "jest --watchAll"
