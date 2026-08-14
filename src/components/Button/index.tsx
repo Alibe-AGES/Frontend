@@ -9,9 +9,5 @@ interface ButtonProps {
 }
 
 export function Button({ title, onPress }: ButtonProps) {
-  return React.createElement(
-    TouchableOpacity,
-    { onPress },
-    React.createElement(Text, null, title),
-  );
+  return React.createElement(TouchableOpacity, { onPress }, React.createElement(Text, null, title));
 }
