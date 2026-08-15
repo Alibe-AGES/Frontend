@@ -1,34 +1,34 @@
-name: Main Release
+name: Develop to Main
 
 on:
   push:
     branches:
-      - main
+      - develop
   workflow_dispatch:
 
 jobs:
-  release-validation:
-    name: Release validation for main
+  merge-develop-into-main:
+    name: Merge develop into main
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
-      - name: Checkout repository
+      - name: Checkout main branch
         uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: 'npm'
+          fetch-depth: 0
+          ref: main
 
-      - name: Install dependencies
-        run: npm ci --prefer-offline --no-audit --no-fund
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Run ESLint
-        run: npm run lint
+      - name: Fetch develop
+        run: git fetch origin develop
 
-      - name: Run Prettier check
-        run: npm run format:check
-
-      - name: Run production build
-        run: npm run build
+      - name: Merge develop into main
+        run: |
+          git merge --no-edit origin/develop
+          git push origin HEAD:main
