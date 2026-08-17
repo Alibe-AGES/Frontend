@@ -1,0 +1,42 @@
+name: Develop to Main
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  create-pr-develop-to-main:
+    name: Create PR from develop to main
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch develop branch
+        run: git fetch origin develop --prune
+
+      - name: Check if PR already exists
+        id: check_pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pr_url=$(gh pr list --base main --head develop --state open --json url --jq '.[0].url // empty')
+          echo "pr_url=$pr_url" >> "$GITHUB_OUTPUT"
+
+      - name: Create PR from develop to main
+        if: steps.check_pr.outputs.pr_url == ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --base main \
+            --head develop \
+            --title "Merge develop into main" \
+            --body "Automated daily merge PR from develop to main."
