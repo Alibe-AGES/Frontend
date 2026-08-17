@@ -1,16 +1,15 @@
-# Set to true if you want to assign the PR author as an assignee
-addAssignees: true
-assignees:
-  - author
-
 # Reviewer configuration
 addReviewers: true
+
+# Set to true if you want to assign the PR author as an assignee
+addAssignees: false
+
 reviewers:
   - JPRCeia
   - BreBrizola
 
 # Number of reviewers to randomly select from the pool above
-numberOfReviewers: 2
+numberOfReviewers: 0
 
 # Skip assignment for draft PRs
 skipKeywords:
