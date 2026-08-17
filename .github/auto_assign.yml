@@ -10,7 +10,7 @@ reviewers:
   - BreBrizola
 
 # Number of reviewers to randomly select from the pool above
-numberOfReviewers: 1
+numberOfReviewers: 2
 
 # Skip assignment for draft PRs
 skipKeywords:
