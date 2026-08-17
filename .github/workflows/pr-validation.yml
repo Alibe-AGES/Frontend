@@ -47,7 +47,7 @@ jobs:
         run: npm ci
 
       - name: Run Unit Tests
-        run: npm run test
+        run: npm run test:unit
 
   build-check:
     name: Production Build Check

@@ -59,7 +59,9 @@
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix --ignore-pattern '.agents/**' --ignore-pattern '.eslintrc.js'",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "jest --watchAll"
+    "test": "jest --watch=false",
+    "test:watch": "jest --watchAll",
+    "test:unit": "jest --ci --runInBand"
   },
   "jest": {
     "preset": "jest-expo",
