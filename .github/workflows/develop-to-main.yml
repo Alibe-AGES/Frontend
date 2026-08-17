@@ -17,10 +17,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: develop
           fetch-depth: 0
-
-      - name: Fetch develop branch
-        run: git fetch origin develop --prune
 
       - name: Check if PR already exists
         id: check_pr
