@@ -44,15 +44,13 @@ jobs:
           git remote add gitlab https://tools.ages.pucrs.br/2026-2/6lmnp/alibe/frontend.git
           git remote -v
 
-      - name: Configure Git credentials
-        run: |
-          echo "Configuring Git credentials..."
-          git config --global credential.helper store
-          echo "https://${{ secrets.GITLAB_USERNAME }}:${{ secrets.GITLAB_PASSWORD }}@tools.ages.pucrs.br" > ~/.git-credentials
-          chmod 600 ~/.git-credentials
-
       - name: Push to GitLab
+        env:
+          GITLAB_USERNAME: ${{ secrets.GITLAB_USERNAME }}
+          GITLAB_PASSWORD: ${{ secrets.GITLAB_PASSWORD }}
         run: |
           echo "Starting push to GitLab..."
+          git remote set-url gitlab "https://${GITLAB_USERNAME}:${GITLAB_PASSWORD}@tools.ages.pucrs.br/2026-2/6lmnp/alibe/frontend.git"
           git push --force gitlab main:main
           echo "Push completed successfully"
+
