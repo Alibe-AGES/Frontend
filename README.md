@@ -26,6 +26,114 @@ npm run format:check
 npm run test:unit
 ```
 
+## Contributor Guide
+
+### 1. Clone and install
+
+Install Git, Node.js, and npm on your machine. Then clone the repository and install its dependencies:
+
+```bash
+git clone https://github.com/Alibe-AGES/Frontend.git
+cd Frontend
+npm install
+```
+
+Start the Expo development server:
+
+```bash
+npx expo start
+```
+
+From the Expo terminal, open the app in Expo Go, an Android emulator, an iOS simulator, or a web browser. Use `npm run android`, `npm run ios`, or `npm run web` when you want to open a specific target directly.
+
+### 2. Start from `develop`
+
+`develop` is the shared development branch. Always update it before creating a work branch:
+
+```bash
+git checkout develop
+git pull origin develop
+```
+
+Do not work directly on `develop` or `main`. Create a branch for each task:
+
+```bash
+git checkout -b feature/profile-screen
+```
+
+Use a short, descriptive branch name. Common prefixes are `feature/`, `fix/`, `refactor/`, and `docs/`.
+
+### 3. Develop and validate
+
+Make focused changes, then run the checks relevant to your work:
+
+```bash
+npx tsc --noEmit
+npm run lint
+npm run format:check
+npm run test:unit
+```
+
+For a focused test, run Jest directly:
+
+```bash
+npx jest src/app/__tests__/index-test.tsx --runInBand
+```
+
+Check your changes before committing:
+
+```bash
+git status
+git diff
+```
+
+Commit related changes with a clear message:
+
+```bash
+git add src README.md
+git commit -m "Add profile screen UI"
+```
+
+### 4. Push and open a pull request
+
+Push your work branch to GitHub:
+
+```bash
+git push -u origin feature/profile-screen
+```
+
+Open a pull request on GitHub with:
+
+- **Base branch:** `develop`
+- **Compare branch:** your feature, fix, refactor, or docs branch
+- A short description of the change
+- The checks you ran
+- Screenshots or a short recording for UI changes
+
+Keep the pull request focused. Do not include unrelated formatting or generated-file changes.
+
+### 5. Keep your branch current
+
+Before requesting review, bring the latest `develop` into your branch:
+
+```bash
+git fetch origin
+git checkout develop
+git pull origin develop
+git git checkout feature/profile-screen
+git merge develop
+```
+
+Resolve any conflicts, run the checks again, and push the updated branch:
+
+```bash
+git add .
+git commit -m "Resolve develop merge conflicts"
+git push
+```
+
+The pull request should be merged into `develop` after review and passing checks. Changes move from `develop` toward `main` through the project release process; do not merge feature branches directly into `main` unless the Owners request it.
+
 ## Architecture
 
 The application is organized around file-based routes, screen compositions, and reusable UI components:
