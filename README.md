@@ -1,56 +1,324 @@
-# Welcome to your Expo app 👋
+# Alibe Frontend
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Documentation wiki for the Alibe UI. This project is an Expo-managed React Native application written in TypeScript and routed with Expo Router.
 
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Quick Start
 
 ```bash
-npm run reset-project
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Useful targets:
 
-### Other setup steps
+```bash
+npm run android
+npm run web
+npm run build
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+Quality checks:
 
-## Learn more
+```bash
+npx tsc --noEmit
+npm run lint
+npm run format:check
+npm run test:unit
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## Contributor Guide
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### 1. Clone and install
 
-## Join the community
+Install Git, Node.js, and npm on your machine. Then clone the repository and install its dependencies:
 
-Join our community of developers creating universal apps.
+```bash
+git clone https://github.com/Alibe-AGES/Frontend.git
+cd Frontend
+npm install
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Start the Expo development server:
+
+```bash
+npx expo start
+```
+
+From the Expo terminal, open the app in Expo Go, an Android emulator, an iOS simulator, or a web browser. Use `npm run android`, `npm run ios`, or `npm run web` when you want to open a specific target directly.
+
+### 2. Start from `develop`
+
+`develop` is the shared development branch. Always update it before creating a work branch:
+
+```bash
+git checkout develop
+git pull origin develop
+```
+
+Do not work directly on `develop` or `main`. Create a branch for each task:
+
+```bash
+git checkout -b feature/profile-screen
+```
+
+Use a short, descriptive branch name. Common prefixes are `feature/`, `fix/`, `refactor/`, and `docs/`.
+
+### 3. Develop and validate
+
+Make focused changes, then run the checks relevant to your work:
+
+```bash
+npx tsc --noEmit
+npm run lint
+npm run format:check
+npm run test:unit
+```
+
+For a focused test, run Jest directly:
+
+```bash
+npx jest src/app/__tests__/index-test.tsx --runInBand
+```
+
+Check your changes before committing:
+
+```bash
+git status
+git diff
+```
+
+Commit related changes with a clear message:
+
+```bash
+git add src README.md
+git commit -m "Add profile screen UI"
+```
+
+### 4. Push and open a pull request
+
+Push your work branch to GitHub:
+
+```bash
+git push -u origin feature/profile-screen
+```
+
+Open a pull request on GitHub with:
+
+- **Base branch:** `develop`
+- **Compare branch:** your feature, fix, refactor, or docs branch
+- A short description of the change
+- The checks you ran
+- Screenshots or a short recording for UI changes
+
+Keep the pull request focused. Do not include unrelated formatting or generated-file changes.
+
+### 5. Keep your branch current
+
+Before requesting review, bring the latest `develop` into your branch:
+
+```bash
+git fetch origin
+git checkout develop
+git pull origin develop
+git git checkout feature/profile-screen
+git merge develop
+```
+
+Resolve any conflicts, run the checks again, and push the updated branch:
+
+```bash
+git add .
+git commit -m "Resolve develop merge conflicts"
+git push
+```
+
+The pull request should be merged into `develop` after review and passing checks. Changes move from `develop` toward `main` through the project release process; do not merge feature branches directly into `main` unless the Owners request it.
+
+## Architecture
+
+The application is organized around file-based routes, screen compositions, and reusable UI components:
+
+```text
+Expo entry (expo-router/entry)
+        |
+        v
+src/app/_layout.tsx  -->  navigation stack and global providers
+        |
+        v
+src/app/<route>.tsx   -->  thin route adapter
+        |
+        v
+src/screens/          -->  complete screen composition
+        |
+        v
+src/components/       -->  reusable visual and interaction primitives
+```
+
+The current route tree is:
+
+```text
+src/app/
+├── _layout.tsx       # Root Stack navigator
+├── index.tsx         # Home route (/)
+└── __tests__/        # Route-level tests
+```
+
+`package.json` sets `main` to `expo-router/entry`. Expo Router scans `src/app` and turns files into routes. `_layout.tsx` owns the navigation boundary; `index.tsx` is the home screen. Add a route by adding a file such as `src/app/profile.tsx`, which becomes `/profile`.
+
+Keep route files small. A route should normally import and return a screen component:
+
+```tsx
+import { ProfileScreen } from '@/screens/ProfileScreen';
+
+export default ProfileScreen;
+```
+
+## Directory Guide
+
+| Path               | Responsibility                                                         |
+| ------------------ | ---------------------------------------------------------------------- |
+| `src/app/`         | Expo Router routes, layouts, route-local tests, and navigation options |
+| `src/screens/`     | Page-level compositions and screen state                               |
+| `src/components/`  | Reusable UI components, grouped one component per folder               |
+| `src/hooks/`       | Reusable stateful behavior and UI hooks                                |
+| `src/server/`      | Typed API client and request error handling; not an in-app backend     |
+| `src/utils/`       | Pure shared helpers with no screen ownership                           |
+| `src/theme.ts`     | Shared design tokens represented as TypeScript values                  |
+| `src/constants.ts` | Stable application constants such as storage keys                      |
+| `src/global.css`   | NativeWind entry stylesheet                                            |
+| `assets/`          | Icons, splash assets, images, and other bundled resources              |
+
+## UI Development Model
+
+For UI-only work, use local state and fixture data. Do not add API calls merely to render a screen. A typical implementation order is:
+
+1. Create the route in `src/app`.
+2. Create the page composition in `src/screens`.
+3. Extract repeated controls into `src/components`.
+4. Add interaction state with a typed hook or local `useState`.
+5. Add route and component tests for important states.
+6. Connect `src/server/api.ts` only when real data is required.
+
+Example screen structure:
+
+```text
+src/
+├── app/
+│   ├── _layout.tsx
+│   └── profile.tsx
+├── screens/
+│   └── ProfileScreen.tsx
+└── components/
+    ├── Button/index.tsx
+    └── ProfileHeader/index.tsx
+```
+
+## Navigation
+
+The root layout currently renders a native stack:
+
+```tsx
+import { Stack } from 'expo-router';
+
+export default function RootLayout() {
+  return <Stack />;
+}
+```
+
+Add screen options in `_layout.tsx` when a route needs a title, presentation mode, or header configuration:
+
+```tsx
+<Stack>
+  <Stack.Screen
+    name="index"
+    options={{ title: 'Home' }}
+  />
+  <Stack.Screen
+    name="profile"
+    options={{ title: 'Profile' }}
+  />
+</Stack>
+```
+
+Use Expo Router `Link` or router methods for navigation. Keep navigation decisions in route and screen layers, not inside low-level visual components.
+
+## Styling and NativeWind
+
+NativeWind 4 is configured in two places:
+
+- `babel.config.js` enables the Expo JSX transform and `nativewind/babel`.
+- `metro.config.ts` wraps Expo Metro with `withNativeWind` and uses `src/global.css` as the input.
+
+Use `className` on React Native components:
+
+```tsx
+<View className="flex-1 bg-white px-6 py-8">
+  <Text className="text-2xl font-bold text-black">Profile</Text>
+</View>
+```
+
+Prefer NativeWind classes for static styling. Use `style` only for values that genuinely depend on runtime calculations, animation, or a native API. The Tailwind content glob must include `src/**/*.{js,jsx,ts,tsx}`; update `tailwind.config.js` if it still contains starter paths.
+
+Import the global stylesheet once from the root layout if the runtime requires it:
+
+```tsx
+import '../global.css';
+```
+
+Do not import the stylesheet repeatedly from individual screens.
+
+## TypeScript and Imports
+
+TypeScript runs in strict mode. Use the configured aliases:
+
+```text
+@/*         -> src/*
+@/assets/*  -> assets/*
+```
+
+Use explicit prop interfaces, avoid `any`, and use `unknown` when a value is not yet narrowed. Prefer named exports for reusable components and hooks.
+
+## Data and State Boundaries
+
+The UI layer owns presentation and interaction state. `src/server/api.ts` owns HTTP request details and typed response models. Keep these concerns separate:
+
+```text
+screen or hook -> API client -> remote service
+component      -> props/state -> visual output
+```
+
+The existing API client uses `fetch`, typed models, and `ApiError`. It currently targets JSONPlaceholder as an example and should be replaced or configured before production use.
+
+## Testing
+
+Jest uses the `jest-expo` preset. Use React Native Testing Library to test observable behavior:
+
+```tsx
+const { getByText } = render(<ProfileScreen />);
+expect(getByText('Profile')).toBeTruthy();
+```
+
+Use `testID` or accessibility labels for controls that need stable automation selectors. Keep tests near the implementation or under `__tests__`.
+
+## Configuration Map
+
+| File                                  | Purpose                                                                       |
+| ------------------------------------- | ----------------------------------------------------------------------------- |
+| `app.json`                            | Expo app metadata, platform settings, plugins, splash screen, and experiments |
+| `app.config.ts`                       | Dynamic Expo configuration; keep it consistent with `app.json`                |
+| `babel.config.js`                     | Babel and NativeWind 4 transformation                                         |
+| `metro.config.js` / `metro.config.ts` | Expo Metro and NativeWind bundling                                            |
+| `tsconfig.json`                       | Strict TypeScript settings and import aliases                                 |
+| `tailwind.config.js`                  | NativeWind preset and class scanning paths                                    |
+| `eslint.config.mjs`                   | ESLint rules and TypeScript project service                                   |
+| `package.json`                        | Dependencies, scripts, Expo Router entry, and Jest configuration              |
+
+## Definition of Done for a UI Change
+
+- The route is reachable through Expo Router.
+- Components have typed props and stable dimensions where needed.
+- NativeWind classes are detected from the `src` tree.
+- Loading, empty, error, and interaction states are represented where relevant.
+- The screen works on narrow and wide layouts.
+- `npx tsc --noEmit`, `npm run lint`, and the focused Jest test pass.
+- No API or persistence code is added unless the UI requires it.
