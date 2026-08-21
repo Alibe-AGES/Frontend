@@ -31,6 +31,7 @@ Adicione screenshots ou videos demonstrando as mudanças. Para mudanças visuais
 - [ ] Testes não se aplicam a esta alteração (explique abaixo).
 
 ## Checklist
+
 - [ ] Meu Pull Request aponta para `develop`.
 - [ ] Meu código segue os padrões de estilo do projeto
 - [ ] Fiz auto-revisão do código e não deixei `console.log` ou código comentado.
