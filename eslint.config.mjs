@@ -48,6 +48,17 @@ export default defineConfig([
     rules: {
       'import-x/no-unresolved': 'error',
       'import-x/named': 'error',
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Literal[value=/\\d+px/]',
+          message: 'Use rem-based responsive units instead of px.',
+        },
+        {
+          selector: 'TemplateElement[value.raw=/\\d+px/]',
+          message: 'Use rem-based responsive units instead of px.',
+        },
+      ],
     },
   },
   eslintConfigPrettier,

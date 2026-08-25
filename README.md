@@ -199,6 +199,37 @@ For UI-only work, use local state and fixture data. Do not add API calls merely 
 5. Add route and component tests for important states.
 6. Connect `src/server/api.ts` only when real data is required.
 
+### NativeWind and twrnc
+
+Use `className` for styles that do not change and `twrnc` when a class string depends on state or props. Keep the visual vocabulary in `src/theme.ts` and mirror its colors in `tailwind.config.js` so components use semantic names such as `bg-coral` and `text-ink`.
+
+```tsx
+import { Pressable, Text } from 'react-native';
+import tw from 'twrnc';
+
+interface ActionButtonProps {
+  title: string;
+  onPress: () => void;
+  emphasized?: boolean;
+}
+
+export function ActionButton({ title, onPress, emphasized = true }: ActionButtonProps) {
+  const background = emphasized ? 'bg-coral' : 'bg-lime';
+
+  return (
+    <Pressable
+      className={`items-center rounded-full px-6 py-3 ${background}`}
+      onPress={onPress}
+      style={({ pressed }) => tw`${pressed ? 'opacity-75' : 'opacity-100'}`}
+    >
+      <Text className="font-bold text-white">{title}</Text>
+    </Pressable>
+  );
+}
+```
+
+Prefer rem-based NativeWind utilities (`p-4`, `px-6`, `text-base`) for responsive spacing and type. Do not add `px` values. Raw numeric React Native values are density-independent units and should be reserved for native APIs, measurements, and animation output.
+
 Example screen structure:
 
 ```text

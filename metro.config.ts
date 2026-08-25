@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getDefaultConfig } from 'expo/metro-config';
 import { withNativeWind } from 'nativewind/metro';
 

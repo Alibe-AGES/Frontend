@@ -1,7 +1,21 @@
 import { PropsWithChildren } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-export const CustomText = ({ children }: PropsWithChildren) => <Text>{children}</Text>;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#1e293b',
+  },
+});
+
+export const CustomText = ({ children }: PropsWithChildren) => <Text style={styles.text}>{children}</Text>;
 
 export default function HomeScreen() {
   return (
@@ -10,12 +24,3 @@ export default function HomeScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

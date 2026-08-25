@@ -7,7 +7,7 @@ These instructions apply to the Alibe frontend. Keep changes focused on the requ
 - Framework: Expo SDK 57, React Native 0.86, React 19.
 - Routing: Expo Router with `main: expo-router/entry`.
 - Language: TypeScript 6 in strict mode.
-- Styling: NativeWind 4.2 with Tailwind preset and `className` support.
+- Styling: NativeWind 4.2 with Tailwind preset and `className` support, plus `twrnc` for runtime Tailwind styles.
 - Tests: Jest with `jest-expo` and React Native Testing Library.
 - Package manager: npm. Keep `package-lock.json` synchronized with dependency changes.
 - Primary scope: UI and interaction flows. Treat `src/server` as an integration boundary, not a place for screen markup.
@@ -50,14 +50,39 @@ Do not place large layouts, API calls, or reusable component definitions directl
 ## NativeWind 4 Rules
 
 - Use `className` for static React Native styling.
+- Use `twrnc` (`tw`) when class names must be generated or applied at runtime; keep its utilities consistent with the NativeWind class names.
 - Keep utility order consistent: layout, spacing, typography, color, borders, effects.
 - Use inline `style` only for runtime values, animations, measurements, or native-only APIs.
+- Never use `px` in source styles, Tailwind classes, or arbitrary values. Use rem-based Tailwind utilities or explicit `rem` values for responsive sizing instead.
+- Do not treat raw React Native numbers as CSS pixels: numeric layout values are density-independent units. Prefer NativeWind or `twrnc` rem-based utilities when a responsive value is needed.
 - `babel.config.js` must retain `babel-preset-expo` with `jsxImportSource: 'nativewind'` and `nativewind/babel`.
 - `metro.config.ts` must use `withNativeWind` with `input: './src/global.css'`.
 - Keep `metro.config.js` and `metro.config.ts` behaviorally equivalent if both remain in the repository.
 - Tailwind content scanning must include `src/**/*.{js,jsx,ts,tsx}`. Do not leave starter paths such as `./App.tsx` or `./components/**` as the only globs.
 - Import `src/global.css` once from the root layout if required by the runtime; do not import it from every screen.
 - Do not introduce NativeWind 5 or Tailwind 4 configuration without upgrading the dependency set and migration plan together.
+
+## Responsive Units
+
+- Use rem-based values for spacing, dimensions, and typography so layouts scale consistently across screen sizes.
+- Do not add pixel literals such as `12px`, `24px`, or `p-[12px]`; replace them with the closest rem-based utility or a project token.
+- Keep responsive sizing in NativeWind or `twrnc` classes whenever possible. Use numeric React Native values only where the native API requires them, such as measured values or animation output.
+
+## Alibe Design System
+
+- Use `src/theme.ts` as the source of truth for the Alibe visual language: warm ivory canvas, deep green ink, lime highlights, coral actions, and pink accents.
+- Mirror theme color tokens in `tailwind.config.js` and use semantic utilities such as `bg-coral`, `bg-lime`, `text-ink`, and `bg-canvas`; do not scatter new hex values through components.
+- Favor expressive rounded geometry: capsule-shaped buttons and controls, with generous rounded surfaces for cards and panels.
+- Keep contrast intentional: use deep green for primary text, coral for the main action, lime for secondary actions or highlights, and pink as a supporting accent.
+
+## Component Construction
+
+- Create reusable components in their own folder under `src/components/<ComponentName>/index.tsx` with explicit prop interfaces and named exports.
+- Use NativeWind `className` for stable layout, spacing, typography, colors, borders, and effects.
+- Use the default `tw` export from `twrnc` only for computed class names or runtime states such as pressed, selected, or disabled.
+- Prefer `Pressable` for interactive components, include an accessibility role, and expose meaningful disabled and pressed states.
+- Represent visual variations with typed unions such as `type ButtonVariant = 'primary' | 'secondary'` instead of accepting arbitrary class strings.
+- Keep screen composition in `src/screens`; routes in `src/app` should remain thin adapters.
 
 ## TypeScript Rules
 
