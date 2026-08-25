@@ -78,8 +78,6 @@ Do not place large layouts, API calls, or reusable component definitions directl
 ## Component Construction
 
 - Create reusable components in their own folder under `src/components/<ComponentName>/index.tsx` with explicit prop interfaces and named exports.
-- Use NativeWind `className` for stable layout, spacing, typography, colors, borders, and effects.
-- Use the default `tw` export from `twrnc` only for computed class names or runtime states such as pressed, selected, or disabled.
 - Prefer `Pressable` for interactive components, include an accessibility role, and expose meaningful disabled and pressed states.
 - Represent visual variations with typed unions such as `type ButtonVariant = 'primary' | 'secondary'` instead of accepting arbitrary class strings.
 - Keep screen composition in `src/screens`; routes in `src/app` should remain thin adapters.
