@@ -15,7 +15,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export const CustomText = ({ children }: PropsWithChildren) => <Text style={styles.text}>{children}</Text>;
+export const CustomText = ({ children }: PropsWithChildren) => (
+  <Text style={styles.text}>{children}</Text>
+);
 
 export default function HomeScreen() {
   return (
