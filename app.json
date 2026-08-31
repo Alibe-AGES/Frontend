@@ -1,12 +1,17 @@
 {
   "expo": {
     "name": "Alibe",
-    "slug": "Alibe",
+    "slug": "my-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "alibe",
     "userInterfaceStyle": "automatic",
+    "extra": {
+      "eas": {
+        "projectId": "ac1bd00b-c78e-4e1a-8a48-b87267478a8c"
+      }
+    },
     "ios": {
       "icon": "./assets/expo.icon"
     },
