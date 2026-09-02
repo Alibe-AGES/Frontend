@@ -129,6 +129,7 @@ The `/component-gallery` route is a development aid for visually checking reusab
 Run the narrowest relevant check after an edit, then the broader checks when practical:
 
 ```bash
+npm run format
 npx tsc --noEmit
 npm run lint
 npx jest path/to/changed.test.tsx --runInBand
@@ -161,6 +162,7 @@ npm run web
 npx tsc --noEmit
 npm run lint
 npm run test:unit
+npm run format
 npm run format:check
 ```
 
