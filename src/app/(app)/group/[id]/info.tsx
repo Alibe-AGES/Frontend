@@ -1,3 +1,1 @@
-import { GroupInfoScreen } from '@/screens/GroupInfoScreen';
-
-export default GroupInfoScreen;
+export { GroupInfoScreen as default } from '@/screens/GroupInfoScreen';

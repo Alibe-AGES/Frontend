@@ -1,3 +1,1 @@
-import { CreateProfileScreen } from '@/screens/CreateProfileScreen';
-
-export default CreateProfileScreen;
+export { CreateProfileScreen as default } from '@/screens/CreateProfileScreen';

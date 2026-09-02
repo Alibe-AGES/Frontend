@@ -1,3 +1,1 @@
-import { GroupScreen } from '@/screens/GroupScreen';
-
-export default GroupScreen;
+export { GroupScreen as default } from '@/screens/GroupScreen';

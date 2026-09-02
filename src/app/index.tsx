@@ -1,3 +1,1 @@
-import { LoadingScreen } from '@/screens/LoadingScreen';
-
-export default LoadingScreen;
+export { LoadingScreen as default } from '@/screens/LoadingScreen';

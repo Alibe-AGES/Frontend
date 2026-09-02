@@ -1,3 +1,1 @@
-import { DayScreen } from '@/screens/DayScreen';
-
-export default DayScreen;
+export { DayScreen as default } from '@/screens/DayScreen';

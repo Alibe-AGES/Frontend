@@ -1,3 +1,1 @@
-import { LeaveGroupScreen } from '@/screens/LeaveGroupScreen';
-
-export default LeaveGroupScreen;
+export { LeaveGroupScreen as default } from '@/screens/LeaveGroupScreen';

@@ -1,3 +1,1 @@
-import { CreateEventScreen } from '@/screens/CreateEventScreen';
-
-export default CreateEventScreen;
+export { CreateEventScreen as default } from '@/screens/CreateEventScreen';

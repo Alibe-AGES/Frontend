@@ -27,12 +27,10 @@ Use these boundaries consistently:
 | `src/theme.ts`     | Shared TypeScript design tokens                           |
 | `src/constants.ts` | Stable constants and storage keys                         |
 
-Routes should be thin adapters. Prefer:
+Routes should be thin adapters. Re-export the screen as the route's default export:
 
 ```tsx
-import { HomeScreen } from '@/screens/HomeScreen';
-
-export default HomeScreen;
+export { HomeScreen as default } from '@/screens/HomeScreen';
 ```
 
 Do not place large layouts, API calls, or reusable component definitions directly in route files.
@@ -66,7 +64,7 @@ Current route ownership:
 
 Parenthesized folders are route groups and do not appear in public URLs. Dynamic route parameters must use typed pathname objects, for example `{ pathname: '/group/[id]', params: { id } }`. Keep nested flow configuration in its nearest `_layout.tsx`; use `presentation: 'modal'` for event creation and leave confirmation routes.
 
-The `/component-gallery` route is a development aid for visually checking reusable components in isolation. Keep its examples in `src/screens/ComponentGalleryScreen.tsx`, and keep behavior tests next to the component or gallery screen. Do not put production-only navigation or API calls in the gallery.
+The `/component-gallery` route is a development aid for visually checking reusable components in isolation. Start it with `npm run web`, then open `http://localhost:8081/component-gallery` or the same path on the port shown by Expo. Keep examples in `src/screens/ComponentGalleryScreen.tsx`, keep behavior tests next to the component or gallery screen, and run `npx jest src/screens/ComponentGalleryScreen.test.tsx --runInBand` for the focused gallery test. Do not put production-only navigation or API calls in the gallery.
 
 ## NativeWind 4 Rules
 

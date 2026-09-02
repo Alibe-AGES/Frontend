@@ -21,15 +21,15 @@ npm run build
 
 The project includes a dependency-free isolated component gallery at `/component-gallery`. Use it to see reusable components without navigating through the application flow.
 
-Start Expo and open the gallery in a browser:
+Start the web development server and open the gallery in a browser:
 
 ```bash
-npx expo start
+npm run web
 ```
 
-Then visit [`http://localhost:8081/component-gallery`](http://localhost:8081/component-gallery), or start the web target directly with `npm run web` and open the same path on the displayed port. The gallery currently includes the primary, secondary, and disabled `Button` states. Add new component examples to `src/screens/ComponentGalleryScreen.tsx` as reusable components are created.
+Then visit [`http://localhost:8081/component-gallery`](http://localhost:8081/component-gallery), or use the port displayed by Expo. The gallery currently includes the primary, secondary, and disabled `Button` states. Add new component examples to `src/screens/ComponentGalleryScreen.tsx` as reusable components are created.
 
-The gallery is a development aid, not a separate production design system. Keep component behavior covered by tests next to the implementation, and use the gallery for visual checks on web, Android, and iOS.
+The gallery is a development aid, not a separate production design system. Keep component behavior covered by tests next to the implementation, and use the gallery for visual checks on web, Android, and iOS. Run the gallery test with `npx jest src/screens/ComponentGalleryScreen.test.tsx --runInBand`.
 
 Quality checks:
 
@@ -207,12 +207,10 @@ src/app/
 
 The current screens are intentionally simple placeholders rendered through `src/screens/WelcomeScreen.tsx`. The route and stack boundaries are ready for the full UI and data flows to be implemented.
 
-Keep route files small. A route should normally import and return a screen component:
+Keep route files small. Re-export the screen as the route's default export with `export ... from`:
 
 ```tsx
-import { ProfileScreen } from '@/screens/ProfileScreen';
-
-export default ProfileScreen;
+export { ProfileScreen as default } from '@/screens/ProfileScreen';
 ```
 
 ## Directory Guide

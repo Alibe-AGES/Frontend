@@ -1,3 +1,1 @@
-import { MemoriesScreen } from '@/screens/MemoriesScreen';
-
-export default MemoriesScreen;
+export { MemoriesScreen as default } from '@/screens/MemoriesScreen';

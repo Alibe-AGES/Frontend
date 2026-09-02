@@ -1,3 +1,1 @@
-import { NewExperienceScreen } from '@/screens/NewExperienceScreen';
-
-export default NewExperienceScreen;
+export { NewExperienceScreen as default } from '@/screens/NewExperienceScreen';

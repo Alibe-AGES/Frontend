@@ -1,3 +1,1 @@
-import { EventCreatedScreen } from '@/screens/EventCreatedScreen';
-
-export default EventCreatedScreen;
+export { EventCreatedScreen as default } from '@/screens/EventCreatedScreen';

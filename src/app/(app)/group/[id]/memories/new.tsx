@@ -1,3 +1,1 @@
-import { NewMemoryScreen } from '@/screens/NewMemoryScreen';
-
-export default NewMemoryScreen;
+export { NewMemoryScreen as default } from '@/screens/NewMemoryScreen';

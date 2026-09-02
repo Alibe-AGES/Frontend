@@ -1,3 +1,1 @@
-import { ComponentGalleryScreen } from '@/screens/ComponentGalleryScreen';
-
-export default ComponentGalleryScreen;
+export { ComponentGalleryScreen as default } from '@/screens/ComponentGalleryScreen';
