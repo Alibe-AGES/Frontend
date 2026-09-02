@@ -6,8 +6,8 @@ interface WelcomeScreenProps {
 
 export function WelcomeScreen({ name }: WelcomeScreenProps) {
   return (
-    <View className="bg-canvas flex-1 items-center justify-center">
-      <Text className="text-ink text-2xl font-bold">Welcome to screen {name}</Text>
+    <View className="flex-1 items-center justify-center bg-canvas">
+      <Text className="text-2xl font-bold text-ink">Welcome to screen {name}</Text>
     </View>
   );
 }
