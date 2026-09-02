@@ -213,6 +213,8 @@ Keep route files small. Re-export the screen as the route's default export with 
 export { ProfileScreen as default } from '@/screens/ProfileScreen';
 ```
 
+Use this direct re-export form for screen route adapters instead of importing a screen and writing `export default Screen`. Layout files are the exception because they define the stack component required by Expo Router.
+
 ## Directory Guide
 
 | Path               | Responsibility                                                         |

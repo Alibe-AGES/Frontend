@@ -33,6 +33,8 @@ Routes should be thin adapters. Re-export the screen as the route's default expo
 export { HomeScreen as default } from '@/screens/HomeScreen';
 ```
 
+Do not use `export default Screen` in route adapters. The ESLint configuration enforces the direct `export { Screen as default } from ...` form. Layout files may use `export default function` because they define the Expo Router stack component itself.
+
 Do not place large layouts, API calls, or reusable component definitions directly in route files.
 
 ## Expo Router Rules
