@@ -61,5 +61,17 @@ export default defineConfig([
       ],
     },
   },
+  {
+    files: ['src/app/**/*.ts', 'src/app/**/*.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'ExportDefaultDeclaration[declaration.type="Identifier"]',
+          message: 'Use export { Component as default } from ... for route screen adapters.',
+        },
+      ],
+    },
+  },
   eslintConfigPrettier,
 ]);
