@@ -13,7 +13,8 @@ export default defineConfig([
       'modules/**',
       '**/*.config.*',
       '**/*.module.*',
-      'agents/**',
+      '.agents/**', //ignore agent files
+      '.expo/**', //ignore expo files
       'node_modules/**',
       'dist',
       'build',

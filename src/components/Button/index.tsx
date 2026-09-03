@@ -32,7 +32,7 @@ export function Button({ title, onPress, variant = 'primary', disabled = false }
       style={({ pressed }) => tw`${pressed ? 'opacity-75' : ''}`}
       testID="alibe-button"
     >
-      <Text className={`text-base font-bold ${textStyles}`}>{title}</Text>
+      <Text className={`text-base font-normal ${textStyles}`}>{title}</Text>
     </Pressable>
   );
 }

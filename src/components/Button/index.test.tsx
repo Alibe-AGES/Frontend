@@ -40,4 +40,21 @@ describe('<Button />', () => {
 
     expect(getByTestId('alibe-button').props.className).toContain('bg-ink');
   });
+
+  test('renders secondary variant correctly', async () => {
+    const { getByTestId } = await render(
+      <Button
+        title="Continuar"
+        variant="secondary"
+      />
+    );
+
+    expect(getByTestId('alibe-button').props.className).toContain('bg-lime');
+  });
+
+  test('has button accessibility role', async () => {
+    const { getByTestId } = await render(<Button title="Continuar" />);
+
+    expect(getByTestId('alibe-button').props.accessibilityRole).toBe('button');
+  });
 });
