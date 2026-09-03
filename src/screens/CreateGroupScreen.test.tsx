@@ -3,10 +3,10 @@ import { CreateGroupScreen } from './CreateGroupScreen';
 
 describe('<CreateGroupScreen />', () => {
   test('renders the main title', async () => {
-  const { getByText } = await render(<CreateGroupScreen />);
+    const { getByText } = await render(<CreateGroupScreen />);
 
-  expect(getByText(/Vamos\s+começar\?/)).toBeTruthy();
-});
+    expect(getByText(/Vamos\s+começar\?/)).toBeTruthy();
+  });
 
   test('renders the subtitle', async () => {
     const { getByText } = await render(<CreateGroupScreen />);

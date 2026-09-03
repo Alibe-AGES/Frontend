@@ -10,9 +10,7 @@ export function BackButton({ onPress }: BackButtonProps) {
       onPress={onPress}
       accessibilityRole="button"
     >
-      <Text className="mt-8 text-3xl font-black text-ink">
-        ←
-      </Text>
+      <Text className="mt-8 text-3xl font-black text-ink">←</Text>
     </Pressable>
   );
 }

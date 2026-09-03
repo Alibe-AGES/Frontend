@@ -37,22 +37,20 @@ export function CreateGroupScreen() {
       </Text>
 
       <View className="mt-8 flex-1 rounded-t-3xl bg-lime-soft p-6">
-        <Text className="text-center text-sm font-bold text-black">
-          Adicionar foto (opcional)
-        </Text>
+        <Text className="text-center text-sm font-bold text-black">Adicionar foto (opcional)</Text>
 
         <Pressable
-  onPress={() => {
-    // Handle press event
-  }}
-  className="mt-4 h-44 w-44 items-center justify-center self-center rounded-full bg-white"
->
-  <Image
-    source={groupPlaceholder}
-    className="h-full w-full"
-    resizeMode="contain"
-  />
-</Pressable>
+          onPress={() => {
+            // Handle press event
+          }}
+          className="mt-4 h-44 w-44 items-center justify-center self-center rounded-full bg-white"
+        >
+          <Image
+            source={groupPlaceholder}
+            className="h-full w-full"
+            resizeMode="contain"
+          />
+        </Pressable>
 
         <View className="mt-6 flex-row items-center rounded-xl bg-white px-4">
           <TextInput
