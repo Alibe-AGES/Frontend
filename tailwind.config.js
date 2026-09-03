@@ -15,6 +15,8 @@ module.exports = {
         coral: '#EC7448',
         'coral-soft': '#F7B08F',
         pink: '#ECA4D0',
+        terracota: '#a01500',
+        black: '#000000',
       },
     },
   },
