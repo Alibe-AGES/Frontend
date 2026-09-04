@@ -97,7 +97,11 @@ export function TextInput({
 
   const displayedError = error ?? typeError;
   const hasError = Boolean(displayedError);
-  const borderClassName = hasError ? 'border-coral' : isFocused ? 'border-ink' : 'border-transparent';
+  const borderClassName = hasError
+    ? 'border-coral'
+    : isFocused
+      ? 'border-ink'
+      : 'border-transparent';
 
   return (
     <View className="w-full gap-2">
