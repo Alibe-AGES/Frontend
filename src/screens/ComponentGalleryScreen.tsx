@@ -1,6 +1,9 @@
 import { ScrollView, Text, View } from 'react-native';
 
+import { BackButton } from '@/components/BackButton';
 import { Button } from '@/components/Button';
+
+const noop = () => undefined;
 
 export function ComponentGalleryScreen() {
   return (
@@ -26,6 +29,21 @@ export function ComponentGalleryScreen() {
           title="Disabled button"
           disabled
         />
+      </View>
+
+      <View className="gap-4 rounded-3xl bg-surface p-5">
+        <Text className="text-xl font-black text-ink">BackButton</Text>
+        <View className="flex-row gap-4">
+          <BackButton onPress={noop} />
+          <BackButton
+            accessibilityLabel="Cancelar"
+            onPress={noop}
+          />
+          <BackButton
+            onPress={noop}
+            disabled
+          />
+        </View>
       </View>
     </ScrollView>
   );
