@@ -1,6 +1,7 @@
 import { ScrollView, Text, View } from 'react-native';
 
 import { Button } from '@/components/Button';
+import { CreateGroupButton } from '@/components/CreateGroupButton';
 
 export function ComponentGalleryScreen() {
   return (
@@ -26,6 +27,20 @@ export function ComponentGalleryScreen() {
           title="Disabled button"
           disabled
         />
+      </View>
+
+      <View className="gap-4 rounded-3xl bg-surface p-5">
+        <Text className="text-xl font-black text-ink">Create group button</Text>
+        <View className="flex-row items-start gap-6">
+          <View className="items-center gap-2">
+            <CreateGroupButton />
+            <Text className="text-inkSoft text-sm font-medium">Default</Text>
+          </View>
+          <View className="items-center gap-2">
+            <CreateGroupButton disabled />
+            <Text className="text-inkSoft text-sm font-medium">Disabled</Text>
+          </View>
+        </View>
       </View>
     </ScrollView>
   );
