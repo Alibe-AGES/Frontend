@@ -27,13 +27,13 @@ Use these boundaries consistently:
 | `src/theme.ts`     | Shared TypeScript design tokens                           |
 | `src/constants.ts` | Stable constants and storage keys                         |
 
-Routes should be thin adapters. Prefer:
+Routes should be thin adapters. Re-export the screen as the route's default export:
 
 ```tsx
-import { HomeScreen } from '@/screens/HomeScreen';
-
-export default HomeScreen;
+export { HomeScreen as default } from '@/screens/HomeScreen';
 ```
+
+Do not use `export default Screen` in route adapters. The ESLint configuration enforces the direct `export { Screen as default } from ...` form. Layout files may use `export default function` because they define the Expo Router stack component itself.
 
 Do not place large layouts, API calls, or reusable component definitions directly in route files.
 
@@ -46,6 +46,27 @@ Do not place large layouts, API calls, or reusable component definitions directl
 - Do not make low-level components aware of route names.
 - Use typed route support already enabled in `app.json`.
 - Test route components independently from the navigation container unless navigation behavior itself is under test.
+
+Current route ownership:
+
+| Route                                                    | Stack / purpose                                |
+| -------------------------------------------------------- | ---------------------------------------------- |
+| `/`                                                      | Loading screen                                 |
+| `/component-gallery`                                     | Isolated development component gallery         |
+| `/auth`, `/login`, `/sign-up`                            | `(auth)` authentication stack                  |
+| `/profile`                                               | `(profile)` profile setup stack                |
+| `/groups`                                                | `(app)` groups home                            |
+| `/create-group`, `/create-group/invite`                  | Group creation stack                           |
+| `/group/[id]`                                            | Group calendar and main page                   |
+| `/group/[id]/day/[date]`                                 | Day detail stack                               |
+| `/group/[id]/create-event`, `/group/[id]/event-created`  | Event creation modal and confirmation          |
+| `/group/[id]/info`, `/group/[id]/leave`                  | Group information and leave confirmation modal |
+| `/group/[id]/memories`, `/group/[id]/memories/new`       | Memories stack                                 |
+| `/group/[id]/experiences`, `/group/[id]/experiences/new` | Experiences stack                              |
+
+Parenthesized folders are route groups and do not appear in public URLs. Dynamic route parameters must use typed pathname objects, for example `{ pathname: '/group/[id]', params: { id } }`. Keep nested flow configuration in its nearest `_layout.tsx`; use `presentation: 'modal'` for event creation and leave confirmation routes.
+
+The `/component-gallery` route is a development aid for visually checking reusable components in isolation. Start it with `npm run web`, then open `http://localhost:8081/component-gallery` or the same path on the port shown by Expo. Keep examples in `src/screens/ComponentGalleryScreen.tsx`, keep behavior tests next to the component or gallery screen, and run `npx jest src/screens/ComponentGalleryScreen.test.tsx --runInBand` for the focused gallery test. Do not put production-only navigation or API calls in the gallery.
 
 ## NativeWind 4 Rules
 
@@ -108,6 +129,7 @@ Do not place large layouts, API calls, or reusable component definitions directl
 Run the narrowest relevant check after an edit, then the broader checks when practical:
 
 ```bash
+npm run format
 npx tsc --noEmit
 npm run lint
 npx jest path/to/changed.test.tsx --runInBand
@@ -140,6 +162,7 @@ npm run web
 npx tsc --noEmit
 npm run lint
 npm run test:unit
+npm run format
 npm run format:check
 ```
 

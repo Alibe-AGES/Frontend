@@ -17,6 +17,20 @@ npm run web
 npm run build
 ```
 
+## Component Gallery
+
+The project includes a dependency-free isolated component gallery at `/component-gallery`. Use it to see reusable components without navigating through the application flow.
+
+Start the web development server and open the gallery in a browser:
+
+```bash
+npm run web
+```
+
+Then visit [`http://localhost:8081/component-gallery`](http://localhost:8081/component-gallery), or use the port displayed by Expo. The gallery currently includes the primary, secondary, and disabled `Button` states. Add new component examples to `src/screens/ComponentGalleryScreen.tsx` as reusable components are created.
+
+The gallery is a development aid, not a separate production design system. Keep component behavior covered by tests next to the implementation, and use the gallery for visual checks on web, Android, and iOS. Run the gallery test with `npx jest src/screens/ComponentGalleryScreen.test.tsx --runInBand`.
+
 Quality checks:
 
 ```bash
@@ -158,20 +172,48 @@ The current route tree is:
 
 ```text
 src/app/
-├── _layout.tsx       # Root Stack navigator
-├── index.tsx         # Home route (/)
-└── __tests__/        # Route-level tests
+├── _layout.tsx                         # Root Stack navigator
+├── index.tsx                           # Loading route (/)
+├── component-gallery.tsx               # Component gallery (/component-gallery)
+├── (auth)/                             # Authentication stack
+│   ├── _layout.tsx
+│   ├── auth.tsx                        # /auth
+│   ├── login.tsx                       # /login
+│   └── sign-up.tsx                     # /sign-up
+├── (profile)/                          # Profile setup stack
+│   ├── _layout.tsx
+│   └── profile.tsx                     # /profile
+├── (app)/                              # Authenticated app stack
+│   ├── _layout.tsx
+│   ├── groups.tsx                      # /groups
+│   ├── create-group/                   # Group creation stack
+│   │   ├── _layout.tsx
+│   │   ├── index.tsx                   # /create-group
+│   │   └── invite.tsx                  # /create-group/invite
+│   └── group/[id]/                     # Group stack
+│       ├── _layout.tsx
+│       ├── index.tsx                   # /group/[id]
+│       ├── day/[date]/                 # Day detail stack
+│       ├── create-event.tsx            # Event modal
+│       ├── event-created.tsx
+│       ├── info.tsx
+│       ├── leave.tsx                   # Leave confirmation modal
+│       ├── memories/                   # Memories stack
+│       └── experiences/                # Experiences stack
+└── __tests__/                          # Route-level tests
 ```
 
-`package.json` sets `main` to `expo-router/entry`. Expo Router scans `src/app` and turns files into routes. `_layout.tsx` owns the navigation boundary; `index.tsx` is the home screen. Add a route by adding a file such as `src/app/profile.tsx`, which becomes `/profile`.
+`package.json` sets `main` to `expo-router/entry`. Expo Router scans `src/app` and turns files into routes. Parenthesized folders such as `(auth)` and `(app)` group screens into stacks without adding a URL segment. Dynamic folders such as `[id]` and `[date]` provide route parameters.
 
-Keep route files small. A route should normally import and return a screen component:
+The current screens are intentionally simple placeholders rendered through `src/screens/WelcomeScreen.tsx`. The route and stack boundaries are ready for the full UI and data flows to be implemented.
+
+Keep route files small. Re-export the screen as the route's default export with `export ... from`:
 
 ```tsx
-import { ProfileScreen } from '@/screens/ProfileScreen';
-
-export default ProfileScreen;
+export { ProfileScreen as default } from '@/screens/ProfileScreen';
 ```
+
+Use this direct re-export form for screen route adapters instead of importing a screen and writing `export default Screen`. Layout files are the exception because they define the stack component required by Expo Router.
 
 ## Directory Guide
 
@@ -246,32 +288,52 @@ src/
 
 ## Navigation
 
-The root layout currently renders a native stack:
+The root layout and each nested flow use the native stack from `expo-router/stack`:
 
 ```tsx
-import { Stack } from 'expo-router';
+import { Stack } from 'expo-router/stack';
 
 export default function RootLayout() {
-  return <Stack />;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="(auth)" />
+      <Stack.Screen name="(profile)" />
+      <Stack.Screen name="(app)" />
+    </Stack>
+  );
 }
 ```
 
-Add screen options in `_layout.tsx` when a route needs a title, presentation mode, or header configuration:
+Use a nested `_layout.tsx` for every flow that owns a stack. The group layout defines the event and leave confirmation screens as modals:
 
 ```tsx
 <Stack>
   <Stack.Screen
-    name="index"
-    options={{ title: 'Home' }}
+    name="create-event"
+    options={{ presentation: 'modal', title: 'Create event' }}
   />
   <Stack.Screen
-    name="profile"
-    options={{ title: 'Profile' }}
+    name="leave"
+    options={{ presentation: 'modal', title: 'Leave group' }}
   />
 </Stack>
 ```
 
-Use Expo Router `Link` or router methods for navigation. Keep navigation decisions in route and screen layers, not inside low-level visual components.
+Use typed Expo Router `Link` objects for dynamic routes:
+
+```tsx
+<Link
+  href={{ pathname: '/group/[id]/day/[date]', params: { id, date } }}
+  asChild
+>
+  <Pressable>
+    <Text>Open day</Text>
+  </Pressable>
+</Link>
+```
+
+Keep navigation decisions in route and screen layers, not inside low-level visual components. Route files should remain thin adapters that import a screen from `src/screens`.
 
 ## Styling and NativeWind
 
@@ -330,6 +392,14 @@ expect(getByText('Profile')).toBeTruthy();
 ```
 
 Use `testID` or accessibility labels for controls that need stable automation selectors. Keep tests near the implementation or under `__tests__`.
+
+Component tests should live next to the component or isolated screen. For example, run the component gallery test with:
+
+```bash
+npx jest src/screens/ComponentGalleryScreen.test.tsx --runInBand
+```
+
+Use the gallery route for visual inspection and React Native Testing Library for behavior such as presses, disabled states, and accessible labels.
 
 ## Configuration Map
 
