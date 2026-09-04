@@ -38,6 +38,11 @@ yarn-error.*
 
 example
 
+# component gallery
+src/app/component-gallery.tsx
+src/screens/ComponentGalleryScreen.tsx
+src/screens/ComponentGalleryScreen.test.tsx
+
 # generated native folders
 /ios
 /android

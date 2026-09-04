@@ -48,6 +48,29 @@ export default defineConfig([
     rules: {
       'import-x/no-unresolved': 'error',
       'import-x/named': 'error',
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Literal[value=/\\d+px/]',
+          message: 'Use rem-based responsive units instead of px.',
+        },
+        {
+          selector: 'TemplateElement[value.raw=/\\d+px/]',
+          message: 'Use rem-based responsive units instead of px.',
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/app/**/*.ts', 'src/app/**/*.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'ExportDefaultDeclaration[declaration.type="Identifier"]',
+          message: 'Use export { Component as default } from ... for route screen adapters.',
+        },
+      ],
     },
   },
   eslintConfigPrettier,
