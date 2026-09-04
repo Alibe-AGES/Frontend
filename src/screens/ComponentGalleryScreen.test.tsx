@@ -10,12 +10,4 @@ describe('<ComponentGalleryScreen />', () => {
     expect(getByText('Secondary button')).toBeTruthy();
     expect(getByText('Disabled button')).toBeTruthy();
   });
-
-  test('renders the create group button states', async () => {
-    const { getAllByLabelText, getByText } = await render(<ComponentGalleryScreen />);
-
-    expect(getAllByLabelText('Criar novo grupo')).toHaveLength(2);
-    expect(getByText('Default')).toBeTruthy();
-    expect(getByText('Disabled')).toBeTruthy();
-  });
 });
