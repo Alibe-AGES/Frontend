@@ -1,6 +1,5 @@
-import { ScrollView, Text, View } from 'react-native';
-
 import { Button } from '@/components/Button';
+import { ScrollView, Text, View } from 'react-native';
 
 export function ComponentGalleryScreen() {
   return (
