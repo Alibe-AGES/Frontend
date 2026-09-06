@@ -1,44 +1,37 @@
-import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
-import { Pressable } from 'react-native';
-import tw from 'twrnc';
-
 import backArrowIcon from '@/assets/images/back-arrow.svg';
 import { theme } from '@/theme';
+import { Image } from 'expo-image';
+import { Pressable } from 'react-native';
+import tw from 'twrnc';
+import { BackButtonProps } from './BackButton.types';
+import { useDefaultBackController } from './controllers/useDefaultBackController';
 
-export interface BackButtonProps {
-  onPress?: () => void;
-  disabled?: boolean;
-  accessibilityLabel?: string;
-}
-
-export function BackButton({
-  onPress,
-  disabled = false,
+export const BackButton: React.FC<BackButtonProps> = ({
+  useController,
+  fallbackHref,
   accessibilityLabel = 'Voltar',
-}: BackButtonProps) {
-  const router = useRouter();
-
-  const handlePress = () => {
-    if (onPress) {
-      onPress();
-      return;
-    }
-
-    router.back();
-  };
+  className = '',
+  disabled,
+  ...pressableProps
+}) => {
+  const defaultController = useDefaultBackController({ fallbackHref });
+  const customStrategy = useController ? useController() : null;
+  const { handleBack, isLoading } = customStrategy ?? defaultController;
 
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      accessibilityState={{ disabled }}
-      disabled={disabled}
-      onPress={handlePress}
+      accessibilityState={{ disabled: disabled ?? false }}
+      disabled={disabled ? true : isLoading}
+      onPress={() => {
+        void handleBack();
+      }}
       hitSlop={16}
-      className={`items-center justify-center ${disabled ? 'opacity-50' : 'opacity-100'}`}
+      className={`items-center justify-center ${disabled ? 'opacity-50' : 'opacity-100'} ${className}`}
       style={({ pressed }) => tw`${pressed ? 'opacity-60' : ''}`}
       testID="alibe-back-button"
+      {...pressableProps}
     >
       <Image
         source={backArrowIcon}
@@ -49,4 +42,4 @@ export function BackButton({
       />
     </Pressable>
   );
-}
+};

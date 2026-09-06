@@ -5,7 +5,10 @@ import { BackButton } from './index';
 const mockBack = jest.fn();
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ back: mockBack }),
+  useRouter: () => ({
+    back: mockBack,
+    canGoBack: () => true,
+  }),
 }));
 
 describe('<BackButton />', () => {
