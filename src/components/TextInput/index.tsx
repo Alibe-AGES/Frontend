@@ -7,8 +7,8 @@ import type { TextInputProps, TextInputType } from './TextInput.types';
 
 export type { TextInputIconBackground, TextInputProps, TextInputType } from './TextInput.types';
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const NUMERIC_DISALLOWED_REGEX = /[^0-9]/g;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/;
+const NUMERIC_DISALLOWED_REGEX = /\D/g;
 const ALPHANUMERIC_DISALLOWED_REGEX = /[^\p{L}\p{N}\s]/gu;
 
 const ERROR_MESSAGES: Record<TextInputType, string> = {
@@ -79,11 +79,12 @@ export function TextInput({
 
   const displayedError = error ?? typeError;
   const hasError = Boolean(displayedError);
-  const borderClassName = hasError
-    ? 'border-coral'
-    : isFocused
-      ? 'border-ink'
-      : 'border-transparent';
+  let borderClassName = 'border-transparent';
+  if (hasError) {
+    borderClassName = 'border-coral';
+  } else if (isFocused) {
+    borderClassName = 'border-ink';
+  }
 
   return (
     <View className="w-full gap-2">
@@ -103,7 +104,7 @@ export function TextInput({
           accessibilityState={{ disabled }}
           autoCapitalize={type === 'email' ? 'none' : 'sentences'}
           autoFocus={autoFocus}
-          className="flex-1 py-4 font-poppins text-base text-ink outline-none"
+          className="font-poppins flex-1 py-4 text-base text-ink outline-none"
           editable={!disabled}
           keyboardType={KEYBOARD_TYPES[type]}
           maxLength={maxLength}
@@ -130,7 +131,7 @@ export function TextInput({
       </View>
       {hasError ? (
         <Text
-          className="px-2 font-poppins-medium text-xs text-coral"
+          className="font-poppins-medium px-2 text-xs text-coral"
           testID={`${testID}-error`}
         >
           {displayedError}
