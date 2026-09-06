@@ -1,10 +1,11 @@
-import backArrowIcon from '@/assets/images/back-arrow.svg';
-import { theme } from '@/theme';
 import { Image } from 'expo-image';
 import { Pressable } from 'react-native';
 import tw from 'twrnc';
-import { BackButtonProps } from './BackButton.types';
-import { useDefaultBackController } from './controllers/useDefaultBackController';
+
+import backArrowIcon from '@/assets/images/back-arrow.svg';
+import { BackButtonProps } from '@/components/BackButton/BackButton.types';
+import { useDefaultBackController } from '@/components/BackButton/controllers/useDefaultBackController';
+import { theme } from '@/theme';
 
 export const BackButton: React.FC<BackButtonProps> = ({
   useController,

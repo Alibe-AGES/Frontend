@@ -1,5 +1,6 @@
 import { Href, useRouter } from 'expo-router';
-import { BackStrategy } from '../BackButton.types';
+
+import { BackStrategy } from '@/components/BackButton/BackButton.types';
 
 export interface UseDefaultBackControllerParams {
   fallbackHref?: Href;
