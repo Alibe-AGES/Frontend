@@ -1,29 +1,11 @@
-import type { ReactNode } from 'react';
 import { useState } from 'react';
 import type { KeyboardTypeOptions } from 'react-native';
-import { Text, TextInput as RNTextInput, View } from 'react-native';
+import { TextInput as RNTextInput, Text, View } from 'react-native';
 
 import { theme } from '@/theme';
+import type { TextInputProps, TextInputType } from './TextInput.types';
 
-export type TextInputType = 'all' | 'email' | 'numeric' | 'alphanumeric';
-export type TextInputIconBackground = 'coral' | 'ink';
-
-export interface TextInputProps {
-  value: string;
-  onChangeText: (text: string) => void;
-  type?: TextInputType;
-  label?: string;
-  placeholder?: string;
-  error?: string;
-  disabled?: boolean;
-  secureTextEntry?: boolean;
-  autoFocus?: boolean;
-  maxLength?: number;
-  icon?: ReactNode;
-  iconBackground?: TextInputIconBackground;
-  onBlur?: () => void;
-  testID?: string;
-}
+export type { TextInputIconBackground, TextInputProps, TextInputType } from './TextInput.types';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NUMERIC_DISALLOWED_REGEX = /[^0-9]/g;
@@ -121,7 +103,7 @@ export function TextInput({
           accessibilityState={{ disabled }}
           autoCapitalize={type === 'email' ? 'none' : 'sentences'}
           autoFocus={autoFocus}
-          className="flex-1 py-4 font-poppins text-base text-ink outline-none"
+          className="font-poppins flex-1 py-4 text-base text-ink outline-none"
           editable={!disabled}
           keyboardType={KEYBOARD_TYPES[type]}
           maxLength={maxLength}
@@ -148,7 +130,7 @@ export function TextInput({
       </View>
       {hasError ? (
         <Text
-          className="px-2 font-poppins-medium text-xs text-coral"
+          className="font-poppins-medium px-2 text-xs text-coral"
           testID={`${testID}-error`}
         >
           {displayedError}
