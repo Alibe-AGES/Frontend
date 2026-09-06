@@ -104,7 +104,7 @@ export function TextInput({
           accessibilityState={{ disabled }}
           autoCapitalize={type === 'email' ? 'none' : 'sentences'}
           autoFocus={autoFocus}
-          className="font-poppins flex-1 py-4 text-base text-ink outline-none"
+          className="flex-1 py-4 font-poppins text-base text-ink outline-none"
           editable={!disabled}
           keyboardType={KEYBOARD_TYPES[type]}
           maxLength={maxLength}
@@ -131,7 +131,7 @@ export function TextInput({
       </View>
       {hasError ? (
         <Text
-          className="font-poppins-medium px-2 text-xs text-coral"
+          className="px-2 font-poppins-medium text-xs text-coral"
           testID={`${testID}-error`}
         >
           {displayedError}
