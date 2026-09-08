@@ -3,8 +3,13 @@ import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
 import { Button } from '@/components/Button';
+import { InviteLink } from '@/components/InviteLink';
 import { TextInput } from '@/components/TextInput';
 import { theme } from '@/theme';
+
+const INVITE_LINK = 'https://alibe.app/invite/dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+const INVITE_EXPIRES_AT = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+const INVITE_EXPIRED_AT = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
 export function ComponentGalleryScreen() {
   const [name, setName] = useState('');
@@ -196,6 +201,32 @@ export function ComponentGalleryScreen() {
                 color={theme.colors.coral}
               />
             }
+          />
+        </View>
+      </View>
+      <View className="gap-4 rounded-3xl bg-surface p-5">
+        <Text className="text-xl font-black text-ink">InviteLink</Text>
+        <InviteLink
+          link={INVITE_LINK}
+          expiresAt={INVITE_EXPIRES_AT}
+          testID="gallery-invite-link"
+        />
+        <InviteLink
+          link={INVITE_LINK}
+          expiresAt={INVITE_EXPIRED_AT}
+          testID="gallery-invite-link-expired"
+        />
+        <InviteLink testID="gallery-invite-link-loading" />
+
+        <View className="gap-2 rounded-3xl bg-canvas p-5">
+          <Text className="font-poppins-bold text-base text-ink">Tudo pronto!</Text>
+          <Text className="font-poppins text-sm text-ink-soft">
+            Agora é só compartilhar o link para convidar seus amigos para o grupo.
+          </Text>
+          <InviteLink
+            link={INVITE_LINK}
+            expiresAt={INVITE_EXPIRES_AT}
+            testID="gallery-invite-link-screen"
           />
         </View>
       </View>
