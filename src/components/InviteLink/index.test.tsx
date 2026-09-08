@@ -7,14 +7,16 @@ jest.mock('expo-clipboard', () => ({
   setStringAsync: jest.fn(() => Promise.resolve(true)),
 }));
 
+const mockSetStringAsync = (Clipboard as Record<string, unknown>).setStringAsync as jest.Mock;
+
 const INVITE_LINK = 'https://alibe.app/invite/dddddddd-dddd-4ddd-8ddd-dddddddddddd';
 const IN_ONE_HOUR = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 const ONE_HOUR_AGO = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
 describe('<InviteLink />', () => {
   beforeEach(() => {
-    jest.mocked(Clipboard.setStringAsync).mockClear();
-    jest.mocked(Clipboard.setStringAsync).mockResolvedValue(true);
+    mockSetStringAsync.mockClear();
+    mockSetStringAsync.mockResolvedValue(true);
   });
 
   test('shows the link it receives', async () => {
@@ -50,7 +52,7 @@ describe('<InviteLink />', () => {
     await fireEvent.press(getByTestId('alibe-invite-link'));
 
     await waitFor(() => {
-      expect(Clipboard.setStringAsync).toHaveBeenCalledWith(INVITE_LINK);
+      expect(mockSetStringAsync).toHaveBeenCalledWith(INVITE_LINK);
     });
     expect(onCopy).toHaveBeenCalledWith(INVITE_LINK);
     expect(getByText('Copiado')).toBeTruthy();
@@ -62,7 +64,7 @@ describe('<InviteLink />', () => {
 
     await fireEvent.press(getByTestId('alibe-invite-link'));
 
-    expect(Clipboard.setStringAsync).not.toHaveBeenCalled();
+    expect(mockSetStringAsync).not.toHaveBeenCalled();
     expect(onCopy).not.toHaveBeenCalled();
     expect(getByTestId('alibe-invite-link').props.accessibilityState).toMatchObject({
       disabled: true,
@@ -81,7 +83,7 @@ describe('<InviteLink />', () => {
 
     await fireEvent.press(getByTestId('alibe-invite-link'));
 
-    expect(Clipboard.setStringAsync).not.toHaveBeenCalled();
+    expect(mockSetStringAsync).not.toHaveBeenCalled();
     expect(onCopy).not.toHaveBeenCalled();
   });
 
@@ -100,7 +102,7 @@ describe('<InviteLink />', () => {
     await fireEvent.press(getByTestId('alibe-invite-link'));
 
     expect(onExpired).toHaveBeenCalledTimes(1);
-    expect(Clipboard.setStringAsync).not.toHaveBeenCalled();
+    expect(mockSetStringAsync).not.toHaveBeenCalled();
     expect(onCopy).not.toHaveBeenCalled();
   });
 
@@ -108,7 +110,7 @@ describe('<InviteLink />', () => {
     const onCopy = jest.fn();
     const onCopyError = jest.fn();
     const failure = new Error('Write permission denied');
-    jest.mocked(Clipboard.setStringAsync).mockRejectedValueOnce(failure);
+    mockSetStringAsync.mockRejectedValueOnce(failure);
 
     const { getByTestId, getByText } = await render(
       <InviteLink
