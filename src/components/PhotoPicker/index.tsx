@@ -13,7 +13,6 @@ export const PhotoPicker: FC<PhotoPickerProps> = ({
   uploadUrl,
   onUploadSuccess,
   onUploadError,
-  className = '',
   imageClassName = '',
   disabled,
   testID = 'alibe-photo-picker',
@@ -25,14 +24,14 @@ export const PhotoPicker: FC<PhotoPickerProps> = ({
     onUploadError,
   });
   const customStrategy = useController ? useController({ onUploadSuccess, onUploadError }) : null;
-  const { photoUri, isLoading, error, success, pickImage } = customStrategy ?? defaultController;
+  const { photoUri, isLoading, pickImage } = customStrategy ?? defaultController;
 
   const isDisabled = disabled ? true : isLoading;
 
   return (
     <View
+      className="items-center"
       testID={`${testID}-container`}
-      className={`items-center ${className}`}
     >
       <Text className="mb-4 text-center text-base font-semibold text-black">{label}</Text>
 
@@ -73,24 +72,6 @@ export const PhotoPicker: FC<PhotoPickerProps> = ({
           />
         )}
       </Pressable>
-
-      {success ? (
-        <Text
-          className="text-success mt-2 text-center text-xs font-semibold"
-          testID={`${testID}-success`}
-        >
-          Foto enviada com sucesso!
-        </Text>
-      ) : null}
-
-      {error ? (
-        <Text
-          className="text-red mt-2 text-center text-red-700"
-          testID={`${testID}-error`}
-        >
-          {error}
-        </Text>
-      ) : null}
     </View>
   );
 };

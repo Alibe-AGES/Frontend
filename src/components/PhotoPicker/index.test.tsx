@@ -104,16 +104,15 @@ describe('<PhotoPicker />', () => {
     jest.useRealTimers();
   });
 
-  test('does not show a success message when there is no uploadUrl (local-only selection)', async () => {
-    const { getByTestId, queryByTestId } = await render(<PhotoPicker />);
+  test('shows a success message even without an uploadUrl (local-only selection)', async () => {
+    const { getByTestId } = await render(<PhotoPicker />);
 
     await fireEvent.press(getByTestId('alibe-photo-picker'));
 
     await waitFor(() => {
       expect(getByTestId('alibe-photo-picker-photo')).toBeTruthy();
+      expect(getByTestId('alibe-photo-picker-success')).toBeTruthy();
     });
-
-    expect(queryByTestId('alibe-photo-picker-success')).toBeNull();
   });
 
   test('shows an error message when the backend upload fails', async () => {

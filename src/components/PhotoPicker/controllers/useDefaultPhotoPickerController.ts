@@ -4,6 +4,7 @@ import {
 } from '@/components/PhotoPicker/PhotoPicker.types';
 import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Toast from 'react-native-toast-message';
 
 interface UseDefaultPhotoPickerControllerParams extends UsePhotoPickerParams {
   uploadUrl?: string;
@@ -44,6 +45,7 @@ export const useDefaultPhotoPickerController = ({
     async (uri: string) => {
       if (!uploadUrl) {
         setPhotoUri(uri);
+        Toast.show({ type: 'success', text1: 'Sucesso!', text2: 'Foto enviada com sucesso!' });
         onUploadSuccess?.(uri);
         return;
       }
@@ -70,10 +72,14 @@ export const useDefaultPhotoPickerController = ({
         }
 
         setPhotoUri(uri);
-        showSuccess();
+        Toast.show({ type: 'success', text1: 'Sucesso!', text2: 'Foto enviada com sucesso!' });
         onUploadSuccess?.(uri);
       } catch (err) {
-        setError('Não foi possível enviar a foto. Tente novamente.');
+        Toast.show({
+          type: 'error',
+          text1: 'Erro!',
+          text2: 'Não foi possível enviar a foto. Tente novamente.',
+        });
         onUploadError?.(err);
       } finally {
         setIsLoading(false);
@@ -89,7 +95,7 @@ export const useDefaultPhotoPickerController = ({
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permission.granted) {
-      setError('Permissão de acesso à galeria negada.');
+      Toast.show({ type: 'error', text1: 'Erro!', text2: 'Permissão de acesso à galeria negada.' });
       return;
     }
 
