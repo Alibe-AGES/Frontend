@@ -10,6 +10,8 @@ export const theme = {
     coralSoft: '#F7B08F',
     pink: '#ECA4D0',
     white: '#FFFFFF',
+    black: '#000000',
+    success: '#2F9E44',
   },
   spacing: {
     xs: '0.5rem',
