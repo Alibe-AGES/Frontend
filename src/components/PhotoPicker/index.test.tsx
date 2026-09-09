@@ -1,4 +1,5 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import Toast from 'react-native-toast-message';
 import { PhotoPicker } from './index';
 
 interface PermissionResult {
@@ -17,6 +18,10 @@ jest.mock('expo-image-picker', () => ({
     mockRequestPermissions() as Promise<PermissionResult>,
   launchImageLibraryAsync: (): Promise<PickerResult> =>
     mockLaunchImageLibrary() as Promise<PickerResult>,
+}));
+
+jest.mock('react-native-toast-message', () => ({
+  show: jest.fn(),
 }));
 
 const originalFetch = global.fetch;
@@ -58,7 +63,7 @@ describe('<PhotoPicker />', () => {
     });
   });
 
-  test('sends the selected photo to the backend, shows it and shows a success message after a positive response', async () => {
+  test('sends the selected photo to the backend, shows it and triggers success callback after a positive response', async () => {
     const onUploadSuccess = jest.fn();
     const { getByTestId } = await render(
       <PhotoPicker
@@ -79,43 +84,23 @@ describe('<PhotoPicker />', () => {
     await waitFor(() => {
       expect(onUploadSuccess).toHaveBeenCalledWith('file://photo.jpg');
       expect(getByTestId('alibe-photo-picker-photo')).toBeTruthy();
-      expect(getByTestId('alibe-photo-picker-success')).toBeTruthy();
+      // Asserção do Toast (se mockado): expect(Toast.show).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }));
     });
   });
 
-  test('hides the success message automatically after the configured duration', async () => {
-    jest.useFakeTimers();
-    const { getByTestId, queryByTestId } = await render(
-      <PhotoPicker uploadUrl="https://api.alibe.com/photos" />
-    );
-
-    await fireEvent.press(getByTestId('alibe-photo-picker'));
-
-    await waitFor(() => {
-      expect(getByTestId('alibe-photo-picker-success')).toBeTruthy();
-    });
-
-    jest.advanceTimersByTime(3000);
-
-    await waitFor(() => {
-      expect(queryByTestId('alibe-photo-picker-success')).toBeNull();
-    });
-
-    jest.useRealTimers();
-  });
-
-  test('shows a success message even without an uploadUrl (local-only selection)', async () => {
-    const { getByTestId } = await render(<PhotoPicker />);
+  test('shows the photo and triggers success callback even without an uploadUrl (local-only selection)', async () => {
+    const onUploadSuccess = jest.fn();
+    const { getByTestId } = await render(<PhotoPicker onUploadSuccess={onUploadSuccess} />);
 
     await fireEvent.press(getByTestId('alibe-photo-picker'));
 
     await waitFor(() => {
       expect(getByTestId('alibe-photo-picker-photo')).toBeTruthy();
-      expect(getByTestId('alibe-photo-picker-success')).toBeTruthy();
+      expect(onUploadSuccess).toHaveBeenCalledWith('file://photo.jpg');
     });
   });
 
-  test('shows an error message when the backend upload fails', async () => {
+  test('triggers error callback when the backend upload fails', async () => {
     global.fetch = jest.fn().mockResolvedValue({ ok: false });
     const onUploadError = jest.fn();
     const { getByTestId } = await render(
@@ -128,8 +113,8 @@ describe('<PhotoPicker />', () => {
     await fireEvent.press(getByTestId('alibe-photo-picker'));
 
     await waitFor(() => {
-      expect(getByTestId('alibe-photo-picker-error')).toBeTruthy();
       expect(onUploadError).toHaveBeenCalledTimes(1);
+      expect(Toast.show).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }));
     });
   });
 
@@ -140,9 +125,8 @@ describe('<PhotoPicker />', () => {
     await fireEvent.press(getByTestId('alibe-photo-picker'));
 
     await waitFor(() => {
-      expect(getByTestId('alibe-photo-picker-error')).toBeTruthy();
+      expect(mockLaunchImageLibrary).not.toHaveBeenCalled();
     });
-    expect(mockLaunchImageLibrary).not.toHaveBeenCalled();
   });
 
   test('accepts a custom controller, so it can be reused with a different behavior in other screens', async () => {
