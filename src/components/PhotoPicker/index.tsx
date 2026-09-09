@@ -28,6 +28,37 @@ export const PhotoPicker: FC<PhotoPickerProps> = ({
 
   const isDisabled = disabled ? true : isLoading;
 
+  const renderPhotoContent = () => {
+    if (isLoading) {
+      return (
+        <ActivityIndicator
+          color={theme.colors.ink}
+          testID={`${testID}-loading`}
+        />
+      );
+    }
+    if (photoUri) {
+      return (
+        <Image
+          source={{ uri: photoUri }}
+          accessible
+          accessibilityLabel="Foto selecionada"
+          contentFit="cover"
+          className="h-36 w-36 rounded-full"
+          testID={`${testID}-photo`}
+        />
+      );
+    }
+    return (
+      <Ionicons
+        name="people-outline"
+        size={80}
+        color={theme.colors.coral}
+        testID={`${testID}-placeholder`}
+      />
+    );
+  };
+
   return (
     <View
       className="items-center"
@@ -49,28 +80,7 @@ export const PhotoPicker: FC<PhotoPickerProps> = ({
         testID={testID}
         {...pressableProps}
       >
-        {isLoading ? (
-          <ActivityIndicator
-            color={theme.colors.ink}
-            testID={`${testID}-loading`}
-          />
-        ) : photoUri ? (
-          <Image
-            source={{ uri: photoUri }}
-            accessible
-            accessibilityLabel="Foto selecionada"
-            contentFit="cover"
-            className="h-36 w-36 rounded-full"
-            testID={`${testID}-photo`}
-          />
-        ) : (
-          <Ionicons
-            name="people-outline"
-            size={80}
-            color={theme.colors.coral}
-            testID={`${testID}-placeholder`}
-          />
-        )}
+        {renderPhotoContent()}
       </Pressable>
     </View>
   );

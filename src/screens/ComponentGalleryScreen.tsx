@@ -1,7 +1,6 @@
+import { Button } from '@/components/Button';
 import { ScrollView, Text, View } from 'react-native';
 
-import { Button } from '@/components/Button';
-import { PhotoPicker } from '@/components/PhotoPicker';
 export function ComponentGalleryScreen() {
   return (
     <ScrollView
@@ -26,20 +25,6 @@ export function ComponentGalleryScreen() {
           title="Disabled button"
           disabled
         />
-      </View>
-      <View className="gap-4 rounded-3xl bg-surface p-5">
-        <Text className="text-xl font-black text-ink">PhotoPicker</Text>
-        <View className="flex-row gap-4 rounded-3xl bg-surface p-5">
-          <View className="gap-4 rounded-3xl bg-pink p-5">
-            <PhotoPicker />
-          </View>
-          <View className="gap-4 rounded-3xl bg-lime p-5">
-            <PhotoPicker />
-          </View>
-          <View className="rounded-3xl bg-coral p-5">
-            <PhotoPicker />
-          </View>
-        </View>
       </View>
     </ScrollView>
   );
