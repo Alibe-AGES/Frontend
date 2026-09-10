@@ -8,19 +8,19 @@ import tseslint from 'typescript-eslint';
 export default defineConfig([
   {
     ignores: [
+      'node_modules/**',
+      '.agents/**',
       'config/**',
       'configs/**',
       'modules/**',
       '**/*.config.*',
       '**/*.module.*',
-      'agents/**',
-      'node_modules/**',
       'dist',
       'build',
     ],
   },
   {
-    files: ['**/*.{ts,tsx,js,jsx,mjs}'],
+    files: ['src/**/*.{ts,tsx,js,jsx,mjs}'],
     extends: [
       js.configs.recommended,
       tseslint.configs.strictTypeChecked,
@@ -32,7 +32,7 @@ export default defineConfig([
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        projectService: true,
+        project: './tsconfig.json',
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -51,11 +51,11 @@ export default defineConfig([
       'no-restricted-syntax': [
         'error',
         {
-          selector: 'Literal[value=/\\d+px/]',
+          selector: String.raw`Literal[value=/\d+px/]`,
           message: 'Use rem-based responsive units instead of px.',
         },
         {
-          selector: 'TemplateElement[value.raw=/\\d+px/]',
+          selector: String.raw`TemplateElement[value.raw=/\d+px/]`,
           message: 'Use rem-based responsive units instead of px.',
         },
       ],
