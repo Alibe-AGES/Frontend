@@ -46,7 +46,11 @@ describe('<TimeInput />', () => {
     expect(getByDisplayValue('08:30')).toBeTruthy();
   });
 
-  test('formats the typed digits as HH:mm', async () => {
+  test.each([
+    ['formats the typed digits as HH:mm', '0930', '09:30'],
+    ['keeps only the first four digits', '093045', '09:30'],
+    ['drops characters that are not digits', '9h3m0', '93:0'],
+  ])('%s', async (_case, typed, formatted) => {
     const onChangeTime = jest.fn();
     const { getByTestId } = await render(
       <TimeInput
@@ -55,37 +59,9 @@ describe('<TimeInput />', () => {
       />
     );
 
-    await fireEvent.changeText(getByTestId('alibe-time-input'), '0930');
+    await fireEvent.changeText(getByTestId('alibe-time-input'), typed);
 
-    expect(onChangeTime).toHaveBeenLastCalledWith('09:30');
-  });
-
-  test('keeps only the first four digits', async () => {
-    const onChangeTime = jest.fn();
-    const { getByTestId } = await render(
-      <TimeInput
-        value=""
-        onChangeTime={onChangeTime}
-      />
-    );
-
-    await fireEvent.changeText(getByTestId('alibe-time-input'), '093045');
-
-    expect(onChangeTime).toHaveBeenLastCalledWith('09:30');
-  });
-
-  test('drops characters that are not digits', async () => {
-    const onChangeTime = jest.fn();
-    const { getByTestId } = await render(
-      <TimeInput
-        value=""
-        onChangeTime={onChangeTime}
-      />
-    );
-
-    await fireEvent.changeText(getByTestId('alibe-time-input'), '9h3m0');
-
-    expect(onChangeTime).toHaveBeenLastCalledWith('93:0');
+    expect(onChangeTime).toHaveBeenLastCalledWith(formatted);
   });
 
   test('lets the user erase the separator by deleting digits', async () => {
