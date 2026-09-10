@@ -2,8 +2,50 @@ import { ExpoConfig } from 'expo/config';
 import 'tsx/cjs';
 
 const config: ExpoConfig = {
-  name: 'my-app',
+  name: 'Alibe',
   slug: 'my-app',
+  version: '1.0.0',
+  orientation: 'portrait',
+  scheme: 'alibe',
+  userInterfaceStyle: 'automatic',
+  extra: {
+    eas: {
+      projectId: 'ac1bd00b-c78e-4e1a-8a48-b87267478a8c',
+    },
+  },
+  ios: {
+    bundleIdentifier: 'com.alibe.app',
+  },
+  android: {
+    package: 'com.alibe.app',
+    adaptiveIcon: {
+      backgroundColor: '#E6F4FE',
+      foregroundImage: './assets/images/android-icon-foreground.png',
+      backgroundImage: './assets/images/android-icon-background.png',
+      monochromeImage: './assets/images/android-icon-monochrome.png',
+    },
+    predictiveBackGestureEnabled: false,
+  },
+  web: {
+    output: 'static',
+    favicon: './assets/images/favicon.png',
+    bundler: 'metro',
+  },
+  plugins: [
+    'expo-router',
+    [
+      'expo-splash-screen',
+      {
+        backgroundColor: '#208AEF',
+        image: './assets/images/splash-icon.png',
+        imageWidth: 76,
+      },
+    ],
+  ],
+  experiments: {
+    typedRoutes: true,
+    reactCompiler: true,
+  },
 };
 
 export default config;
