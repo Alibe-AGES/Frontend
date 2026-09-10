@@ -1,0 +1,131 @@
+name: EAS Build - Android APK
+
+on:
+  push:
+    branches:
+      - release
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-android-apk:
+    name: Build Android APK with EAS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup EAS
+        uses: expo/setup-expo-tools@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run type check
+        run: npx tsc --noEmit
+
+      - name: Run tests
+        run: npm run test:unit
+
+      - name: Build APK with EAS
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          VERSION="${GITHUB_SHA:0:7}"
+          BUILD_NUMBER="$(git rev-list --count HEAD)"
+          
+          echo "Building APK..."
+          echo "Version: $VERSION"
+          echo "Build Number: $BUILD_NUMBER"
+          
+          eas build \
+            --platform android \
+            --output ./alibe.apk \
+            --non-interactive \
+            --wait
+
+      - name: Upload APK to GitHub Release
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: alibe-android-apk
+          path: alibe.apk
+          retention-days: 30
+
+      - name: Create GitHub Release
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${GITHUB_SHA:0:7}"
+          TAG_NAME="build-${VERSION}"
+          
+          # Get the current branch name (should be release)
+          BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+          
+          # Create release with APK as asset
+          gh release create "$TAG_NAME" \
+            --target "$BRANCH_NAME" \
+            --title "Android Build - $VERSION" \
+            --notes "Automated APK build from release branch.
+            
+**Branch:** release
+**Commit:** ${{ github.sha }}
+**Build Date:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" \
+            ./alibe.apk || echo "Release already exists"
+
+      - name: Notify Slack on Success
+        if: success()
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "✅ EAS Android APK Build Successful",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*✅ EAS Android APK Build Successful*\n*Repository:* ${{ github.repository }}\n*Branch:* release\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
+
+      - name: Notify Slack on Failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "❌ EAS Android APK Build Failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*❌ EAS Android APK Build Failed*\n*Repository:* ${{ github.repository }}\n*Branch:* release\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
