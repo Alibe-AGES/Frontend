@@ -1,4 +1,5 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import Toast from 'react-native-toast-message';
 import { PhotoPicker } from './index';
 
 interface PermissionResult {
@@ -24,12 +25,6 @@ jest.mock('expo-image-picker', () => ({
 jest.mock('react-native-toast-message', () => ({
   show: jest.fn(),
 }));
-
-interface MockToast {
-  show: jest.Mock;
-}
-
-const Toast: MockToast = { show: jest.fn() };
 
 const originalFetch = global.fetch;
 

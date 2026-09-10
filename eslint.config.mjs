@@ -8,19 +8,19 @@ import tseslint from 'typescript-eslint';
 export default defineConfig([
   {
     ignores: [
+      'node_modules/**',
+      '.agents/**',
       'config/**',
       'configs/**',
       'modules/**',
       '**/*.config.*',
       '**/*.module.*',
-      'agents/**',
-      'node_modules/**',
       'dist',
       'build',
     ],
   },
   {
-    files: ['**/*.{ts,tsx,js,jsx,mjs}'],
+    files: ['src/**/*.{ts,tsx,js,jsx,mjs}'],
     extends: [
       js.configs.recommended,
       tseslint.configs.strictTypeChecked,
@@ -32,19 +32,17 @@ export default defineConfig([
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        projectService: true,
+        project: './tsconfig.json',
         tsconfigRootDir: import.meta.dirname,
       },
     },
     settings: {
       'import-x/resolver': {
-        node: {
-          extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
-        },
         typescript: {
           alwaysTryTypes: true,
           project: './tsconfig.json',
         },
+        node: true,
       },
     },
     rules: {

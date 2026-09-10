@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["jest", "node"],
+    "types": ["node", "jest", "nativewind/types"],
     "jsx": "react-jsx",
     "strict": true,
     "paths": {
