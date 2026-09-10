@@ -38,11 +38,13 @@ export default defineConfig([
     },
     settings: {
       'import-x/resolver': {
+        node: {
+          extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+        },
         typescript: {
           alwaysTryTypes: true,
           project: './tsconfig.json',
         },
-        node: true,
       },
     },
     rules: {
@@ -51,11 +53,11 @@ export default defineConfig([
       'no-restricted-syntax': [
         'error',
         {
-          selector: 'Literal[value=/\\d+px/]',
+          selector: String.raw`Literal[value=/\d+px/]`,
           message: 'Use rem-based responsive units instead of px.',
         },
         {
-          selector: 'TemplateElement[value.raw=/\\d+px/]',
+          selector: String.raw`TemplateElement[value.raw=/\d+px/]`,
           message: 'Use rem-based responsive units instead of px.',
         },
       ],
