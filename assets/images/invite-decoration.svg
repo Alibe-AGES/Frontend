@@ -1,0 +1,46 @@
+<svg width="260" height="160" viewBox="0 0 260 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g stroke-linecap="round" fill="none">
+    <path
+      d="M0 112C10 108 20 97 26 80C32 62 30 43 19 45C8 47 7 69 17 89C27 109 48 129 76 131C101 133 115 111 120 88"
+      stroke="#C8E56B"
+      stroke-width="16"
+    />
+    <path
+      d="M260 96C250 92 240 81 234 64C228 46 230 27 241 29C252 31 253 53 243 73C233 93 214 113 188 115C165 117 152 97 148 74"
+      stroke="#ECA4D0"
+      stroke-width="16"
+    />
+  </g>
+
+  <g transform="translate(121 84) rotate(-24)">
+    <path
+      d="M-11 15C-14 7 -14 -6 -12 -15C-11 -22 -3 -22 -2 -15C-1 -9 -1 -7 -1 -7C2 -12 9 -11 11 -4C13 4 12 11 9 15Z"
+      fill="#C8E56B"
+    />
+    <g
+      stroke="#8FBF45"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    >
+      <path d="M-8 -14L-8 -2" />
+      <path d="M-5 -16L-5 -2" />
+      <path d="M-2 -14L-2 -2" />
+    </g>
+  </g>
+
+  <g transform="translate(149 70) rotate(24)">
+    <path
+      d="M11 15C14 7 14 -6 12 -15C11 -22 3 -22 2 -15C1 -9 1 -7 1 -7C-2 -12 -9 -11 -11 -4C-13 4 -12 11 -9 15Z"
+      fill="#ECA4D0"
+    />
+    <g
+      stroke="#DC7BAE"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    >
+      <path d="M8 -14L8 -2" />
+      <path d="M5 -16L5 -2" />
+      <path d="M2 -14L2 -2" />
+    </g>
+  </g>
+</svg>
