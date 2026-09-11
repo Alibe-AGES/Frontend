@@ -72,10 +72,10 @@ git pull origin develop
 Do not work directly on `develop` or `main`. Create a branch for each task:
 
 ```bash
-git checkout -b feature/profile-screen
+git checkout -b "copy your tasks code from clickup here"
 ```
 
-Use a short, descriptive branch name. Common prefixes are `feature/`, `fix/`, `refactor/`, and `docs/`.
+Use the code that you can get from your taks at clickUP as branch name. Common prefixes for commits are `feature/`, `fix/`, `refactor/`, `chore/`, and `docs/`.
 
 ### 3. Develop and validate
 
@@ -84,6 +84,7 @@ Make focused changes, then run the checks relevant to your work:
 ```bash
 npx tsc --noEmit
 npm run lint
+npm run format
 npm run format:check
 npm run test:unit
 ```
@@ -105,7 +106,7 @@ Commit related changes with a clear message:
 
 ```bash
 git add src README.md
-git commit -m "Add profile screen UI"
+git commit -m "Docs: Add profile screen UI"
 ```
 
 ### 4. Push and open a pull request
@@ -113,7 +114,7 @@ git commit -m "Add profile screen UI"
 Push your work branch to GitHub:
 
 ```bash
-git push -u origin feature/profile-screen
+git push -u origin "clickup code"
 ```
 
 Open a pull request on GitHub with:
@@ -134,7 +135,7 @@ Before requesting review, bring the latest `develop` into your branch:
 git fetch origin
 git checkout develop
 git pull origin develop
-git git checkout feature/profile-screen
+git git checkout "clickup code"
 git merge develop
 ```
 
@@ -142,7 +143,7 @@ Resolve any conflicts, run the checks again, and push the updated branch:
 
 ```bash
 git add .
-git commit -m "Resolve develop merge conflicts"
+git commit -m "Chore: Resolve develop merge conflicts"
 git push
 ```
 

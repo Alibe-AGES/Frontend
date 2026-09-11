@@ -1,0 +1,142 @@
+import { useState } from 'react';
+import type { KeyboardTypeOptions } from 'react-native';
+import { TextInput as RNTextInput, Text, View } from 'react-native';
+
+import { theme } from '@/theme';
+import type { TextInputProps, TextInputType } from './TextInput.types';
+
+export type { TextInputIconBackground, TextInputProps, TextInputType } from './TextInput.types';
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/;
+const NUMERIC_DISALLOWED_REGEX = /\D/g;
+const ALPHANUMERIC_DISALLOWED_REGEX = /[^\p{L}\p{N}\s]/gu;
+
+const ERROR_MESSAGES: Record<TextInputType, string> = {
+  all: '',
+  email: 'Informe um e-mail válido.',
+  numeric: 'Este campo aceita somente números.',
+  alphanumeric: 'Este campo não aceita caracteres especiais.',
+};
+
+const KEYBOARD_TYPES: Record<TextInputType, KeyboardTypeOptions> = {
+  all: 'default',
+  email: 'email-address',
+  numeric: 'number-pad',
+  alphanumeric: 'default',
+};
+
+function sanitizeByType(type: TextInputType, text: string): string {
+  if (type === 'numeric') {
+    return text.replace(NUMERIC_DISALLOWED_REGEX, '');
+  }
+
+  if (type === 'alphanumeric') {
+    return text.replace(ALPHANUMERIC_DISALLOWED_REGEX, '');
+  }
+
+  return text;
+}
+
+export function TextInput({
+  value,
+  onChangeText,
+  type = 'all',
+  label,
+  placeholder,
+  error,
+  disabled = false,
+  secureTextEntry = false,
+  autoFocus = false,
+  maxLength,
+  icon,
+  iconBackground,
+  onBlur,
+  testID = 'alibe-text-input',
+}: TextInputProps) {
+  const [typeError, setTypeError] = useState<string | null>(null);
+  const [isFocused, setIsFocused] = useState(false);
+
+  const handleChangeText = (text: string) => {
+    const sanitized = sanitizeByType(type, text);
+
+    setTypeError(sanitized !== text ? ERROR_MESSAGES[type] : null);
+    onChangeText(sanitized);
+  };
+
+  const handleFocus = () => {
+    setIsFocused(true);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+
+    if (type === 'email') {
+      setTypeError(value.length > 0 && !EMAIL_REGEX.test(value) ? ERROR_MESSAGES.email : null);
+    }
+
+    onBlur?.();
+  };
+
+  const displayedError = error ?? typeError;
+  const hasError = Boolean(displayedError);
+  let borderClassName = 'border-transparent';
+  if (hasError) {
+    borderClassName = 'border-coral';
+  } else if (isFocused) {
+    borderClassName = 'border-ink';
+  }
+
+  return (
+    <View className="w-full gap-2">
+      {label ? (
+        <Text className="font-poppins-semibold text-xs uppercase tracking-wide text-ink">
+          {label}
+        </Text>
+      ) : null}
+      <View
+        className={`w-full flex-row items-center rounded-full border-2 bg-surface pl-6 ${
+          icon ? 'pr-2' : 'pr-6'
+        } ${borderClassName} ${disabled ? 'opacity-50' : 'opacity-100'}`}
+        testID={`${testID}-field`}
+      >
+        <RNTextInput
+          accessibilityLabel={label ?? placeholder}
+          accessibilityState={{ disabled }}
+          autoCapitalize={type === 'email' ? 'none' : 'sentences'}
+          autoFocus={autoFocus}
+          className="flex-1 py-4 font-poppins text-base text-ink outline-none"
+          editable={!disabled}
+          keyboardType={KEYBOARD_TYPES[type]}
+          maxLength={maxLength}
+          onBlur={handleBlur}
+          onChangeText={handleChangeText}
+          onFocus={handleFocus}
+          placeholder={placeholder}
+          placeholderTextColor={theme.colors.pink}
+          secureTextEntry={secureTextEntry}
+          testID={testID}
+          value={value}
+        />
+        {icon ? (
+          <View
+            className={`h-10 w-10 items-center justify-center rounded-full ${
+              iconBackground === 'coral' ? 'bg-coral' : ''
+            } ${iconBackground === 'ink' ? 'bg-ink' : ''}`}
+            style={{ pointerEvents: 'none' }}
+            testID={`${testID}-icon`}
+          >
+            {icon}
+          </View>
+        ) : null}
+      </View>
+      {hasError ? (
+        <Text
+          className="px-2 font-poppins-medium text-xs text-coral"
+          testID={`${testID}-error`}
+        >
+          {displayedError}
+        </Text>
+      ) : null}
+    </View>
+  );
+}

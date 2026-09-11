@@ -10,6 +10,8 @@ export const theme = {
     coralSoft: '#F7B08F',
     pink: '#ECA4D0',
     white: '#FFFFFF',
+    black: '#000000',
+    success: '#2F9E44',
   },
   spacing: {
     xs: '0.5rem',
@@ -23,8 +25,8 @@ export const theme = {
     card: '1.5rem',
   },
   typography: {
-    display: 'font-black tracking-tight',
-    body: 'font-medium leading-6',
-    label: 'text-xs font-bold uppercase tracking-wide',
+    display: 'font-poppins-black tracking-tight',
+    body: 'font-poppins leading-6',
+    label: 'font-poppins-semibold text-xs uppercase tracking-wide',
   },
 } as const;

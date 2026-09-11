@@ -16,6 +16,13 @@ module.exports = {
         'coral-soft': '#F7B08F',
         pink: '#ECA4D0',
       },
+      fontFamily: {
+        poppins: ['Poppins_400Regular'],
+        'poppins-medium': ['Poppins_500Medium'],
+        'poppins-semibold': ['Poppins_600SemiBold'],
+        'poppins-bold': ['Poppins_700Bold'],
+        'poppins-black': ['Poppins_900Black'],
+      },
     },
   },
   plugins: [],
