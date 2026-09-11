@@ -40,4 +40,20 @@ describe('<Button />', () => {
 
     expect(getByTestId('alibe-button').props.className).toContain('bg-ink');
   });
+
+  test.each([
+    ['primary', 'bg-coral', 'text-white'],
+    ['secondary', 'bg-lime', 'text-ink'],
+    ['tertiary', 'bg-ink', 'text-white'],
+  ])('paints the %s variant', async (variant, background, color) => {
+    const { getByTestId, getByText } = await render(
+      <Button
+        title="Continuar"
+        variant={variant as 'primary' | 'secondary' | 'tertiary'}
+      />
+    );
+
+    expect(getByTestId('alibe-button').props.className).toContain(background);
+    expect(getByText('Continuar').props.className).toContain(color);
+  });
 });
