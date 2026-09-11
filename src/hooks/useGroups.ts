@@ -1,45 +1,64 @@
-import { useCallback, useState } from 'react';
+import { listGroups } from '@/server/groups';
 import { GroupColor, getRandomGroupColor } from '@/utils/groupColors';
+import { useCallback, useEffect, useState } from 'react';
 
 export interface Group {
   id: string;
   name: string;
-  photoUri?: string | null;
+  photoUri: string | null;
   color: GroupColor;
-}
-
-interface GroupFixture {
-  id: string;
-  name: string;
-  photoUri?: string | null;
-}
-
-// Fixture data until src/server exposes a real groups endpoint.
-const GROUP_FIXTURES: GroupFixture[] = [
-  { id: '1', name: 'Hermanas' },
-  { id: '2', name: 'Pela cidade' },
-  { id: '3', name: 'Galera 2012' },
-];
-
-function withRandomColors(fixtures: GroupFixture[]): Group[] {
-  return fixtures.map((fixture) => ({ ...fixture, color: getRandomGroupColor() }));
 }
 
 interface UseGroupsResult {
   groups: Group[];
+  isLoading: boolean;
   isRefreshing: boolean;
-  refetch: () => void;
+  error: string | null;
+  refetch: () => Promise<void>;
 }
 
-export function useGroups(): UseGroupsResult {
-  const [groups, setGroups] = useState<Group[]>(() => withRandomColors(GROUP_FIXTURES));
-  const [isRefreshing, setIsRefreshing] = useState(false);
+type FetchMode = 'initial' | 'refresh';
 
-  const refetch = useCallback(() => {
-    setIsRefreshing(true);
-    setGroups(withRandomColors(GROUP_FIXTURES));
-    setIsRefreshing(false);
+export function useGroups(): UseGroupsResult {
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchGroups = useCallback(async (mode: FetchMode) => {
+    if (mode === 'initial') {
+      setIsLoading(true);
+    } else {
+      setIsRefreshing(true);
+    }
+    setError(null);
+
+    try {
+      const serverGroups = await listGroups();
+      setGroups(
+        serverGroups.map((group) => ({
+          id: group.id,
+          name: group.name,
+          photoUri: group.profilePic,
+          color: getRandomGroupColor(),
+        }))
+      );
+    } catch {
+      setError('Não foi possível carregar os grupos.');
+    } finally {
+      if (mode === 'initial') {
+        setIsLoading(false);
+      } else {
+        setIsRefreshing(false);
+      }
+    }
   }, []);
 
-  return { groups, isRefreshing, refetch };
+  useEffect(() => {
+    void fetchGroups('initial');
+  }, [fetchGroups]);
+
+  const refetch = useCallback(() => fetchGroups('refresh'), [fetchGroups]);
+
+  return { groups, isLoading, isRefreshing, error, refetch };
 }

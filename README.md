@@ -381,7 +381,9 @@ screen or hook -> API client -> remote service
 component      -> props/state -> visual output
 ```
 
-The existing API client uses `fetch`, typed models, and `ApiError`. It currently targets JSONPlaceholder as an example and should be replaced or configured before production use.
+`src/server/api.ts` uses `fetch`, typed models, and `ApiError` as an example client targeting JSONPlaceholder; replace or configure it before production use. `src/server/groups.ts` is a real client, connected to the Backend's `GET /groups` endpoint and consumed by `src/hooks/useGroups.ts`.
+
+The Backend base URL is the `API_BASE_URL` constant in `src/constants.ts` (`http://localhost:3000` by default). On the Android emulator, change it to `http://10.0.2.2:3000` instead of `localhost`.
 
 ## Testing
 
