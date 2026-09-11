@@ -1,3 +1,4 @@
+import { AvailabilityCard } from '@/components/AvailibilityCard';
 import { Button } from '@/components/Button';
 import { ScrollView, Text, View } from 'react-native';
 
@@ -24,6 +25,16 @@ export function ComponentGalleryScreen() {
         <Button
           title="Disabled button"
           disabled
+        />
+      </View>
+      <View className="gap-4 rounded-3xl bg-surface p-5">
+        <Text className="text-xl font-black text-ink">AvailabilityCard</Text>
+        <AvailabilityCard
+          title="Você estará disponível neste dia?"
+          label="Disponibilidade"
+          onIntervalsChange={(intervals) => {
+            console.log('Intervals changed:', intervals);
+          }}
         />
       </View>
     </ScrollView>

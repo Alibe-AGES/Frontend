@@ -12,6 +12,7 @@ export const theme = {
     white: '#FFFFFF',
     black: '#000000',
     success: '#2F9E44',
+    wine: '#68291F',
   },
   spacing: {
     xs: '0.5rem',

@@ -65,7 +65,7 @@ export function TimeInput({
           testID={`${testID}-icon`}
         >
           <Ionicons
-            color={theme.colors.coral}
+            color={theme.colors.wine}
             name="alarm-outline"
             size={20}
           />
@@ -81,7 +81,7 @@ export function TimeInput({
           onChangeText={handleChangeText}
           onFocus={handleFocus}
           placeholder={placeholder}
-          placeholderTextColor={theme.colors.inkSoft}
+          placeholderTextColor={theme.colors.wine}
           testID={testID}
           value={value}
         />
