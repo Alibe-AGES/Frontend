@@ -10,6 +10,8 @@ interface PickerResult {
   assets?: { uri: string }[];
 }
 
+declare const global: { fetch: jest.Mock };
+
 const mockRequestPermissions = jest.fn();
 const mockLaunchImageLibrary = jest.fn();
 
