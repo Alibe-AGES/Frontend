@@ -52,7 +52,7 @@ const RIGHT_ITEMS: IconItem[] = [
   },
 ];
 
-const BOTTOM_GAP = 24;
+const BOTTOM_GAP = tw`pb-6`.paddingBottom ?? 0;
 
 export const NavigationBar: React.FC<NavigationBarProps> = ({ groupId, className = '' }) => {
   const { navigate } = useDefaultNavigationBarController({ groupId });
