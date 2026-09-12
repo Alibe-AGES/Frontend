@@ -56,13 +56,10 @@ const BOTTOM_GAP = 24;
 
 export const NavigationBar: React.FC<NavigationBarProps> = ({
   groupId,
-  useController,
   disabled = false,
   className = '',
 }) => {
-  const defaultController = useDefaultNavigationBarController({ groupId });
-  const customController = useController ? useController() : null;
-  const { navigate } = customController ?? defaultController;
+  const { navigate } = useDefaultNavigationBarController({ groupId });
   const insets = useContext(SafeAreaInsetsContext);
 
   const renderIcon = ({ action, icon, label, size }: IconItem) => (

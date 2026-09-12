@@ -37,21 +37,6 @@ describe('<NavigationBar />', () => {
     expect(mockPush).toHaveBeenCalledWith('/groups');
   });
 
-  test('uses a custom controller instead of the router', async () => {
-    const navigate = jest.fn();
-    const { getByTestId } = await render(
-      <NavigationBar
-        groupId="g1"
-        useController={() => ({ navigate })}
-      />
-    );
-
-    await fireEvent.press(getByTestId('alibe-navigation-bar-create'));
-
-    expect(navigate).toHaveBeenCalledWith('create');
-    expect(mockPush).not.toHaveBeenCalled();
-  });
-
   test('is not pressable when disabled', async () => {
     const { getByTestId } = await render(
       <NavigationBar

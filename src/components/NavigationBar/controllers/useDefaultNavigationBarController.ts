@@ -1,9 +1,6 @@
 import { useRouter } from 'expo-router';
 
-import {
-  NavigationBarAction,
-  NavigationBarStrategy,
-} from '@/components/NavigationBar/NavigationBar.types';
+import { NavigationBarAction } from '@/components/NavigationBar/NavigationBar.types';
 
 export interface UseDefaultNavigationBarControllerParams {
   groupId: string;
@@ -11,7 +8,7 @@ export interface UseDefaultNavigationBarControllerParams {
 
 export const useDefaultNavigationBarController = ({
   groupId,
-}: UseDefaultNavigationBarControllerParams): NavigationBarStrategy => {
+}: UseDefaultNavigationBarControllerParams) => {
   const router = useRouter();
 
   const navigate = (action: NavigationBarAction) => {

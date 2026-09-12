@@ -30,10 +30,7 @@ export function ComponentGalleryScreen() {
 
       <View className="gap-4 rounded-3xl bg-surface p-5">
         <Text className="text-xl font-black text-ink">Navigation bar</Text>
-        <NavigationBar
-          groupId="demo"
-          useController={() => ({ navigate: () => undefined })}
-        />
+        <NavigationBar groupId="demo" />
       </View>
     </ScrollView>
   );
