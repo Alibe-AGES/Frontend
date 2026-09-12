@@ -32,13 +32,13 @@ export function GroupsScreen() {
         source={greenSpin}
         contentFit="contain"
         accessible={false}
-        className="absolute -bottom-5 -left-13 h-32 w-32 sm:h-36 sm:w-36"
+        className="-left-13 absolute -bottom-5 h-32 w-32 sm:h-36 sm:w-36"
       />
       <Image
         source={pinkSpin}
         contentFit="contain"
         accessible={false}
-        className="absolute -right-3 -bottom-3 h-32 w-32 sm:h-32 sm:w-15 rotate-180"
+        className="sm:w-15 absolute -bottom-3 -right-3 h-32 w-32 rotate-180 sm:h-32"
       />
 
       <View className="w-full max-w-2xl flex-1 gap-6 self-center px-6 pb-6 pt-10">
@@ -53,7 +53,7 @@ export function GroupsScreen() {
           <Text className={`text-center text-3xl text-ink ${theme.typography.display}`}>
             Meus grupos
           </Text>
-          <Text className={`text-center text-wine ${theme.typography.body}`}>
+          <Text className={`text-wine text-center ${theme.typography.body}`}>
             Clique no + para criar um novo grupo.
           </Text>
           <CreateGroupButton onPress={handleCreateGroup} />
