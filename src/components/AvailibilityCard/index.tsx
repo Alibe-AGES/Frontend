@@ -10,8 +10,6 @@ import { AvailabilityCardProps } from './Availiability.types';
 import { useDefaultAvailabilityController } from './useDefaultAvailiabilityController/useDefaultAvailiabilityController';
 
 export const AvailabilityCard: FC<AvailabilityCardProps> = ({
-  title = 'Você estará disponível neste dia?',
-  label = 'Disponibilidade',
   useController,
   useCloseController,
   fallbackHref,
@@ -19,6 +17,9 @@ export const AvailabilityCard: FC<AvailabilityCardProps> = ({
   className = '',
   testID = 'alibe-availability-card',
 }) => {
+  const title = 'Você estará \ndisponível neste dia?';
+  const label = 'Disponibilidade';
+
   const defaultController = useDefaultAvailabilityController({ onIntervalsChange });
   const customStrategy = useController ? useController({ onIntervalsChange }) : null;
   const { intervals, addInterval, removeInterval, updateStartTime, updateEndTime } =
@@ -32,11 +33,17 @@ export const AvailabilityCard: FC<AvailabilityCardProps> = ({
 
   return (
     <View
-      className={`w-full gap-4 rounded-3xl bg-pink p-6 ${className}`}
+      className={`w-full gap-4 rounded-3xl p-6 ${className}`}
+      style={{ backgroundColor: theme.colors.pink }}
       testID={testID}
     >
       <View className="flex-row items-start justify-between">
-        <Text className="flex-1 pr-6 text-center font-poppins-bold text-xl text-ink">{title}</Text>
+        <Text
+          className="flex-1 pr-6 text-center font-poppins-medium text-xl text-ink"
+          style={{ color: theme.colors.ink }}
+        >
+          {title}
+        </Text>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Fechar"
@@ -55,7 +62,8 @@ export const AvailabilityCard: FC<AvailabilityCardProps> = ({
       </View>
 
       <Text
-        className="text-wine font-poppins-bold text-sm"
+        className="font-poppins-bold text-sm"
+        style={{ color: theme.colors.wine }}
         testID={`${testID}-label`}
       >
         {label}
@@ -113,11 +121,11 @@ export const AvailabilityCard: FC<AvailabilityCardProps> = ({
         accessibilityRole="button"
         accessibilityLabel="Adicionar intervalo"
         onPress={addInterval}
-        className="items-center justify-center self-center rounded-full border-2 border-ink px-6 py-3"
+        className="items-center justify-center self-center rounded-full border border-ink px-6 py-3"
         style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
         testID={`${testID}-add-interval`}
       >
-        <Text className="font-poppins-semibold text-base text-ink">Adicionar intervalo</Text>
+        <Text className="font-poppins text-base text-ink">Adicionar intervalo</Text>
       </Pressable>
     </View>
   );

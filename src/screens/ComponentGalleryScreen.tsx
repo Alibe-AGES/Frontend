@@ -27,15 +27,15 @@ export function ComponentGalleryScreen() {
           disabled
         />
       </View>
-      <View className="gap-4 rounded-3xl bg-surface p-5">
-        <Text className="text-xl font-black text-ink">AvailabilityCard</Text>
-        <AvailabilityCard
-          title="Você estará disponível neste dia?"
-          label="Disponibilidade"
-          onIntervalsChange={(intervals) => {
-            console.log('Intervals changed:', intervals);
-          }}
-        />
+      <View className="rounded-3xl bg-surface p-5">
+        <View className="h-full gap-4 rounded-3xl bg-surface p-5">
+          <Text className="text-xl font-black text-ink">AvailabilityCard</Text>
+          <AvailabilityCard
+            onIntervalsChange={(intervals) => {
+              console.log('Intervals changed:', intervals);
+            }}
+          />
+        </View>
       </View>
     </ScrollView>
   );
