@@ -3,14 +3,14 @@ import 'tsx/cjs';
 
 const config: ExpoConfig = {
   name: 'Alibe',
-  slug: 'my-app',
+  slug: 'alibe',
   version: '1.0.0',
   orientation: 'portrait',
   scheme: 'alibe',
   userInterfaceStyle: 'automatic',
   extra: {
     eas: {
-      projectId: 'ac1bd00b-c78e-4e1a-8a48-b87267478a8c',
+      projectId: '0fe4c9c6-8bca-4a1e-8506-7dca9c7901e7',
     },
   },
   ios: {
