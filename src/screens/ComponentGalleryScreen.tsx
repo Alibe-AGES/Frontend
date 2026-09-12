@@ -1,4 +1,5 @@
 import { Button } from '@/components/Button';
+import { NavigationBar } from '@/components/NavigationBar';
 import { ScrollView, Text, View } from 'react-native';
 
 export function ComponentGalleryScreen() {
@@ -25,6 +26,11 @@ export function ComponentGalleryScreen() {
           title="Disabled button"
           disabled
         />
+      </View>
+
+      <View className="gap-4 rounded-3xl bg-surface p-5">
+        <Text className="text-xl font-black text-ink">Navigation bar</Text>
+        <NavigationBar groupId="demo" />
       </View>
     </ScrollView>
   );
