@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
+import { useContext } from 'react';
 import { Pressable, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import tw from 'twrnc';
 
 import heartIcon from '@/assets/images/nav-heart.svg';
@@ -62,7 +63,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
   const defaultController = useDefaultNavigationBarController({ groupId });
   const customController = useController ? useController() : null;
   const { navigate } = customController ?? defaultController;
-  const insets = useSafeAreaInsets();
+  const insets = useContext(SafeAreaInsetsContext);
 
   const renderIcon = ({ action, icon, label, size }: IconItem) => (
     <Pressable
@@ -91,8 +92,8 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
 
   return (
     <View
-      className={`w-full max-w-md self-center px-[1.625rem] ${className}`}
-      style={{ paddingBottom: Math.max(insets.bottom, BOTTOM_GAP) }}
+      className={`w-full max-w-xl self-center px-[1.625rem] ${className}`}
+      style={{ paddingBottom: Math.max(insets?.bottom ?? 0, BOTTOM_GAP) }}
       testID="alibe-navigation-bar"
     >
       <View className={`pt-6 ${disabled ? 'opacity-50' : 'opacity-100'}`}>
