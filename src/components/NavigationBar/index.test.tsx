@@ -2,15 +2,15 @@ import { fireEvent, render } from '@testing-library/react-native';
 
 import { NavigationBar } from './index';
 
-const mockPush = jest.fn();
+const mockNavigate = jest.fn();
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockPush }),
+  useRouter: () => ({ navigate: mockNavigate }),
 }));
 
 describe('<NavigationBar />', () => {
   beforeEach(() => {
-    mockPush.mockClear();
+    mockNavigate.mockClear();
   });
 
   test.each([
@@ -26,7 +26,7 @@ describe('<NavigationBar />', () => {
 
     await fireEvent.press(getByTestId(testId));
 
-    expect(mockPush).toHaveBeenCalledWith(href);
+    expect(mockNavigate).toHaveBeenCalledWith(href);
   });
 
   test('groups button navigates to the groups screen', async () => {
@@ -34,23 +34,7 @@ describe('<NavigationBar />', () => {
 
     await fireEvent.press(getByTestId('alibe-navigation-bar-groups'));
 
-    expect(mockPush).toHaveBeenCalledWith('/groups');
-  });
-
-  test('is not pressable when disabled', async () => {
-    const { getByTestId } = await render(
-      <NavigationBar
-        groupId="g1"
-        disabled
-      />
-    );
-
-    await fireEvent.press(getByTestId('alibe-navigation-bar-create'));
-
-    expect(mockPush).not.toHaveBeenCalled();
-    expect(getByTestId('alibe-navigation-bar-create').props.accessibilityState).toMatchObject({
-      disabled: true,
-    });
+    expect(mockNavigate).toHaveBeenCalledWith('/groups');
   });
 
   test('exposes accessible labels for every action', async () => {

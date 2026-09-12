@@ -14,19 +14,19 @@ export const useDefaultNavigationBarController = ({
   const navigate = (action: NavigationBarAction) => {
     switch (action) {
       case 'create':
-        router.push({ pathname: '/group/[id]/create-event', params: { id: groupId } });
+        router.navigate({ pathname: '/group/[id]/create-event', params: { id: groupId } });
         break;
       case 'matches':
-        router.push({ pathname: '/group/[id]/experiences/new', params: { id: groupId } });
+        router.navigate({ pathname: '/group/[id]/experiences/new', params: { id: groupId } });
         break;
       case 'search':
-        router.push({ pathname: '/group/[id]/experiences', params: { id: groupId } });
+        router.navigate({ pathname: '/group/[id]/experiences', params: { id: groupId } });
         break;
       case 'memories':
-        router.push({ pathname: '/group/[id]/memories', params: { id: groupId } });
+        router.navigate({ pathname: '/group/[id]/memories', params: { id: groupId } });
         break;
       case 'groups':
-        router.push('/groups');
+        router.navigate('/groups');
         break;
     }
   };

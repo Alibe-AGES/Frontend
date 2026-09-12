@@ -2,6 +2,5 @@ export type NavigationBarAction = 'matches' | 'search' | 'create' | 'memories' |
 
 export interface NavigationBarProps {
   groupId: string;
-  disabled?: boolean;
   className?: string;
 }

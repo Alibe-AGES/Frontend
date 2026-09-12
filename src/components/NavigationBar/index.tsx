@@ -54,11 +54,7 @@ const RIGHT_ITEMS: IconItem[] = [
 
 const BOTTOM_GAP = 24;
 
-export const NavigationBar: React.FC<NavigationBarProps> = ({
-  groupId,
-  disabled = false,
-  className = '',
-}) => {
+export const NavigationBar: React.FC<NavigationBarProps> = ({ groupId, className = '' }) => {
   const { navigate } = useDefaultNavigationBarController({ groupId });
   const insets = useContext(SafeAreaInsetsContext);
 
@@ -67,8 +63,6 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
       key={action}
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ disabled }}
-      disabled={disabled}
       hitSlop={16}
       onPress={() => {
         navigate(action);
@@ -93,7 +87,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
       style={{ paddingBottom: Math.max(insets?.bottom ?? 0, BOTTOM_GAP) }}
       testID="alibe-navigation-bar"
     >
-      <View className={`pt-6 ${disabled ? 'opacity-50' : 'opacity-100'}`}>
+      <View className="pt-6">
         <View className="h-12 flex-row items-center rounded-full bg-ink px-[0.5625rem]">
           {LEFT_ITEMS.map(renderIcon)}
           <View className="w-[3.25rem]" />
@@ -108,8 +102,6 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Criar encontro"
-              accessibilityState={{ disabled }}
-              disabled={disabled}
               onPress={() => {
                 navigate('create');
               }}
