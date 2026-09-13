@@ -34,8 +34,9 @@ jobs:
       - name: Create PR from main to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_VERSION: ${{ github.ref_name }}
         run: |
-          TAG_VERSION=${{ github.ref_name }}
+          echo "Creating PR for tag: $TAG_VERSION"
 
           # Check if PR already exists
           EXISTING_PR=$(gh pr list --base release-test --head main --state open --json url --jq '.[0].url // empty')
