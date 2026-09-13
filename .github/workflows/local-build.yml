@@ -3,9 +3,6 @@ name: Android APK - Local Build
 on:
   workflow_call:
   workflow_dispatch:
-  push:
-    branches:
-      - release-test
 
 jobs:
   build:

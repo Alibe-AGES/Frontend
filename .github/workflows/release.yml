@@ -5,8 +5,8 @@ on:
     inputs:
       tag-name:
         description: 'Release Tag'
-        required: true
-        default: 'v1.0.0'
+        required: false
+        default: ''
 
   push:
     branches:
@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   setup:
-    name: Setup
+    name: Setup & Test
     runs-on: ubuntu-latest
 
     steps:
@@ -81,23 +81,37 @@ jobs:
           name: app-release
           path: ./artifacts
 
+      - name: Resolve Tag Version
+        id: version
+        run: |
+          INPUT_TAG="${{ github.event.inputs.tag-name }}"
+
+          if [ -n "$INPUT_TAG" ]; then
+            VERSION="$INPUT_TAG"
+          else
+            VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+          fi
+
+          echo "Resolved version: $VERSION"
+          echo "tag=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Rename APK for Release
         run: |
-          TAG_NAME="${{ github.event.inputs.tag-name || github.ref_name }}"   
+          TAG="${{ steps.version.outputs.tag }}"
           mv ./artifacts/*.apk "./artifacts/alibe-${TAG_NAME}.apk"
 
       - name: Generate Release Notes
         uses: RedCrafter07/release-notes-action@v1.0.1
         id: notes
         with:
-          tag-name: ${{ github.event.inputs.tag-name || github.ref_name }}
+          tag-name: ${{ steps.version.outputs.tag }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create & Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event.inputs.tag-name || github.ref_name }}
-          name: ${{ github.event.inputs.tag-name || github.ref_name }}
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
           body: ${{ steps.notes.outputs.release-notes }}
           draft: false
           prerelease: false

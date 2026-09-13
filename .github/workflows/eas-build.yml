@@ -3,9 +3,6 @@ name: Android APK - EAS Build
 on:
   workflow_call:
   workflow_dispatch:
-  push:
-    branches:
-      - release-test
 
 jobs:
   build:
@@ -49,7 +46,7 @@ jobs:
           echo "Artifact URL: $APK_URL"
 
           # Download the APK using curl and save it with a fixed name
-          curl -L -o alibe.apk "$APK_URL"
+          curl -L -o app-release.apk "$APK_URL"
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
