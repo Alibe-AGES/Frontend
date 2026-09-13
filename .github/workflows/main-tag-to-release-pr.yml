@@ -23,7 +23,7 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-      
+
       - name: Generate Release Notes
         uses: RedCrafter07/release-notes-action@v1.0.1
         id: notes

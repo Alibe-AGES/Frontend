@@ -42,13 +42,12 @@ jobs:
             --wait \
             --json > build-output.json
 
-
       - name: Download APK from EAS Build
         run: |
           # Extract the build URL from the JSON output
           APK_URL=$(jq -r '.[0].artifacts.buildUrl' build-output.json)
           echo "Artifact URL: $APK_URL"
-          
+
           # Download the APK using curl and save it with a fixed name
           curl -L -o alibe.apk "$APK_URL"
 
