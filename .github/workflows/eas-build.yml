@@ -1,0 +1,60 @@
+name: Android APK - EAS Build
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  push:
+    branches:
+      - release-test
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Expo & EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Trigger EAS Build for Android - wait for completion
+        # Flag --non-interactive avoids prompts during the build process.
+        # Flag --wait keeps the step running until the Expo cloud build is complete.
+        # Flag --json outputs the details of the completed build to the build-output.json file.
+        run: |
+          eas build \
+            --platform android \
+            --profile preview \
+            --non-interactive \
+            --wait \
+            --json > build-output.json
+
+
+      - name: Download APK from EAS Build
+        run: |
+          # Extract the build URL from the JSON output
+          APK_URL=$(jq -r '.[0].artifacts.buildUrl' build-output.json)
+          echo "Artifact URL: $APK_URL"
+          
+          # Download the APK using curl and save it with a fixed name
+          curl -L -o alibe.apk "$APK_URL"
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: app-release.apk
+          retention-days: 7
