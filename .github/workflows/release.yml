@@ -1,0 +1,121 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag-name:
+        description: 'Release Tag'
+        required: false
+        default: ''
+
+  push:
+    branches:
+      - release-test
+
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    name: Setup & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run type check
+        run: npx tsc --noEmit
+
+      - name: Run tests
+        run: npm run test:unit
+
+  call-eas-build-workflow:
+    # This job calls the EAS build workflow to build the Android APK.
+    # It will only run if the "setup" job passes all tests and checks.
+    name: Call EAS Build Workflow
+    needs: setup
+    uses: ./.github/workflows/eas-build.yml
+    secrets: inherit
+
+  call-local-build-workflow:
+    # This job calls the local build workflow to build the Android APK.
+    # It will only run if the "setup" job passes all tests and checks, and if the EAS build workflow fails.
+    name: Call Local Build Workflow
+    needs: [setup, call-eas-build-workflow]
+    if: always() && needs.setup.result == 'success' && needs.call-eas-build-workflow.result == 'failure'
+    uses: ./.github/workflows/local-build.yml
+    secrets: inherit
+
+  publish-release:
+    # This job will only run if the one of the build workflows (EAS or local) succeeds.
+    # It generates release notes and publishes the release.
+    name: Publish Release
+    needs: [call-eas-build-workflow, call-local-build-workflow]
+    if: always() && (needs.call-eas-build-workflow.result == 'success' || needs.call-local-build-workflow.result == 'success')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Download APK Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-release
+          path: ./artifacts
+
+      - name: Resolve Tag Version
+        id: version
+        env:
+          INPUT_TAG: ${{ github.event.inputs['tag-name'] }}
+        run: |
+          if [ -n "$INPUT_TAG" ]; then
+            VERSION="$INPUT_TAG"
+          else
+            VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+          fi
+
+          echo "Resolved version: $VERSION"
+          echo "tag=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Rename APK for Release
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          mv ./artifacts/*.apk "./artifacts/alibe-${TAG}.apk"
+
+      - name: Generate Release Notes
+        uses: RedCrafter07/release-notes-action@v1.0.1
+        id: notes
+        with:
+          tag-name: ${{ steps.version.outputs.tag }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create & Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          body: ${{ steps.notes.outputs.release-notes }}
+          draft: false
+          prerelease: false
+          files: ./artifacts/*.apk
