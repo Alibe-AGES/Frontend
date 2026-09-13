@@ -10,7 +10,7 @@ on:
 
   push:
     branches:
-      - release-test
+      - release
 
 permissions:
   contents: read
@@ -104,11 +104,22 @@ jobs:
           mv ./artifacts/*.apk "./artifacts/alibe-${TAG}.apk"
 
       - name: Generate Release Notes
-        uses: RedCrafter07/release-notes-action@v1.0.1
         id: notes
-        with:
-          tag-name: ${{ steps.version.outputs.tag }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_VERSION: ${{ steps.version.outputs.tag }}
+        run: |
+          RELEASE_NOTES=$(gh api \
+            -X POST \
+            repos/${{ github.repository }}/releases/generate-notes \
+            -f tag_name="$TAG_VERSION")
+
+          BODY=$(echo "$RELEASE_NOTES" | jq -r '.body')
+
+          delimiter="$(openssl rand -hex 8)"
+          echo "release-notes<<${delimiter}" >> $GITHUB_OUTPUT
+          echo "$BODY" >> $GITHUB_OUTPUT
+          echo "${delimiter}" >> $GITHUB_OUTPUT
 
       - name: Create & Publish GitHub Release
         uses: softprops/action-gh-release@v2
