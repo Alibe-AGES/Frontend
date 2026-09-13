@@ -6,7 +6,7 @@ on:
       - 'v*.*.*' # Match SemVer tags (vMAJOR.MINOR.PATCH)
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 
 jobs:
@@ -22,11 +22,22 @@ jobs:
           fetch-tags: true
 
       - name: Generate Release Notes
-        uses: RedCrafter07/release-notes-action@v1.0.1
         id: notes
-        with:
-          tag-name: ${{ github.ref_name }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_VERSION: ${{ github.ref_name }}
+        run: |
+          RELEASE_NOTES=$(gh api \
+            -X POST \
+            repos/${{ github.repository }}/releases/generate-notes \
+            -f tag_name="$TAG_VERSION")
+
+          BODY=$(echo "$RELEASE_NOTES" | jq -r '.body')
+
+          delimiter="$(openssl rand -hex 8)"
+          echo "release-notes<<${delimiter}" >> $GITHUB_OUTPUT
+          echo "$BODY" >> $GITHUB_OUTPUT
+          echo "${delimiter}" >> $GITHUB_OUTPUT
 
       - name: Create PR from main to release
         env:
@@ -37,11 +48,11 @@ jobs:
           echo "Creating PR for tag: $TAG_VERSION"
 
           # Check if PR already exists
-          EXISTING_PR=$(gh pr list --base release-test --head main --state open --json url --jq '.[0].url // empty')
+          EXISTING_PR=$(gh pr list --base release --head main --state open --json url --jq '.[0].url // empty')
 
           if [ -z "$EXISTING_PR" ]; then
             gh pr create \
-              --base release-test \
+              --base release \
               --head main \
               --title "Release: Merge main ($TAG_VERSION) to release" \
               --body "$RELEASE_NOTES"
