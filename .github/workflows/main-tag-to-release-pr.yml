@@ -48,11 +48,11 @@ jobs:
           echo "Creating PR for tag: $TAG_VERSION"
 
           # Check if PR already exists
-          EXISTING_PR=$(gh pr list --base release-test --head main --state open --json url --jq '.[0].url // empty')
+          EXISTING_PR=$(gh pr list --base release --head main --state open --json url --jq '.[0].url // empty')
 
           if [ -z "$EXISTING_PR" ]; then
             gh pr create \
-              --base release-test \
+              --base release \
               --head main \
               --title "Release: Merge main ($TAG_VERSION) to release" \
               --body "$RELEASE_NOTES"

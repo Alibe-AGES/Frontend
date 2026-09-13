@@ -10,7 +10,7 @@ on:
 
   push:
     branches:
-      - release-test
+      - release
 
 permissions:
   contents: read
