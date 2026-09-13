@@ -87,9 +87,10 @@ npm run lint
 npm run format
 npm run format:check
 npm run test:unit
+npm run e2e
 ```
 
-For a focused test, run Jest directly:
+`npm run e2e` requires an emulator with the app installed; see the end-to-end tests section. For a focused test, run Jest directly:
 
 ```bash
 npx jest src/app/__tests__/index-test.tsx --runInBand
@@ -402,6 +403,28 @@ npx jest src/screens/ComponentGalleryScreen.test.tsx --runInBand
 
 Use the gallery route for visual inspection and React Native Testing Library for behavior such as presses, disabled states, and accessible labels.
 
+### End-to-end tests
+
+End-to-end flows use Maestro and live in `.maestro/flows/`. They run on an Android emulator against a local build; EAS is reserved for releases.
+
+Set up an [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/) and install the [Maestro CLI](https://docs.maestro.dev/getting-started/installing-maestro). Then build the dev app once, keep Metro running, and run the flows:
+
+```bash
+npm run e2e:build:android:dev
+npx expo start
+npm run e2e:dev
+```
+
+To run without Metro, use a release app (`npm run e2e:build:android`, or the `app-release` artifact from the _Android APK - Local Build_ workflow) and `npm run e2e`.
+
+To add a test, copy `.maestro/flows/smoke.yaml`, set its `tags`, and replace the steps after `runFlow`. Run a single test with:
+
+```bash
+npm run e2e:dev -- --include-tags <tag you chose>
+```
+
+Select elements by visible text when it is unique, and by `id:` with the component `testID` otherwise. Every interactive control gets a `testID` such as `login-submit` (`screen-element`, kebab-case).
+
 ## Configuration Map
 
 | File                                  | Purpose                                                                       |
@@ -414,6 +437,7 @@ Use the gallery route for visual inspection and React Native Testing Library for
 | `tailwind.config.js`                  | NativeWind preset and class scanning paths                                    |
 | `eslint.config.mjs`                   | ESLint rules and TypeScript project service                                   |
 | `package.json`                        | Dependencies, scripts, Expo Router entry, and Jest configuration              |
+| `.maestro/`                           | Maestro end-to-end flows, shared launch subflow, and workspace configuration  |
 
 ## Definition of Done for a UI Change
 

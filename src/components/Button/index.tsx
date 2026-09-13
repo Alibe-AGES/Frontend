@@ -9,9 +9,16 @@ interface ButtonProps {
   onPress?: () => void;
   variant?: ButtonVariant;
   disabled?: boolean;
+  testID?: string;
 }
 
-export function Button({ title, onPress, variant = 'primary', disabled = false }: ButtonProps) {
+export function Button({
+  title,
+  onPress,
+  variant = 'primary',
+  disabled = false,
+  testID = 'alibe-button',
+}: ButtonProps) {
   const [isActivated, setIsActivated] = useState(false);
   const variantStyles = variant === 'primary' ? 'bg-coral' : 'bg-lime';
   const textStyles = variant === 'primary' ? 'text-white' : 'text-ink';
@@ -30,7 +37,7 @@ export function Button({ title, onPress, variant = 'primary', disabled = false }
       disabled={disabled}
       onPress={handlePress}
       style={({ pressed }) => tw`${pressed ? 'opacity-75' : ''}`}
-      testID="alibe-button"
+      testID={testID}
     >
       <Text className={`text-base font-bold ${textStyles}`}>{title}</Text>
     </Pressable>
