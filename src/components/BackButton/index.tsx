@@ -13,6 +13,7 @@ export const BackButton: React.FC<BackButtonProps> = ({
   accessibilityLabel = 'Voltar',
   className = '',
   disabled,
+  color,
   ...pressableProps
 }) => {
   const defaultController = useDefaultBackController({ fallbackHref });
@@ -29,7 +30,7 @@ export const BackButton: React.FC<BackButtonProps> = ({
         void handleBack();
       }}
       hitSlop={16}
-      className={`items-center justify-center ${disabled ? 'opacity-50' : 'opacity-100'} ${className}`}
+      className={`items-start justify-items-start ${disabled ? 'opacity-50' : 'opacity-100'} ${className}`}
       style={({ pressed }) => tw`${pressed ? 'opacity-60' : ''}`}
       testID="alibe-back-button"
       {...pressableProps}
@@ -38,7 +39,7 @@ export const BackButton: React.FC<BackButtonProps> = ({
         source={backArrowIcon}
         accessible={false}
         contentFit="contain"
-        tintColor={theme.colors.ink}
+        tintColor={color ?? theme.colors.ink}
         style={tw`h-6 w-8`}
       />
     </Pressable>
