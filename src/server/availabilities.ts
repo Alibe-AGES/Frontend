@@ -51,15 +51,37 @@ export async function createAvailability(
   return (await response.json()) as AvailabilityResponse[];
 }
 
+export interface GroupParticipant {
+  id: string;
+  name: string;
+  profilePic: string | null;
+}
+
+// Tipagem que prevê tanto um array direto quanto um objeto com a lista
+type AvailabilityResponseData = GroupParticipant[] | {
+  participants?: GroupParticipant[];
+  members?: GroupParticipant[];
+};
+
 export async function getAvailabilitiesByDate(
   groupId: string,
   date: string
-): Promise<AvailabilityByDateResponse[]> {
-  const response = await fetch(`${API_BASE_URL}/groups/${groupId}/availabilities?date=${date}`);
+): Promise<GroupParticipant[]> {
+  const response = await fetch(`${(API_BASE_URL)}/groups/${groupId}/availabilities?date=${date}`);
 
+  console.log('Status da resposta:', response.status)
   if (!response.ok) {
+    if (response.status === 404) {
+      return [];
+    }
     throw new Error('Falha ao buscar participantes');
   }
 
-  return (await response.json()) as AvailabilityByDateResponse[];
+  const data = (await response.json()) as AvailabilityResponseData;
+  
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  return data.participants ?? data.members ?? [];
 }

@@ -133,17 +133,16 @@ export function AvailabilityScreen({
 
       {hasParticipants ? (
         <View
-          className="flex-row self-center"
+          className="flex-row flex-wrap justify-center gap-4 px-2"
           testID="availability-screen-participants"
         >
           {participants.map((participant, index) => (
             <Image
-              key={participant.id}
+              key={`${participant.id}-${String(index)}`}
               source={{ uri: participant.avatarUrl }}
               accessibilityLabel={participant.name}
               contentFit="cover"
-              className="h-10 w-10 rounded-full border-2 border-canvas"
-              style={index === 0 ? undefined : { marginLeft: -12 }}
+              className="h-12 w-12 rounded-full border-2 border-canvas"
             />
           ))}
         </View>

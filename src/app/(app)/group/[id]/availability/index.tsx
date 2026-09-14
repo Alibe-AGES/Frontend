@@ -20,12 +20,13 @@ export default function AvailabilityRoute() {
       try {
         const data = await getAvailabilitiesByDate(groupId, targetDate);
 
+        // CORREÇÃO: Utilizando item.id e item.name conforme a interface GroupParticipant
         const mapped = data.map((item) => ({
-          id: item.userId,
-          name: item.userName,
+          id: item.id,
+          name: item.name,
           avatarUrl:
             item.profilePic ??
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(item.userName)}&background=random`,
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=random`,
         }));
 
         setParticipants(mapped);
