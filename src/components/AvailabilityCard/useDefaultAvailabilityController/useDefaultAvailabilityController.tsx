@@ -3,7 +3,7 @@ import {
   AvailabilityCardStrategy,
   AvailabilityInterval,
   UseAvailabilityControllerParams,
-} from '../Availiability.types';
+} from '../Availability.types';
 
 const END_BEFORE_START_ERROR = 'O horário de fim deve ser depois do início.';
 

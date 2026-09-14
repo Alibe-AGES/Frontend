@@ -8,7 +8,7 @@ export const theme = {
     limeSoft: '#E4F3A6',
     coral: '#EC7448',
     coralSoft: '#F7B08F',
-    pink: '#FFC9EB'!,
+    pink: '#FFC9EB',
     white: '#FFFFFF',
     black: '#000000',
     success: '#2F9E44',

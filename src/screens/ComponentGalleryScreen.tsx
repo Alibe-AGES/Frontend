@@ -1,4 +1,4 @@
-import { AvailabilityCard } from '@/components/AvailibilityCard';
+import { AvailabilityCard } from '@/components/AvailabilityCard';
 import { Button } from '@/components/Button';
 import { ScrollView, Text, View } from 'react-native';
 
@@ -30,11 +30,7 @@ export function ComponentGalleryScreen() {
       <View className="rounded-3xl bg-surface p-5">
         <View className="h-full gap-4 rounded-3xl bg-surface p-5">
           <Text className="text-xl font-black text-ink">AvailabilityCard</Text>
-          <AvailabilityCard
-            onIntervalsChange={(intervals) => {
-              console.log('Intervals changed:', intervals);
-            }}
-          />
+          <AvailabilityCard />
         </View>
       </View>
     </ScrollView>
