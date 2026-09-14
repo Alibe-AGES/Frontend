@@ -11,12 +11,7 @@ interface ButtonProps {
   disabled?: boolean;
 }
 
-export function Button({
-  title,
-  onPress,
-  variant = 'primary',
-  disabled = false,
-}: ButtonProps) {
+export function Button({ title, onPress, variant = 'primary', disabled = false }: ButtonProps) {
   const [isActivated, setIsActivated] = useState(false);
 
   const variantStyles = variant === 'primary' ? 'bg-coral' : 'bg-lime';
@@ -41,9 +36,7 @@ export function Button({
       onPress={handlePress}
       style={({ pressed }) => tw`${pressed ? 'opacity-75' : ''}`}
     >
-      <Text className={`text-base font-normal ${textStyles}`}>
-        {title}
-      </Text>
+      <Text className={`text-base font-normal ${textStyles}`}>{title}</Text>
     </Pressable>
   );
 }
