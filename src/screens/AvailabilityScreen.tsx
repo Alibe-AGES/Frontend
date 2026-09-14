@@ -10,16 +10,16 @@ import { ScrollView, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 export interface AvailabilityParticipant {
-  id: string;
-  name: string;
-  avatarUrl: string;
+  readonly id: string;
+  readonly name: string;
+  readonly avatarUrl: string;
 }
 
 export interface AvailabilityScreenProps {
-  date?: string;
-  participants?: AvailabilityParticipant[];
-  onConfirm?: (intervals: AvailabilityInterval[]) => void | Promise<void>;
-  onDecline?: () => void | Promise<void>;
+  readonly date?: string;
+  readonly participants?: AvailabilityParticipant[];
+  readonly onConfirm?: (intervals: AvailabilityInterval[]) => void | Promise<void>;
+  readonly onDecline?: () => void | Promise<void>;
 }
 
 export function AvailabilityScreen({
