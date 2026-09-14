@@ -2,22 +2,38 @@ import { useState } from 'react';
 import { Pressable, Text } from 'react-native';
 import tw from 'twrnc';
 
-export type ButtonVariant = 'primary' | 'secondary';
+type ButtonVariant = 'primary' | 'secondary' | 'tertiary';
+
+const BACKGROUND_STYLES: Record<ButtonVariant, string> = {
+  primary: 'bg-coral',
+  secondary: 'bg-lime',
+  tertiary: 'bg-ink',
+};
+
+const TEXT_STYLES: Record<ButtonVariant, string> = {
+  primary: 'text-white',
+  secondary: 'text-ink',
+  tertiary: 'text-white',
+};
 
 interface ButtonProps {
   title: string;
   onPress?: () => void;
   variant?: ButtonVariant;
   disabled?: boolean;
+  testID?: string;
 }
 
-export function Button({ title, onPress, variant = 'primary', disabled = false }: ButtonProps) {
+export function Button({
+  title,
+  onPress,
+  variant = 'primary',
+  disabled = false,
+  testID = 'alibe-button',
+}: ButtonProps) {
   const [isActivated, setIsActivated] = useState(false);
-
-  const variantStyles = variant === 'primary' ? 'bg-coral' : 'bg-lime';
-  const backgroundStyles = isActivated ? 'bg-ink' : variantStyles;
-  const textStyles = variant === 'primary' ? 'text-white' : 'text-ink';
-  const isDisabled = disabled;
+  const textStyles = TEXT_STYLES[variant];
+  const backgroundStyles = isActivated ? 'bg-ink' : BACKGROUND_STYLES[variant];
 
   const handlePress = () => {
     setIsActivated(true);
@@ -27,16 +43,14 @@ export function Button({ title, onPress, variant = 'primary', disabled = false }
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityState={{ disabled: isDisabled }}
-      className={`items-center justify-center rounded-full px-6 py-3 ${backgroundStyles} ${
-        isDisabled ? 'opacity-50' : 'opacity-100'
-      }`}
-      disabled={isDisabled}
-      testID="alibe-button"
+      accessibilityState={{ disabled }}
+      className={`items-center justify-center rounded-full px-6 py-3 ${backgroundStyles} ${disabled ? 'opacity-50' : 'opacity-100'}`}
+      disabled={disabled}
       onPress={handlePress}
       style={({ pressed }) => tw`${pressed ? 'opacity-75' : ''}`}
+      testID={testID}
     >
-      <Text className={`text-base font-normal ${textStyles}`}>{title}</Text>
+      <Text className={`text-base font-bold ${textStyles}`}>{title}</Text>
     </Pressable>
   );
 }

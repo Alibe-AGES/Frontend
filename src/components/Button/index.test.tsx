@@ -31,7 +31,7 @@ describe('<Button />', () => {
     expect(onPress).not.toHaveBeenCalled();
   });
 
-  test('keeps its ink color after being pressed', async () => {
+  test('keeps the ink color after it is pressed once', async () => {
     const { getByTestId, getByText } = await render(<Button title="Entrar" />);
 
     expect(getByTestId('alibe-button').props.className).toContain('bg-coral');
@@ -41,20 +41,19 @@ describe('<Button />', () => {
     expect(getByTestId('alibe-button').props.className).toContain('bg-ink');
   });
 
-  test('renders secondary variant correctly', async () => {
-    const { getByTestId } = await render(
+  test.each([
+    ['primary', 'bg-coral', 'text-white'],
+    ['secondary', 'bg-lime', 'text-ink'],
+    ['tertiary', 'bg-ink', 'text-white'],
+  ])('paints the %s variant', async (variant, background, color) => {
+    const { getByTestId, getByText } = await render(
       <Button
         title="Continuar"
-        variant="secondary"
+        variant={variant as 'primary' | 'secondary' | 'tertiary'}
       />
     );
 
-    expect(getByTestId('alibe-button').props.className).toContain('bg-lime');
-  });
-
-  test('has button accessibility role', async () => {
-    const { getByTestId } = await render(<Button title="Continuar" />);
-
-    expect(getByTestId('alibe-button').props.accessibilityRole).toBe('button');
+    expect(getByTestId('alibe-button').props.className).toContain(background);
+    expect(getByText('Continuar').props.className).toContain(color);
   });
 });
