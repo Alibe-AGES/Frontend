@@ -1,4 +1,5 @@
 import { Button } from '@/components/Button';
+import { GroupCard } from '@/components/GroupCard';
 import { ScrollView, Text, View } from 'react-native';
 
 export function ComponentGalleryScreen() {
@@ -24,6 +25,26 @@ export function ComponentGalleryScreen() {
         <Button
           title="Disabled button"
           disabled
+        />
+      </View>
+
+      <View className="gap-4 rounded-3xl bg-surface p-5">
+        <Text className="text-xl font-black text-ink">Group card</Text>
+        <GroupCard
+          id="1"
+          name="Hermanas"
+          color="bg-lime"
+        />
+        <GroupCard
+          id="2"
+          name="Pela cidade"
+          color="bg-pink"
+        />
+        <GroupCard
+          id="3"
+          name="Galera 2012"
+          color="bg-coral"
+          photoUri="https://picsum.photos/seed/galera2012/200"
         />
       </View>
     </ScrollView>
