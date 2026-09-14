@@ -1,5 +1,10 @@
+// 1. Renomeamos os componentes com o prefixo 'Mock'
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import { Text, TouchableOpacity, View } from 'react-native';
+import {
+  Text as MockText,
+  TouchableOpacity as MockTouchableOpacity,
+  View as MockView,
+} from 'react-native';
 import Toast from 'react-native-toast-message';
 import { AvailabilityScreen } from './AvailabilityScreen';
 
@@ -13,9 +18,10 @@ interface MockButtonProps {
   disabled?: boolean;
 }
 
+// 2. Utilizamos as variáveis 'Mock...' dentro do jest.mock()
 jest.mock('@/components/AvailabilityCard', () => ({
   AvailabilityCard: (props: MockAvailabilityCardProps) => (
-    <View
+    <MockView
       testID="mock-availability-card"
       {...props}
     />
@@ -23,18 +29,18 @@ jest.mock('@/components/AvailabilityCard', () => ({
 }));
 
 jest.mock('@/components/BackButton', () => ({
-  BackButton: () => <View testID="mock-back-button" />,
+  BackButton: () => <MockView testID="mock-back-button" />,
 }));
 
 jest.mock('@/components/Button', () => ({
   Button: ({ title, onPress, disabled }: MockButtonProps) => (
-    <TouchableOpacity
+    <MockTouchableOpacity
       testID={`button-${title}`}
       onPress={onPress}
       disabled={disabled}
     >
-      <Text>{title}</Text>
-    </TouchableOpacity>
+      <MockText>{title}</MockText>
+    </MockTouchableOpacity>
   ),
 }));
 
@@ -50,11 +56,11 @@ jest.mock('@/theme', () => ({
 }));
 
 jest.mock('@expo/vector-icons', () => ({
-  Ionicons: () => <View testID="mock-ionicons" />,
+  Ionicons: () => <MockView testID="mock-ionicons" />,
 }));
 
 jest.mock('expo-image', () => ({
-  Image: (props: Record<string, unknown>) => <View {...props} />,
+  Image: (props: Record<string, unknown>) => <MockView {...props} />,
 }));
 
 jest.mock('react-native-toast-message', () => ({
