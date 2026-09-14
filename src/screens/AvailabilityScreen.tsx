@@ -140,15 +140,14 @@ export function AvailabilityScreen({
       ) : null}
 
       <AvailabilityCard onIntervalsChange={setIntervals} />
-      {isSubmitting && (
-        <Text className="text-inkSoft font-poppins-regular text-center text-base">Salvando...</Text>
-      )}
+
       <View className="gap-3 pt-2">
         <Button
-          title="Confirmar!"
+          title={isSubmitting ? 'Salvando...' : 'Confirmar!'}
           variant="primary"
           color={theme.colors.ink}
           onPress={() => void handleConfirm()}
+          disabled={isSubmitting}
         />
 
         <Button
@@ -156,6 +155,7 @@ export function AvailabilityScreen({
           variant="primary"
           color={theme.colors.ink}
           onPress={() => void handleDecline()}
+          disabled={isSubmitting}
         />
       </View>
     </ScrollView>

@@ -8,7 +8,9 @@ export default function AvailabilityRoute() {
 
   const { id: groupId, date } = useLocalSearchParams<{ id: string; date?: string }>();
 
-  const targetDate = date ?? new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const localDate = `${String(now.getFullYear())}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const targetDate = date ?? localDate;
 
   const handleConfirm = async (intervals: AvailabilityInterval[]) => {
     const formattedIntervals = intervals
