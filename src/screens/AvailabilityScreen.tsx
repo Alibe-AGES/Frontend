@@ -98,9 +98,9 @@ export function AvailabilityScreen({
     >
       <BackButton color={theme.colors.black} />
 
-      <View className="flex-row items-center justify-center gap-4">
+      <View className="flex-row items-center justify-center gap-10">
         <View
-          className="items-center justify-center rounded-full px-6 py-8"
+          className="items-center justify-center rounded-full"
           style={{
             backgroundColor: theme.colors.pink,
             height: 60,
@@ -116,7 +116,7 @@ export function AvailabilityScreen({
         </View>
         <Text
           className="items-center justify-items-center font-poppins text-ink"
-          style={{ fontSize: 30, lineHeight: 60 }}
+          style={{ fontSize: 40, lineHeight: 60 }}
           testID="availability-screen-date-text"
         >
           {formattedDate}

@@ -40,7 +40,7 @@ export const BackButton: React.FC<BackButtonProps> = ({
         accessible={false}
         contentFit="contain"
         tintColor={color ?? theme.colors.ink}
-        style={tw`h-6 w-8`}
+        style={tw`h-4 w-6`}
       />
     </Pressable>
   );
