@@ -20,11 +20,17 @@ export interface AvailabilityResponse {
   endTime: string | null;
 }
 
+export interface AvailabilityByDateResponse {
+  userId: string;
+  userName: string;
+  profilePic: string | null;
+}
+
 export async function createAvailability(
   groupId: string,
   payload: CreateAvailabilityPayload
 ): Promise<AvailabilityResponse[]> {
-  const url = `${String(API_BASE_URL)}/groups/${groupId}/availabilities`;
+  const url = `${API_BASE_URL}/groups/${groupId}/availabilities`;
 
   const response = await fetch(url, {
     method: 'POST',
@@ -43,4 +49,17 @@ export async function createAvailability(
   }
 
   return (await response.json()) as AvailabilityResponse[];
+}
+
+export async function getAvailabilitiesByDate(
+  groupId: string,
+  date: string
+): Promise<AvailabilityByDateResponse[]> {
+  const response = await fetch(`${API_BASE_URL}/groups/${groupId}/availabilities?date=${date}`);
+
+  if (!response.ok) {
+    throw new Error('Falha ao buscar participantes');
+  }
+
+  return (await response.json()) as AvailabilityByDateResponse[];
 }

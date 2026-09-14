@@ -51,7 +51,7 @@ export function Button({
       } ${disabled ? 'opacity-50' : 'opacity-100'}`}
       style={color && !isActivated ? { backgroundColor: color } : undefined}
     >
-      <Text className={`font-poppins-light text-base ${styles.text}`}>{title}</Text>
+      <Text className={`font-poppins text-base ${styles.text}`}>{title}</Text>
     </Pressable>
   );
 }

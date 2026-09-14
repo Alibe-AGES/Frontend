@@ -1,5 +1,5 @@
-import { AvailabilityCard } from '@/components/AvailibilityCard';
-import { AvailabilityInterval } from '@/components/AvailibilityCard/Availiability.types';
+import { AvailabilityCard } from '@/components/AvailabilityCard';
+import { AvailabilityInterval } from '@/components/AvailabilityCard/Availability.types';
 import { BackButton } from '@/components/BackButton';
 import { Button } from '@/components/Button';
 import { theme } from '@/theme';
@@ -91,7 +91,8 @@ export function AvailabilityScreen({
 
   return (
     <ScrollView
-      className="flex-1 bg-canvas"
+      className="flex-1"
+      style={{ backgroundColor: '#FFFBF6' }}
       contentContainerClassName="gap-6 px-6 py-16"
       testID="availability-screen"
     >
@@ -99,22 +100,31 @@ export function AvailabilityScreen({
 
       <View className="flex-row items-center justify-center gap-4">
         <View
-          className="h-14 w-14 items-center justify-center rounded-full"
-          style={{ backgroundColor: theme.colors.pink }}
+          className="items-center justify-center rounded-full px-6 py-8"
+          style={{
+            backgroundColor: theme.colors.pink,
+            height: 60,
+            width: 60,
+          }}
+          testID="availability-screen-date-icon-wrapper"
         >
           <Ionicons
             name="calendar-outline"
-            size={24}
+            size={40}
             color={theme.colors.ink}
           />
         </View>
-        <Text className="items-center justify-items-center font-poppins text-3xl text-ink">
+        <Text
+          className="items-center justify-items-center font-poppins text-ink"
+          style={{ fontSize: 30, lineHeight: 60 }}
+          testID="availability-screen-date-text"
+        >
           {formattedDate}
         </Text>
       </View>
 
       <Text
-        className="text-center font-poppins-medium text-lg"
+        className="text-center font-poppins-medium text-xl"
         style={{ color: theme.colors.wine }}
         testID="availability-screen-participants-heading"
       >
@@ -143,7 +153,7 @@ export function AvailabilityScreen({
 
       <View className="gap-3 pt-2">
         <Button
-          title={isSubmitting ? 'Salvando...' : 'Confirmar!'}
+          title="Confirmar!"
           variant="primary"
           color={theme.colors.ink}
           onPress={() => void handleConfirm()}
