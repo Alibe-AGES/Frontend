@@ -41,7 +41,10 @@ jobs:
       - name: Run type check
         run: npx tsc --noEmit
 
-      - name: Run tests
+      - name: Run Prettier check
+        run: npm run format:check
+
+      - name: Run unit tests
         run: npm run test:unit
 
   call-eas-build-workflow:
