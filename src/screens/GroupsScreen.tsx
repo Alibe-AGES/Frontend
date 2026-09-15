@@ -32,7 +32,7 @@ export function GroupsScreen() {
         source={greenSpin}
         contentFit="contain"
         accessible={false}
-        className="-left-13 absolute -bottom-5 h-32 w-32 sm:h-36 sm:w-36"
+        className="-left-8 absolute -bottom-5 h-32 w-32 sm:h-36 sm:w-36"
       />
       <Image
         source={pinkSpin}
@@ -47,7 +47,7 @@ export function GroupsScreen() {
             source={groupSpin}
             contentFit="contain"
             accessibilityLabel="Logo Alibe"
-            className="h-32 w-32"
+            className="h-32 w-32 max-w-24"
           />
 
           <Text className={`text-center text-3xl text-ink ${theme.typography.display}`}>
