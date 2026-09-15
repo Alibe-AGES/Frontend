@@ -142,7 +142,7 @@ For runtime UI verification:
 npx expo start -c
 ```
 
-Use Maestro flows under `.maestro/` when that directory exists. Selectors should use accessibility labels or stable `testID` values.
+Use Maestro flows under `.maestro/flows/`; every flow starts with `runFlow: ../subflows/launch.yaml`. Every interactive control gets a `testID` in the `screen-element` kebab-case form (for example `login-submit`); use `accessibilityLabel` for icon-only controls.
 
 Before reporting completion, validate that:
 
