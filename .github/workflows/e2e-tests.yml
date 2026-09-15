@@ -32,7 +32,7 @@ jobs:
           echo "path=$APK" >> "$GITHUB_OUTPUT"
 
       - name: Install Maestro
-        uses: dniHze/maestro-test-action@v1.0.0
+        uses: valodes/maestro-github-action@v1.0.1
         with:
           version: latest
           # Optional: Set environment variables for Maestro if needed
