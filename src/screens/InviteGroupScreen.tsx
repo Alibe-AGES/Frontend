@@ -15,10 +15,10 @@ export function InviteGroupScreen() {
 
   return (
     <ScrollView
-      className="flex-1 bg-canvas"
-      contentContainerClassName="gap-6 px-6 py-16"
+      className="flex-1 bg-surface"
+      contentContainerClassName="flex-grow"
     >
-      <View className="flex-1 bg-surface px-6 pb-12 pt-40">
+      <View className="flex-1 bg-surface px-6 pb-28 pt-40">
         <Text className="text-center font-poppins-black text-4xl leading-tight text-ink">
           Tudo{'\n'}pronto!
         </Text>
@@ -39,7 +39,7 @@ export function InviteGroupScreen() {
           testID="alibe-invite-decoration"
         />
 
-        <View className="mt-auto pt-6">
+        <View className="mt-auto px-6 pt-6">
           <ContinueButton
             onPress={() => {
               router.replace('/groups');
