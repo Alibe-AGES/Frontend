@@ -4,7 +4,7 @@ import { ScrollView, Text, View } from 'react-native';
 import tw from 'twrnc';
 
 import inviteDecoration from '@/assets/images/invite-decoration.svg';
-import { Button } from '@/components/Button';
+import { ContinueButton } from '@/components/ContinueButton';
 import { InviteLink } from '@/components/InviteLink';
 
 // O convite ainda nao vem do backend; ate a integracao existir a tela mostra um link de exemplo.
@@ -40,12 +40,10 @@ export function InviteGroupScreen() {
         />
 
         <View className="mt-auto pt-6">
-          <Button
+          <ContinueButton
             onPress={() => {
               router.replace('/groups');
             }}
-            title="Continuar"
-            variant="tertiary"
           />
         </View>
       </View>
