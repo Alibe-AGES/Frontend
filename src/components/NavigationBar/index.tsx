@@ -109,10 +109,8 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ groupId, className
               style={({ pressed }) => tw`${pressed ? 'opacity-75' : ''}`}
               testID="alibe-navigation-bar-create"
             >
-              <View className="h-[1.125rem] w-[1.125rem] items-center justify-center">
-                <View className="absolute h-0.5 w-full bg-ink" />
-                <View className="absolute h-full w-0.5 bg-ink" />
-              </View>
+              <View className="absolute h-0.5 w-4 rounded-full bg-ink" />
+              <View className="absolute h-4 w-0.5 rounded-full bg-ink" />
             </Pressable>
           </View>
         </View>
