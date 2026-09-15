@@ -65,7 +65,7 @@ export function TimeInput({
           testID={`${testID}-icon`}
         >
           <Ionicons
-            color={theme.colors.coral}
+            color={theme.colors.wine}
             name="alarm-outline"
             size={20}
           />
@@ -73,7 +73,7 @@ export function TimeInput({
         <RNTextInput
           accessibilityLabel={label ?? placeholder}
           accessibilityState={{ disabled }}
-          className="flex-1 py-4 font-poppins text-base text-ink outline-none"
+          className="flex-1 py-2 font-poppins text-base text-ink outline-none"
           editable={!disabled}
           keyboardType="number-pad"
           maxLength={TIME_LENGTH}
@@ -81,7 +81,7 @@ export function TimeInput({
           onChangeText={handleChangeText}
           onFocus={handleFocus}
           placeholder={placeholder}
-          placeholderTextColor={theme.colors.inkSoft}
+          placeholderTextColor={theme.colors.wine}
           testID={testID}
           value={value}
         />
