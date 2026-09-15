@@ -19,6 +19,10 @@ export default function GroupLayout() {
         name="leave"
         options={{ presentation: 'modal', title: 'Leave group' }}
       />
+      <Stack.Screen
+        name="availability"
+        options={{ title: 'Availability' }}
+      />
     </Stack>
   );
 }

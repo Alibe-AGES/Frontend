@@ -13,4 +13,5 @@ export interface BackButtonProps extends Omit<PressableProps, 'children'> {
   accessibilityLabel?: string;
   fallbackHref?: Href;
   className?: string;
+  color?: string;
 }
