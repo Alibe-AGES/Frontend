@@ -98,7 +98,10 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ groupId, className
           className="absolute inset-x-0 top-0 items-center"
           pointerEvents="box-none"
         >
-          <View className="h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-ink">
+          <View
+            className="h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-ink"
+            pointerEvents="box-none"
+          >
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Criar encontro"
