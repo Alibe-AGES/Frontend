@@ -18,56 +18,6 @@ jobs:
           name: app-release
           path: ./artifacts
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android Emulator
-        run: |
-          sdkmanager \
-            "platform-tools" \
-            "emulator" \
-            "platforms;android-34" \
-            "system-images;android-34;google_apis;x86_64"
-
-      - name: Create Android Emulator
-        run: |
-          echo "no" | avdmanager create avd \
-            --name maestro-api34 \
-            --package "system-images;android-34;google_apis;x86_64" \
-            --device "pixel_6" \
-            --force
-
-      - name: Start Android Emulator
-        run: |
-          nohup emulator \
-            -avd maestro-api34 \
-            -no-window \
-            -no-audio \
-            -no-boot-anim \
-            -gpu swiftshader_indirect \
-            -accel off \
-            > /tmp/emulator.log 2>&1 &
-
-      - name: Wait for Android Emulator
-        run: |
-          adb wait-for-device
-
-          echo "Waiting for emulator to boot..."
-
-          timeout 180 bash -c '
-            until adb shell getprop sys.boot_completed | grep -m 1 "1"; do
-              sleep 5
-            done
-          '
-
-          adb shell input keyevent 82
-
       - name: Find APK
         id: apk
         run: |
@@ -81,26 +31,35 @@ jobs:
           echo "APK found: $APK"
           echo "path=$APK" >> "$GITHUB_OUTPUT"
 
-      - name: Install APK
-        run: |
-          adb install -r "${{ steps.apk.outputs.path }}"
-
       - name: Install Maestro
-        run: |
-          curl -Ls "https://get.maestro.mobile.dev" | bash
-          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
-
-      - name: Check Maestro
-        run: |
-          maestro --version
+        uses: dniHze/maestro-test-action@v1.0.0
+        with:
+          version: latest
+          # Optional: Set environment variables for Maestro if needed
+          # env: |
+          #   USERNAME=user@example.com
+          #   PASSWORD=123
 
       - name: Run Maestro E2E
-        run: |
-          maestro test .maestro/ \
-            --include-tags smoke \
-            --test-output-dir=./maestro-results
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          ram-size: 4096M
+          emulator-options: >-
+            -no-window
+            -no-audio
+            -no-boot-anim
+            -gpu swiftshader_indirect
+          script: |
+            adb install -r "${{ steps.apk.outputs.path }}"
 
-      - name: Upload Maestro test results
+            maestro test .maestro/ \
+              --include-tags smoke \
+              --test-output-dir=./maestro-results
+
+      - name: Upload Maestro results
         if: always()
         uses: actions/upload-artifact@v4
         with:
