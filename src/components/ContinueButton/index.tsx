@@ -1,16 +1,14 @@
-import { Button } from '@/components/Button';
+import { Button, type ButtonProps } from '@/components/Button';
 
-export interface ContinueButtonProps {
-  onPress?: () => void;
-  disabled?: boolean;
-}
+export type ContinueButtonProps = Omit<ButtonProps, 'title' | 'variant'>;
 
-export function ContinueButton({ onPress, disabled = false }: ContinueButtonProps) {
+export function ContinueButton({ testID = 'continue-button', ...props }: ContinueButtonProps) {
   return (
     <Button
+      {...props}
       title="Continuar"
-      onPress={onPress}
-      disabled={disabled}
+      variant="tertiary"
+      testID={testID}
     />
   );
 }
