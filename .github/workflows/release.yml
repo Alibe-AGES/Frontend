@@ -61,12 +61,27 @@ jobs:
     uses: ./.github/workflows/local-build.yml
     secrets: inherit
 
+  call-e2e-tests-workflow:
+    # This job calls a workflow to run end-to-end tests with Maestro.
+    # It will only run if the "setup" job passes all tests and checks, and if either the EAS or local build workflow succeeds.
+    name: Call E2E Tests Workflow
+    needs: [setup, call-eas-build-workflow, call-local-build-workflow]
+    if: >
+      always() &&
+      needs.setup.result == 'success' &&
+      (
+        needs.call-eas-build-workflow.result == 'success' ||
+        needs.call-local-build-workflow.result == 'success'
+      )
+    uses: ./.github/workflows/e2e-tests.yml
+    secrets: inherit
+
   publish-release:
     # This job will only run if the one of the build workflows (EAS or local) succeeds.
     # It generates release notes and publishes the release.
     name: Publish Release
-    needs: [call-eas-build-workflow, call-local-build-workflow]
-    if: always() && (needs.call-eas-build-workflow.result == 'success' || needs.call-local-build-workflow.result == 'success')
+    needs: call-e2e-tests-workflow
+    if: needs.call-e2e-tests-workflow.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write

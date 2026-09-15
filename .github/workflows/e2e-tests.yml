@@ -1,0 +1,112 @@
+name: E2E Tests (Maestro) - Android
+
+on:
+  workflow_call:
+
+jobs:
+  maestro:
+    name: Maestro E2E
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download APK Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-release
+          path: ./artifacts
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android Emulator
+        run: |
+          sdkmanager \
+            "platform-tools" \
+            "emulator" \
+            "platforms;android-34" \
+            "system-images;android-34;google_apis;x86_64"
+
+      - name: Create Android Emulator
+        run: |
+          echo "no" | avdmanager create avd \
+            --name maestro-api34 \
+            --package "system-images;android-34;google_apis;x86_64" \
+            --device "pixel_6" \
+            --force
+
+      - name: Start Android Emulator
+        run: |
+          nohup emulator \
+            -avd maestro-api34 \
+            -no-window \
+            -no-audio \
+            -no-boot-anim \
+            -gpu swiftshader_indirect \
+            -accel off \
+            > /tmp/emulator.log 2>&1 &
+
+      - name: Wait for Android Emulator
+        run: |
+          adb wait-for-device
+
+          echo "Waiting for emulator to boot..."
+
+          timeout 180 bash -c '
+            until adb shell getprop sys.boot_completed | grep -m 1 "1"; do
+              sleep 5
+            done
+          '
+
+          adb shell input keyevent 82
+
+      - name: Find APK
+        id: apk
+        run: |
+          APK=$(find ./artifacts -name "*.apk" -type f | head -n 1)
+
+          if [ -z "$APK" ]; then
+            echo "No APK found."
+            exit 1
+          fi
+
+          echo "APK found: $APK"
+          echo "path=$APK" >> "$GITHUB_OUTPUT"
+
+      - name: Install APK
+        run: |
+          adb install -r "${{ steps.apk.outputs.path }}"
+
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Check Maestro
+        run: |
+          maestro --version
+
+      - name: Run Maestro E2E
+        run: |
+          maestro test .maestro/ \
+            --include-tags smoke \
+            --test-output-dir=./maestro-results
+
+      - name: Upload Maestro test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-e2e-results-${{ github.run_number }}
+          path: |
+            ./maestro-results
+            /tmp/emulator.log
+          if-no-files-found: warn
+          retention-days: 7
