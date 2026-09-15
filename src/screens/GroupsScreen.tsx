@@ -32,7 +32,7 @@ export function GroupsScreen() {
         source={greenSpin}
         contentFit="contain"
         accessible={false}
-        className="-left-8 absolute -bottom-5 h-32 w-32 sm:h-36 sm:w-36"
+        className="absolute -bottom-5 -left-8 h-32 w-32 sm:h-36 sm:w-36"
       />
       <Image
         source={pinkSpin}
