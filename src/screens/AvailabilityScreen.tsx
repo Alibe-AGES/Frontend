@@ -153,16 +153,14 @@ export function AvailabilityScreen({
       <View className="gap-3 pt-2">
         <Button
           title="Confirmar!"
-          variant="primary"
-          color={theme.colors.ink}
+          variant="tertiary"
           onPress={() => void handleConfirm()}
           disabled={isSubmitting}
         />
 
         <Button
           title="Não estarei disponível neste dia."
-          variant="primary"
-          color={theme.colors.ink}
+          variant="tertiary"
           onPress={() => void handleDecline()}
           disabled={isSubmitting}
         />
