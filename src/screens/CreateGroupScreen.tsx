@@ -27,7 +27,7 @@ export function CreateGroupScreen() {
         source={createGroupDecoration}
         accessible={false}
         contentFit="contain"
-        style={tw`absolute -right-6 top-0 h-40 w-40`}
+        style={tw`absolute -right-2 top-0 h-40 w-40`}
       />
 
       <BackButton
