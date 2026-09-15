@@ -1,4 +1,6 @@
+import { AvailabilityCard } from '@/components/AvailabilityCard';
 import { Button } from '@/components/Button';
+import { GroupCard } from '@/components/GroupCard';
 import { ScrollView, Text, View } from 'react-native';
 
 export function ComponentGalleryScreen() {
