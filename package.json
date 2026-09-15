@@ -70,7 +70,12 @@
     "format:check": "prettier --check .",
     "test": "jest --watch=false",
     "test:watch": "jest --watchAll",
-    "test:unit": "jest --ci --runInBand"
+    "test:unit": "jest --ci --runInBand",
+    "e2e": "maestro test .maestro/",
+    "e2e:dev": "maestro test -e DEV_CLIENT=true .maestro/",
+    "e2e:studio": "maestro studio",
+    "e2e:build:android": "expo run:android --variant release",
+    "e2e:build:android:dev": "expo run:android"
   },
   "jest": {
     "preset": "jest-expo",

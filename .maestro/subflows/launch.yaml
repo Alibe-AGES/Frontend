@@ -1,0 +1,23 @@
+# Launches the app with a clean state. Every flow starts with this.
+# Dev build with Metro (DEV_CLIENT=true): opens the app through the dev client
+# and dismisses the developer menu that shows on first launch.
+appId: com.alibe.app
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_CLIENT == 'true'}
+    commands:
+      - extendedWaitUntil:
+          visible: 'Development Build'
+          timeout: 30000
+      - openLink: 'alibe://expo-development-client/?url=http%3A%2F%2F10.0.2.2%3A8081'
+      - extendedWaitUntil:
+          visible: 'Continue'
+          timeout: 60000
+      - tapOn: 'Continue'
+      - extendedWaitUntil:
+          visible: 'Reload'
+          timeout: 10000
+      - back
