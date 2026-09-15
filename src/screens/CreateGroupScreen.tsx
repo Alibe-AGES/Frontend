@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import tw from 'twrnc';
 
-import createGroupDecoration from '@/assets/images/create-group-decoration.png';
+import createGroupDecoration from '@/assets/images/create-group-decoration.svg';
 import pencilIcon from '@/assets/images/pencil.svg';
 
 export function CreateGroupScreen() {
