@@ -4,7 +4,7 @@ import { ScrollView, Text, View } from 'react-native';
 import tw from 'twrnc';
 
 import inviteDecoration from '@/assets/images/invite-decoration.svg';
-import { Button } from '@/components/Button';
+import { ContinueButton } from '@/components/ContinueButton';
 import { InviteLink } from '@/components/InviteLink';
 
 // O convite ainda nao vem do backend; ate a integracao existir a tela mostra um link de exemplo.
@@ -15,10 +15,10 @@ export function InviteGroupScreen() {
 
   return (
     <ScrollView
-      className="flex-1 bg-canvas"
-      contentContainerClassName="gap-6 px-6 py-16"
+      className="flex-1 bg-surface"
+      contentContainerClassName="flex-grow"
     >
-      <View className="flex-1 bg-surface px-6 pb-12 pt-40">
+      <View className="flex-1 bg-surface px-6 pb-28 pt-40">
         <Text className="text-center font-poppins-black text-4xl leading-tight text-ink">
           Tudo{'\n'}pronto!
         </Text>
@@ -39,13 +39,11 @@ export function InviteGroupScreen() {
           testID="alibe-invite-decoration"
         />
 
-        <View className="mt-auto pt-6">
-          <Button
+        <View className="mt-auto px-6 pt-6">
+          <ContinueButton
             onPress={() => {
               router.replace('/groups');
             }}
-            title="Continuar"
-            variant="tertiary"
           />
         </View>
       </View>
