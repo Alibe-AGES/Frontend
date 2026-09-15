@@ -1,25 +1,33 @@
-import { Button } from '@/components/Button';
 import { BackButton } from '@/components/BackButton';
+import { ContinueButton } from '@/components/ContinueButton';
 import { PhotoPicker } from '@/components/PhotoPicker';
 import { TextInput } from '@/components/TextInput';
-
-import { useState } from 'react';
-import { Image, Text, View } from 'react-native';
+import { theme } from '@/theme';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { ScrollView, Text, View } from 'react-native';
+import tw from 'twrnc';
 
 import createGroupDecoration from '@/assets/images/create-group-decoration.png';
+import pencilIcon from '@/assets/images/pencil.svg';
 
 export function CreateGroupScreen() {
   const [groupName, setGroupName] = useState('');
   const router = useRouter();
 
   return (
-    <View className="py-22 flex-1 bg-surface px-6">
+    <ScrollView
+      className="flex-1 bg-canvas"
+      contentContainerClassName="flex-grow px-6 pt-16"
+      keyboardShouldPersistTaps="handled"
+    >
+      {/* expo-image ignora className no nativo; twrnc aplica o mesmo utilitário via style. */}
       <Image
         source={createGroupDecoration}
-        className="absolute right-0 top-0"
-        style={{ width: 120, height: 120 }}
-        resizeMode="contain"
+        accessible={false}
+        contentFit="contain"
+        style={tw`absolute -right-6 top-0 h-40 w-40`}
       />
 
       <BackButton
@@ -28,19 +36,16 @@ export function CreateGroupScreen() {
       />
 
       <Text
-        className="mt-12 text-center text-4xl font-black text-ink"
-        style={{ lineHeight: 25 }}
+        className={`mt-12 text-center text-5xl leading-tight text-ink ${theme.typography.display}`}
       >
-        Vamos
-        {'\n'}
-        começar?
+        Vamos{'\n'}começar?
       </Text>
 
-      <Text className="text-terracota mt-2 text-center text-xs font-bold">
+      <Text className="mt-2 text-center font-poppins-medium text-sm text-black">
         Seu próximo encontro nasce aqui.
       </Text>
 
-      <View className="mt-8 flex-1 rounded-t-3xl bg-lime-soft p-6">
+      <View className="mt-20 flex-1 rounded-t-3xl bg-lime-soft px-6 pb-28 pt-16">
         <PhotoPicker imageClassName="h-44 w-44" />
 
         <View className="mt-6">
@@ -48,19 +53,25 @@ export function CreateGroupScreen() {
             value={groupName}
             onChangeText={setGroupName}
             placeholder="Nome do grupo"
-            icon={<Text className="text-xl text-coral-soft">✎</Text>}
+            icon={
+              <Image
+                source={pencilIcon}
+                accessible={false}
+                contentFit="contain"
+                style={tw`h-5 w-5`}
+              />
+            }
           />
         </View>
 
-        <View className="mt-8">
-          <Button
-            title="Continuar"
+        <View className="mt-auto pt-6">
+          <ContinueButton
             onPress={() => {
               router.push('/create-group/invite');
             }}
           />
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }
