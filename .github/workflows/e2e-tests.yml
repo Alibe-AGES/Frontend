@@ -63,7 +63,7 @@ jobs:
           api-level: 34
           arch: x86_64
           target: google_apis
-          ram-size: 4096M
+          ram-size: 4096
           emulator-options: >-
             -no-window
             -no-audio
@@ -71,10 +71,7 @@ jobs:
             -gpu swiftshader_indirect
           script: |
             adb install -r "${{ steps.apk.outputs.path }}"
-
-            maestro test .maestro/ \
-              --include-tags smoke \
-              --test-output-dir=./maestro-results
+            maestro test .maestro/ --include-tags smoke --test-output-dir=./maestro-results
 
       - name: Upload Maestro results
         if: always()
