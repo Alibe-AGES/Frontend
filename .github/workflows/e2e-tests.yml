@@ -64,13 +64,20 @@ jobs:
           arch: x86_64
           target: google_apis
           ram-size: 4096
+          disable-animations: true
           emulator-options: >-
             -no-window
             -no-audio
             -no-boot-anim
+            -no-snapshot
             -gpu swiftshader_indirect
           script: |
+            mkdir -p ./maestro-results
+
+            echo "Installing APK on emulator..."
             adb install -r "${{ steps.apk.outputs.path }}"
+
+            echo "Starting Maestro E2E tests..."
             maestro test .maestro/ --include-tags smoke --test-output-dir=./maestro-results
 
       - name: Upload Maestro results
