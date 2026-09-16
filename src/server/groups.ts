@@ -75,11 +75,6 @@ function resolveGroupPhotoUrl(profilePic: string | null): string | null {
   return profilePic.startsWith('http') ? profilePic : `${API_BASE_URL}${profilePic}`;
 }
 
-async function throwApiError(response: Response, fallbackMessage: string): Promise<never> {
-  const text = await response.text();
-  throw new ApiError(text || response.statusText || fallbackMessage, response.status);
-}
-
 export async function listGroups(): Promise<Group[]> {
   const response = await fetch(`${API_BASE_URL}/groups`);
 
@@ -122,7 +117,11 @@ export async function getGroupInviteLink(groupId: string): Promise<GroupInviteLi
   const response = await fetch(`${API_BASE_URL}/groups/${groupId}/invite-link`);
 
   if (!response.ok) {
-    return throwApiError(response, 'Failed to load invite link');
+    const text = await response.text();
+    throw new ApiError(
+      text || response.statusText || 'Failed to load invite link',
+      response.status
+    );
   }
 
   return (await response.json()) as GroupInviteLink;
@@ -134,7 +133,8 @@ export async function joinGroupByInvite(token: string): Promise<JoinGroupByInvit
   });
 
   if (!response.ok) {
-    return throwApiError(response, 'Failed to join group');
+    const text = await response.text();
+    throw new ApiError(text || response.statusText || 'Failed to join group', response.status);
   }
 
   return (await response.json()) as JoinGroupByInviteResponse;
