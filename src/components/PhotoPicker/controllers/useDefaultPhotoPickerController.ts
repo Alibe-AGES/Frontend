@@ -1,5 +1,6 @@
 import {
   PhotoPickerStrategy,
+  SelectedPhoto,
   UsePhotoPickerParams,
 } from '@/components/PhotoPicker/PhotoPicker.types';
 import * as ImagePicker from 'expo-image-picker';
@@ -42,11 +43,13 @@ export const useDefaultPhotoPickerController = ({
   }, [successMessageDurationMs]);
 
   const uploadPhoto = useCallback(
-    async (uri: string) => {
+    async (photo: SelectedPhoto) => {
+      const { uri } = photo;
+
       if (!uploadUrl) {
         setPhotoUri(uri);
-        Toast.show({ type: 'success', text1: 'Sucesso!', text2: 'Foto enviada com sucesso!' });
-        onUploadSuccess?.(uri);
+        Toast.show({ type: 'success', text1: 'Sucesso!', text2: 'Foto selecionada!' });
+        onUploadSuccess?.(photo);
         return;
       }
 
@@ -73,7 +76,7 @@ export const useDefaultPhotoPickerController = ({
 
         setPhotoUri(uri);
         Toast.show({ type: 'success', text1: 'Sucesso!', text2: 'Foto enviada com sucesso!' });
-        onUploadSuccess?.(uri);
+        onUploadSuccess?.(photo);
       } catch (err) {
         Toast.show({
           type: 'error',
@@ -107,7 +110,12 @@ export const useDefaultPhotoPickerController = ({
     });
 
     if (!result.canceled && result.assets[0]?.uri) {
-      await uploadPhoto(result.assets[0].uri);
+      const asset = result.assets[0];
+      await uploadPhoto({
+        uri: asset.uri,
+        fileName: asset.fileName,
+        mimeType: asset.mimeType,
+      });
     }
   }, [uploadPhoto]);
 

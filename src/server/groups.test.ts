@@ -1,5 +1,6 @@
+import { API_BASE_URL } from '@/constants';
 import { ApiError } from './api';
-import { listGroups } from './groups';
+import { createGroup, listGroups } from './groups';
 
 declare const global: { fetch: jest.Mock };
 
@@ -25,7 +26,7 @@ describe('listGroups', () => {
 
     await listGroups();
 
-    expect(global.fetch).toHaveBeenCalledWith('http://localhost:3000/groups');
+    expect(global.fetch).toHaveBeenCalledWith(API_BASE_URL + '/groups');
   });
 
   test('resolves a relative profilePic into a full URL', async () => {
@@ -33,7 +34,7 @@ describe('listGroups', () => {
 
     const groups = await listGroups();
 
-    expect(groups[0].profilePic).toBe('http://localhost:3000/groups/1/profile-picture');
+    expect(groups[0].profilePic).toBe(API_BASE_URL + '/groups/1/profile-picture');
   });
 
   test('keeps an absolute profilePic untouched', async () => {
@@ -61,5 +62,73 @@ describe('listGroups', () => {
     });
 
     await expect(listGroups()).rejects.toBeInstanceOf(ApiError);
+  });
+});
+
+describe('createGroup', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.clearAllMocks();
+  });
+
+  test('sends the group name using multipart form data', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          ...BASE_GROUP,
+          name: 'Amigos da faculdade',
+          profilePic: null,
+        }),
+    });
+
+    await createGroup({ name: '  Amigos da faculdade  ' });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      API_BASE_URL + '/groups',
+      expect.objectContaining({
+        method: 'POST',
+        body: expect.any(FormData) as FormData,
+      })
+    );
+  });
+
+  test('adds the selected image to the multipart request', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          ...BASE_GROUP,
+          profilePic: '/groups/1/profile-picture',
+        }),
+    });
+
+    await createGroup({
+      name: 'Hermanas',
+      image: {
+        uri: 'file://photo.png',
+        fileName: 'photo.png',
+        mimeType: 'image/png',
+      },
+    });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      API_BASE_URL + '/groups',
+      expect.objectContaining({
+        method: 'POST',
+        body: expect.any(FormData) as FormData,
+      })
+    );
+  });
+
+  test('throws an ApiError when group creation fails', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      statusText: 'Bad Request',
+      text: () => Promise.resolve('Nome inválido'),
+    });
+
+    await expect(createGroup({ name: 'Grupo' })).rejects.toBeInstanceOf(ApiError);
   });
 });
