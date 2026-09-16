@@ -67,7 +67,10 @@ describe('<CreateGroupScreen />', () => {
         name: 'Amigos da faculdade',
         image: null,
       });
-      expect(mockPush).toHaveBeenCalledWith('/create-group/invite');
+      expect(mockPush).toHaveBeenCalledWith({
+        pathname: '/create-group/invite',
+        params: { groupId: 'group-id' },
+      });
     });
   });
 
