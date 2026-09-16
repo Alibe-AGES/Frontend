@@ -4,12 +4,12 @@
 #
 # To add a test: copy this file to .maestro/flows/<area>-<name>.yaml, set its tags and edit the steps.
 # Selectors: prefer id: (component testID) or text: (visible text / accessibilityLabel).
-# Run by tag: npm run e2e:dev -- --include-tags smoke (dev build) or npm run e2e -- --include-tags smoke (release).
+# Run by tag: npm run test:e2e:dev -- --include-tags smoke (dev build) or npm run test:e2e -- --include-tags smoke (release).
 # Run this file only: maestro test -e DEV_CLIENT=true .maestro/flows/smoke.yaml
 appId: com.alibe.app
 tags: [smoke]
 ---
 - runFlow: ../subflows/launch.yaml
 - extendedWaitUntil:
-    visible: 'Welcome to screen Loading'
+    visible: 'Alibe'
     timeout: 60000
