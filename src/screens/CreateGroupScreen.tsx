@@ -34,8 +34,11 @@ export function CreateGroupScreen() {
     setIsSubmitting(true);
 
     try {
-      await createGroup({ name, image: groupPhoto });
-      router.push('/create-group/invite');
+      const group = await createGroup({ name, image: groupPhoto });
+      router.push({
+        pathname: '/create-group/invite',
+        params: { groupId: group.id },
+      });
     } catch {
       Toast.show({
         type: 'error',

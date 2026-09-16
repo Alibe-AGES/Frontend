@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '@/constants';
 import { ApiError } from './api';
-import { createGroup, listGroups } from './groups';
+import { createGroup, getGroupInviteLink, joinGroupByInvite, listGroups } from './groups';
 
 declare const global: { fetch: jest.Mock };
 
@@ -130,5 +130,61 @@ describe('createGroup', () => {
     });
 
     await expect(createGroup({ name: 'Grupo' })).rejects.toBeInstanceOf(ApiError);
+  });
+});
+
+describe('group invites', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.clearAllMocks();
+  });
+
+  test('gets the current invite link for a group', async () => {
+    const invite = {
+      token: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+      expiresAt: '2026-12-31T23:59:59.000Z',
+    };
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(invite),
+    });
+
+    await expect(getGroupInviteLink('group-id')).resolves.toEqual(invite);
+    expect(global.fetch).toHaveBeenCalledWith(API_BASE_URL + '/groups/group-id/invite-link');
+  });
+
+  test('joins a group using the invite token', async () => {
+    const token = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ token }),
+    });
+
+    await expect(joinGroupByInvite(token)).resolves.toEqual({ token });
+    expect(global.fetch).toHaveBeenCalledWith(API_BASE_URL + `/invite-links/${token}/join`, {
+      method: 'POST',
+    });
+  });
+
+  test('throws an ApiError when the invite cannot be loaded', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 403,
+      statusText: 'Forbidden',
+      text: () => Promise.resolve(''),
+    });
+
+    await expect(getGroupInviteLink('group-id')).rejects.toBeInstanceOf(ApiError);
+  });
+
+  test('throws an ApiError when joining the group fails', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 410,
+      statusText: 'Gone',
+      text: () => Promise.resolve('Invite expired'),
+    });
+
+    await expect(joinGroupByInvite('expired-token')).rejects.toBeInstanceOf(ApiError);
   });
 });
