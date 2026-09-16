@@ -7,7 +7,7 @@ interface PermissionResult {
 }
 interface PickerResult {
   canceled: boolean;
-  assets?: { uri: string }[];
+  assets?: { uri: string; fileName?: string | null; mimeType?: string | null }[];
 }
 
 declare const global: { fetch: jest.Mock };
@@ -33,7 +33,7 @@ describe('<PhotoPicker />', () => {
     mockRequestPermissions.mockResolvedValue({ granted: true });
     mockLaunchImageLibrary.mockResolvedValue({
       canceled: false,
-      assets: [{ uri: 'file://photo.jpg' }],
+      assets: [{ uri: 'file://photo.jpg', fileName: 'photo.jpg', mimeType: 'image/jpeg' }],
     });
     global.fetch = jest.fn().mockResolvedValue({ ok: true });
   });
@@ -84,7 +84,11 @@ describe('<PhotoPicker />', () => {
     });
 
     await waitFor(() => {
-      expect(onUploadSuccess).toHaveBeenCalledWith('file://photo.jpg');
+      expect(onUploadSuccess).toHaveBeenCalledWith({
+        uri: 'file://photo.jpg',
+        fileName: 'photo.jpg',
+        mimeType: 'image/jpeg',
+      });
       expect(getByTestId('alibe-photo-picker-photo')).toBeTruthy();
       // Asserção do Toast (se mockado): expect(Toast.show).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }));
     });
@@ -98,7 +102,11 @@ describe('<PhotoPicker />', () => {
 
     await waitFor(() => {
       expect(getByTestId('alibe-photo-picker-photo')).toBeTruthy();
-      expect(onUploadSuccess).toHaveBeenCalledWith('file://photo.jpg');
+      expect(onUploadSuccess).toHaveBeenCalledWith({
+        uri: 'file://photo.jpg',
+        fileName: 'photo.jpg',
+        mimeType: 'image/jpeg',
+      });
     });
   });
 
