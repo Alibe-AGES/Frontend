@@ -1,13 +1,23 @@
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { CreateGroupScreen } from './CreateGroupScreen';
 
 const mockPush = jest.fn();
+const mockCreateGroup = jest.fn();
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
+jest.mock('@/server/groups', () => ({
+  createGroup: (input: unknown): Promise<{ id: string }> =>
+    mockCreateGroup(input) as Promise<{ id: string }>,
+}));
+
 describe('<CreateGroupScreen />', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockCreateGroup.mockResolvedValue({ id: 'group-id' });
+  });
   test('renders the main title', async () => {
     const { getByText } = await render(<CreateGroupScreen />);
 
@@ -46,11 +56,30 @@ describe('<CreateGroupScreen />', () => {
     expect(getByText('Continuar')).toBeTruthy();
   });
 
-  test('navigates to the invite step when continuing', async () => {
+  test('creates the group and navigates to the invite step when continuing', async () => {
+    const { getByPlaceholderText, getByText } = await render(<CreateGroupScreen />);
+
+    await fireEvent.changeText(getByPlaceholderText('Nome do grupo'), 'Amigos da faculdade');
+    await fireEvent.press(getByText('Continuar'));
+
+    await waitFor(() => {
+      expect(mockCreateGroup).toHaveBeenCalledWith({
+        name: 'Amigos da faculdade',
+        image: null,
+      });
+      expect(mockPush).toHaveBeenCalledWith({
+        pathname: '/create-group/invite',
+        params: { groupId: 'group-id' },
+      });
+    });
+  });
+
+  test('does not call the backend when the group name is invalid', async () => {
     const { getByText } = await render(<CreateGroupScreen />);
 
     await fireEvent.press(getByText('Continuar'));
 
-    expect(mockPush).toHaveBeenCalledWith('/create-group/invite');
+    expect(getByText('O nome deve conter entre 2 e 100 caracteres.')).toBeTruthy();
+    expect(mockCreateGroup).not.toHaveBeenCalled();
   });
 });

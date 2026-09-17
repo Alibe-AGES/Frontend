@@ -1,9 +1,12 @@
 import { CreateGroupButton } from '@/components/CreateGroupButton';
 import { GroupsList } from '@/components/GroupsList';
+import { joinGroupByInvite, listGroups } from '@/server/groups';
 import { theme } from '@/theme';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
 import { Text, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 import greenSpin from '@/assets/images/green-spin.svg';
 import groupSpin from '@/assets/images/group-spin.svg';
@@ -11,6 +14,63 @@ import pinkSpin from '@/assets/images/pink-spin.svg';
 
 export function GroupsScreen() {
   const router = useRouter();
+  const { invite } = useLocalSearchParams<{ invite?: string }>();
+  const handledToken = useRef<string | null>(null);
+  const [groupsListVersion, setGroupsListVersion] = useState(0);
+
+  useEffect(() => {
+    if (!invite || handledToken.current === invite) {
+      return;
+    }
+
+    handledToken.current = invite;
+
+    const joinGroup = async () => {
+      try {
+        let previousGroupIds = new Set<string>();
+        let previousGroupsLoaded = false;
+
+        try {
+          const previousGroups = await listGroups();
+          previousGroupIds = new Set(previousGroups.map((group) => group.id));
+          previousGroupsLoaded = true;
+        } catch {
+          // A entrada no grupo continua mesmo se a listagem inicial falhar.
+        }
+
+        await joinGroupByInvite(invite);
+        let joinedGroupName: string | undefined;
+
+        try {
+          const updatedGroups = await listGroups();
+          if (previousGroupsLoaded) {
+            joinedGroupName = updatedGroups.find((group) => !previousGroupIds.has(group.id))?.name;
+          }
+        } catch {
+          // A lista será carregada novamente pelo componente após o convite.
+        }
+
+        setGroupsListVersion((currentVersion) => currentVersion + 1);
+        Toast.show({
+          type: 'success',
+          text1: 'Convite aceito!',
+          text2: joinedGroupName
+            ? `Você entrou no grupo ${joinedGroupName} por um link de convite.`
+            : 'Você entrou em um grupo por um link de convite.',
+        });
+      } catch {
+        Toast.show({
+          type: 'error',
+          text1: 'Não foi possível aceitar o convite',
+          text2: 'O link pode ser inválido ou ter expirado.',
+        });
+      } finally {
+        router.replace('/groups');
+      }
+    };
+
+    void joinGroup();
+  }, [invite, router]);
 
   const handleCreateGroup = () => {
     router.push('/create-group');
@@ -59,7 +119,10 @@ export function GroupsScreen() {
           <CreateGroupButton onPress={handleCreateGroup} />
         </View>
 
-        <GroupsList onGroupPress={handleGroupPress} />
+        <GroupsList
+          key={groupsListVersion}
+          onGroupPress={handleGroupPress}
+        />
       </View>
     </View>
   );

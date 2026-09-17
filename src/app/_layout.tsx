@@ -9,8 +9,11 @@ import {
 } from '@expo-google-fonts/poppins';
 import { Stack } from 'expo-router/stack';
 import * as SplashScreen from 'expo-splash-screen';
+import { polyfillWebCrypto } from 'expo-standard-web-crypto';
 import { useEffect } from 'react';
 import Toast from 'react-native-toast-message';
+
+polyfillWebCrypto();
 
 void SplashScreen.preventAutoHideAsync();
 
