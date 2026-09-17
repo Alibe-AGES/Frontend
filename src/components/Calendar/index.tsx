@@ -33,6 +33,7 @@ const dayContainerClasses: Record<DayStatus, string> = {
   realized: 'bg-ink',
   suggested: 'bg-pink',
   allAvailable: 'bg-coral',
+  past: 'bg-transparent',
 };
 
 const dayTextClasses: Record<DayStatus, string> = {
@@ -41,6 +42,7 @@ const dayTextClasses: Record<DayStatus, string> = {
   realized: 'text-canvas',
   suggested: 'text-canvas',
   allAvailable: 'text-canvas',
+  past: 'text-inkSoft/40',
 };
 
 function formatCalendarDate(date: Date): string {
@@ -106,11 +108,14 @@ function DayCell({ date, mark, onPress }: CalendarDayProps) {
 
   const containerClass = dayContainerClasses[mark.status];
   const textClass = dayTextClasses[mark.status];
+  const isPast = mark.status === 'past';
 
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`Dia ${date.dateString}`}
+      accessibilityState={{ disabled: isPast }}
+      disabled={isPast}
       className="h-11 w-11 items-center justify-center"
       onPress={() => {
         onPress?.(date.dateString);

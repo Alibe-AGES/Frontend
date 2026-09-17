@@ -1,13 +1,15 @@
+import { BackButton } from '@/components/BackButton';
 import { Calendar } from '@/components/Calendar';
 import { DayMark } from '@/components/Calendar/Calendar.types';
 import { NavigationBar } from '@/components/NavigationBar';
 import { CalendarDay, getGroupCalendar } from '@/server/calendar';
-import { getGroupMembers, GroupMember } from '@/server/groups';
+import { getGroup, getGroupMembers, GroupMember } from '@/server/groups';
 import { theme } from '@/theme';
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 
 function formatDate(date: Date): string {
   const year = String(date.getFullYear());
@@ -17,7 +19,7 @@ function formatDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-function buildDayMarks(days: CalendarDay[]): Record<string, DayMark> {
+function buildDayMarks(days: CalendarDay[], today: string): Record<string, DayMark> {
   const marks: Record<string, DayMark> = {};
 
   for (const day of days) {
@@ -46,47 +48,21 @@ function buildDayMarks(days: CalendarDay[]): Record<string, DayMark> {
     }
   }
 
-  return marks;
-}
+  return new Proxy(marks, {
+    get(target, date: string) {
+      const mark = target[date];
 
-interface MemberItemProps {
-  member: GroupMember;
-  isAvailable: boolean;
-}
+      if (mark) {
+        return mark;
+      }
 
-function MemberItem({ member, isAvailable }: MemberItemProps) {
-  const photoUri =
-    member.profilePic ??
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=random`;
+      if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date) && date < today) {
+        return { status: 'past' as const };
+      }
 
-  return (
-    <View
-      className="items-center gap-1"
-      testID={`group-screen-member-${member.id}`}
-    >
-      <Image
-        source={{ uri: photoUri }}
-        accessibilityLabel={member.name}
-        contentFit="cover"
-        className="h-14 w-14 rounded-full border-2 border-canvas"
-      />
-
-      <View
-        accessibilityLabel={
-          isAvailable ? `${member.name} disponível` : `${member.name} indisponível`
-        }
-        className={`h-2.5 w-2.5 rounded-full ${isAvailable ? 'bg-lime' : 'bg-inkSoft'}`}
-        testID={`group-screen-member-${member.id}-status`}
-      />
-
-      <Text
-        className="max-w-16 text-center text-xs font-medium text-ink"
-        numberOfLines={1}
-      >
-        {member.name}
-      </Text>
-    </View>
-  );
+      return undefined;
+    },
+  });
 }
 
 export function GroupScreen() {
@@ -94,6 +70,8 @@ export function GroupScreen() {
   const { id: groupId } = useLocalSearchParams<{ id: string }>();
 
   const [members, setMembers] = useState<GroupMember[]>([]);
+  const [groupName, setGroupName] = useState('');
+  const [groupPhoto, setGroupPhoto] = useState<string | null>(null);
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
   const [visibleMonth, setVisibleMonth] = useState(() => {
     const now = new Date();
@@ -102,12 +80,7 @@ export function GroupScreen() {
 
   const today = formatDate(new Date());
 
-  const dayMarks = useMemo(() => buildDayMarks(calendarDays), [calendarDays]);
-
-  const availableMemberIds = useMemo(() => {
-    const todayEntry = calendarDays.find((day) => day.date === today);
-    return new Set(todayEntry?.availableUserIds ?? []);
-  }, [calendarDays, today]);
+  const dayMarks = useMemo(() => buildDayMarks(calendarDays, today), [calendarDays, today]);
 
   const loadMembers = useCallback(async () => {
     if (!groupId) {
@@ -119,6 +92,20 @@ export function GroupScreen() {
       setMembers(data);
     } catch (error) {
       console.error('Erro ao buscar membros do grupo', error);
+    }
+  }, [groupId]);
+
+  const loadGroup = useCallback(async () => {
+    if (!groupId) {
+      return;
+    }
+
+    try {
+      const data = await getGroup(groupId);
+      setGroupName(data.name);
+      setGroupPhoto(data.profilePic);
+    } catch (error) {
+      console.error('Erro ao buscar o grupo', error);
     }
   }, [groupId]);
 
@@ -137,11 +124,20 @@ export function GroupScreen() {
 
   useEffect(() => {
     void loadMembers();
-  }, [loadMembers]);
+    void loadGroup();
+  }, [loadMembers, loadGroup]);
 
   useEffect(() => {
     void loadCalendar();
   }, [loadCalendar]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadMembers();
+      void loadGroup();
+      void loadCalendar();
+    }, [loadMembers, loadGroup, loadCalendar])
+  );
 
   const handleDayPress = (dateString: string) => {
     if (!groupId) {
@@ -164,6 +160,16 @@ export function GroupScreen() {
     setVisibleMonth({ month, year });
   };
 
+  const handleOpenInfo = () => {
+    if (!groupId) {
+      return;
+    }
+
+    router.push({ pathname: '/group/[id]/info', params: { id: groupId } });
+  };
+
+  const membersText = members.map((member) => member.name).join(', ');
+
   return (
     <View className="flex-1 bg-canvas">
       <ScrollView
@@ -171,35 +177,66 @@ export function GroupScreen() {
         contentContainerClassName="gap-6 px-6 pb-32 pt-16"
         testID="group-screen"
       >
-        <Text className="text-center text-3xl font-black text-ink">Calendário do grupo</Text>
+        <View className="flex-row items-center">
+          <BackButton
+            fallbackHref="/groups"
+            accessibilityLabel="Voltar para meus grupos"
+          />
 
-        <View className="gap-3">
-          <Text
-            className="text-lg font-bold"
-            style={{ color: theme.colors.wine }}
-          >
-            Membros
+          <Text className="flex-1 pr-10 text-center text-3xl font-black text-ink">
+            Calendário do grupo
           </Text>
-
-          {members.length > 0 ? (
-            <View
-              className="flex-row flex-wrap gap-4"
-              testID="group-screen-members"
-            >
-              {members.map((member) => (
-                <MemberItem
-                  key={member.id}
-                  member={member}
-                  isAvailable={availableMemberIds.has(member.id)}
-                />
-              ))}
-            </View>
-          ) : (
-            <Text className="text-inkSoft text-sm font-medium">
-              Nenhum membro encontrado neste grupo.
-            </Text>
-          )}
         </View>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Ver informações do grupo"
+          onPress={handleOpenInfo}
+          className="flex-row items-center gap-3 rounded-2xl bg-surface p-3"
+          testID="group-screen-members"
+        >
+          <View className="h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-coral">
+            {groupPhoto ? (
+              <Image
+                source={{ uri: groupPhoto }}
+                accessibilityLabel={`Foto do grupo ${groupName}`}
+                contentFit="cover"
+                className="h-14 w-14 rounded-full"
+                testID="group-screen-photo"
+              />
+            ) : (
+              <Ionicons
+                name="people-outline"
+                size={26}
+                color={theme.colors.coral}
+                testID="group-screen-photo-placeholder"
+              />
+            )}
+          </View>
+
+          <View className="flex-1">
+            <Text
+              className="font-poppins-semibold text-lg text-wine"
+              numberOfLines={1}
+            >
+              {groupName}
+            </Text>
+
+            {members.length > 0 ? (
+              <Text
+                className="font-poppins text-sm text-wine"
+                numberOfLines={1}
+                testID="group-screen-members-names"
+              >
+                {membersText}
+              </Text>
+            ) : (
+              <Text className="text-inkSoft text-sm font-medium">
+                Nenhum membro encontrado neste grupo.
+              </Text>
+            )}
+          </View>
+        </Pressable>
 
         <View className="rounded-3xl bg-surface p-4">
           <Calendar

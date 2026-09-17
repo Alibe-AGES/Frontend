@@ -68,6 +68,7 @@ export const GroupsList: FC<GroupsListProps> = ({ onGroupPress, testID = 'alibe-
           name={item.name}
           color={item.color}
           photoUri={item.photoUri}
+          membersPreview={item.membersPreview}
           onPress={onGroupPress}
           testID={`${testID}-item-${item.id}`}
         />

@@ -29,6 +29,26 @@ export interface JoinGroupByInviteResponse {
   token: string;
 }
 
+export interface CurrentUser {
+  id: string;
+  name: string;
+  profilePic: string | null;
+}
+
+export async function getMe(): Promise<CurrentUser> {
+  const response = await fetch(`${API_BASE_URL}/auth/me`);
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new ApiError(
+      text || response.statusText || 'Failed to load current user',
+      response.status
+    );
+  }
+
+  return (await response.json()) as CurrentUser;
+}
+
 const IMAGE_EXTENSION_BY_MIME_TYPE: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',

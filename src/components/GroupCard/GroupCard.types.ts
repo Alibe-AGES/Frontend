@@ -5,6 +5,7 @@ export interface GroupCardProps {
   name: string;
   color: GroupColor;
   photoUri?: string | null;
+  membersPreview?: string;
   onPress?: (id: string) => void;
   testID?: string;
 }

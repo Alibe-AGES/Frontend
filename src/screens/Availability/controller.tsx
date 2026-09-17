@@ -38,6 +38,10 @@ export default function AvailabilityController() {
   }, [groupId, targetDate]);
 
   const handleConfirm = async (intervals: AvailabilityInterval[]) => {
+    if (!groupId) {
+      return;
+    }
+
     const formattedIntervals = intervals
       .filter((i) => i.startTime && i.endTime)
       .map((i) => ({
@@ -45,10 +49,14 @@ export default function AvailabilityController() {
         endTime: i.endTime,
       }));
 
-    await createAvailability(groupId, {
+    const payload = {
       date: targetDate,
       intervals: formattedIntervals,
-    });
+    };
+
+    console.log('[Availability] POST payload:', JSON.stringify(payload));
+
+    await createAvailability(groupId, payload);
 
     if (router.canGoBack()) {
       router.back();

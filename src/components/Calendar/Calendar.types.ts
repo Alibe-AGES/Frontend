@@ -1,4 +1,4 @@
-export type DayStatus = 'available' | 'realized' | 'suggested' | 'allAvailable' | 'normal';
+export type DayStatus = 'available' | 'realized' | 'suggested' | 'allAvailable' | 'past' | 'normal';
 
 export type DayDot = 'pink' | 'coral';
 
