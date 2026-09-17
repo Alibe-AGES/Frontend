@@ -20,7 +20,7 @@ function buildMemberAvailabilities(
 
   return [...byMember.entries()].map(([memberId, dates]) => ({
     memberId,
-    dates: dates.sort(),
+    dates: dates.toSorted((first, second) => first.localeCompare(second)),
   }));
 }
 
@@ -66,9 +66,7 @@ export default function GroupInfoController() {
     try {
       const invite = await getGroupInviteLink(groupId);
       setInviteExpiresAt(invite.expiresAt);
-      setInviteUrl(
-        Linking.createURL('/groups', { queryParams: { invite: invite.token } })
-      );
+      setInviteUrl(Linking.createURL('/groups', { queryParams: { invite: invite.token } }));
     } catch (error) {
       console.error('Erro ao carregar link de convite', error);
     }

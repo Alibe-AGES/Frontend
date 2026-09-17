@@ -19,48 +19,36 @@ function formatDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+function getDayStatus(day: CalendarDay): DayMark['status'] | undefined {
+  if (day.scheduledEventIds.length > 0) return 'suggested';
+  if (day.completedEventIds.length > 0) return 'realized';
+  if (day.allUsersAvailable) return 'allAvailable';
+  if (day.availableUserIds.length > 0) return 'available';
+  if (day.proposalIds.length > 0) return 'normal';
+  return undefined;
+}
+
 function buildDayMarks(days: CalendarDay[], today: string): Record<string, DayMark> {
   const marks: Record<string, DayMark> = {};
 
   for (const day of days) {
-    if (day.scheduledEventIds.length > 0) {
+    const status = getDayStatus(day);
+
+    if (status !== undefined) {
       marks[day.date] = {
-        status: 'suggested',
+        status,
         dot: day.proposalIds.length > 0 ? 'pink' : undefined,
       };
-    } else if (day.completedEventIds.length > 0) {
-      marks[day.date] = {
-        status: 'realized',
-        dot: day.proposalIds.length > 0 ? 'pink' : undefined,
-      };
-    } else if (day.allUsersAvailable) {
-      marks[day.date] = {
-        status: 'allAvailable',
-        dot: day.proposalIds.length > 0 ? 'pink' : undefined,
-      };
-    } else if (day.availableUserIds.length > 0) {
-      marks[day.date] = {
-        status: 'available',
-        dot: day.proposalIds.length > 0 ? 'pink' : undefined,
-      };
-    } else if (day.proposalIds.length > 0) {
-      marks[day.date] = { status: 'normal', dot: 'pink' };
     }
   }
 
   return new Proxy(marks, {
     get(target, date: string) {
-      const mark = target[date];
-
-      if (mark) {
-        return mark;
-      }
-
       if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date) && date < today) {
-        return { status: 'past' as const };
+        return target[date] ?? { status: 'past' as const };
       }
 
-      return undefined;
+      return target[date];
     },
   });
 }
@@ -216,7 +204,7 @@ export function GroupScreen() {
 
           <View className="flex-1">
             <Text
-              className="font-poppins-semibold text-lg text-wine"
+              className="text-wine font-poppins-semibold text-lg"
               numberOfLines={1}
             >
               {groupName}
@@ -224,7 +212,7 @@ export function GroupScreen() {
 
             {members.length > 0 ? (
               <Text
-                className="font-poppins text-sm text-wine"
+                className="text-wine font-poppins text-sm"
                 numberOfLines={1}
                 testID="group-screen-members-names"
               >
