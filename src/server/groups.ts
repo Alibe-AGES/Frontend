@@ -113,6 +113,49 @@ export async function createGroup(input: CreateGroupInput): Promise<Group> {
   return { ...group, profilePic: resolveGroupPhotoUrl(group.profilePic) };
 }
 
+export interface GroupMember {
+  id: string;
+  name: string;
+  profilePic: string | null;
+}
+
+export interface GroupDetails {
+  id: string;
+  name: string;
+  profilePic: string | null;
+  createdAt: string;
+  participants: GroupMember[];
+}
+
+export async function getGroup(groupId: string): Promise<GroupDetails> {
+  const response = await fetch(`${API_BASE_URL}/groups/${groupId}`);
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new ApiError(
+      text || response.statusText || 'Failed to load group',
+      response.status
+    );
+  }
+
+  const group = (await response.json()) as GroupDetails;
+
+  return {
+    ...group,
+    profilePic: resolveGroupPhotoUrl(group.profilePic),
+    participants: (group.participants ?? []).map((member) => ({
+      ...member,
+      profilePic: resolveGroupPhotoUrl(member.profilePic),
+    })),
+  };
+}
+
+export async function getGroupMembers(groupId: string): Promise<GroupMember[]> {
+  const group = await getGroup(groupId);
+
+  return group.participants;
+}
+
 export async function getGroupInviteLink(groupId: string): Promise<GroupInviteLink> {
   const response = await fetch(`${API_BASE_URL}/groups/${groupId}/invite-link`);
 

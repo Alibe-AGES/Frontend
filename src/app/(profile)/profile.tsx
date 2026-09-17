@@ -1,1 +1,1 @@
-export { CreateProfileScreen as default } from '@/screens/CreateProfileScreen';
+export { default } from '@/screens/CreateProfile/controller';

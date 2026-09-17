@@ -1,13 +1,12 @@
-import { Image } from 'expo-image';
 import { useContext } from 'react';
 import { Pressable, View } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import tw from 'twrnc';
 
-import heartIcon from '@/assets/images/nav-heart.svg';
-import hourglassIcon from '@/assets/images/nav-hourglass.svg';
-import searchIcon from '@/assets/images/nav-search.svg';
-import swapIcon from '@/assets/images/nav-swap.svg';
+import HeartIcon from '@/assets/images/nav-heart.svg';
+import HourglassIcon from '@/assets/images/nav-hourglass.svg';
+import SearchIcon from '@/assets/images/nav-search.svg';
+import SwapIcon from '@/assets/images/nav-swap.svg';
 import {
   NavigationBarAction,
   NavigationBarProps,
@@ -17,7 +16,7 @@ import { theme } from '@/theme';
 
 interface IconItem {
   action: Exclude<NavigationBarAction, 'create'>;
-  icon: typeof heartIcon;
+  icon: typeof HeartIcon;
   label: string;
   size: string;
 }
@@ -25,13 +24,13 @@ interface IconItem {
 const LEFT_ITEMS: IconItem[] = [
   {
     action: 'matches',
-    icon: heartIcon,
+    icon: HeartIcon,
     label: 'Match de rolês',
     size: 'h-[1.375rem] w-[1.5625rem]',
   },
   {
     action: 'search',
-    icon: searchIcon,
+    icon: SearchIcon,
     label: 'Experiências',
     size: 'h-[1.1875rem] w-[1.1875rem]',
   },
@@ -40,13 +39,13 @@ const LEFT_ITEMS: IconItem[] = [
 const RIGHT_ITEMS: IconItem[] = [
   {
     action: 'memories',
-    icon: hourglassIcon,
+    icon: HourglassIcon,
     label: 'Memórias',
     size: 'h-[1.3125rem] w-[1.0625rem]',
   },
   {
     action: 'groups',
-    icon: swapIcon,
+    icon: SwapIcon,
     label: 'Meus grupos',
     size: 'h-[1.3125rem] w-[1.1875rem]',
   },
@@ -58,7 +57,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ groupId, className
   const { navigate } = useDefaultNavigationBarController({ groupId });
   const insets = useContext(SafeAreaInsetsContext);
 
-  const renderIcon = ({ action, icon, label, size }: IconItem) => (
+  const renderIcon = ({ action, icon: Icon, label, size }: IconItem) => (
     <Pressable
       key={action}
       accessibilityRole="button"
@@ -71,13 +70,16 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ groupId, className
       style={({ pressed }) => tw`${pressed ? 'opacity-60' : ''}`}
       testID={`alibe-navigation-bar-${action}`}
     >
-      <Image
-        source={icon}
+      <View
         accessible={false}
-        contentFit="contain"
-        tintColor={theme.colors.white}
-        style={tw`${size}`}
-      />
+        className={size}
+      >
+        <Icon
+          width="100%"
+          height="100%"
+          color={theme.colors.white}
+        />
+      </View>
     </Pressable>
   );
 

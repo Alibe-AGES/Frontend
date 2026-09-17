@@ -1,1 +1,1 @@
-export { NewMemoryScreen as default } from '@/screens/NewMemoryScreen';
+export { default } from '@/screens/NewMemory/controller';

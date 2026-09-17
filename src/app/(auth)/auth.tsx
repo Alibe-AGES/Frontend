@@ -1,1 +1,1 @@
-export { AuthScreen as default } from '@/screens/AuthScreen';
+export { default } from '@/screens/Auth/controller';
