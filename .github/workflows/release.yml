@@ -84,7 +84,7 @@ jobs:
     # It generates release notes and publishes the release.
     name: Publish Release
     needs: call-e2e-tests-workflow
-    if: needs.call-e2e-tests-workflow.result == 'success'
+    if: always() && needs.call-e2e-tests-workflow.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write

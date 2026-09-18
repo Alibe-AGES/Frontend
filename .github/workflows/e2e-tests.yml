@@ -5,8 +5,10 @@ on:
 
 jobs:
   maestro:
-    name: Maestro E2E
+    name: Maestro
     runs-on: ubuntu-latest
+    env:
+      ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: 10
 
     steps:
       - name: Checkout repository
@@ -69,7 +71,8 @@ jobs:
             -no-window
             -no-audio
             -no-boot-anim
-            -no-snapshot
+            -no-snapshot-load
+            -no-snapshot-save
             -gpu swiftshader_indirect
           script: |
             mkdir -p ./maestro-results
