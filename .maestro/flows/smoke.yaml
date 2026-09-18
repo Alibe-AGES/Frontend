@@ -17,7 +17,7 @@ tags: [smoke]
 - assertVisible:
     id: alibe-loading-logo-symbol
 - assertVisible:
-    id: alibe-loading-logotype
+    id: alibe-loading-logo-text
 - assertVisible:
     id: alibe-loading-top-decoration
 - assertVisible:

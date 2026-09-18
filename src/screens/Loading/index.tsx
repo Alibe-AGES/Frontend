@@ -31,6 +31,7 @@ export function LoadingScreen() {
           <GreenSpin
             width="100%"
             height="100%"
+            testID="alibe-loading-top-decoration"
           />
         </View>
 
@@ -41,6 +42,7 @@ export function LoadingScreen() {
           <GreenSpin
             width="100%"
             height="100%"
+            testID="alibe-loading-bottom-decoration"
           />
         </View>
 
@@ -52,6 +54,7 @@ export function LoadingScreen() {
             <GroupSpin
               width="100%"
               height="100%"
+              testID="alibe-loading-logo-symbol"
             />
           </View>
 
@@ -62,6 +65,7 @@ export function LoadingScreen() {
             <Logo
               width="100%"
               height="100%"
+              testID="alibe-loading-logo-text"
             />
           </View>
         </View>
