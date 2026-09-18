@@ -76,8 +76,8 @@
     "test:e2e": "maestro test .maestro/",
     "test:e2e:dev": "maestro test -e DEV_CLIENT=true .maestro/",
     "test:e2e:studio": "maestro studio",
-    "build:android": "expo run:android --variant release",
-    "build:android:dev": "expo run:android"
+    "build:android": "npx expo prebuild --platform android --clean && npx expo run:android --variant release",
+    "build:android:dev": "npx expo prebuild --platform android --clean && npx expo run:android"
   },
   "jest": {
     "preset": "jest-expo",
