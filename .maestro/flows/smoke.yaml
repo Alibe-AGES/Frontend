@@ -11,5 +11,14 @@ tags: [smoke]
 ---
 - runFlow: ../subflows/launch.yaml
 - extendedWaitUntil:
-    visible: 'Alibe'
+    visible:
+      id: alibe-loading-screen
     timeout: 60000
+- assertVisible:
+    id: alibe-loading-logo-symbol
+- assertVisible:
+    id: alibe-loading-logotype
+- assertVisible:
+    id: alibe-loading-top-decoration
+- assertVisible:
+    id: alibe-loading-bottom-decoration
