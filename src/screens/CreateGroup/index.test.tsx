@@ -18,23 +18,14 @@ describe('<CreateGroupScreen />', () => {
     jest.clearAllMocks();
     mockCreateGroup.mockResolvedValue({ id: 'group-id' });
   });
-  test('renders the main title', async () => {
-    const { getByText } = await render(<CreateGroupScreen />);
+  test.each([/Vamos\s+começar\?/, 'Seu próximo encontro nasce aqui.', 'Adicionar foto (opcional)'])(
+    'renders the text %s',
+    async (text) => {
+      const { getByText } = await render(<CreateGroupScreen />);
 
-    expect(getByText(/Vamos\s+começar\?/)).toBeTruthy();
-  });
-
-  test('renders the subtitle', async () => {
-    const { getByText } = await render(<CreateGroupScreen />);
-
-    expect(getByText('Seu próximo encontro nasce aqui.')).toBeTruthy();
-  });
-
-  test('renders the optional photo section', async () => {
-    const { getByText } = await render(<CreateGroupScreen />);
-
-    expect(getByText('Adicionar foto (opcional)')).toBeTruthy();
-  });
+      expect(getByText(text)).toBeTruthy();
+    }
+  );
 
   test('renders the group name input', async () => {
     const { getByPlaceholderText } = await render(<CreateGroupScreen />);
