@@ -87,10 +87,10 @@ npm run lint
 npm run format
 npm run format:check
 npm run test:unit
-npm run e2e
+npm run test:e2e
 ```
 
-`npm run e2e` requires an emulator with the app installed; see the end-to-end tests section. For a focused test, run Jest directly:
+`npm run test:e2e` requires an emulator with the app installed; see the end-to-end tests section. For a focused test, run Jest directly:
 
 ```bash
 npx jest src/app/__tests__/index-test.tsx --runInBand
@@ -412,17 +412,17 @@ End-to-end flows use Maestro and live in `.maestro/flows/`. They run on an Andro
 Set up an [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/) and install the [Maestro CLI](https://docs.maestro.dev/getting-started/installing-maestro). Then build the dev app once, keep Metro running, and run the flows:
 
 ```bash
-npm run e2e:build:android:dev
+npm run build:android:dev
 npx expo start
-npm run e2e:dev
+npm run test:e2e:dev
 ```
 
-To run without Metro, use a release app (`npm run e2e:build:android`, or the `app-release` artifact from the _Android APK - Local Build_ workflow) and `npm run e2e`.
+To run without Metro, use a release app (`npm run build:android`, or the `app-release` artifact from the _Android APK - Local Build_ workflow) and `npm run test:e2e`.
 
 To add a test, copy `.maestro/flows/smoke.yaml`, set its `tags`, and replace the steps after `runFlow`. Run a single test with:
 
 ```bash
-npm run e2e:dev -- --include-tags <tag you chose>
+npm run test:e2e:dev -- --include-tags <tag you chose>
 ```
 
 Select elements by visible text when it is unique, and by `id:` with the component `testID` otherwise. Every interactive control gets a `testID` such as `login-submit` (`screen-element`, kebab-case).

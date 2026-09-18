@@ -79,11 +79,11 @@
     "test:watch": "jest --watchAll",
     "test:unit": "jest --ci --runInBand",
     "test:coverage": "jest --ci --runInBand --coverage",
-    "e2e": "maestro test .maestro/",
-    "e2e:dev": "maestro test -e DEV_CLIENT=true .maestro/",
-    "e2e:studio": "maestro studio",
-    "e2e:build:android": "expo run:android --variant release",
-    "e2e:build:android:dev": "expo run:android"
+    "test:e2e": "maestro test .maestro/",
+    "test:e2e:dev": "maestro test -e DEV_CLIENT=true .maestro/",
+    "test:e2e:studio": "maestro studio",
+    "build:android": "npx expo prebuild --platform android --clean && npx expo run:android --variant release",
+    "build:android:dev": "npx expo prebuild --platform android --clean && npx expo run:android"
   },
   "jest": {
     "preset": "jest-expo",
@@ -92,7 +92,12 @@
     ],
     "moduleNameMapper": {
       "\\.svg$": "<rootDir>/__mocks__/svgMock.tsx"
-    }
+    },
+    "collectCoverageFrom": [
+      "src/**/*.{ts,tsx}",
+      "!src/**/*.test.{ts,tsx}",
+      "!src/**/__tests__/**"
+    ]
   },
   "private": true,
   "allowScripts": {
