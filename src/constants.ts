@@ -12,5 +12,4 @@ const LOCAL_API_URL = 'http://localhost:3000';
 const LAN_API_URL = 'http://192.000.0.00:8081';
 
 export const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL ??
-  (Platform.OS === 'web' ? LOCAL_API_URL : LAN_API_URL);
+  process.env.EXPO_PUBLIC_API_URL ?? (Platform.OS === 'web' ? LOCAL_API_URL : LAN_API_URL);

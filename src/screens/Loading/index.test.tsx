@@ -30,7 +30,7 @@ describe('<LoadingScreen />', () => {
   test('navigates to the groups screen when pressed', async () => {
     const { getByTestId } = await render(<LoadingScreen />);
 
-    fireEvent.press(getByTestId('alibe-loading-screen'));
+    await fireEvent.press(getByTestId('alibe-loading-screen'));
 
     expect(mockReplace).toHaveBeenCalledWith('/groups');
   });

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Calendar as RNCalendar } from 'react-native-calendars';
 
@@ -156,6 +156,22 @@ function Legend({ label, variant }: LegendProps) {
   );
 }
 
+interface CalendarDayCellProps {
+  date?: CalendarDay;
+  dayMarks: Record<string, DayMark>;
+  onDayPress?: (dateString: string) => void;
+}
+
+function CalendarDayCell({ date, dayMarks, onDayPress }: CalendarDayCellProps) {
+  return (
+    <DayCell
+      date={date}
+      mark={date ? (dayMarks[date.dateString] ?? { status: 'normal' }) : { status: 'normal' }}
+      onPress={onDayPress}
+    />
+  );
+}
+
 export function Calendar({
   initialDate,
   dayMarks = {},
@@ -172,6 +188,17 @@ export function Calendar({
     setCurrentDate(dateString);
     onMonthChange?.(dateString);
   };
+
+  const renderDay = useCallback(
+    (props: { date?: CalendarDay }) => (
+      <CalendarDayCell
+        date={props.date}
+        dayMarks={dayMarks}
+        onDayPress={onDayPress}
+      />
+    ),
+    [dayMarks, onDayPress]
+  );
 
   return (
     <View testID={testID}>
@@ -191,17 +218,7 @@ export function Calendar({
         hideExtraDays
         enableSwipeMonths
         firstDay={0}
-        dayComponent={(props: { date?: CalendarDay }) => (
-          <DayCell
-            date={props.date}
-            mark={
-              props.date
-                ? (dayMarks[props.date.dateString] ?? { status: 'normal' })
-                : { status: 'normal' }
-            }
-            onPress={onDayPress}
-          />
-        )}
+        dayComponent={renderDay}
         onMonthChange={(month: { dateString: string }) => {
           changeMonth(month.dateString);
         }}

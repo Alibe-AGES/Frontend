@@ -61,9 +61,7 @@ describe('<GroupCard />', () => {
       />
     );
 
-    expect(getByTestId('alibe-group-card-members').props.children).toBe(
-      'Eu, Kata, Manu e May'
-    );
+    expect(getByTestId('alibe-group-card-members').props.children).toBe('Eu, Kata, Manu e May');
   });
 
   test('hides the members preview when not provided', async () => {

@@ -9,7 +9,6 @@ export type { GroupCardProps } from './GroupCard.types';
 export const GroupCard: FC<GroupCardProps> = ({
   id,
   name,
-  color,
   photoUri,
   membersPreview,
   onPress,
@@ -36,7 +35,7 @@ export const GroupCard: FC<GroupCardProps> = ({
 
       <View className="flex-1">
         <Text
-          className="font-poppins-semibold text-lg text-wine"
+          className="text-wine font-poppins-semibold text-lg"
           numberOfLines={1}
           testID={`${testID}-name`}
         >
@@ -45,7 +44,7 @@ export const GroupCard: FC<GroupCardProps> = ({
 
         {membersPreview ? (
           <Text
-            className="font-poppins text-sm text-wine"
+            className="text-wine font-poppins text-sm"
             numberOfLines={1}
             testID={`${testID}-members`}
           >

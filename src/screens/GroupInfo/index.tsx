@@ -55,9 +55,7 @@ function MemberRow({
           ) : null}
         </View>
 
-        {isCurrentUser ? (
-          <Text className="text-inkSoft text-xs font-medium">(você)</Text>
-        ) : null}
+        {isCurrentUser ? <Text className="text-inkSoft text-xs font-medium">(você)</Text> : null}
       </View>
     </View>
   );
@@ -116,9 +114,7 @@ export function GroupInfoScreen({
           </Pressable>
 
           <View className="mt-4 flex-row items-center justify-center gap-2 self-center rounded-full bg-lime px-6 py-2">
-            <Text className="font-poppins-semibold text-lg text-ink">
-              {group?.name ?? ''}
-            </Text>
+            <Text className="font-poppins-semibold text-lg text-ink">{group?.name ?? ''}</Text>
             <Ionicons
               name="pencil"
               size={16}

@@ -152,10 +152,7 @@ export async function getGroup(groupId: string): Promise<GroupDetails> {
 
   if (!response.ok) {
     const text = await response.text();
-    throw new ApiError(
-      text || response.statusText || 'Failed to load group',
-      response.status
-    );
+    throw new ApiError(text || response.statusText || 'Failed to load group', response.status);
   }
 
   const group = (await response.json()) as GroupDetails;
@@ -163,7 +160,7 @@ export async function getGroup(groupId: string): Promise<GroupDetails> {
   return {
     ...group,
     profilePic: resolveGroupPhotoUrl(group.profilePic),
-    participants: (group.participants ?? []).map((member) => ({
+    participants: group.participants.map((member) => ({
       ...member,
       profilePic: resolveGroupPhotoUrl(member.profilePic),
     })),

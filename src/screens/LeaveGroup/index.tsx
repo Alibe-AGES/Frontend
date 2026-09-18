@@ -22,11 +22,13 @@ export function LeaveGroupScreen({ groupName, onConfirm, onCancel }: LeaveGroupS
         >
           <Pressable
             className="w-full max-w-sm rounded-[2rem] bg-ink px-6 py-8"
-            onPress={(e) => e.stopPropagation()}
+            onPress={(e) => {
+              e.stopPropagation();
+            }}
             testID="leave-group-dialog"
           >
             <Text className="text-center font-poppins-bold text-xl leading-7 text-lime">
-              Tem certeza de que deseja sair do grupo?
+              Tem certeza de que deseja sair{groupName ? ` do grupo ${groupName}` : ' do grupo'}?
             </Text>
 
             <Text className="mt-3 text-center font-poppins text-sm text-canvas">
@@ -60,4 +62,3 @@ export function LeaveGroupScreen({ groupName, onConfirm, onCancel }: LeaveGroupS
     </View>
   );
 }
-

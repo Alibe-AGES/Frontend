@@ -68,30 +68,38 @@ export function InviteGroupScreen() {
         </Text>
 
         <View className="mt-8 min-h-16 justify-center">
-          {isLoading ? (
-            <ActivityIndicator
-              color={theme.colors.ink}
-              testID="invite-link-loading"
-            />
-          ) : error ? (
-            <View className="gap-3">
-              <Text className="text-center font-poppins text-sm text-coral">{error}</Text>
-              {groupId ? (
-                <Button
-                  title="Tentar novamente"
-                  onPress={() => void loadInvite()}
-                  variant="secondary"
-                  testID="retry-invite-link"
+          {(() => {
+            if (isLoading) {
+              return (
+                <ActivityIndicator
+                  color={theme.colors.ink}
+                  testID="invite-link-loading"
                 />
-              ) : null}
-            </View>
-          ) : (
-            <InviteLink
-              link={inviteUrl}
-              expiresAt={invite?.expiresAt}
-              onExpired={() => void loadInvite()}
-            />
-          )}
+              );
+            }
+            if (error) {
+              return (
+                <View className="gap-3">
+                  <Text className="text-center font-poppins text-sm text-coral">{error}</Text>
+                  {groupId ? (
+                    <Button
+                      title="Tentar novamente"
+                      onPress={() => void loadInvite()}
+                      variant="secondary"
+                      testID="retry-invite-link"
+                    />
+                  ) : null}
+                </View>
+              );
+            }
+            return (
+              <InviteLink
+                link={inviteUrl}
+                expiresAt={invite?.expiresAt}
+                onExpired={() => void loadInvite()}
+              />
+            );
+          })()}
         </View>
 
         <View
