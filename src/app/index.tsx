@@ -1,1 +1,1 @@
-export { LoadingScreen as default } from '@/screens/LoadingScreen';
+export { default } from '@/screens/Loading/controller';

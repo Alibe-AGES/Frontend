@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '@/constants';
+import { File } from 'expo-file-system';
 import { Platform } from 'react-native';
 import { ApiError } from './api';
 
@@ -27,6 +28,26 @@ export interface GroupInviteLink {
 
 export interface JoinGroupByInviteResponse {
   token: string;
+}
+
+export interface CurrentUser {
+  id: string;
+  name: string;
+  profilePic: string | null;
+}
+
+export async function getMe(): Promise<CurrentUser> {
+  const response = await fetch(`${API_BASE_URL}/auth/me`);
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new ApiError(
+      text || response.statusText || 'Failed to load current user',
+      response.status
+    );
+  }
+
+  return (await response.json()) as CurrentUser;
 }
 
 const IMAGE_EXTENSION_BY_MIME_TYPE: Record<string, string> = {
@@ -60,11 +81,7 @@ async function appendGroupImage(formData: FormData, image: CreateGroupImage): Pr
     return;
   }
 
-  formData.append('profile_pic', {
-    uri: image.uri,
-    name: imageFileName(image, mimeType),
-    type: mimeType,
-  } as unknown as Blob);
+  formData.append('profile_pic', new File(image.uri));
 }
 
 function resolveGroupPhotoUrl(profilePic: string | null): string | null {
@@ -111,6 +128,46 @@ export async function createGroup(input: CreateGroupInput): Promise<Group> {
 
   const group = (await response.json()) as Group;
   return { ...group, profilePic: resolveGroupPhotoUrl(group.profilePic) };
+}
+
+export interface GroupMember {
+  id: string;
+  name: string;
+  profilePic: string | null;
+}
+
+export interface GroupDetails {
+  id: string;
+  name: string;
+  profilePic: string | null;
+  createdAt: string;
+  participants: GroupMember[];
+}
+
+export async function getGroup(groupId: string): Promise<GroupDetails> {
+  const response = await fetch(`${API_BASE_URL}/groups/${groupId}`);
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new ApiError(text || response.statusText || 'Failed to load group', response.status);
+  }
+
+  const group = (await response.json()) as GroupDetails;
+
+  return {
+    ...group,
+    profilePic: resolveGroupPhotoUrl(group.profilePic),
+    participants: group.participants.map((member) => ({
+      ...member,
+      profilePic: resolveGroupPhotoUrl(member.profilePic),
+    })),
+  };
+}
+
+export async function getGroupMembers(groupId: string): Promise<GroupMember[]> {
+  const group = await getGroup(groupId);
+
+  return group.participants;
 }
 
 export async function getGroupInviteLink(groupId: string): Promise<GroupInviteLink> {

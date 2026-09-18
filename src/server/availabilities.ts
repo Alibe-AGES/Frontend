@@ -1,5 +1,7 @@
 import { API_BASE_URL } from '@/constants';
 import { ApiError } from './api';
+import { getGroupCalendar } from './calendar';
+import { getGroupMembers } from './groups';
 
 export interface CreateAvailabilityInterval {
   startTime: string;
@@ -31,17 +33,21 @@ export async function createAvailability(
   payload: CreateAvailabilityPayload
 ): Promise<AvailabilityResponse[]> {
   const url = `${API_BASE_URL}/groups/${groupId}/availabilities`;
+  const body = JSON.stringify(payload);
+
+  console.log('[Availability] POST', url, body);
 
   const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(payload),
+    body,
   });
 
   if (!response.ok) {
     const text = await response.text();
+    console.error('[Availability] POST failed', response.status, text);
     throw new ApiError(
       text || response.statusText || 'Não foi possível salvar a disponibilidade',
       response.status
@@ -57,33 +63,34 @@ export interface GroupParticipant {
   profilePic: string | null;
 }
 
-// Tipagem que prevê tanto um array direto quanto um objeto com a lista
-type AvailabilityResponseData =
-  | GroupParticipant[]
-  | {
-      participants?: GroupParticipant[];
-      members?: GroupParticipant[];
-    };
-
 export async function getAvailabilitiesByDate(
   groupId: string,
   date: string
 ): Promise<GroupParticipant[]> {
-  const response = await fetch(`${API_BASE_URL}/groups/${groupId}/availabilities?date=${date}`);
+  const [year, month] = date.split('-').map(Number);
 
-  console.log('Status da resposta:', response.status);
-  if (!response.ok) {
-    if (response.status === 404) {
-      return [];
-    }
-    throw new Error('Falha ao buscar participantes');
+  if (!year || !month) {
+    return [];
   }
 
-  const data = (await response.json()) as AvailabilityResponseData;
+  const [days, members] = await Promise.all([
+    getGroupCalendar(groupId, month, year),
+    getGroupMembers(groupId),
+  ]);
 
-  if (Array.isArray(data)) {
-    return data;
+  const day = days.find((item) => item.date === date);
+
+  if (!day || day.availableUserIds.length === 0) {
+    return [];
   }
 
-  return data.participants ?? data.members ?? [];
+  const availableIds = new Set(day.availableUserIds);
+
+  return members
+    .filter((member) => availableIds.has(member.id))
+    .map((member) => ({
+      id: member.id,
+      name: member.name,
+      profilePic: member.profilePic,
+    }));
 }

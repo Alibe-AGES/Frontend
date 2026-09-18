@@ -1,4 +1,4 @@
-import { listGroups } from '@/server/groups';
+import { getGroupMembers, getMe, listGroups } from '@/server/groups';
 import { GroupColor, getRandomGroupColor } from '@/utils/groupColors';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -7,6 +7,7 @@ export interface Group {
   name: string;
   photoUri: string | null;
   color: GroupColor;
+  membersPreview?: string;
 }
 
 interface UseGroupsResult {
@@ -18,6 +19,25 @@ interface UseGroupsResult {
 }
 
 type FetchMode = 'initial' | 'refresh';
+
+function buildMembersPreview(
+  names: string[],
+  currentUserId: string | undefined,
+  memberIds: string[]
+): string | undefined {
+  if (names.length === 0) {
+    return undefined;
+  }
+
+  const currentUserIndex = currentUserId ? memberIds.indexOf(currentUserId) : -1;
+
+  if (currentUserIndex >= 0) {
+    const others = names.filter((_, index) => index !== currentUserIndex);
+    return ['Eu', ...others].join(', ');
+  }
+
+  return names.join(', ');
+}
 
 export function useGroups(): UseGroupsResult {
   const [groups, setGroups] = useState<Group[]>([]);
@@ -35,14 +55,41 @@ export function useGroups(): UseGroupsResult {
 
     try {
       const serverGroups = await listGroups();
-      setGroups(
-        serverGroups.map((group) => ({
-          id: group.id,
-          name: group.name,
-          photoUri: group.profilePic,
-          color: getRandomGroupColor(),
-        }))
+
+      let currentUserId: string | undefined;
+      try {
+        const me = await getMe();
+        currentUserId = me.id;
+      } catch {
+        currentUserId = undefined;
+      }
+
+      const enriched = await Promise.all(
+        serverGroups.map(async (group) => {
+          let membersPreview: string | undefined;
+
+          try {
+            const members = await getGroupMembers(group.id);
+            membersPreview = buildMembersPreview(
+              members.map((m) => m.name),
+              currentUserId,
+              members.map((m) => m.id)
+            );
+          } catch {
+            membersPreview = undefined;
+          }
+
+          return {
+            id: group.id,
+            name: group.name,
+            photoUri: group.profilePic,
+            color: getRandomGroupColor(),
+            membersPreview,
+          };
+        })
       );
+
+      setGroups(enriched);
     } catch {
       setError('Não foi possível carregar os grupos.');
     } finally {

@@ -1,0 +1,203 @@
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import Toast from 'react-native-toast-message';
+
+import { useGroups } from '@/hooks/useGroups';
+import { joinGroupByInvite, listGroups } from '@/server/groups';
+import { GroupsScreen } from '.';
+
+jest.mock('expo-router', () => ({
+  useLocalSearchParams: jest.fn(),
+  useRouter: jest.fn(),
+}));
+
+jest.mock('@/hooks/useGroups', () => ({
+  useGroups: jest.fn(),
+}));
+
+jest.mock('@/server/groups', () => ({
+  joinGroupByInvite: jest.fn(),
+  listGroups: jest.fn(),
+}));
+
+jest.mock('react-native-toast-message', () => ({
+  show: jest.fn(),
+}));
+
+const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
+const mockUseLocalSearchParams = useLocalSearchParams as jest.MockedFunction<
+  typeof useLocalSearchParams
+>;
+const mockUseGroups = useGroups as jest.MockedFunction<typeof useGroups>;
+const mockJoinGroupByInvite = joinGroupByInvite as jest.Mock;
+const mockListGroups = listGroups as jest.Mock;
+
+const GROUPS = [
+  { id: '1', name: 'Hermanas', photoUri: null, color: 'bg-lime' as const },
+  { id: '2', name: 'Pela cidade', photoUri: null, color: 'bg-pink' as const },
+];
+
+describe('<GroupsScreen />', () => {
+  const push = jest.fn();
+  const replace = jest.fn();
+
+  beforeEach(() => {
+    mockUseRouter.mockReturnValue({ push, replace } as unknown as ReturnType<typeof useRouter>);
+    mockUseLocalSearchParams.mockReturnValue({});
+    mockJoinGroupByInvite.mockResolvedValue({ token: 'invite-token' });
+    mockListGroups.mockResolvedValue([]);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('renders the header content', async () => {
+    mockUseGroups.mockReturnValue({
+      groups: [],
+      isLoading: false,
+      isRefreshing: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    const { getByText, getByLabelText } = await render(<GroupsScreen />);
+
+    expect(getByText('Meus grupos')).toBeTruthy();
+    expect(getByText('Clique no + para criar um novo grupo.')).toBeTruthy();
+    expect(getByLabelText('Logo Alibe')).toBeTruthy();
+  });
+
+  test('shows a loading indicator while the groups are being fetched', async () => {
+    mockUseGroups.mockReturnValue({
+      groups: [],
+      isLoading: true,
+      isRefreshing: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    const { getByTestId } = await render(<GroupsScreen />);
+
+    expect(getByTestId('alibe-groups-list-loading')).toBeTruthy();
+  });
+
+  test('shows an error state with a retry action when the request fails', async () => {
+    const refetch = jest.fn();
+    mockUseGroups.mockReturnValue({
+      groups: [],
+      isLoading: false,
+      isRefreshing: false,
+      error: 'Não foi possível carregar os grupos.',
+      refetch,
+    });
+
+    const { getByText, getByLabelText } = await render(<GroupsScreen />);
+
+    expect(getByText('Não foi possível carregar os grupos.')).toBeTruthy();
+
+    await fireEvent.press(getByLabelText('Tentar novamente'));
+
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
+  test('shows an empty state when the user has no groups', async () => {
+    mockUseGroups.mockReturnValue({
+      groups: [],
+      isLoading: false,
+      isRefreshing: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    const { getByTestId } = await render(<GroupsScreen />);
+
+    expect(getByTestId('alibe-groups-list-empty')).toBeTruthy();
+  });
+
+  test('shows every available group', async () => {
+    mockUseGroups.mockReturnValue({
+      groups: GROUPS,
+      isLoading: false,
+      isRefreshing: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    const { getByText } = await render(<GroupsScreen />);
+
+    await waitFor(() => {
+      expect(getByText('Hermanas')).toBeTruthy();
+      expect(getByText('Pela cidade')).toBeTruthy();
+    });
+  });
+
+  test('navigates to the group screen when a group card is pressed', async () => {
+    mockUseGroups.mockReturnValue({
+      groups: GROUPS,
+      isLoading: false,
+      isRefreshing: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    const { getByTestId } = await render(<GroupsScreen />);
+
+    await waitFor(() => {
+      expect(getByTestId('alibe-groups-list-item-1')).toBeTruthy();
+    });
+
+    await fireEvent.press(getByTestId('alibe-groups-list-item-1'));
+
+    expect(push).toHaveBeenCalledWith({ pathname: '/group/[id]', params: { id: '1' } });
+  });
+
+  test('navigates to the create group screen when the create button is pressed', async () => {
+    mockUseGroups.mockReturnValue({
+      groups: [],
+      isLoading: false,
+      isRefreshing: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    const { getByTestId } = await render(<GroupsScreen />);
+
+    await fireEvent.press(getByTestId('create-group-button'));
+
+    expect(push).toHaveBeenCalledWith('/create-group');
+  });
+
+  test('accepts an invite from the app link and returns to the clean groups URL', async () => {
+    mockUseLocalSearchParams.mockReturnValue({
+      invite: 'invite-token',
+    });
+    mockListGroups.mockResolvedValueOnce([]).mockResolvedValueOnce([
+      {
+        id: 'group-id',
+        name: 'Amigos da faculdade',
+        profilePic: null,
+        createdAt: '2026-09-16T12:00:00.000Z',
+      },
+    ]);
+    mockUseGroups.mockReturnValue({
+      groups: [],
+      isLoading: false,
+      isRefreshing: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    await render(<GroupsScreen />);
+
+    await waitFor(() => {
+      expect(mockJoinGroupByInvite).toHaveBeenCalledWith('invite-token');
+      expect(replace).toHaveBeenCalledWith('/groups');
+    });
+    expect(Toast.show).toHaveBeenCalledWith({
+      type: 'success',
+      text1: 'Convite aceito!',
+      text2: 'Você entrou no grupo Amigos da faculdade por um link de convite.',
+    });
+  });
+});

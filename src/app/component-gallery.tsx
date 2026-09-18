@@ -1,1 +1,1 @@
-export { ComponentGalleryScreen as default } from '@/screens/ComponentGalleryScreen';
+export { default } from '@/screens/ComponentGallery/controller';

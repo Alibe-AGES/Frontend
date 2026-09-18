@@ -1,6 +1,4 @@
 import { Avatar } from '@/components/Avatar';
-import { theme } from '@/theme';
-import { Ionicons } from '@expo/vector-icons';
 import { FC } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import tw from 'twrnc';
@@ -11,46 +9,49 @@ export type { GroupCardProps } from './GroupCard.types';
 export const GroupCard: FC<GroupCardProps> = ({
   id,
   name,
-  color,
   photoUri,
+  membersPreview,
   onPress,
   testID = 'alibe-group-card',
 }) => {
-  const textColor = color === 'bg-coral' ? 'text-white' : 'text-ink';
-
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`Abrir grupo ${name}`}
       onPress={() => onPress?.(id)}
       style={({ pressed }) => tw`${pressed ? 'opacity-75' : 'opacity-100'}`}
-      className={`w-full flex-row items-center gap-3 rounded-full py-1.5 pl-1.5 pr-5 ${color}`}
+      className="w-full flex-row items-center gap-3 rounded-2xl bg-surface p-3"
       testID={testID}
     >
-      <View className="h-12 w-12 items-center justify-center rounded-full bg-white">
+      <View className="h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-coral">
         <Avatar
           photoUri={photoUri}
           accessibilityLabel={`Foto do grupo ${name}`}
-          imageClassName="h-12 w-12 rounded-full"
-          iconSize={24}
+          imageClassName="h-14 w-14 rounded-full"
+          iconSize={26}
           testID={`${testID}-avatar`}
         />
       </View>
 
-      <Text
-        className={`flex-1 font-poppins-medium text-base ${textColor}`}
-        numberOfLines={1}
-        testID={`${testID}-name`}
-      >
-        {name}
-      </Text>
+      <View className="flex-1">
+        <Text
+          className="text-wine font-poppins-semibold text-lg"
+          numberOfLines={1}
+          testID={`${testID}-name`}
+        >
+          {name}
+        </Text>
 
-      <Ionicons
-        name="information-circle-outline"
-        size={24}
-        color={theme.colors.white}
-        testID={`${testID}-info-icon`}
-      />
+        {membersPreview ? (
+          <Text
+            className="text-wine font-poppins text-sm"
+            numberOfLines={1}
+            testID={`${testID}-members`}
+          >
+            {membersPreview}
+          </Text>
+        ) : null}
+      </View>
     </Pressable>
   );
 };

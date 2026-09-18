@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '@/constants';
+import { File } from 'expo-file-system';
 import { ApiError } from './api';
 import { createGroup, getGroupInviteLink, joinGroupByInvite, listGroups } from './groups';
 
@@ -68,6 +69,7 @@ describe('listGroups', () => {
 describe('createGroup', () => {
   afterEach(() => {
     global.fetch = originalFetch;
+    jest.restoreAllMocks();
     jest.clearAllMocks();
   });
 
@@ -94,6 +96,7 @@ describe('createGroup', () => {
   });
 
   test('adds the selected image to the multipart request', async () => {
+    const append = jest.spyOn(FormData.prototype, 'append');
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: () =>
@@ -119,6 +122,8 @@ describe('createGroup', () => {
         body: expect.any(FormData) as FormData,
       })
     );
+
+    expect(append).toHaveBeenCalledWith('profile_pic', expect.any(File));
   });
 
   test('throws an ApiError when group creation fails', async () => {
