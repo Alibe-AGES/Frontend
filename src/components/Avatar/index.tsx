@@ -2,6 +2,7 @@ import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { FC } from 'react';
+import tw from 'twrnc';
 import { AvatarProps } from './Avatar.types';
 
 export type { AvatarProps } from './Avatar.types';
@@ -20,7 +21,7 @@ export const Avatar: FC<AvatarProps> = ({
         accessible
         accessibilityLabel={accessibilityLabel}
         contentFit="cover"
-        className={imageClassName}
+        style={tw.style(imageClassName)}
         testID={`${testID}-photo`}
       />
     );

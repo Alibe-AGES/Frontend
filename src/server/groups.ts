@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '@/constants';
+import { File } from 'expo-file-system';
 import { Platform } from 'react-native';
 import { ApiError } from './api';
 
@@ -80,11 +81,7 @@ async function appendGroupImage(formData: FormData, image: CreateGroupImage): Pr
     return;
   }
 
-  formData.append('profile_pic', {
-    uri: image.uri,
-    name: imageFileName(image, mimeType),
-    type: mimeType,
-  } as unknown as Blob);
+  formData.append('profile_pic', new File(image.uri));
 }
 
 function resolveGroupPhotoUrl(profilePic: string | null): string | null {

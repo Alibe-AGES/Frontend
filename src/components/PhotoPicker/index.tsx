@@ -44,7 +44,7 @@ export const PhotoPicker: FC<PhotoPickerProps> = ({
           accessible
           accessibilityLabel="Foto selecionada"
           contentFit="cover"
-          className="h-36 w-36 rounded-full"
+          style={tw`h-36 w-36 rounded-full`}
           testID={`${testID}-photo`}
         />
       );

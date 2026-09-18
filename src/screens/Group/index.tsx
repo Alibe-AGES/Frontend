@@ -10,6 +10,7 @@ import { Image } from 'expo-image';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
+import tw from 'twrnc';
 
 function formatDate(date: Date): string {
   const year = String(date.getFullYear());
@@ -189,7 +190,7 @@ export function GroupScreen() {
                 source={{ uri: groupPhoto }}
                 accessibilityLabel={`Foto do grupo ${groupName}`}
                 contentFit="cover"
-                className="h-14 w-14 rounded-full"
+                style={tw`h-14 w-14 rounded-full`}
                 testID="group-screen-photo"
               />
             ) : (
