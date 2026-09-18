@@ -1,1 +1,1 @@
-export { GroupInfoScreen as default } from '@/screens/GroupInfoScreen';
+export { default } from '@/screens/GroupInfo/controller';

@@ -16,7 +16,8 @@ describe('<Avatar />', () => {
       />
     );
 
-    expect(getByTestId('alibe-avatar-photo')).toBeTruthy();
+    const photo = getByTestId('alibe-avatar-photo');
+    expect(photo.props.style).toEqual(expect.objectContaining({ width: 144, height: 144 }));
   });
 
   test('namespaces its testIDs under a custom prefix', async () => {

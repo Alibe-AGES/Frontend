@@ -1,8 +1,7 @@
-import { Image } from 'expo-image';
 import { Pressable } from 'react-native';
 import tw from 'twrnc';
 
-import backArrowIcon from '@/assets/images/back-arrow.svg';
+import BackArrowIcon from '@/assets/images/back-arrow.svg';
 import { BackButtonProps } from '@/components/BackButton/BackButton.types';
 import { useDefaultBackController } from '@/components/BackButton/controllers/useDefaultBackController';
 import { theme } from '@/theme';
@@ -35,12 +34,10 @@ export const BackButton: React.FC<BackButtonProps> = ({
       testID="alibe-back-button"
       {...pressableProps}
     >
-      <Image
-        source={backArrowIcon}
-        accessible={false}
-        contentFit="contain"
-        tintColor={color ?? theme.colors.ink}
-        style={tw`h-4 w-6`}
+      <BackArrowIcon
+        width={24}
+        height={16}
+        color={color ?? theme.colors.ink}
       />
     </Pressable>
   );

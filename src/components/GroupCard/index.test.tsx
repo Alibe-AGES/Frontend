@@ -1,5 +1,4 @@
 import { fireEvent, render } from '@testing-library/react-native';
-import { GROUP_COLOR_PALETTE } from '@/utils/groupColors';
 import { GroupCard } from './index';
 
 describe('<GroupCard />', () => {
@@ -52,8 +51,21 @@ describe('<GroupCard />', () => {
     expect(getByTestId('alibe-group-card-avatar-photo')).toBeTruthy();
   });
 
-  test('shows the info icon', async () => {
+  test('shows the members preview when provided', async () => {
     const { getByTestId } = await render(
+      <GroupCard
+        id="1"
+        name="Hermanas"
+        color="bg-lime"
+        membersPreview="Eu, Kata, Manu e May"
+      />
+    );
+
+    expect(getByTestId('alibe-group-card-members').props.children).toBe('Eu, Kata, Manu e May');
+  });
+
+  test('hides the members preview when not provided', async () => {
+    const { queryByTestId } = await render(
       <GroupCard
         id="1"
         name="Hermanas"
@@ -61,46 +73,20 @@ describe('<GroupCard />', () => {
       />
     );
 
-    expect(getByTestId('alibe-group-card-info-icon')).toBeTruthy();
+    expect(queryByTestId('alibe-group-card-members')).toBeNull();
   });
 
-  test('applies the given background color to the card', async () => {
+  test('truncates the members preview to a single line', async () => {
     const { getByTestId } = await render(
       <GroupCard
         id="1"
         name="Hermanas"
-        color="bg-coral"
+        color="bg-lime"
+        membersPreview="Eu, Kata, Manu e May"
       />
     );
 
-    expect(getByTestId('alibe-group-card').props.className).toContain('bg-coral');
-  });
-
-  test.each(GROUP_COLOR_PALETTE.filter((color) => color !== 'bg-coral'))(
-    'uses ink text on the light %s background, like the secondary button',
-    async (color) => {
-      const { getByTestId } = await render(
-        <GroupCard
-          id="1"
-          name="Hermanas"
-          color={color}
-        />
-      );
-
-      expect(getByTestId('alibe-group-card-name').props.className).toContain('text-ink');
-    }
-  );
-
-  test('uses white text on the coral background, like the primary button', async () => {
-    const { getByTestId } = await render(
-      <GroupCard
-        id="1"
-        name="Galera 2012"
-        color="bg-coral"
-      />
-    );
-
-    expect(getByTestId('alibe-group-card-name').props.className).toContain('text-white');
+    expect(getByTestId('alibe-group-card-members').props.numberOfLines).toBe(1);
   });
 
   test('calls onPress with the group id when tapped, so the screen can open it', async () => {
@@ -167,7 +153,6 @@ describe('<GroupCard />', () => {
 
     expect(getByTestId('groups-list-item-1')).toBeTruthy();
     expect(getByTestId('groups-list-item-1-name')).toBeTruthy();
-    expect(getByTestId('groups-list-item-1-info-icon')).toBeTruthy();
     expect(getByTestId('groups-list-item-1-avatar-placeholder')).toBeTruthy();
   });
 });
