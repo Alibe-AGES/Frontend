@@ -1,7 +1,15 @@
 import { API_BASE_URL } from '@/constants';
 import { File } from 'expo-file-system';
 import { ApiError } from './api';
-import { createGroup, getGroupInviteLink, joinGroupByInvite, listGroups } from './groups';
+import {
+  createGroup,
+  getGroup,
+  getGroupInviteLink,
+  getGroupMembers,
+  getMe,
+  joinGroupByInvite,
+  listGroups,
+} from './groups';
 
 declare const global: { fetch: jest.Mock };
 
@@ -63,6 +71,59 @@ describe('listGroups', () => {
     });
 
     await expect(listGroups()).rejects.toBeInstanceOf(ApiError);
+  });
+});
+
+describe('group details', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.clearAllMocks();
+  });
+
+  test('gets the current user', async () => {
+    const user = { id: 'user-1', name: 'Ana', profilePic: '/users/1.jpg' };
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(user),
+    });
+
+    await expect(getMe()).resolves.toEqual(user);
+    expect(global.fetch).toHaveBeenCalledWith(`${API_BASE_URL}/auth/me`);
+  });
+
+  test('gets group details and resolves participant photo URLs', async () => {
+    const group = {
+      ...BASE_GROUP,
+      profilePic: '/groups/1/profile-picture',
+      participants: [
+        { id: 'user-1', name: 'Ana', profilePic: '/users/1.jpg' },
+        { id: 'user-2', name: 'Bia', profilePic: null },
+      ],
+    };
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(group),
+    });
+
+    await expect(getGroup('1')).resolves.toEqual({
+      ...group,
+      profilePic: `${API_BASE_URL}/groups/1/profile-picture`,
+      participants: [
+        { id: 'user-1', name: 'Ana', profilePic: `${API_BASE_URL}/users/1.jpg` },
+        { id: 'user-2', name: 'Bia', profilePic: null },
+      ],
+    });
+    expect(global.fetch).toHaveBeenCalledWith(`${API_BASE_URL}/groups/1`);
+  });
+
+  test('returns group participants from getGroupMembers', async () => {
+    const participants = [{ id: 'user-1', name: 'Ana', profilePic: null }];
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ ...BASE_GROUP, profilePic: null, participants }),
+    });
+
+    await expect(getGroupMembers('1')).resolves.toEqual(participants);
   });
 });
 
