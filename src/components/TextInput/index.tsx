@@ -112,8 +112,11 @@ export function TextInput({
           onChangeText={handleChangeText}
           onFocus={handleFocus}
           placeholder={placeholder}
-          placeholderTextColor={theme.colors.pink}
+          placeholderTextColor={theme.colors.wineSoft}
           secureTextEntry={secureTextEntry}
+          // Android posiciona o hint pelo font padding extra, desalinhando o placeholder
+          // em relacao ao texto digitado. Ambos sao no-op no iOS e na web.
+          style={{ includeFontPadding: false, textAlignVertical: 'center' }}
           testID={testID}
           value={value}
         />
