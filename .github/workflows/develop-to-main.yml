@@ -8,23 +8,26 @@ on:
 jobs:
   sync-develop-to-main:
     name: Sync develop to main
-    if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-      - name: Checkout develop
+      - name: Checkout triggering commit
         uses: actions/checkout@v4
         with:
-          ref: develop
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
-      - name: Fetch main and develop refs
+      - name: Require develop ref
         run: |
-          git fetch origin refs/heads/main:refs/remotes/origin/main refs/heads/develop:refs/remotes/origin/develop
+          test "$GITHUB_REF" = "refs/heads/develop"
+
+      - name: Fetch main ref
+        run: |
+          git fetch origin refs/heads/main:refs/remotes/origin/main
 
       - name: Update main to develop
         run: |
           main_sha="$(git rev-parse refs/remotes/origin/main)"
-          git push --force-with-lease=main:"$main_sha" origin refs/remotes/origin/develop:refs/heads/main
+          git push --force-with-lease=main:"$main_sha" origin "$GITHUB_SHA":refs/heads/main
