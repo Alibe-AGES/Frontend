@@ -1,6 +1,8 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import { useState } from 'react';
 import { Text } from 'react-native';
+
+import { theme } from '@/theme';
 import { TextInput } from './index';
 
 function ControlledTextInput(
@@ -246,6 +248,18 @@ describe('<TextInput />', () => {
     await fireEvent(getByTestId('focus-error-input'), 'focus');
 
     expect(getByTestId('focus-error-input-field').props.className).toContain('border-coral');
+  });
+
+  test('renders the placeholder in the readable wine-soft tone', async () => {
+    const { getByTestId } = await render(
+      <TextInput
+        value=""
+        onChangeText={jest.fn()}
+        testID="placeholder-input"
+      />
+    );
+
+    expect(getByTestId('placeholder-input').props.placeholderTextColor).toBe(theme.colors.wineSoft);
   });
 
   test('renders no icon slot when no icon is provided', async () => {
