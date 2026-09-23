@@ -12,17 +12,18 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout triggering commit
+      - name: Checkout develop
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: develop
           fetch-depth: 0
 
-      - name: Require develop ref
+      - name: Fetch develop ref
         run: |
-          test "$GITHUB_REF" = "refs/heads/develop"
+          git fetch origin refs/heads/develop:refs/remotes/origin/develop
 
       - name: Update main to develop
         run: |
+          develop_sha="$(git rev-parse refs/remotes/origin/develop)"
           main_sha="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
-          git push --force-with-lease=refs/heads/main:"$main_sha" origin "$GITHUB_SHA":refs/heads/main
+          git push --force-with-lease=refs/heads/main:"$main_sha" origin "$develop_sha":refs/heads/main
