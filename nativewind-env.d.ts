@@ -11,8 +11,9 @@ declare module '*.css' {
 }
 
 declare module '*.svg' {
-  import type { ImageSourcePropType } from 'react-native';
+  import type React from 'react';
+  import type { SvgProps } from 'react-native-svg';
 
-  const content: ImageSourcePropType;
+  const content: React.FC<SvgProps>;
   export default content;
 }

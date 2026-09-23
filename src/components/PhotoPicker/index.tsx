@@ -44,7 +44,7 @@ export const PhotoPicker: FC<PhotoPickerProps> = ({
           accessible
           accessibilityLabel="Foto selecionada"
           contentFit="cover"
-          className="h-36 w-36 rounded-full"
+          style={tw`h-36 w-36 rounded-full`}
           testID={`${testID}-photo`}
         />
       );
@@ -64,7 +64,7 @@ export const PhotoPicker: FC<PhotoPickerProps> = ({
       className="items-center"
       testID={`${testID}-container`}
     >
-      <Text className="mb-4 text-center text-base font-semibold text-black">{label}</Text>
+      <Text className="mb-4 text-center font-poppins text-lg text-black">{label}</Text>
 
       <Pressable
         accessibilityRole="button"

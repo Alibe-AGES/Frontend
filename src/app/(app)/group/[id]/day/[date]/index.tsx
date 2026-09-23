@@ -1,1 +1,1 @@
-export { DayScreen as default } from '@/screens/DayScreen';
+export { default } from '@/screens/Day/controller';

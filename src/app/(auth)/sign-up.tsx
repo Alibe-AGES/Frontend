@@ -1,1 +1,1 @@
-export { SignUpScreen as default } from '@/screens/SignUpScreen';
+export { default } from '@/screens/SignUp/controller';

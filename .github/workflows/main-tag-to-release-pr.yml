@@ -10,9 +10,13 @@ permissions:
   pull-requests: write
 
 jobs:
-  create-release-pr:
-    name: Create PR from main to release
+  # Check if the tag belongs to main, to ensure that we only
+  # create a PR for tags that are on the main branch
+  check-tag:
+    name: Check Tag
     runs-on: ubuntu-latest
+    outputs:
+      on-main: ${{ steps.contains-tag.outputs.retval }}
 
     steps:
       - name: Checkout repository
@@ -21,6 +25,20 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Check if tag belongs to main
+        id: contains-tag
+        uses: rickstaa/action-contains-tag@v1.2.10
+        with:
+          reference: main
+          tag: ${{ github.ref }}
+
+  create-release-pr:
+    name: Create PR from main to release
+    needs: check-tag
+    if: needs.check-tag.outputs.on-main == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Generate Release Notes
         id: notes
         env:

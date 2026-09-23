@@ -1,8 +1,7 @@
-import { Image } from 'expo-image';
 import { Pressable } from 'react-native';
 import tw from 'twrnc';
 
-import backArrowIcon from '@/assets/images/back-arrow.svg';
+import BackArrowIcon from '@/assets/images/back-arrow.svg';
 import { BackButtonProps } from '@/components/BackButton/BackButton.types';
 import { useDefaultBackController } from '@/components/BackButton/controllers/useDefaultBackController';
 import { theme } from '@/theme';
@@ -13,6 +12,7 @@ export const BackButton: React.FC<BackButtonProps> = ({
   accessibilityLabel = 'Voltar',
   className = '',
   disabled,
+  color,
   ...pressableProps
 }) => {
   const defaultController = useDefaultBackController({ fallbackHref });
@@ -29,17 +29,15 @@ export const BackButton: React.FC<BackButtonProps> = ({
         void handleBack();
       }}
       hitSlop={16}
-      className={`items-center justify-center ${disabled ? 'opacity-50' : 'opacity-100'} ${className}`}
+      className={`items-start justify-items-start ${disabled ? 'opacity-50' : 'opacity-100'} ${className}`}
       style={({ pressed }) => tw`${pressed ? 'opacity-60' : ''}`}
       testID="alibe-back-button"
       {...pressableProps}
     >
-      <Image
-        source={backArrowIcon}
-        accessible={false}
-        contentFit="contain"
-        tintColor={theme.colors.ink}
-        style={tw`h-6 w-8`}
+      <BackArrowIcon
+        width={24}
+        height={16}
+        color={color ?? theme.colors.ink}
       />
     </Pressable>
   );

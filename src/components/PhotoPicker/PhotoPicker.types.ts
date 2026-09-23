@@ -8,8 +8,14 @@ export interface PhotoPickerStrategy {
   pickImage: () => void | Promise<void>;
 }
 
+export interface SelectedPhoto {
+  uri: string;
+  fileName?: string | null;
+  mimeType?: string | null;
+}
+
 export interface UsePhotoPickerParams {
-  onUploadSuccess?: (uri: string) => void;
+  onUploadSuccess?: (photo: SelectedPhoto) => void;
   onUploadError?: (error: unknown) => void;
 }
 
@@ -19,7 +25,7 @@ export interface PhotoPickerProps extends Omit<PressableProps, 'children'> {
   useController?: UsePhotoPickerHook;
   label?: string;
   uploadUrl?: string;
-  onUploadSuccess?: (uri: string) => void;
+  onUploadSuccess?: (photo: SelectedPhoto) => void;
   onUploadError?: (error: unknown) => void;
   className?: string;
   imageClassName?: string;
