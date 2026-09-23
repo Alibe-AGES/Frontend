@@ -3,6 +3,7 @@ name: Develop to Main
 on:
   schedule:
     - cron: '0 6 * * *'
+  workflow_dispatch:
 
 jobs:
   sync-develop-to-main:
