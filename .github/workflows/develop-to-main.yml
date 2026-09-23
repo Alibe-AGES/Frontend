@@ -29,10 +29,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
+          GH_HEAD_REF: ${{ github.repository_owner }}:develop
         run: |
           gh pr create \
             --repo "$GH_REPO" \
             --base main \
-            --head develop \
+            --head "$GH_HEAD_REF" \
             --title "Merge develop into main" \
             --body "Automated daily merge PR from develop to main."
