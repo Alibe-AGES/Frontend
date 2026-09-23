@@ -27,4 +27,9 @@ jobs:
         run: |
           develop_sha="$(git rev-parse refs/remotes/origin/develop)"
           main_sha="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
-          git push --force-with-lease=refs/heads/main:"$main_sha" origin "$develop_sha":refs/heads/main
+
+          if [ -n "$main_sha" ]; then
+            git push --force-with-lease=refs/heads/main:"$main_sha" origin "$develop_sha":refs/heads/main
+          else
+            git push origin "$develop_sha":refs/heads/main
+          fi
