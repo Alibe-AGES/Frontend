@@ -3,7 +3,6 @@ name: Develop to Main
 on:
   schedule:
     - cron: '0 6 * * *'
-  workflow_dispatch:
 
 jobs:
   sync-develop-to-main:
@@ -23,11 +22,7 @@ jobs:
         run: |
           test "$GITHUB_REF" = "refs/heads/develop"
 
-      - name: Fetch main ref
-        run: |
-          git fetch origin refs/heads/main:refs/remotes/origin/main
-
       - name: Update main to develop
         run: |
-          main_sha="$(git rev-parse refs/remotes/origin/main)"
-          git push --force-with-lease=main:"$main_sha" origin "$GITHUB_SHA":refs/heads/main
+          main_sha="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          git push --force-with-lease=refs/heads/main:"$main_sha" origin "$GITHUB_SHA":refs/heads/main
