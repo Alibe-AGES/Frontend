@@ -6,26 +6,41 @@ on:
   workflow_dispatch:
 
 jobs:
-  fast-forward-develop-to-main:
-    name: Fast-Forward develop to main
+  sync-develop-to-main:
+    name: Sync develop to main
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-      - name: Checkout repository
+      - name: Checkout develop
         uses: actions/checkout@v4
         with:
+          ref: develop
           fetch-depth: 0
 
       - name: Configure Git bot
         run: |
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@://github.com"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-      - name: Execute Fast-Forward merge
+      - name: Fetch develop ref
         run: |
-          git fetch origin main:main
-          git fetch origin develop:develop
-          git checkout main
-          git merge --ff-only origin/develop || echo "No changes to merge"
+          git fetch origin refs/heads/develop:refs/remotes/origin/develop
+
+      - name: Update main to develop
+        run: |
+          develop_sha="$(git rev-parse refs/remotes/origin/develop)"
+          if ! main_ref="$(git ls-remote --heads origin refs/heads/main)"; then
+            echo "Failed to query remote main ref." >&2
+            exit 1
+          fi
+
+          main_sha="$(printf '%s' "$main_ref" | awk '{print $1}')"
+
+          if [ -n "$main_ref" ]; then
+            git push --force-with-lease=refs/heads/main:"$main_sha" origin "$develop_sha":refs/heads/main
+          else
+            git push origin "$develop_sha":refs/heads/main
+          fi
