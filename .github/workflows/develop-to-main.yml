@@ -6,34 +6,56 @@ on:
   workflow_dispatch:
 
 jobs:
-  create-pr-develop-to-main:
-    name: Create PR from develop to main
+  sync-develop-to-main:
+    name: Sync develop to main
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
 
     steps:
-      - name: Check if PR already exists
-        id: check_pr
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-          GH_HEAD_REF: ${{ github.repository_owner }}:develop
-        run: |
-          pr_url=$(gh pr list --repo "$GH_REPO" --base main --head "$GH_HEAD_REF" --state open --json url --jq '.[0].url // empty')
-          echo "pr_url=$pr_url" >> "$GITHUB_OUTPUT"
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
 
-      - name: Create PR from develop to main
-        if: steps.check_pr.outputs.pr_url == ''
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-          GH_HEAD_REF: ${{ github.repository_owner }}:develop
+      - name: Configure Git bot
         run: |
-          gh pr create \
-            --repo "$GH_REPO" \
-            --base main \
-            --head "$GH_HEAD_REF" \
-            --title "Merge develop into main" \
-            --body "Automated daily merge PR from develop to main."
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge develop into main
+        run: |
+          git fetch origin develop
+          set +e
+          git merge -X theirs --no-edit origin/develop
+          merge_exit=$?
+          set -e
+
+          if [ -f .git/MERGE_HEAD ]; then
+            unresolved_file_list="$(mktemp)"
+            git diff --name-only --diff-filter=U > "$unresolved_file_list"
+
+            while IFS= read -r path; do
+              [ -n "$path" ] || continue
+
+              if git ls-files -u -- "$path" | awk '{print $3}' | grep -q '^3$'; then
+                git checkout --theirs -- "$path"
+                git add -- "$path"
+              else
+                git rm -f -- "$path"
+              fi
+            done < "$unresolved_file_list"
+
+            if [ -n "$(git diff --name-only --diff-filter=U)" ]; then
+              echo "Unresolved merge conflicts remain after automatic develop-first resolution." >&2
+              exit 1
+            fi
+
+            git commit --no-edit
+          elif [ "$merge_exit" -ne 0 ]; then
+            exit "$merge_exit"
+          fi
+
+      - name: Push updated main
+        run: git push origin HEAD:main
