@@ -11,36 +11,34 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
 
     steps:
-      - name: Checkout develop
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: develop
           fetch-depth: 0
 
-      - name: Configure Git bot
+      - name: Create or Sync Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          # Check if PR already exists
+          existing_pr=$(gh pr list --head develop --base main --state open --json number --jq '.[0].number')
 
-      - name: Fetch develop ref
-        run: |
-          git fetch origin refs/heads/develop:refs/remotes/origin/develop
-
-      - name: Update main to develop
-        run: |
-          develop_sha="$(git rev-parse refs/remotes/origin/develop)"
-          if ! main_ref="$(git ls-remote --heads origin refs/heads/main)"; then
-            echo "Failed to query remote main ref." >&2
-            exit 1
-          fi
-
-          main_sha="$(printf '%s' "$main_ref" | awk '{print $1}')"
-
-          if [ -n "$main_ref" ]; then
-            git push --force-with-lease=refs/heads/main:"$main_sha" origin "$develop_sha":refs/heads/main
+          if [ -z "$existing_pr" ]; then
+            echo "Creating Pull Request from develop to main..."
+            gh pr create \
+              --base main \
+              --head develop \
+              --title "chore: Sync develop to main" \
+              --body "Automated daily sync from develop branch to main."
           else
-            git push origin "$develop_sha":refs/heads/main
+            echo "Pull Request #$existing_pr already open."
           fi
+
+      - name: Auto-merge PR (if checks pass)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge develop --auto --merge || true
