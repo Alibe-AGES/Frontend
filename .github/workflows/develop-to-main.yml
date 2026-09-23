@@ -18,16 +18,20 @@ jobs:
         id: check_pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          GH_HEAD_REF: ${{ github.repository_owner }}:develop
         run: |
-          pr_url=$(gh pr list --base main --head develop --state open --json url --jq '.[0].url // empty')
+          pr_url=$(gh pr list --repo "$GH_REPO" --base main --head "$GH_HEAD_REF" --state open --json url --jq '.[0].url // empty')
           echo "pr_url=$pr_url" >> "$GITHUB_OUTPUT"
 
       - name: Create PR from develop to main
         if: steps.check_pr.outputs.pr_url == ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: |
           gh pr create \
+            --repo "$GH_REPO" \
             --base main \
             --head develop \
             --title "Merge develop into main" \
