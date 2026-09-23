@@ -15,6 +15,7 @@ module.exports = {
         coral: '#EC7448',
         'coral-soft': '#F7B08F',
         pink: '#ECA4D0',
+        wine: '#71241A',
         'wine-soft': '#71241A80',
       },
       fontFamily: {
