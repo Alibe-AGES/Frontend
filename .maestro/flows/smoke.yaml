@@ -1,4 +1,4 @@
-# Smoke test: the app launches and shows the initial screen.
+# Smoke test: the app launches, passes the loading screen and lands on the groups screen.
 
 # IMPORTANT: update the assertion below when the INITIAL screen changes.
 #
@@ -11,14 +11,5 @@ tags: [smoke]
 ---
 - runFlow: ../subflows/launch.yaml
 - extendedWaitUntil:
-    visible:
-      id: alibe-loading-screen
+    visible: 'Meus grupos'
     timeout: 60000
-- assertVisible:
-    id: alibe-loading-logo-symbol
-- assertVisible:
-    id: alibe-loading-logo-text
-- assertVisible:
-    id: alibe-loading-top-decoration
-- assertVisible:
-    id: alibe-loading-bottom-decoration
