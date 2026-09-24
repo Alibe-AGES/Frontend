@@ -4,7 +4,7 @@ export const theme = {
     surface: '#FFFDF8',
     ink: '#036147',
     inkSoft: '#4B665D',
-    lime: '#C8E56B',
+    lime: '#DCF290',
     limeSoft: '#E4F3A6',
     coral: '#EC7448',
     coralSoft: '#F7B08F',
