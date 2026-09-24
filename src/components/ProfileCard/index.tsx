@@ -1,8 +1,7 @@
 import { theme } from '@/theme';
-import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { FC } from 'react';
 import { Text, useWindowDimensions, View } from 'react-native';
+import { Avatar } from '../Avatar';
 import { ProfileCardProps } from './ProfileCard.types';
 
 export const ProfileCard: FC<ProfileCardProps> = ({
@@ -65,22 +64,13 @@ export const ProfileCard: FC<ProfileCardProps> = ({
         }}
         testID={`${testID}-avatar`}
       >
-        {avatarUrl ? (
-          <Image
-            source={{ uri: avatarUrl }}
-            accessibilityLabel="Foto de perfil"
-            contentFit="cover"
-            style={{ width: '100%', height: '100%' }}
-            testID={`${testID}-avatar-image`}
-          />
-        ) : (
-          <Ionicons
-            name="person-outline"
-            size={avatarSize * 0.45}
-            color={theme.colors.coral}
-            testID={`${testID}-avatar-placeholder`}
-          />
-        )}
+        <Avatar
+          photoUri={avatarUrl}
+          accessibilityLabel="Foto de perfil"
+          imageClassName="w-full h-full"
+          iconSize={avatarSize * 0.45}
+          testID={`${testID}-avatar`}
+        />
       </View>
     </View>
   );
