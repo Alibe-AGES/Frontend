@@ -317,4 +317,19 @@ describe('<TextInput />', () => {
     expect(iconWrapperClassName).not.toContain('bg-coral');
     expect(iconWrapperClassName).not.toContain('bg-ink');
   });
+
+  test('type "password" disables auto-capitalization and auto-correct', async () => {
+    const { getByTestId } = await render(
+      <TextInput
+        type="password"
+        value=""
+        onChangeText={jest.fn()}
+        testID="password-input"
+      />
+    );
+
+    const field = getByTestId('password-input');
+    expect(field.props.autoCapitalize).toBe('none');
+    expect(field.props.autoCorrect).toBe(false);
+  });
 });

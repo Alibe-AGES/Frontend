@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-export type TextInputType = 'all' | 'email' | 'numeric' | 'alphanumeric';
+export type TextInputType = 'all' | 'email' | 'numeric' | 'alphanumeric' | 'password';
 export type TextInputIconBackground = 'coral' | 'ink';
 
 export interface TextInputProps {
