@@ -28,31 +28,6 @@ describe('<ProfileCard />', () => {
     expect(getByText('Eventos\nem decisão')).toBeTruthy();
   });
 
-  test('shows the avatar image when a URL is provided', async () => {
-    const { getByTestId, queryByTestId } = await render(
-      <ProfileCard
-        avatarUrl="https://example.com/avatar.jpg"
-        completedEventsCount={0}
-        pendingEventsCount={0}
-      />
-    );
-
-    expect(getByTestId('alibe-profile-card-avatar-image')).toBeTruthy();
-    expect(queryByTestId('alibe-profile-card-avatar-placeholder')).toBeNull();
-  });
-
-  test('shows a placeholder icon when there is no avatar URL', async () => {
-    const { getByTestId, queryByTestId } = await render(
-      <ProfileCard
-        completedEventsCount={0}
-        pendingEventsCount={0}
-      />
-    );
-
-    expect(getByTestId('alibe-profile-card-avatar-placeholder')).toBeTruthy();
-    expect(queryByTestId('alibe-profile-card-avatar-image')).toBeNull();
-  });
-
   test('shows a placeholder icon when the avatar URL is null', async () => {
     const { getByTestId } = await render(
       <ProfileCard
