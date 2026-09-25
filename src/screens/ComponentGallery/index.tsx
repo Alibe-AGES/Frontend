@@ -3,6 +3,7 @@ import { ScrollView, Text, View } from 'react-native';
 import { Button } from '@/components/Button';
 import { Calendar } from '@/components/Calendar';
 import { DayMark } from '@/components/Calendar/Calendar.types';
+import { EventCard } from '@/components/EventCard';
 
 const dayMarks: Record<string, DayMark> = {
   '2025-05-01': { status: 'available' },
@@ -74,6 +75,26 @@ export function ComponentGalleryScreen() {
           dayMarks={dayMarks}
           showLegend
         />
+      </View>
+
+
+      <View className="gap-4 rounded-3xl bg-surface p-5">
+        <Text className="text-xl font-black text-ink">EventCard</Text>
+        <EventCard
+          event={{
+            id: 'gallery-event',
+            name: 'Bloom Café',
+            timeslot: '2026-05-18T13:00:00.000Z',
+            budgetStart: '20',
+            budgetEnd: '100',
+            location: { address: 'Av. Carlos Gomes, 600' },
+            phone: '(00) 00000-0000',
+            openingHours: ['Segunda à sábado: 9:00 - 18:00', 'Domingo: Fechado'],
+            website: 'www.BloomCafé.com',
+          }}
+          onEditPress={() => undefined}
+        />
+        <EventCard event={{ id: 'gallery-event-minimal', name: 'Evento sem foto' }} />
       </View>
     </ScrollView>
   );
