@@ -1,0 +1,10 @@
+<svg viewBox="0 0 520 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M-20 196C30 196 88 160 84 104C80 58 30 50 26 96C22 142 68 206 132 222C196 238 236 196 242 132" stroke="#E4F3A6" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+  <g opacity="0.6">
+    <path d="M540 118C506 124 468 98 466 58C464 16 504 6 508 44C512 84 484 178 404 188C344 196 302 164 292 116" stroke="#ECA4D0" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M308 110C312 94 312 74 310 60C309 52 300 51 299 59L298 52C297 44 288 44 287 52L286 56C285 48 276 48 275 56L274 82C272 76 266 72 262 76C258 80 262 90 268 102C272 110 278 116 288 120C298 123 306 118 308 110Z" fill="#ECA4D0"/>
+  </g>
+  <path d="M226 128C222 112 222 92 224 76C225 68 234 67 235 75L236 70C237 62 246 62 247 70L248 72C249 64 258 64 259 72L260 96C262 90 268 86 272 90C276 94 272 104 266 116C262 124 256 132 246 136C236 139 228 136 226 128Z" fill="#E4F3A6"/>
+  <path d="M236 76L237 100M248 72L248 98M259 74L258 98" stroke="#064D3B" stroke-width="1.4" stroke-linecap="round"/>
+  <path d="M287 54L287 80M298 54L297 80M278 104C284 98 292 96 298 90" stroke="#EC7448" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+</svg>
