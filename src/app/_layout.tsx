@@ -1,4 +1,5 @@
 import '@/global.css';
+import { theme } from '@/theme';
 import {
   Poppins_400Regular,
   Poppins_500Medium,
@@ -11,6 +12,7 @@ import { Stack } from 'expo-router/stack';
 import * as SplashScreen from 'expo-splash-screen';
 import { polyfillWebCrypto } from 'expo-standard-web-crypto';
 import { useEffect } from 'react';
+import { StatusBar } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 polyfillWebCrypto();
@@ -38,6 +40,10 @@ export default function RootLayout() {
 
   return (
     <>
+      <StatusBar
+        barStyle={'dark-content'}
+        backgroundColor={theme.colors.canvas}
+      />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="(auth)" />
