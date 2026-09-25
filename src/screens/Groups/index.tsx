@@ -72,7 +72,7 @@ export function GroupsScreen() {
   }, [invite, router]);
 
   const handleCreateGroup = () => {
-    router.push('/create-group');
+    router.push('/profile/123');
   };
 
   const handleGroupPress = (id: string) => {
