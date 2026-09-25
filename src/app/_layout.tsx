@@ -11,6 +11,7 @@ import { Stack } from 'expo-router/stack';
 import * as SplashScreen from 'expo-splash-screen';
 import { polyfillWebCrypto } from 'expo-standard-web-crypto';
 import { useEffect } from 'react';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import Toast from 'react-native-toast-message';
 
 polyfillWebCrypto();
@@ -38,13 +39,15 @@ export default function RootLayout() {
 
   return (
     <>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(profile)" />
-        <Stack.Screen name="(app)" />
-      </Stack>
-      <Toast />
+      <KeyboardProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(profile)" />
+          <Stack.Screen name="(app)" />
+        </Stack>
+        <Toast />
+      </KeyboardProvider>
     </>
   );
 }

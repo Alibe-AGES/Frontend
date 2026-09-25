@@ -7,12 +7,13 @@ import { createGroup } from '@/server/groups';
 import { theme } from '@/theme';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import tw from 'twrnc';
 
 import CreateGroupDecoration from '@/assets/images/create-group-decoration.svg';
 import PencilIcon from '@/assets/images/pencil.svg';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 export function CreateGroupScreen() {
   const [groupName, setGroupName] = useState('');
@@ -50,10 +51,11 @@ export function CreateGroupScreen() {
   };
 
   return (
-    <ScrollView
+    <KeyboardAwareScrollView
       className="flex-1 bg-canvas"
       contentContainerClassName="flex-grow px-6 pt-16"
       keyboardShouldPersistTaps="handled"
+      bottomOffset={20}
     >
       <View
         accessible={false}
@@ -117,6 +119,6 @@ export function CreateGroupScreen() {
           />
         </View>
       </View>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }

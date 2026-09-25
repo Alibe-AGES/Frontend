@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useMemo, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import Toast from 'react-native-toast-message';
 
 export interface AvailabilityParticipant {
@@ -90,81 +91,87 @@ export function AvailabilityScreen({
   };
 
   return (
-    <ScrollView
-      className="flex-1"
-      style={{ backgroundColor: '#FFFBF6' }}
-      contentContainerClassName="gap-6 px-6 py-16"
-      testID="availability-screen"
+    <KeyboardAwareScrollView
+      className="flex-1 bg-canvas"
+      contentContainerClassName="flex-grow px-6 pt-16"
+      keyboardShouldPersistTaps="handled"
     >
-      <BackButton color={theme.colors.black} />
+      <ScrollView
+        className="flex-1"
+        style={{ backgroundColor: '#FFFBF6' }}
+        contentContainerClassName="gap-6 px-6 py-16"
+        testID="availability-screen"
+      >
+        <BackButton color={theme.colors.black} />
 
-      <View className="flex-row items-center justify-center gap-10">
-        <View
-          className="items-center justify-center rounded-full"
-          style={{
-            backgroundColor: theme.colors.pink,
-            height: 60,
-            width: 60,
-          }}
-          testID="availability-screen-date-icon-wrapper"
+        <View className="flex-row items-center justify-center gap-10">
+          <View
+            className="items-center justify-center rounded-full"
+            style={{
+              backgroundColor: theme.colors.pink,
+              height: 60,
+              width: 60,
+            }}
+            testID="availability-screen-date-icon-wrapper"
+          >
+            <Ionicons
+              name="calendar-outline"
+              size={40}
+              color={theme.colors.ink}
+            />
+          </View>
+          <Text
+            className="items-center justify-items-center font-poppins text-ink"
+            style={{ fontSize: 40, lineHeight: 60 }}
+            testID="availability-screen-date-text"
+          >
+            {formattedDate}
+          </Text>
+        </View>
+
+        <Text
+          className="text-center font-poppins-medium text-xl"
+          style={{ color: theme.colors.wine }}
+          testID="availability-screen-participants-heading"
         >
-          <Ionicons
-            name="calendar-outline"
-            size={40}
-            color={theme.colors.ink}
+          {hasParticipants ? 'Participantes disponíveis' : label}
+        </Text>
+
+        {hasParticipants ? (
+          <View
+            className="flex-row flex-wrap justify-center gap-4 px-2"
+            testID="availability-screen-participants"
+          >
+            {participants.map((participant, index) => (
+              <Image
+                key={`${participant.id}-${String(index)}`}
+                source={{ uri: participant.avatarUrl }}
+                accessibilityLabel={participant.name}
+                contentFit="cover"
+                className="h-12 w-12 rounded-full border-2 border-canvas"
+              />
+            ))}
+          </View>
+        ) : null}
+
+        <AvailabilityCard onIntervalsChange={setIntervals} />
+
+        <View className="gap-3 pt-2">
+          <Button
+            title="Confirmar!"
+            variant="tertiary"
+            onPress={() => void handleConfirm()}
+            disabled={isSubmitting}
+          />
+
+          <Button
+            title="Não estarei disponível neste dia."
+            variant="tertiary"
+            onPress={() => void handleDecline()}
+            disabled={isSubmitting}
           />
         </View>
-        <Text
-          className="items-center justify-items-center font-poppins text-ink"
-          style={{ fontSize: 40, lineHeight: 60 }}
-          testID="availability-screen-date-text"
-        >
-          {formattedDate}
-        </Text>
-      </View>
-
-      <Text
-        className="text-center font-poppins-medium text-xl"
-        style={{ color: theme.colors.wine }}
-        testID="availability-screen-participants-heading"
-      >
-        {hasParticipants ? 'Participantes disponíveis' : label}
-      </Text>
-
-      {hasParticipants ? (
-        <View
-          className="flex-row flex-wrap justify-center gap-4 px-2"
-          testID="availability-screen-participants"
-        >
-          {participants.map((participant, index) => (
-            <Image
-              key={`${participant.id}-${String(index)}`}
-              source={{ uri: participant.avatarUrl }}
-              accessibilityLabel={participant.name}
-              contentFit="cover"
-              className="h-12 w-12 rounded-full border-2 border-canvas"
-            />
-          ))}
-        </View>
-      ) : null}
-
-      <AvailabilityCard onIntervalsChange={setIntervals} />
-
-      <View className="gap-3 pt-2">
-        <Button
-          title="Confirmar!"
-          variant="tertiary"
-          onPress={() => void handleConfirm()}
-          disabled={isSubmitting}
-        />
-
-        <Button
-          title="Não estarei disponível neste dia."
-          variant="tertiary"
-          onPress={() => void handleDecline()}
-          disabled={isSubmitting}
-        />
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
