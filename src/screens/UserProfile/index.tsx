@@ -1,7 +1,9 @@
 import { BackButton } from '@/components/BackButton';
 import { NavigationBar } from '@/components/NavigationBar';
 import { PasswordInput } from '@/components/PasswordInput';
+import { PhotoPicker } from '@/components/PhotoPicker';
 import { ProfileCard } from '@/components/ProfileCard';
+import { TextInput } from '@/components/TextInput';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -33,11 +35,7 @@ const ProfileMenuButton = ({
     activeOpacity={0.7}
   >
     <View className="mr-4 h-10 w-10 items-center justify-center rounded-full border bg-coral">
-      <Ionicons
-        name={icon}
-        size={20}
-        color={theme.colors.surface}
-      />
+      <Ionicons name={icon} size={20} color={theme.colors.surface} />
     </View>
     <Text
       className="flex-1 font-poppins text-lg"
@@ -57,13 +55,31 @@ export default function UserProfileScreen() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleEditProfile = () => {
-    router.push('/profile');
+  const [isEditModalVisible, setEditModalVisible] = useState(false);
+  const [editName, setEditName] = useState('Ellen Vitória');
+  const [editPhoto, setEditPhoto] = useState<any>(null);
+  const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
+
+  const handleOpenEditModal = () => setEditModalVisible(true);
+  
+  const handleCloseEditModal = () => {
+    setEditModalVisible(false);
+    setEditName('Ellen Vitória');
+    setEditPhoto(null);
   };
 
-  const handleOpenPasswordModal = () => {
-    setPasswordModalVisible(true);
+  const handleSaveProfile = async () => {
+    setIsSubmittingProfile(true);
+
+    console.log('Salvando perfil. Nome:', editName, 'Foto:', editPhoto);
+    
+    setTimeout(() => {
+      setIsSubmittingProfile(false);
+      setEditModalVisible(false);
+    }, 1000);
   };
+
+  const handleOpenPasswordModal = () => setPasswordModalVisible(true);
 
   const handleClosePasswordModal = () => {
     setPasswordModalVisible(false);
@@ -75,7 +91,6 @@ export default function UserProfileScreen() {
   const handleSavePassword = () => {
     console.log('Senha atual:', currentPassword);
     console.log('Nova senha:', newPassword);
-
     handleClosePasswordModal();
   };
 
@@ -89,10 +104,7 @@ export default function UserProfileScreen() {
         <BackButton color={theme.colors.black} />
 
         <View className="flex-row items-center justify-center">
-          <ProfileCard
-            completedEventsCount={24}
-            pendingEventsCount={2}
-          />
+          <ProfileCard completedEventsCount={24} pendingEventsCount={2} />
         </View>
 
         <View className="m-6">
@@ -101,7 +113,7 @@ export default function UserProfileScreen() {
             style={{ color: theme.colors.wine }}
             testID="user-profile-screen-name"
           >
-            Ellen
+            Ellen Vitória
           </Text>
           <Text
             className="text-center font-poppins text-sm"
@@ -116,7 +128,7 @@ export default function UserProfileScreen() {
           <ProfileMenuButton
             icon="person-outline"
             label="Editar perfil"
-            onPress={handleEditProfile}
+            onPress={handleOpenEditModal}
           />
           <ProfileMenuButton
             icon="lock-closed-outline"
@@ -125,6 +137,61 @@ export default function UserProfileScreen() {
           />
         </View>
       </ScrollView>
+
+      <Modal
+        visible={isEditModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCloseEditModal}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          className="flex-1"
+        >
+          <View className="flex-1 items-center justify-center bg-black/50 px-6">
+            <View className="w-full gap-5 rounded-3xl bg-canvas p-6 shadow-lg">
+              <Text className="text-center font-poppins-semibold text-xl text-wine">
+                Editar Perfil
+              </Text>
+
+              <PhotoPicker
+              label=''
+                onUploadSuccess={(photo) => setEditPhoto(photo)}
+                disabled={isSubmittingProfile}
+              />
+
+              <View className="gap-3 mt-4">
+                <TextInput
+                  value={editName}
+                  onChangeText={setEditName}
+                  placeholder="Seu nome"
+                  disabled={isSubmittingProfile}
+                />
+              </View>
+
+              <View className="mt-4 flex-row gap-4">
+                <TouchableOpacity
+                  onPress={handleCloseEditModal}
+                  disabled={isSubmittingProfile}
+                  className="flex-1 items-center justify-center rounded-full border-2 border-coral py-3"
+                >
+                  <Text className="font-poppins-semibold text-coral">Cancelar</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={handleSaveProfile}
+                  disabled={isSubmittingProfile}
+                  className={`flex-1 items-center justify-center rounded-full bg-coral py-3 ${isSubmittingProfile ? 'opacity-60' : ''}`}
+                >
+                  <Text className="font-poppins-semibold text-surface">
+                    {isSubmittingProfile ? 'Salvando...' : 'Salvar'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
 
       <Modal
         visible={isPasswordModalVisible}
@@ -138,7 +205,7 @@ export default function UserProfileScreen() {
         >
           <View className="flex-1 items-center justify-center bg-black/50 px-6">
             <View className="w-full gap-5 rounded-3xl bg-canvas p-6 shadow-lg">
-              <Text className="text-wine text-center font-poppins-semibold text-xl">
+              <Text className="text-center font-poppins-semibold text-xl text-wine">
                 Alterar Senha
               </Text>
 
