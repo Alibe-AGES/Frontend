@@ -6,9 +6,11 @@ import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
-import tw from 'twrnc';
 
 import ProfileDecoration from '@/assets/images/create-group-decoration.svg';
+
+// Aumenta o viewBox original do SVG para ele não ficar cortado nessa tela
+const DECORATION_VIEW_BOX = '0 -19 167 166';
 
 export interface CreateProfileData {
   nickname: string;
@@ -32,36 +34,38 @@ export function CreateProfileScreen({ onContinue }: CreateProfileScreenProps) {
     >
       <View
         accessible={false}
-        style={[tw`absolute -left-4 -top-4 h-32 w-32`, { transform: [{ scaleX: -1 }] }]}
+        className="absolute -left-12 -top-10 h-48 w-48 rotate-[100deg]"
       >
         <ProfileDecoration
           width="100%"
           height="100%"
+          viewBox={DECORATION_VIEW_BOX}
         />
       </View>
 
       <View
         accessible={false}
-        style={tw`absolute -right-2 top-56 h-28 w-28`}
+        className="absolute -right-16 top-52 h-44 w-44 -rotate-90"
       >
         <ProfileDecoration
           width="100%"
           height="100%"
+          viewBox={DECORATION_VIEW_BOX}
         />
       </View>
 
       <Text
-        className={`mt-16 text-center text-4xl leading-tight text-ink ${theme.typography.display}`}
+        className={`mt-16 text-center text-5xl leading-tight text-ink ${theme.typography.display}`}
       >
         Vamos criar{'\n'}seu perfil?
       </Text>
 
-      <Text className="mt-3 px-4 text-center font-poppins-medium text-xs text-wine">
+      <Text className="mt-3 px-4 text-center font-poppins-medium text-sm text-wine">
         Você poderá adicionar ou trocar sua foto e nome de usuário a qualquer momento pelo seu
         perfil.
       </Text>
 
-      <View className="mt-12 flex-1 rounded-t-3xl bg-pink/70 px-6 pb-10 pt-10">
+      <View className="mt-20 flex-1 rounded-t-3xl bg-pink/70 px-6 pb-10 pt-10">
         <PhotoPicker
           placeholder="camera"
           imageClassName="h-44 w-44"
@@ -69,7 +73,7 @@ export function CreateProfileScreen({ onContinue }: CreateProfileScreenProps) {
           testID="create-profile-photo"
         />
 
-        <Text className="mt-8 text-center font-poppins-medium text-base text-wine">
+        <Text className="mt-8 text-center font-poppins-medium text-xl text-wine">
           Como seus amigos te chamam?
         </Text>
 
