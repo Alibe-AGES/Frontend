@@ -124,7 +124,7 @@ export function GroupsScreen() {
           <Text className={`text-center text-3xl text-ink ${theme.typography.display}`}>
             Meus grupos
           </Text>
-          <Text className={`text-wine text-center ${theme.typography.body}`}>
+          <Text className={`text-center text-wine ${theme.typography.body}`}>
             Clique no + para criar um novo grupo.
           </Text>
           <CreateGroupButton onPress={handleCreateGroup} />
