@@ -1,15 +1,24 @@
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { FC } from 'react';
+import { ComponentProps, FC } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import tw from 'twrnc';
-import { PhotoPickerProps } from './PhotoPicker.types';
+import { PhotoPickerPlaceholder, PhotoPickerProps } from './PhotoPicker.types';
 import { useDefaultPhotoPickerController } from './controllers/useDefaultPhotoPickerController';
+
+const PLACEHOLDER_ICONS: Record<
+  PhotoPickerPlaceholder,
+  { name: ComponentProps<typeof Ionicons>['name']; color: string }
+> = {
+  group: { name: 'people-outline', color: theme.colors.coral },
+  camera: { name: 'camera-outline', color: theme.colors.ink },
+};
 
 export const PhotoPicker: FC<PhotoPickerProps> = ({
   useController,
   label = 'Adicionar foto (opcional)',
+  placeholder = 'group',
   uploadUrl,
   onUploadSuccess,
   onUploadError,
@@ -51,9 +60,9 @@ export const PhotoPicker: FC<PhotoPickerProps> = ({
     }
     return (
       <Ionicons
-        name="people-outline"
+        name={PLACEHOLDER_ICONS[placeholder].name}
         size={80}
-        color={theme.colors.coral}
+        color={PLACEHOLDER_ICONS[placeholder].color}
         testID={`${testID}-placeholder`}
       />
     );
