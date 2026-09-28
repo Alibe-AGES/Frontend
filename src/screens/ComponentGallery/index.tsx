@@ -3,6 +3,7 @@ import { ScrollView, Text, View } from 'react-native';
 import { Button } from '@/components/Button';
 import { Calendar } from '@/components/Calendar';
 import { DayMark } from '@/components/Calendar/Calendar.types';
+import { ProfileCard } from '@/components/ProfileCard';
 
 const dayMarks: Record<string, DayMark> = {
   '2025-05-01': { status: 'available' },
@@ -74,6 +75,12 @@ export function ComponentGalleryScreen() {
           dayMarks={dayMarks}
           showLegend
         />
+      </View>
+      <View>
+        <ProfileCard
+          completedEventsCount={24}
+          pendingEventsCount={2}
+        ></ProfileCard>
       </View>
     </ScrollView>
   );
