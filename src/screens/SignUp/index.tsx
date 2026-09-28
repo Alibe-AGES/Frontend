@@ -122,12 +122,6 @@ export function SignUpScreen({ onContinue, emailError }: SignUpScreenProps) {
           </Text>
         </Pressable>
 
-        <View className="mt-8 flex-row items-center gap-3">
-          <View className="h-px flex-1 bg-wine" />
-          <Text className="font-poppins text-sm text-wine">Ou continue com</Text>
-          <View className="h-px flex-1 bg-wine" />
-        </View>
-
         <View className="mt-auto pt-10">
           <ContinueButton
             onPress={() => {

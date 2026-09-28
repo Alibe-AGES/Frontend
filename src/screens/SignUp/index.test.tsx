@@ -23,14 +23,17 @@ describe('<SignUpScreen />', () => {
     jest.clearAllMocks();
   });
 
-  test.each(['Criar conta', 'Mostrar senhas', 'Ou continue com'])(
-    'renders the text %s',
-    async (text) => {
-      const { getByText } = await render(<SignUpScreen onContinue={onContinue} />);
+  test.each(['Criar conta', 'Mostrar senhas'])('renders the text %s', async (text) => {
+    const { getByText } = await render(<SignUpScreen onContinue={onContinue} />);
 
-      expect(getByText(text)).toBeTruthy();
-    }
-  );
+    expect(getByText(text)).toBeTruthy();
+  });
+
+  test('does not render the Google sign up option', async () => {
+    const { queryByText } = await render(<SignUpScreen onContinue={onContinue} />);
+
+    expect(queryByText('Ou continue com')).toBeNull();
+  });
 
   test.each(['Email', 'Senha', 'Confirmar senha'])('renders the %s input', async (placeholder) => {
     const { getByPlaceholderText } = await render(<SignUpScreen onContinue={onContinue} />);
