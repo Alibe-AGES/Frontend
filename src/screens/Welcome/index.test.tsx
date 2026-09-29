@@ -3,7 +3,6 @@ import { CreateEventScreen } from '@/screens/CreateEvent';
 import { DayScreen } from '@/screens/Day';
 import { EventCreatedScreen } from '@/screens/EventCreated';
 import { ExperiencesScreen } from '@/screens/Experiences';
-import { LoginScreen } from '@/screens/Login';
 import { MemoriesScreen } from '@/screens/Memories';
 import { NewExperienceScreen } from '@/screens/NewExperience';
 import { NewMemoryScreen } from '@/screens/NewMemory';
@@ -17,7 +16,6 @@ describe('welcome-based screens', () => {
     ['Day', DayScreen],
     ['Event created', EventCreatedScreen],
     ['Experiences', ExperiencesScreen],
-    ['Login', LoginScreen],
     ['Memories', MemoriesScreen],
     ['New experience', NewExperienceScreen],
     ['New memory', NewMemoryScreen],
