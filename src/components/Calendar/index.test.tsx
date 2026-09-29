@@ -79,4 +79,10 @@ describe('Calendar', () => {
     expect(getByLabelText('Dia 2026-05-20, 2 eventos')).toBeTruthy();
     expect(getAllByText('2')).toHaveLength(2);
   });
+
+  test('keeps the final partial week aligned to seven weekday columns', async () => {
+    const { getByTestId } = await render(<Calendar initialDate="2026-06-01" />);
+
+    expect(getByTestId('calendar-week-4').children).toHaveLength(7);
+  });
 });

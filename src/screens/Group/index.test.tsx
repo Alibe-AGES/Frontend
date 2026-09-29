@@ -131,6 +131,38 @@ describe('GroupScreen', () => {
         completedEventIds: [],
         allUsersAvailable: false,
       },
+      {
+        date: '2026-10-01',
+        scheduledEventIds: [],
+        proposalIds: [],
+        availableUserIds: [],
+        completedEventIds: ['event-3'],
+        allUsersAvailable: false,
+      },
+      {
+        date: '2026-10-02',
+        scheduledEventIds: [],
+        proposalIds: [],
+        availableUserIds: [],
+        completedEventIds: [],
+        allUsersAvailable: true,
+      },
+      {
+        date: '2026-10-03',
+        scheduledEventIds: [],
+        proposalIds: [],
+        availableUserIds: ['member-1'],
+        completedEventIds: [],
+        allUsersAvailable: false,
+      },
+      {
+        date: '2026-10-04',
+        scheduledEventIds: [],
+        proposalIds: ['proposal-2'],
+        availableUserIds: [],
+        completedEventIds: [],
+        allUsersAvailable: false,
+      },
     ]);
 
     await render(<GroupScreen />);
@@ -140,7 +172,12 @@ describe('GroupScreen', () => {
         status: 'suggested',
         eventIds: ['event-1', 'event-2'],
         proposalIds: ['proposal-1'],
+        dot: 'pink',
       });
+      expect(mockDayMarks?.['2026-10-01'].status).toBe('realized');
+      expect(mockDayMarks?.['2026-10-02'].status).toBe('allAvailable');
+      expect(mockDayMarks?.['2026-10-03'].status).toBe('available');
+      expect(mockDayMarks?.['2026-10-04']).toMatchObject({ status: 'normal', dot: 'pink' });
     });
   });
 });

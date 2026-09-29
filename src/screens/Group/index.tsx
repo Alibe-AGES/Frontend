@@ -22,7 +22,7 @@ function formatDate(date: Date): string {
 
 function getDayStatus(day: CalendarDay): DayMark['status'] | undefined {
   if (day.completedEventIds.length > 0) return 'realized';
-  if (day.proposalIds.length > 0) return 'suggested';
+  if (day.scheduledEventIds.length > 0) return 'suggested';
   if (day.allUsersAvailable) return 'allAvailable';
   if (day.availableUserIds.length > 0) return 'available';
   return undefined;

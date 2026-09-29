@@ -97,6 +97,10 @@ export function CalendarGrid({ monthDate, dayMarks, onDayPress }: CalendarGridPr
   const weeks = Array.from({ length: Math.ceil(slots.length / 7) }, (_, weekIndex) =>
     slots.slice(weekIndex * 7, weekIndex * 7 + 7)
   );
+  const completeWeeks = weeks.map((week) => [
+    ...week,
+    ...Array.from({ length: 7 - week.length }, () => null),
+  ]);
 
   return (
     <View>
@@ -112,10 +116,11 @@ export function CalendarGrid({ monthDate, dayMarks, onDayPress }: CalendarGridPr
       </View>
 
       <View className="gap-1">
-        {weeks.map((week, weekIndex) => (
+        {completeWeeks.map((week, weekIndex) => (
           <View
             key={`week-${String(weekIndex)}`}
             className="flex-row"
+            testID={`calendar-week-${String(weekIndex)}`}
           >
             {week.map((day, dayIndex) => {
               if (day === null) {
