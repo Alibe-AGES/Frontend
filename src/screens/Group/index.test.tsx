@@ -1,3 +1,4 @@
+import { DayMark } from '@/components/Calendar/Calendar.types';
 import { getGroupCalendar } from '@/server/calendar';
 import { getGroup, getGroupMembers } from '@/server/groups';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
@@ -28,15 +29,19 @@ jest.mock('@/components/NavigationBar', () => ({
 }));
 
 let mockDayPress: ((date: string) => void) | undefined;
+let mockDayMarks: Record<string, DayMark> | undefined;
 
 jest.mock('@/components/Calendar', () => ({
   Calendar: ({
     onDayPress,
+    dayMarks,
   }: {
     onDayPress: (date: string) => void;
     onMonthChange: (date: string) => void;
+    dayMarks: Record<string, DayMark>;
   }) => {
     mockDayPress = onDayPress;
+    mockDayMarks = dayMarks;
     return null;
   },
 }));
@@ -72,6 +77,7 @@ describe('GroupScreen', () => {
   afterEach(() => {
     jest.clearAllMocks();
     mockDayPress = undefined;
+    mockDayMarks = undefined;
   });
 
   test('loads and renders the group name and members', async () => {
@@ -112,6 +118,29 @@ describe('GroupScreen', () => {
     expect(push).toHaveBeenCalledWith({
       pathname: '/group/[id]/info',
       params: { id: 'group-1' },
+    });
+  });
+
+  test('matches backend event and proposal IDs to their calendar dates', async () => {
+    mockGetGroupCalendar.mockResolvedValue([
+      {
+        date: '2026-09-30',
+        scheduledEventIds: ['event-1', 'event-2'],
+        proposalIds: ['proposal-1'],
+        availableUserIds: [],
+        completedEventIds: [],
+        allUsersAvailable: false,
+      },
+    ]);
+
+    await render(<GroupScreen />);
+
+    await waitFor(() => {
+      expect(mockDayMarks?.['2026-09-30']).toMatchObject({
+        status: 'suggested',
+        eventIds: ['event-1', 'event-2'],
+        proposalIds: ['proposal-1'],
+      });
     });
   });
 });

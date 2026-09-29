@@ -21,11 +21,10 @@ function formatDate(date: Date): string {
 }
 
 function getDayStatus(day: CalendarDay): DayMark['status'] | undefined {
-  if (day.scheduledEventIds.length > 0) return 'suggested';
   if (day.completedEventIds.length > 0) return 'realized';
+  if (day.proposalIds.length > 0) return 'suggested';
   if (day.allUsersAvailable) return 'allAvailable';
   if (day.availableUserIds.length > 0) return 'available';
-  if (day.proposalIds.length > 0) return 'normal';
   return undefined;
 }
 
@@ -35,10 +34,13 @@ function buildDayMarks(days: CalendarDay[], today: string): Record<string, DayMa
   for (const day of days) {
     const status = getDayStatus(day);
 
-    if (status !== undefined) {
+    const eventIds = [...day.scheduledEventIds, ...day.completedEventIds];
+    if (status !== undefined || eventIds.length > 0 || day.proposalIds.length > 0) {
       marks[day.date] = {
-        status,
+        status: status ?? 'normal',
         dot: day.proposalIds.length > 0 ? 'pink' : undefined,
+        eventIds,
+        proposalIds: day.proposalIds,
       };
     }
   }

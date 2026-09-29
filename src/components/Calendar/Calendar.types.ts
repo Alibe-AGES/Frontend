@@ -1,4 +1,5 @@
-export type DayStatus = 'available' | 'realized' | 'suggested' | 'allAvailable' | 'past' | 'normal';
+export type DayStatus =
+  'available' | 'realized' | 'suggested' | 'allAvailable' | 'past' | 'pastEvent' | 'normal';
 
 export type DayDot = 'pink' | 'coral';
 
@@ -15,6 +16,8 @@ export interface CalendarDay {
 export interface DayMark {
   status: DayStatus;
   dot?: DayDot;
+  eventIds?: string[];
+  proposalIds?: string[];
 }
 
 export interface CalendarProps {
