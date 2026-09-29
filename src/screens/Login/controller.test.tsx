@@ -10,10 +10,11 @@ const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
 
 describe('LoginController', () => {
   const replace = jest.fn();
-  const dismissTo = jest.fn();
+  const back = jest.fn();
+  const canGoBack = jest.fn(() => true);
 
   beforeEach(() => {
-    mockUseRouter.mockReturnValue({ replace, dismissTo } as unknown as ReturnType<
+    mockUseRouter.mockReturnValue({ replace, back, canGoBack } as unknown as ReturnType<
       typeof useRouter
     >);
   });
@@ -32,12 +33,23 @@ describe('LoginController', () => {
     expect(replace).toHaveBeenCalledWith('/groups');
   });
 
-  test('goes back to the auth screen', async () => {
+  test('pops back to the previous screen', async () => {
     const { getByLabelText } = await render(<LoginController />);
 
     await fireEvent.press(getByLabelText('Voltar'));
 
-    expect(dismissTo).toHaveBeenCalledWith('/auth');
+    expect(back).toHaveBeenCalledTimes(1);
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  test('falls back to the auth screen when there is nothing to pop', async () => {
+    canGoBack.mockReturnValueOnce(false);
+    const { getByLabelText } = await render(<LoginController />);
+
+    await fireEvent.press(getByLabelText('Voltar'));
+
+    expect(back).not.toHaveBeenCalled();
+    expect(replace).toHaveBeenCalledWith('/auth');
   });
 
   test('does nothing on forgot password while recovery is not implemented', async () => {
@@ -46,6 +58,6 @@ describe('LoginController', () => {
     await fireEvent.press(getByText('Esqueci minha senha'));
 
     expect(replace).not.toHaveBeenCalled();
-    expect(dismissTo).not.toHaveBeenCalled();
+    expect(back).not.toHaveBeenCalled();
   });
 });
