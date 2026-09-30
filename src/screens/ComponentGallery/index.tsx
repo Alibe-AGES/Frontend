@@ -1,9 +1,9 @@
-import { ScrollView, Text, View } from 'react-native';
-
 import { Button } from '@/components/Button';
 import { Calendar } from '@/components/Calendar';
 import { DayMark } from '@/components/Calendar/Calendar.types';
-import { EventCard } from '@/components/EventCard';
+import { EventCard, EventCardDraft } from '@/components/EventCard';
+import { useState } from 'react';
+import { ScrollView, Text, View } from 'react-native';
 
 const dayMarks: Record<string, DayMark> = {
   '2025-05-01': { status: 'available' },
@@ -40,6 +40,14 @@ const dayMarks: Record<string, DayMark> = {
 };
 
 export function ComponentGalleryScreen() {
+  const [eventDraft, setEventDraft] = useState<EventCardDraft>({
+    name: '',
+    imageUri: null,
+    address: '',
+    date: '',
+    time: '',
+  });
+
   return (
     <ScrollView
       className="flex-1 bg-canvas"
@@ -77,7 +85,6 @@ export function ComponentGalleryScreen() {
         />
       </View>
 
-
       <View className="gap-4 rounded-3xl bg-surface p-5">
         <Text className="text-xl font-black text-ink">EventCard</Text>
         <EventCard
@@ -95,6 +102,16 @@ export function ComponentGalleryScreen() {
           onEditPress={() => undefined}
         />
         <EventCard event={{ id: 'gallery-event-minimal', name: 'Evento sem foto' }} />
+      </View>
+
+      <View className="gap-4 rounded-3xl bg-surface p-5">
+        <Text className="text-xl font-black text-ink">EventCard (create)</Text>
+        <EventCard
+          mode="create"
+          draft={eventDraft}
+          onChangeDraft={setEventDraft}
+          testID="gallery-event-card-create"
+        />
       </View>
     </ScrollView>
   );

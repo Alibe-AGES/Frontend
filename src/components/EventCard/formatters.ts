@@ -1,3 +1,5 @@
+import { parseDate } from '@/utils/date';
+import { isValidTime } from '@/utils/time';
 import { EventCardEvent } from './EventCard.types';
 
 function formatAmount(value: number | string): string {
@@ -37,4 +39,16 @@ export function formatTime(timeslot: EventCardEvent['timeslot']): string | null 
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
   return `${hours}:${minutes}`;
+}
+
+// Combina a data (DD/MM/AAAA) e o horario (HH:mm) do rascunho no `timeslot` do backend.
+export function buildTimeslot(date: string, time: string): Date | null {
+  const day = parseDate(date);
+  if (!day || !isValidTime(time)) {
+    return null;
+  }
+
+  const [hours, minutes] = time.split(':').map(Number);
+  day.setHours(hours, minutes, 0, 0);
+  return day;
 }
