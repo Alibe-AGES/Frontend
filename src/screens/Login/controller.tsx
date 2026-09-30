@@ -8,14 +8,5 @@ export default function LoginController() {
     router.replace('/groups');
   };
 
-  const handleBack = () => {
-    router.dismissTo('/auth');
-  };
-
-  return (
-    <LoginScreen
-      onContinue={handleContinue}
-      onBack={handleBack}
-    />
-  );
+  return <LoginScreen onContinue={handleContinue} />;
 }
