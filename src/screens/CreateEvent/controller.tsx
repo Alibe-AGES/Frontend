@@ -56,14 +56,6 @@ export default function CreateEventController() {
     apiDate !== null &&
     isValidTime(draft.time);
 
-  const handleChangeDraft = (next: EventCardDraft) => {
-    setDraft(next);
-    // Keep the uploaded file in sync if the image is cleared from the draft.
-    if (!next.imageUri) {
-      setPhoto(null);
-    }
-  };
-
   const handleConfirm = async () => {
     if (!groupId || !apiDate || !isDraftComplete || isSubmitting) {
       return;
@@ -100,7 +92,7 @@ export default function CreateEventController() {
     <CreateEventScreen
       groupId={groupId}
       draft={draft}
-      onChangeDraft={handleChangeDraft}
+      onChangeDraft={setDraft}
       onImageSelected={setPhoto}
       participants={participants}
       currentUserId={currentUserId}

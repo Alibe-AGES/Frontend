@@ -2,6 +2,7 @@ import type { EventCardDraft } from '@/components/EventCard';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
 import { createEvent } from '@/server/events';
 import { getGroup, getMe } from '@/server/groups';
+import { toApiDate } from '@/utils/date';
 import { act, render, waitFor } from '@testing-library/react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
@@ -58,7 +59,7 @@ const COMPLETE_DRAFT: EventCardDraft = {
   name: ' Bloom Café ',
   imageUri: null,
   address: 'Av. João Wallig, 1800',
-  date: '15/10/2026',
+  date: '15/10',
   time: '20:00',
 };
 
@@ -116,11 +117,22 @@ describe('CreateEventController', () => {
     expect(mockScreenProps.participants).toEqual([]);
   });
 
+  test('still lists participants when the current user cannot be loaded', async () => {
+    mockGetMe.mockRejectedValue(new Error('offline'));
+
+    await render(<CreateEventController />);
+
+    await waitFor(() => {
+      expect(mockScreenProps.participants).toHaveLength(2);
+    });
+    expect(mockScreenProps.currentUserId).toBeUndefined();
+  });
+
   test('keeps confirm disabled until every required field is valid', async () => {
     await render(<CreateEventController />);
     expect(mockScreenProps.isConfirmDisabled).toBe(true);
 
-    await fillDraft({ ...COMPLETE_DRAFT, date: '31/02/2026' });
+    await fillDraft({ ...COMPLETE_DRAFT, date: '31/02' });
     expect(mockScreenProps.isConfirmDisabled).toBe(true);
 
     await fillDraft({ ...COMPLETE_DRAFT, time: '25:00' });
@@ -157,7 +169,7 @@ describe('CreateEventController', () => {
 
     expect(mockCreateEvent).toHaveBeenCalledWith('group-1', {
       name: ' Bloom Café ',
-      date: '2026-10-15',
+      date: toApiDate('15/10'),
       time: '20:00',
       location: 'Av. João Wallig, 1800',
       image: photo,

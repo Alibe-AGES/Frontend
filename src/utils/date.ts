@@ -52,3 +52,16 @@ export function parseDayMonth(dayMonth: string, today: Date = new Date()): Date 
   const startOfToday = new Date(year, today.getMonth(), today.getDate());
   return date < startOfToday ? parseDate(`${dayMonth}/${String(year + 1)}`) : date;
 }
+
+// Converte o DD/MM do rascunho no YYYY-MM-DD esperado pelo backend (ano via `parseDayMonth`).
+export function toApiDate(dayMonth: string, today: Date = new Date()): string | null {
+  const date = parseDayMonth(dayMonth, today);
+  if (!date) {
+    return null;
+  }
+
+  const year = String(date.getFullYear());
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
