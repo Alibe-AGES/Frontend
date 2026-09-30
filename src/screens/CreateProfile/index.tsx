@@ -65,7 +65,7 @@ export function CreateProfileScreen({ onContinue }: CreateProfileScreenProps) {
         perfil.
       </Text>
 
-      <View className="mt-20 flex-1 rounded-t-3xl bg-pink/70 px-6 pb-10 pt-10">
+      <View className="mt-20 flex-1 rounded-t-3xl bg-pink/70 px-6 pb-28 pt-10">
         <PhotoPicker
           placeholder="camera"
           imageClassName="h-44 w-44"
@@ -94,7 +94,7 @@ export function CreateProfileScreen({ onContinue }: CreateProfileScreenProps) {
           />
         </View>
 
-        <View className="mt-auto pt-8">
+        <View className="mt-auto pt-6">
           <ContinueButton
             onPress={() => {
               onContinue({ nickname: trimmedNickname, photo });

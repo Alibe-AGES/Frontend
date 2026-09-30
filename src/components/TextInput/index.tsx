@@ -3,11 +3,11 @@ import type { KeyboardTypeOptions } from 'react-native';
 import { TextInput as RNTextInput, Text, View } from 'react-native';
 
 import { theme } from '@/theme';
+import { isValidEmail } from '@/utils/email';
 import type { TextInputProps, TextInputType } from './TextInput.types';
 
 export type { TextInputIconBackground, TextInputProps, TextInputType } from './TextInput.types';
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/;
 const NUMERIC_DISALLOWED_REGEX = /\D/g;
 const ALPHANUMERIC_DISALLOWED_REGEX = /[^\p{L}\p{N}\s]/gu;
 
@@ -73,7 +73,7 @@ export function TextInput({
     setIsFocused(false);
 
     if (type === 'email') {
-      setTypeError(value.length > 0 && !EMAIL_REGEX.test(value) ? ERROR_MESSAGES.email : null);
+      setTypeError(value.length > 0 && !isValidEmail(value) ? ERROR_MESSAGES.email : null);
     }
 
     onBlur?.();
