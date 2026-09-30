@@ -1,3 +1,4 @@
+import '@/devAuth.local'; // TODO(local): NÃO COMMITAR — atalho de login para testes
 import '@/global.css';
 import {
   Poppins_400Regular,

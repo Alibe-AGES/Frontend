@@ -34,3 +34,13 @@ export function parseDate(date: string): Date | null {
 export function isValidDate(date: string): boolean {
   return parseDate(date) !== null;
 }
+
+// Converte DD/MM/AAAA no formato YYYY-MM-DD esperado pelo backend.
+export function toApiDate(date: string): string | null {
+  if (!isValidDate(date)) {
+    return null;
+  }
+
+  const [day, month, year] = date.split('/');
+  return `${year}-${month}-${day}`;
+}

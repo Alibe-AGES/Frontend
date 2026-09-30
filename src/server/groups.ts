@@ -1,7 +1,6 @@
 import { API_BASE_URL } from '@/constants';
-import { File } from 'expo-file-system';
-import { Platform } from 'react-native';
 import { ApiError } from './api';
+import { appendImage, UploadImage } from './images';
 
 export interface Group {
   id: string;
@@ -10,11 +9,7 @@ export interface Group {
   createdAt: string;
 }
 
-export interface CreateGroupImage {
-  uri: string;
-  fileName?: string | null;
-  mimeType?: string | null;
-}
+export type CreateGroupImage = UploadImage;
 
 export interface CreateGroupInput {
   name: string;
@@ -50,40 +45,6 @@ export async function getMe(): Promise<CurrentUser> {
   return (await response.json()) as CurrentUser;
 }
 
-const IMAGE_EXTENSION_BY_MIME_TYPE: Record<string, string> = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-  'image/svg+xml': 'svg',
-};
-
-function imageFileName(image: CreateGroupImage, mimeType: string): string {
-  if (image.fileName?.match(/\.(jpe?g|png|webp|svg)$/i)) {
-    return image.fileName;
-  }
-
-  const extension = IMAGE_EXTENSION_BY_MIME_TYPE[mimeType] ?? 'jpg';
-  return 'profile-picture.' + extension;
-}
-
-async function appendGroupImage(formData: FormData, image: CreateGroupImage): Promise<void> {
-  let mimeType = image.mimeType?.startsWith('image/') ? image.mimeType : 'image/jpeg';
-
-  if (Platform.OS === 'web') {
-    const imageResponse = await fetch(image.uri);
-    if (!imageResponse.ok) {
-      throw new Error('Não foi possível ler a imagem selecionada.');
-    }
-
-    const blob = await imageResponse.blob();
-    mimeType = blob.type.startsWith('image/') ? blob.type : mimeType;
-    formData.append('profile_pic', blob, imageFileName(image, mimeType));
-    return;
-  }
-
-  formData.append('profile_pic', new File(image.uri));
-}
-
 function resolveGroupPhotoUrl(profilePic: string | null): string | null {
   if (!profilePic) {
     return null;
@@ -110,7 +71,7 @@ export async function createGroup(input: CreateGroupInput): Promise<Group> {
   formData.append('name', input.name.trim());
 
   if (input.image) {
-    await appendGroupImage(formData, input.image);
+    await appendImage(formData, 'profile_pic', input.image, 'profile-picture');
   }
 
   const response = await fetch(API_BASE_URL + '/groups', {

@@ -1,4 +1,4 @@
-import { isValidDate, maskDate, parseDate } from './date';
+import { isValidDate, maskDate, parseDate, toApiDate } from './date';
 
 describe('maskDate', () => {
   test.each([
@@ -21,5 +21,17 @@ describe('parseDate', () => {
     expect(parseDate('31/02/2026')).toBeNull();
     expect(parseDate('18/05')).toBeNull();
     expect(isValidDate('00/00/2026')).toBe(false);
+  });
+});
+
+describe('toApiDate', () => {
+  test('converts a valid date to YYYY-MM-DD', () => {
+    expect(toApiDate('05/10/2026')).toBe('2026-10-05');
+  });
+
+  test('returns null for invalid or incomplete dates', () => {
+    expect(toApiDate('31/02/2026')).toBeNull();
+    expect(toApiDate('05/10')).toBeNull();
+    expect(toApiDate('')).toBeNull();
   });
 });

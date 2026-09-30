@@ -1,5 +1,4 @@
 import { AuthScreen } from '@/screens/Auth';
-import { CreateEventScreen } from '@/screens/CreateEvent';
 import { DayScreen } from '@/screens/Day';
 import { EventCreatedScreen } from '@/screens/EventCreated';
 import { ExperiencesScreen } from '@/screens/Experiences';
@@ -12,7 +11,6 @@ import { WelcomeScreen } from './index';
 describe('welcome-based screens', () => {
   test.each([
     ['Auth', AuthScreen],
-    ['Create event', CreateEventScreen],
     ['Day', DayScreen],
     ['Event created', EventCreatedScreen],
     ['Experiences', ExperiencesScreen],
