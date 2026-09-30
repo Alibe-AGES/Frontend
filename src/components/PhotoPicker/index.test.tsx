@@ -1,4 +1,5 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { Text as MockText } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { PhotoPicker } from './index';
 
@@ -24,6 +25,13 @@ jest.mock('expo-image-picker', () => ({
 
 jest.mock('react-native-toast-message', () => ({
   show: jest.fn(),
+}));
+
+// Renderiza o nome do ícone para os testes conseguirem diferenciar os placeholders.
+jest.mock('@expo/vector-icons', () => ({
+  Ionicons: ({ name, testID }: { name: string; testID?: string }) => (
+    <MockText testID={testID}>{name}</MockText>
+  ),
 }));
 
 const originalFetch = global.fetch;
@@ -53,6 +61,15 @@ describe('<PhotoPicker />', () => {
     const { getByTestId } = await render(<PhotoPicker />);
 
     expect(getByTestId('alibe-photo-picker-placeholder')).toBeTruthy();
+  });
+
+  test.each([
+    ['group', 'people-outline'],
+    ['camera', 'camera-outline'],
+  ] as const)('shows the %s placeholder icon', async (placeholder, iconName) => {
+    const { getByText } = await render(<PhotoPicker placeholder={placeholder} />);
+
+    expect(getByText(iconName)).toBeTruthy();
   });
 
   test('contains a button that opens the gallery when pressed', async () => {
