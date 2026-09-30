@@ -1,12 +1,11 @@
-import { Button } from '@/components/Button';
 import { useDefaultPhotoPickerController } from '@/components/PhotoPicker/controllers/useDefaultPhotoPickerController';
 import { theme } from '@/theme';
-import { DATE_LENGTH, maskDate } from '@/utils/date';
+import { DAY_MONTH_LENGTH, maskDayMonth } from '@/utils/date';
 import { maskTime, TIME_LENGTH } from '@/utils/time';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { FC } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native';
 import tw from 'twrnc';
 import { EventCardCreateProps, EventCardDraft } from './EventCard.types';
 import { EventCardFrame } from './EventCardFrame';
@@ -77,20 +76,59 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
     </Pressable>
   );
 
+  const header = (
+    <View className="flex-row items-center justify-center gap-4">
+      <View className="h-14 w-14 items-center justify-center rounded-full bg-pink">
+        <Ionicons
+          name="calendar-outline"
+          size={28}
+          color={theme.colors.ink}
+        />
+      </View>
+      <TextInput
+        accessibilityLabel="Data do evento"
+        className="w-28 text-center font-poppins text-4xl text-ink outline-none"
+        keyboardType="number-pad"
+        maxLength={DAY_MONTH_LENGTH}
+        onChangeText={(date) => {
+          updateDraft({ date: maskDayMonth(date) });
+        }}
+        placeholder="00/00"
+        placeholderTextColor={theme.colors.inkSoft}
+        testID={`${testID}-date-input`}
+        value={draft.date}
+      />
+    </View>
+  );
+
+  const isConfirmBlocked = isConfirmDisabled || isSubmitting;
   const footer = (
-    <Button
-      title="Confirmar"
-      variant="tertiary"
-      disabled={isConfirmDisabled}
-      isLoading={isSubmitting}
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Confirmar"
+      accessibilityState={{ disabled: isConfirmBlocked, busy: isSubmitting }}
+      className={`items-center justify-center rounded-full px-6 py-3 ${
+        isConfirmBlocked ? 'bg-ink-soft' : 'bg-ink active:bg-ink-soft'
+      }`}
+      disabled={isConfirmBlocked}
       onPress={onConfirm}
       testID={`${testID}-confirm`}
-    />
+    >
+      {isSubmitting ? (
+        <ActivityIndicator
+          color={theme.colors.white}
+          testID={`${testID}-confirm-loading`}
+        />
+      ) : (
+        <Text className="font-poppins text-lg text-white">Confirmar</Text>
+      )}
+    </Pressable>
   );
 
   return (
     <EventCardFrame
       image={image}
+      header={header}
       footer={footer}
       testID={testID}
     >
@@ -114,18 +152,6 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
           updateDraft({ address });
         }}
         testID={`${testID}-address-input`}
-      />
-
-      <PillInput
-        icon="calendar-outline"
-        value={draft.date}
-        placeholder="Adicionar data"
-        onChangeText={(date) => {
-          updateDraft({ date: maskDate(date) });
-        }}
-        keyboardType="number-pad"
-        maxLength={DATE_LENGTH}
-        testID={`${testID}-date-input`}
       />
 
       <PillInput

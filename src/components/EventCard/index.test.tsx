@@ -131,7 +131,7 @@ describe('<EventCard mode="create" />', () => {
 
     expect(getByPlaceholderText('Definir nome do evento')).toBeTruthy();
     expect(getByPlaceholderText('Adicionar endereço')).toBeTruthy();
-    expect(getByPlaceholderText('Adicionar data')).toBeTruthy();
+    expect(getByPlaceholderText('00/00')).toBeTruthy();
     expect(getByPlaceholderText('Adicionar horário')).toBeTruthy();
     expect(getByText('Adicione uma imagem que representa seu evento')).toBeTruthy();
     expect(getByTestId('alibe-event-card-confirm')).toBeTruthy();
@@ -150,12 +150,12 @@ describe('<EventCard mode="create" />', () => {
 
     await fireEvent.changeText(getByTestId('alibe-event-card-name-input'), 'Bloom Café');
     await fireEvent.changeText(getByTestId('alibe-event-card-address-input'), 'Av. João Wallig');
-    await fireEvent.changeText(getByTestId('alibe-event-card-date-input'), '18052026');
+    await fireEvent.changeText(getByTestId('alibe-event-card-date-input'), '1805');
     await fireEvent.changeText(getByTestId('alibe-event-card-time-input'), '1000');
 
     expect(onChangeDraft).toHaveBeenNthCalledWith(1, { ...draft, name: 'Bloom Café' });
     expect(onChangeDraft).toHaveBeenNthCalledWith(2, { ...draft, address: 'Av. João Wallig' });
-    expect(onChangeDraft).toHaveBeenNthCalledWith(3, { ...draft, date: '18/05/2026' });
+    expect(onChangeDraft).toHaveBeenNthCalledWith(3, { ...draft, date: '18/05' });
     expect(onChangeDraft).toHaveBeenNthCalledWith(4, { ...draft, time: '10:00' });
   });
 
@@ -246,6 +246,40 @@ describe('<EventCard mode="create" />', () => {
   });
 });
 
+describe('<EventCard mode="create" /> confirm button', () => {
+  const draft: EventCardDraft = { name: '', imageUri: null, address: '', date: '', time: '' };
+
+  test('uses the solid ink color when it can be confirmed', async () => {
+    const { getByTestId } = await render(
+      <EventCard
+        mode="create"
+        draft={draft}
+        onChangeDraft={jest.fn()}
+      />
+    );
+
+    const confirm = getByTestId('alibe-event-card-confirm');
+    expect(confirm.props.className).toContain('bg-ink active:bg-ink-soft');
+    expect(confirm.props.className).not.toContain('opacity');
+  });
+
+  test('uses the softer solid color instead of opacity when disabled', async () => {
+    const { getByTestId } = await render(
+      <EventCard
+        mode="create"
+        draft={draft}
+        onChangeDraft={jest.fn()}
+        isConfirmDisabled
+      />
+    );
+
+    const confirm = getByTestId('alibe-event-card-confirm');
+    expect(confirm.props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+    expect(confirm.props.className).toContain('bg-ink-soft');
+    expect(confirm.props.className).not.toContain('opacity');
+  });
+});
+
 describe('<EventCard mode="create" /> submitting', () => {
   test('shows the confirm button as busy and ignores presses while submitting', async () => {
     const onConfirm = jest.fn();
@@ -271,11 +305,13 @@ describe('<EventCard mode="create" /> submitting', () => {
 
 describe('buildTimeslot', () => {
   test('combines a valid date and time', () => {
-    expect(buildTimeslot('18/05/2026', '10:30')).toEqual(new Date(2026, 4, 18, 10, 30));
+    const today = new Date(2026, 0, 10);
+
+    expect(buildTimeslot('18/05', '10:30', today)).toEqual(new Date(2026, 4, 18, 10, 30));
   });
 
   test('returns null for incomplete values', () => {
-    expect(buildTimeslot('18/05', '10:30')).toBeNull();
-    expect(buildTimeslot('18/05/2026', '25:00')).toBeNull();
+    expect(buildTimeslot('18/0', '10:30')).toBeNull();
+    expect(buildTimeslot('18/05', '25:00')).toBeNull();
   });
 });
