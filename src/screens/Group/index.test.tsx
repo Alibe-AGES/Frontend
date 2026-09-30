@@ -163,6 +163,14 @@ describe('GroupScreen', () => {
         completedEventIds: [],
         allUsersAvailable: false,
       },
+      {
+        date: '2026-10-05',
+        scheduledEventIds: ['shared-event'],
+        proposalIds: ['shared-event'],
+        availableUserIds: ['shared-event'],
+        completedEventIds: ['shared-event'],
+        allUsersAvailable: false,
+      },
     ]);
 
     await render(<GroupScreen />);
@@ -178,6 +186,18 @@ describe('GroupScreen', () => {
       expect(mockDayMarks?.['2026-10-02'].status).toBe('allAvailable');
       expect(mockDayMarks?.['2026-10-03'].status).toBe('available');
       expect(mockDayMarks?.['2026-10-04']).toMatchObject({ status: 'normal', dot: 'pink' });
+      expect(mockDayMarks?.['2026-10-05']).toMatchObject({
+        status: 'realized',
+        eventIds: ['shared-event'],
+        proposalIds: ['shared-event'],
+        dot: 'pink',
+        availableUserCount: 1,
+        allUsersAvailable: false,
+      });
+      expect(mockDayMarks?.['2026-10-02']).toMatchObject({
+        availableUserCount: 0,
+        allUsersAvailable: true,
+      });
     });
   });
 });

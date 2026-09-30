@@ -17,6 +17,11 @@ interface CalendarGridProps {
   onDayPress?: (dateString: string) => void;
 }
 
+interface DayContentProps {
+  status: DayStatus;
+  day: number;
+}
+
 const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
 
 const dayContainerClasses: Record<DayStatus, string> = {
@@ -35,16 +40,123 @@ const dayTextClasses: Record<DayStatus, string> = {
   realized: 'text-canvas',
   suggested: 'text-canvas',
   allAvailable: 'text-canvas',
-  past: 'text-inkSoft/50',
+  past: 'text-inkSoft/20',
   pastEvent: 'text-ink',
 };
 
+function getAvailableUserCount(mark: DayMark): number {
+  const value: unknown = mark.availableUserCount;
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+}
+
+function getAllUsersAvailable(mark: DayMark): boolean {
+  const value: unknown = mark.allUsersAvailable;
+  return typeof value === 'boolean' && value;
+}
+
+function getDisplayStatus(dateString: string, eventCount: number, status: DayStatus): DayStatus {
+  if (dateString >= formatCalendarDate(new Date())) {
+    return status;
+  }
+
+  if (eventCount > 0 || status === 'realized' || status === 'suggested') {
+    return status === 'normal' ? 'pastEvent' : status;
+  }
+
+  return 'past';
+}
+
+function formatEventCount(eventCount: number): string {
+  const noun = eventCount === 1 ? 'evento' : 'eventos';
+  return `${String(eventCount)} ${noun}`;
+}
+
+function formatAvailability(
+  availableUserCount: number,
+  allUsersAvailable: boolean
+): string | undefined {
+  if (allUsersAvailable) {
+    return 'todos disponíveis';
+  }
+
+  if (availableUserCount === 0) {
+    return undefined;
+  }
+
+  const noun = availableUserCount === 1 ? 'disponível' : 'disponíveis';
+  return `${String(availableUserCount)} ${noun}`;
+}
+
+function getAccessibilityLabel(
+  dateString: string,
+  eventCount: number,
+  availableUserCount: number,
+  allUsersAvailable: boolean
+): string {
+  const details = [`Dia ${dateString}`];
+
+  if (eventCount > 0) {
+    details.push(formatEventCount(eventCount));
+  }
+
+  const availability = formatAvailability(availableUserCount, allUsersAvailable);
+  if (availability) {
+    details.push(availability);
+  }
+
+  return details.join(', ');
+}
+
+function DayContent({ status, day }: DayContentProps) {
+  if (status === 'suggested') {
+    return <Text className="text-xl text-canvas">☆</Text>;
+  }
+
+  return <Text className={`text-sm font-medium ${dayTextClasses[status]}`}>{String(day)}</Text>;
+}
+
+function DayIndicators({
+  dot,
+  hasPartialAvailability,
+  dateString,
+}: {
+  dot: DayMark['dot'];
+  hasPartialAvailability: boolean;
+  dateString: string;
+}) {
+  if (!dot && !hasPartialAvailability) {
+    return null;
+  }
+
+  return (
+    <View className="absolute bottom-0 flex-row items-center gap-1">
+      {dot ? (
+        <View
+          className={`h-2 w-2 rounded-full ${dot === 'pink' ? 'bg-pink' : 'bg-coral'}`}
+          testID={`calendar-proposal-indicator-${dateString}`}
+        />
+      ) : null}
+      {hasPartialAvailability ? (
+        <View
+          className="h-2 w-2 rounded-full bg-coral"
+          testID={`calendar-availability-indicator-${dateString}`}
+        />
+      ) : null}
+    </View>
+  );
+}
+
 function CalendarDayCell({ dateString, day, mark, onPress }: CalendarDayProps) {
   const eventCount = mark.eventIds?.length ?? 0;
-  const isPastDate = dateString < formatCalendarDate(new Date());
-  const displayStatus = isPastDate ? (eventCount > 0 ? 'pastEvent' : 'past') : mark.status;
-  const accessibilityLabel =
-    eventCount > 0 ? `Dia ${dateString}, ${String(eventCount)} eventos` : `Dia ${dateString}`;
+  const availableUserCount = getAvailableUserCount(mark);
+  const allUsersAvailable = getAllUsersAvailable(mark);
+  const displayStatus = getDisplayStatus(dateString, eventCount, mark.status);
+  const accessibilityLabel = getAccessibilityLabel(
+    dateString,
+    eventCount,
+    availableUserCount,
+    allUsersAvailable
+  );
 
   return (
     <Pressable
@@ -60,27 +172,17 @@ function CalendarDayCell({ dateString, day, mark, onPress }: CalendarDayProps) {
       <View
         className={`h-9 w-9 items-center justify-center rounded-lg ${dayContainerClasses[displayStatus]}`}
       >
-        {displayStatus === 'suggested' ? (
-          <Text className="text-xl text-canvas">☆</Text>
-        ) : (
-          <Text className={`text-sm font-medium ${dayTextClasses[displayStatus]}`}>
-            {String(day)}
-          </Text>
-        )}
+        <DayContent
+          status={displayStatus}
+          day={day}
+        />
       </View>
 
-      {eventCount > 0 ? (
-        <View className="absolute right-0 top-0 min-h-4 min-w-4 items-center justify-center rounded-full bg-coral px-1">
-          <Text className="text-xs font-bold text-canvas">{String(eventCount)}</Text>
-        </View>
-      ) : null}
-
-      {mark.dot === 'pink' ? (
-        <View className="absolute bottom-0 h-2 w-2 rounded-full bg-pink" />
-      ) : null}
-      {mark.dot === 'coral' ? (
-        <View className="absolute bottom-0 h-2 w-2 rounded-full bg-coral" />
-      ) : null}
+      <DayIndicators
+        dot={mark.dot}
+        hasPartialAvailability={availableUserCount > 0 && !allUsersAvailable}
+        dateString={dateString}
+      />
     </Pressable>
   );
 }

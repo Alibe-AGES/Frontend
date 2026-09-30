@@ -11,7 +11,7 @@ interface CalendarHeaderProps {
 
 export function CalendarHeader({ monthDate, onPreviousMonth, onNextMonth }: CalendarHeaderProps) {
   return (
-    <View className="mb-3 flex-row items-center justify-between">
+    <View className="w-3/4 flex-row items-center justify-between rounded-full bg-pink px-2 py-1">
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Mês anterior"
@@ -28,7 +28,7 @@ export function CalendarHeader({ monthDate, onPreviousMonth, onNextMonth }: Cale
 
       <View className="flex-1 items-center rounded-full bg-pink px-3 py-2">
         <Text className="font-poppins-bold text-base capitalize text-ink">
-          {monthDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+          {monthDate.toLocaleDateString('pt-BR', { month: 'long' })}
         </Text>
       </View>
 

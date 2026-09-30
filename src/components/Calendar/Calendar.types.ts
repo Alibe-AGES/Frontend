@@ -18,6 +18,8 @@ export interface DayMark {
   dot?: DayDot;
   eventIds?: string[];
   proposalIds?: string[];
+  availableUserCount?: number;
+  allUsersAvailable?: boolean;
 }
 
 export interface CalendarProps {

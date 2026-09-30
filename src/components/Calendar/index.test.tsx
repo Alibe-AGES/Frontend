@@ -11,7 +11,8 @@ describe('Calendar', () => {
       />
     );
 
-    expect(getByText('maio de 2026')).toBeTruthy();
+    expect(getByText('maio')).toBeTruthy();
+    expect(getByText('Toque nos dias para ver mais detalhes.')).toBeTruthy();
     expect(getByText('Dom')).toBeTruthy();
     expect(getByLabelText('Dia 2026-05-18')).toBeTruthy();
   });
@@ -27,7 +28,7 @@ describe('Calendar', () => {
 
     await fireEvent.press(getByTestId('calendar-next-month'));
 
-    expect(getByText('junho de 2026')).toBeTruthy();
+    expect(getByText('junho')).toBeTruthy();
     expect(onMonthChange).toHaveBeenCalledWith('2026-06-01');
   });
 
@@ -68,7 +69,22 @@ describe('Calendar', () => {
     expect(onDayPress).toHaveBeenCalledWith('2026-05-18');
   });
 
-  test('shows the number of scheduled events on a future day', async () => {
+  test('preserves realized and suggested styles for past event days without IDs', async () => {
+    const { getByText } = await render(
+      <Calendar
+        initialDate="2025-05-01"
+        dayMarks={{
+          '2025-05-08': { status: 'realized' },
+          '2025-05-22': { status: 'suggested' },
+        }}
+      />
+    );
+
+    expect(getByText('☆')).toBeTruthy();
+    expect(getByText('8').parent?.props.className).toContain('bg-ink');
+  });
+
+  test('announces scheduled event counts accessibly without adding number badges', async () => {
     const { getByLabelText, getAllByText } = await render(
       <Calendar
         initialDate="2026-05-01"
@@ -77,7 +93,44 @@ describe('Calendar', () => {
     );
 
     expect(getByLabelText('Dia 2026-05-20, 2 eventos')).toBeTruthy();
-    expect(getAllByText('2')).toHaveLength(2);
+    expect(getAllByText('2')).toHaveLength(1);
+  });
+
+  test('marks partial availability with a coral dot beside an event', async () => {
+    const { getByLabelText, getByTestId, getAllByText } = await render(
+      <Calendar
+        initialDate="2026-10-01"
+        dayMarks={{
+          '2026-10-05': {
+            status: 'suggested',
+            eventIds: ['event-1'],
+            availableUserCount: 3,
+          },
+        }}
+      />
+    );
+
+    expect(getByLabelText('Dia 2026-10-05, 1 evento, 3 disponíveis')).toBeTruthy();
+    expect(getByTestId('calendar-availability-indicator-2026-10-05')).toBeTruthy();
+    expect(getAllByText('3')).toHaveLength(1);
+  });
+
+  test('does not show a member count when everyone is available', async () => {
+    const { getByLabelText, queryByText } = await render(
+      <Calendar
+        initialDate="2026-10-01"
+        dayMarks={{
+          '2026-10-05': {
+            status: 'realized',
+            eventIds: ['event-1'],
+            allUsersAvailable: true,
+          },
+        }}
+      />
+    );
+
+    expect(getByLabelText('Dia 2026-10-05, 1 evento, todos disponíveis')).toBeTruthy();
+    expect(queryByText('✓')).toBeNull();
   });
 
   test('keeps the final partial week aligned to seven weekday columns', async () => {

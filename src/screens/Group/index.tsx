@@ -34,13 +34,15 @@ function buildDayMarks(days: CalendarDay[], today: string): Record<string, DayMa
   for (const day of days) {
     const status = getDayStatus(day);
 
-    const eventIds = [...day.scheduledEventIds, ...day.completedEventIds];
+    const eventIds = [...new Set([...day.scheduledEventIds, ...day.completedEventIds])];
     if (status !== undefined || eventIds.length > 0 || day.proposalIds.length > 0) {
       marks[day.date] = {
         status: status ?? 'normal',
         dot: day.proposalIds.length > 0 ? 'pink' : undefined,
         eventIds,
         proposalIds: day.proposalIds,
+        availableUserCount: day.availableUserIds.length,
+        allUsersAvailable: day.allUsersAvailable,
       };
     }
   }
@@ -229,15 +231,13 @@ export function GroupScreen() {
           </View>
         </Pressable>
 
-        <View className="rounded-3xl bg-surface p-4">
-          <Calendar
-            initialDate={today}
-            dayMarks={dayMarks}
-            onDayPress={handleDayPress}
-            onMonthChange={handleMonthChange}
-            showLegend
-          />
-        </View>
+        <Calendar
+          initialDate={today}
+          dayMarks={dayMarks}
+          onDayPress={handleDayPress}
+          onMonthChange={handleMonthChange}
+          showLegend
+        />
       </ScrollView>
 
       {groupId ? (

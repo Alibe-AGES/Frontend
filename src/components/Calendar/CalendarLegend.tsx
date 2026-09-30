@@ -1,23 +1,26 @@
 import { Text, View } from 'react-native';
 
-import { LegendVariant } from '@/components/Calendar/Calendar.types';
+type LegendSymbol = 'event' | 'suggestion' | 'available' | 'allAvailable' | 'realized';
 
 interface LegendItemProps {
   label: string;
-  variant: LegendVariant;
+  symbol: LegendSymbol;
 }
 
-const legendClasses: Record<LegendVariant, string> = {
-  pink: 'bg-pink',
-  lime: 'bg-lime',
-  coral: 'bg-coral',
-  ink: 'bg-ink',
-};
+function LegendItem({ label, symbol }: LegendItemProps) {
+  const symbolClass = {
+    event: 'rounded-sm bg-pink',
+    suggestion: 'rounded-full bg-pink',
+    available: 'rounded-full bg-coral',
+    allAvailable: 'rounded-sm bg-coral',
+    realized: 'rounded-sm bg-ink',
+  }[symbol];
 
-function LegendItem({ label, variant }: LegendItemProps) {
   return (
     <View className="flex-row items-center gap-2">
-      <View className={`h-5 w-5 rounded-full ${legendClasses[variant]}`} />
+      <View className={`h-4 w-4 items-center justify-center ${symbolClass}`}>
+        {symbol === 'event' ? <Text className="text-xs text-canvas">☆</Text> : null}
+      </View>
       <Text className="text-inkSoft text-sm font-medium">{label}</Text>
     </View>
   );
@@ -25,30 +28,27 @@ function LegendItem({ label, variant }: LegendItemProps) {
 
 export function CalendarLegend() {
   return (
-    <View className="mt-4 gap-2">
+    <View className="mt-4 gap-1">
+      <LegendItem
+        label="Encontro marcado"
+        symbol="event"
+      />
       <LegendItem
         label="Sugestão de encontro"
-        variant="pink"
+        symbol="suggestion"
       />
       <LegendItem
         label="Alguém disponível"
-        variant="lime"
+        symbol="available"
       />
       <LegendItem
         label="Todos estão disponíveis"
-        variant="coral"
+        symbol="allAvailable"
       />
       <LegendItem
         label="Encontros realizados"
-        variant="ink"
+        symbol="realized"
       />
-
-      <View className="flex-row items-center gap-2">
-        <View className="h-5 w-5 items-center justify-center rounded bg-pink">
-          <Text className="text-sm text-canvas">☆</Text>
-        </View>
-        <Text className="text-inkSoft text-sm font-medium">Encontro marcado</Text>
-      </View>
     </View>
   );
 }
