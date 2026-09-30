@@ -2,13 +2,15 @@ import { BackButton } from '@/components/BackButton';
 import { NavigationBar } from '@/components/NavigationBar';
 import { PasswordInput } from '@/components/PasswordInput';
 import { PhotoPicker } from '@/components/PhotoPicker';
+import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
 import { ProfileCard } from '@/components/ProfileCard';
 import { TextInput } from '@/components/TextInput';
+import { updateUserProfile } from '@/server/mock/userProfile';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -18,6 +20,8 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
+import { useUserAvatarSource } from '../../../src/hooks/useUserAvatarSource';
 
 const ProfileMenuButton = ({
   icon,
@@ -35,7 +39,11 @@ const ProfileMenuButton = ({
     activeOpacity={0.7}
   >
     <View className="mr-4 h-10 w-10 items-center justify-center rounded-full border bg-coral">
-      <Ionicons name={icon} size={20} color={theme.colors.surface} />
+      <Ionicons
+        name={icon}
+        size={20}
+        color={theme.colors.surface}
+      />
     </View>
     <Text
       className="flex-1 font-poppins text-lg"
@@ -46,9 +54,38 @@ const ProfileMenuButton = ({
   </TouchableOpacity>
 );
 
-export default function UserProfileScreen() {
-  const router = useRouter();
+export interface ProfileData {
+  name: string;
+  photoUri: string | null;
+  created_at: string;
+  completedEventsCount: number;
+  pendingEventsCount: number;
+}
+
+export interface UserProfileScreenProps {
+  userId?: string;
+  groupId?: string;
+  isOwnProfile: boolean;
+  profile: ProfileData | null;
+  isLoading: boolean;
+  error: Error | null;
+  refetch: () => void;
+}
+
+export const UserProfileScreen = ({
+  userId,
+  groupId,
+  isOwnProfile,
+  profile,
+  isLoading,
+  error,
+  refetch,
+}: UserProfileScreenProps) => {
   const insets = useSafeAreaInsets();
+  const networkAvatarSource = useUserAvatarSource(userId);
+
+  const [localAvatarOverride, setLocalAvatarOverride] = useState<string | null>(null);
+  const avatarSource = localAvatarOverride ?? networkAvatarSource;
 
   const [isPasswordModalVisible, setPasswordModalVisible] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -56,30 +93,61 @@ export default function UserProfileScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const [isEditModalVisible, setEditModalVisible] = useState(false);
-  const [editName, setEditName] = useState('Ellen Vitória');
-  const [editPhoto, setEditPhoto] = useState<any>(null);
+  const [editModalKey, setEditModalKey] = useState(0);
+  const [editName, setEditName] = useState('');
+  const [editPhoto, setEditPhoto] = useState<SelectedPhoto | null>(null);
   const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
 
-  const handleOpenEditModal = () => setEditModalVisible(true);
-  
+  useEffect(() => {
+    if (profile) {
+      setEditName(profile.name);
+    }
+  }, [profile]);
+
+  const handleOpenEditModal = () => {
+    setEditName(profile?.name ?? '');
+    setEditPhoto(null);
+    setEditModalKey((k) => k + 1);
+    setEditModalVisible(true);
+  };
+
   const handleCloseEditModal = () => {
     setEditModalVisible(false);
-    setEditName('Ellen Vitória');
+    setEditName(profile?.name ?? '');
     setEditPhoto(null);
   };
 
   const handleSaveProfile = async () => {
+    if (!userId) return;
+
     setIsSubmittingProfile(true);
 
-    console.log('Salvando perfil. Nome:', editName, 'Foto:', editPhoto);
-    
-    setTimeout(() => {
-      setIsSubmittingProfile(false);
+    try {
+      const updated = await updateUserProfile(userId, {
+        name: editName,
+        photo: editPhoto,
+      });
+
+      if (updated.photoUri) {
+        setLocalAvatarOverride(updated.photoUri);
+      }
+
+      refetch();
       setEditModalVisible(false);
-    }, 1000);
+    } catch {
+      Toast.show({
+        type: 'error',
+        text1: 'Erro!',
+        text2: 'Não foi possível salvar o perfil. Tente novamente.',
+      });
+    } finally {
+      setIsSubmittingProfile(false);
+    }
   };
 
-  const handleOpenPasswordModal = () => setPasswordModalVisible(true);
+  const handleOpenPasswordModal = () => {
+    setPasswordModalVisible(true);
+  };
 
   const handleClosePasswordModal = () => {
     setPasswordModalVisible(false);
@@ -94,6 +162,10 @@ export default function UserProfileScreen() {
     handleClosePasswordModal();
   };
 
+  if (!userId) {
+    return null;
+  }
+
   return (
     <View className="flex-1 bg-canvas">
       <ScrollView
@@ -104,38 +176,58 @@ export default function UserProfileScreen() {
         <BackButton color={theme.colors.black} />
 
         <View className="flex-row items-center justify-center">
-          <ProfileCard completedEventsCount={24} pendingEventsCount={2} />
+          <ProfileCard
+            avatarUrl={avatarSource}
+            completedEventsCount={profile?.completedEventsCount ?? 0}
+            pendingEventsCount={profile?.pendingEventsCount ?? 0}
+          />
         </View>
 
         <View className="m-6">
-          <Text
-            className="text-center font-poppins-semibold text-2xl"
-            style={{ color: theme.colors.wine }}
-            testID="user-profile-screen-name"
-          >
-            Ellen Vitória
-          </Text>
+          {isLoading ? (
+            <ActivityIndicator
+              color={theme.colors.wine}
+              testID="user-profile-screen-loading"
+            />
+          ) : error ? (
+            <Text
+              className="text-center font-poppins text-sm"
+              style={{ color: theme.colors.wine }}
+            >
+              Não foi possível carregar o perfil.
+            </Text>
+          ) : (
+            <Text
+              className="text-center font-poppins-semibold text-2xl"
+              style={{ color: theme.colors.wine }}
+              testID="user-profile-screen-name"
+            >
+              {profile?.name}
+            </Text>
+          )}
           <Text
             className="text-center font-poppins text-sm"
             style={{ color: theme.colors.wine }}
             testID="user-profile-screen-date"
           >
-            no alibe desde abril de 2025
+            no alibe desde {profile?.created_at}
           </Text>
         </View>
 
-        <View className="gap-4">
-          <ProfileMenuButton
-            icon="person-outline"
-            label="Editar perfil"
-            onPress={handleOpenEditModal}
-          />
-          <ProfileMenuButton
-            icon="lock-closed-outline"
-            label="Senha"
-            onPress={handleOpenPasswordModal}
-          />
-        </View>
+        {isOwnProfile && (
+          <View className="gap-4">
+            <ProfileMenuButton
+              icon="person-outline"
+              label="Editar perfil"
+              onPress={handleOpenEditModal}
+            />
+            <ProfileMenuButton
+              icon="lock-closed-outline"
+              label="Senha"
+              onPress={handleOpenPasswordModal}
+            />
+          </View>
+        )}
       </ScrollView>
 
       <Modal
@@ -155,12 +247,14 @@ export default function UserProfileScreen() {
               </Text>
 
               <PhotoPicker
-              label=''
-                onUploadSuccess={(photo) => setEditPhoto(photo)}
+                key={editModalKey}
+                label=""
+                initialPhotoUri={profile?.photoUri ?? null}
+                onUploadSuccess={setEditPhoto}
                 disabled={isSubmittingProfile}
               />
 
-              <View className="gap-3 mt-4">
+              <View className="mt-4 gap-3">
                 <TextInput
                   value={editName}
                   onChangeText={setEditName}
@@ -179,9 +273,13 @@ export default function UserProfileScreen() {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  onPress={handleSaveProfile}
+                  onPress={() => {
+                    void handleSaveProfile();
+                  }}
                   disabled={isSubmittingProfile}
-                  className={`flex-1 items-center justify-center rounded-full bg-coral py-3 ${isSubmittingProfile ? 'opacity-60' : ''}`}
+                  className={`flex-1 items-center justify-center rounded-full bg-coral py-3 ${
+                    isSubmittingProfile ? 'opacity-60' : ''
+                  }`}
                 >
                   <Text className="font-poppins-semibold text-surface">
                     {isSubmittingProfile ? 'Salvando...' : 'Salvar'}
@@ -191,6 +289,7 @@ export default function UserProfileScreen() {
             </View>
           </View>
         </KeyboardAvoidingView>
+        <Toast />
       </Modal>
 
       <Modal
@@ -248,14 +347,15 @@ export default function UserProfileScreen() {
             </View>
           </View>
         </KeyboardAvoidingView>
+        <Toast />
       </Modal>
 
       <View
         className="absolute inset-x-0 bottom-0"
         style={{ paddingBottom: insets.bottom }}
       >
-        <NavigationBar groupId="123" />
+        <NavigationBar groupId={groupId ?? ''} />
       </View>
     </View>
   );
-}
+};

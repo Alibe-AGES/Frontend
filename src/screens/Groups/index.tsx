@@ -72,7 +72,15 @@ export function GroupsScreen() {
   }, [invite, router]);
 
   const handleCreateGroup = () => {
-    router.push('/profile/123');
+    router.push('/create-group');
+    // router.push({
+    //   pathname: '/(profile)/profile/[userId]',
+    //   params: { userId: 'user-1' },
+    // });
+    // router.push({
+    //   pathname: '/(profile)/profile/[userId]',
+    //   params: { userId: '33333333-3333-4333-8333-333333333333' },
+    // });
   };
 
   const handleGroupPress = (id: string) => {

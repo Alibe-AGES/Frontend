@@ -1,6 +1,11 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import { CreateProfileScreen } from '.';
 
+jest.mock('@/assets/images/create-group-decoration.svg', () => {
+  const RN = jest.requireActual<typeof import('react-native')>('react-native');
+  return () => <RN.View testID="mock-decoration-svg" />;
+});
+
 describe('<CreateProfileScreen />', () => {
   const onContinue = jest.fn();
 
@@ -22,7 +27,8 @@ describe('<CreateProfileScreen />', () => {
   test('shows the camera placeholder while no photo is selected', async () => {
     const { getByTestId } = await render(<CreateProfileScreen onContinue={onContinue} />);
 
-    expect(getByTestId('create-profile-photo-placeholder')).toBeTruthy();
+    // Correção: o testID final é a junção do ID da Screen + PhotoPicker + Avatar
+    expect(getByTestId('create-profile-photo-photo-placeholder')).toBeTruthy();
   });
 
   test('renders the nickname input', async () => {

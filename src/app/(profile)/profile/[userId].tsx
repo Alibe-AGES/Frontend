@@ -1,1 +1,1 @@
-export { default } from '@/screens/UserProfile/index';
+export { default } from '@/screens/UserProfile/controller';

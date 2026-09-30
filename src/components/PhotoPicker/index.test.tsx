@@ -1,218 +1,160 @@
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import { Text as MockText } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { fireEvent, render } from '@testing-library/react-native';
 import { PhotoPicker } from './index';
+import { PhotoPickerProps, PhotoPickerStrategy, UsePhotoPickerHook } from './PhotoPicker.types';
 
-interface PermissionResult {
-  granted: boolean;
+// 1. Mock do Tema
+jest.mock('@/theme', () => ({
+  theme: {
+    colors: {
+      coral: '#FF7F50',
+      ink: '#000000',
+    },
+  },
+}));
+
+// 2. Mock do Avatar tipado rigorosamente
+interface MockAvatarProps {
+  photoUri?: string | null;
+  fallbackIconName?: string;
+  testID?: string;
 }
-interface PickerResult {
-  canceled: boolean;
-  assets?: { uri: string; fileName?: string | null; mimeType?: string | null }[];
-}
 
-declare const global: { fetch: jest.Mock };
+jest.mock('../Avatar', () => {
+  // Utiliza requireActual com casting de tipo para evitar importações ilegais e 'any'
+  const RN = jest.requireActual<typeof import('react-native')>('react-native');
 
-const mockRequestPermissions = jest.fn();
-const mockLaunchImageLibrary = jest.fn();
+  return {
+    Avatar: ({ photoUri, fallbackIconName, testID = 'avatar' }: MockAvatarProps) => (
+      <RN.View testID={testID}>
+        <RN.Text testID={`${testID}-uri`}>{photoUri ?? 'null'}</RN.Text>
+        <RN.Text testID={`${testID}-icon`}>{fallbackIconName ?? 'none'}</RN.Text>
+      </RN.View>
+    ),
+  };
+});
 
-jest.mock('expo-image-picker', () => ({
-  requestMediaLibraryPermissionsAsync: (): Promise<PermissionResult> =>
-    mockRequestPermissions() as Promise<PermissionResult>,
-  launchImageLibraryAsync: (): Promise<PickerResult> =>
-    mockLaunchImageLibrary() as Promise<PickerResult>,
+// 3. Mock do hook default
+const mockDefaultPickImage = jest.fn();
+jest.mock('./controllers/useDefaultPhotoPickerController', () => ({
+  useDefaultPhotoPickerController: () => ({
+    photoUri: null,
+    isLoading: false,
+    pickImage: mockDefaultPickImage,
+  }),
 }));
-
-jest.mock('react-native-toast-message', () => ({
-  show: jest.fn(),
-}));
-
-// Renderiza o nome do ícone para os testes conseguirem diferenciar os placeholders.
-jest.mock('@expo/vector-icons', () => ({
-  Ionicons: ({ name, testID }: { name: string; testID?: string }) => (
-    <MockText testID={testID}>{name}</MockText>
-  ),
-}));
-
-const originalFetch = global.fetch;
 
 describe('<PhotoPicker />', () => {
   beforeEach(() => {
-    mockRequestPermissions.mockResolvedValue({ granted: true });
-    mockLaunchImageLibrary.mockResolvedValue({
-      canceled: false,
-      assets: [{ uri: 'file://photo.jpg', fileName: 'photo.jpg', mimeType: 'image/jpeg' }],
-    });
-    global.fetch = jest.fn().mockResolvedValue({ ok: true });
-  });
-
-  afterEach(() => {
     jest.clearAllMocks();
-    global.fetch = originalFetch;
   });
 
-  test('shows the explanatory text "Adicionar foto (opcional)" by default', async () => {
-    const { getByText } = await render(<PhotoPicker />);
-
-    expect(getByText('Adicionar foto (opcional)')).toBeTruthy();
-  });
-
-  test('shows a default placeholder drawing when there is no photo yet', async () => {
-    const { getByTestId } = await render(<PhotoPicker />);
-
-    expect(getByTestId('alibe-photo-picker-placeholder')).toBeTruthy();
-  });
-
-  test.each([
-    ['group', 'people-outline'],
-    ['camera', 'camera-outline'],
-  ] as const)('shows the %s placeholder icon', async (placeholder, iconName) => {
-    const { getByText } = await render(<PhotoPicker placeholder={placeholder} />);
-
-    expect(getByText(iconName)).toBeTruthy();
-  });
-
-  test('contains a button that opens the gallery when pressed', async () => {
-    const { getByTestId } = await render(<PhotoPicker />);
-
-    await fireEvent.press(getByTestId('alibe-photo-picker'));
-
-    await waitFor(() => {
-      expect(mockLaunchImageLibrary).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  test('sends the selected photo to the backend, shows it and triggers success callback after a positive response', async () => {
-    const onUploadSuccess = jest.fn();
-    const { getByTestId } = await render(
-      <PhotoPicker
-        uploadUrl="https://api.alibe.com/photos"
-        onUploadSuccess={onUploadSuccess}
-      />
-    );
-
-    await fireEvent.press(getByTestId('alibe-photo-picker'));
-
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        'https://api.alibe.com/photos',
-        expect.objectContaining({ method: 'POST' })
-      );
-    });
-
-    await waitFor(() => {
-      expect(onUploadSuccess).toHaveBeenCalledWith({
-        uri: 'file://photo.jpg',
-        fileName: 'photo.jpg',
-        mimeType: 'image/jpeg',
-      });
-      expect(getByTestId('alibe-photo-picker-photo')).toBeTruthy();
-      // Asserção do Toast (se mockado): expect(Toast.show).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }));
-    });
-  });
-
-  test('shows the photo and triggers success callback even without an uploadUrl (local-only selection)', async () => {
-    const onUploadSuccess = jest.fn();
-    const { getByTestId } = await render(<PhotoPicker onUploadSuccess={onUploadSuccess} />);
-
-    await fireEvent.press(getByTestId('alibe-photo-picker'));
-
-    await waitFor(() => {
-      expect(getByTestId('alibe-photo-picker-photo')).toBeTruthy();
-      expect(onUploadSuccess).toHaveBeenCalledWith({
-        uri: 'file://photo.jpg',
-        fileName: 'photo.jpg',
-        mimeType: 'image/jpeg',
-      });
-    });
-  });
-
-  test('triggers error callback when the backend upload fails', async () => {
-    global.fetch = jest.fn().mockResolvedValue({ ok: false });
-    const onUploadError = jest.fn();
-    const { getByTestId } = await render(
-      <PhotoPicker
-        uploadUrl="https://api.alibe.com/photos"
-        onUploadError={onUploadError}
-      />
-    );
-
-    await fireEvent.press(getByTestId('alibe-photo-picker'));
-
-    await waitFor(() => {
-      expect(onUploadError).toHaveBeenCalledTimes(1);
-      expect(Toast.show).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }));
-    });
-  });
-
-  test('does not open the gallery when the user denies permission', async () => {
-    mockRequestPermissions.mockResolvedValue({ granted: false });
-    const { getByTestId } = await render(<PhotoPicker />);
-
-    await fireEvent.press(getByTestId('alibe-photo-picker'));
-
-    await waitFor(() => {
-      expect(mockLaunchImageLibrary).not.toHaveBeenCalled();
-    });
-  });
-
-  test('accepts a custom controller, so it can be reused with a different behavior in other screens', async () => {
-    const pickImage = jest.fn();
-    const useCustomController = () => ({
+  const createMockController = (overrides?: Partial<PhotoPickerStrategy>): UsePhotoPickerHook => {
+    return () => ({
       photoUri: null,
-      isLoading: false,
-      pickImage,
-    });
-
-    const { getByTestId } = await render(<PhotoPicker useController={useCustomController} />);
-
-    await fireEvent.press(getByTestId('alibe-photo-picker'));
-
-    expect(pickImage).toHaveBeenCalledTimes(1);
-    expect(mockLaunchImageLibrary).not.toHaveBeenCalled();
-  });
-
-  test('shows the photo returned by a custom controller', async () => {
-    const useCustomController = () => ({
-      photoUri: 'https://cdn.alibe.com/user-42.jpg',
       isLoading: false,
       pickImage: jest.fn(),
+      ...overrides,
     });
+  };
 
-    const { getByTestId } = await render(<PhotoPicker useController={useCustomController} />);
+  const defaultProps: PhotoPickerProps = {
+    useController: createMockController(),
+  };
 
-    expect(getByTestId('alibe-photo-picker-photo')).toBeTruthy();
+  test('renders with the default label and group placeholder', async () => {
+    const { getByText, getByTestId } = await render(<PhotoPicker {...defaultProps} />);
+
+    expect(getByText('Adicionar foto (opcional)')).toBeTruthy();
+    expect(getByTestId('alibe-photo-picker-photo-icon')).toHaveTextContent('people-outline');
   });
 
-  test('is not pressable while a controller reports isLoading', async () => {
-    const pickImage = jest.fn();
-    const useLoadingController = () => ({
-      photoUri: null,
+  test('renders with a custom label', async () => {
+    const customLabel = 'Mudar foto de perfil';
+    const { getByText } = await render(
+      <PhotoPicker
+        {...defaultProps}
+        label={customLabel}
+      />
+    );
+
+    expect(getByText(customLabel)).toBeTruthy();
+  });
+
+  test('uses the camera placeholder icon when specified', async () => {
+    const { getByTestId } = await render(
+      <PhotoPicker
+        {...defaultProps}
+        placeholder="camera"
+      />
+    );
+
+    expect(getByTestId('alibe-photo-picker-photo-icon')).toHaveTextContent('camera-outline');
+  });
+
+  test('calls pickImage when pressed', async () => {
+    const mockPickImage = jest.fn();
+    const mockController = createMockController({ pickImage: mockPickImage });
+
+    const { getByTestId } = await render(<PhotoPicker useController={mockController} />);
+
+    // Aplicando void para ignorar a floating promise
+    void fireEvent.press(getByTestId('alibe-photo-picker'));
+
+    expect(mockPickImage).toHaveBeenCalledTimes(1);
+  });
+
+  test('does not call pickImage when disabled via props', async () => {
+    const mockPickImage = jest.fn();
+    const mockController = createMockController({ pickImage: mockPickImage });
+
+    const { getByTestId } = await render(
+      <PhotoPicker
+        useController={mockController}
+        disabled
+      />
+    );
+
+    // Aplicando void para ignorar a floating promise
+    void fireEvent.press(getByTestId('alibe-photo-picker'));
+
+    expect(mockPickImage).not.toHaveBeenCalled();
+  });
+
+  test('shows loading indicator and prevents interaction when isLoading is true', async () => {
+    const mockPickImage = jest.fn();
+    const mockController = createMockController({
       isLoading: true,
-      pickImage,
+      pickImage: mockPickImage,
     });
 
-    const { getByTestId } = await render(<PhotoPicker useController={useLoadingController} />);
+    const { getByTestId, queryByTestId } = await render(
+      <PhotoPicker useController={mockController} />
+    );
 
-    await fireEvent.press(getByTestId('alibe-photo-picker'));
+    expect(getByTestId('alibe-photo-picker-loading')).toBeTruthy();
+    expect(queryByTestId('alibe-photo-picker-photo')).toBeNull();
 
-    expect(pickImage).not.toHaveBeenCalled();
-    expect(getByTestId('alibe-photo-picker').props.accessibilityState).toEqual({ disabled: true });
+    // Aplicando void para ignorar a floating promise
+    void fireEvent.press(getByTestId('alibe-photo-picker'));
+
+    expect(mockPickImage).not.toHaveBeenCalled();
   });
 
-  test('is not pressable when explicitly disabled', async () => {
-    const { getByTestId } = await render(<PhotoPicker disabled />);
+  test('passes the current photoUri to the Avatar', async () => {
+    const testUri = 'https://example.com/photo.jpg';
+    const mockController = createMockController({ photoUri: testUri });
 
-    await fireEvent.press(getByTestId('alibe-photo-picker'));
+    const { getByTestId } = await render(<PhotoPicker useController={mockController} />);
 
-    expect(mockLaunchImageLibrary).not.toHaveBeenCalled();
-    expect(getByTestId('alibe-photo-picker').props.accessibilityState).toEqual({ disabled: true });
+    expect(getByTestId('alibe-photo-picker-photo-uri')).toHaveTextContent(testUri);
   });
 
-  test('exposes an accessible label matching the visible text', async () => {
-    const { getByLabelText } = await render(<PhotoPicker />);
+  test('falls back to useDefaultPhotoPickerController if no useController prop is provided', async () => {
+    const { getByTestId } = await render(<PhotoPicker />);
 
-    const button = getByLabelText('Adicionar foto (opcional)');
-    expect(button.props.accessibilityRole).toBe('button');
+    // Aplicando void para ignorar a floating promise
+    void fireEvent.press(getByTestId('alibe-photo-picker'));
+
+    expect(mockDefaultPickImage).toHaveBeenCalledTimes(1);
   });
 });
