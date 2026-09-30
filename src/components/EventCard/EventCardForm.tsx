@@ -6,7 +6,7 @@ import { maskTime, TIME_LENGTH } from '@/utils/time';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { FC } from 'react';
-import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, Text, TextInput, View } from 'react-native';
 import tw from 'twrnc';
 import { EventCardCreateProps, EventCardDraft } from './EventCard.types';
 import { EventCardFrame } from './EventCardFrame';
@@ -25,7 +25,7 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
     onChangeDraft({ ...draft, ...changes });
   };
 
-  const { isLoading: isPickingImage, pickImage } = useDefaultPhotoPickerController({
+  const { pickImage } = useDefaultPhotoPickerController({
     aspect: [16, 10],
     onUploadSuccess: (photo) => {
       updateDraft({ imageUri: photo.uri });
@@ -34,16 +34,6 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
   });
 
   const renderImageContent = () => {
-    if (isPickingImage) {
-      return (
-        <View className="h-full w-full items-center justify-center bg-coral">
-          <ActivityIndicator
-            color={theme.colors.white}
-            testID={`${testID}-image-loading`}
-          />
-        </View>
-      );
-    }
     if (draft.imageUri) {
       return (
         <Image
@@ -77,8 +67,6 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={draft.imageUri ? 'Trocar imagem do evento' : 'Adicionar imagem do evento'}
-      accessibilityState={{ disabled: isPickingImage, busy: isPickingImage }}
-      disabled={isPickingImage}
       onPress={() => {
         void pickImage();
       }}

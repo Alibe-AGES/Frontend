@@ -7,7 +7,8 @@ const mockLaunchImageLibrary = jest.fn();
 jest.mock('expo-image-picker', () => ({
   requestMediaLibraryPermissionsAsync: (): Promise<unknown> =>
     mockRequestPermissions() as Promise<unknown>,
-  launchImageLibraryAsync: (): Promise<unknown> => mockLaunchImageLibrary() as Promise<unknown>,
+  launchImageLibraryAsync: (options: unknown): Promise<unknown> =>
+    mockLaunchImageLibrary(options) as Promise<unknown>,
 }));
 
 jest.mock('react-native-toast-message', () => ({
@@ -72,6 +73,29 @@ describe('<EventCard />', () => {
     const { getByText } = await render(<EventCard event={{ id: 'event-4', budgetStart: 50 }} />);
 
     expect(getByText('A partir de R$ 50')).toBeTruthy();
+  });
+
+  test('formats a budget with only an upper bound', async () => {
+    const { getByText } = await render(<EventCard event={{ id: 'event-5', budgetEnd: '80.5' }} />);
+
+    expect(getByText('Até R$ 80,5')).toBeTruthy();
+  });
+
+  test('hides the time pill when the timeslot is invalid', async () => {
+    const { queryByTestId } = await render(
+      <EventCard event={{ id: 'event-6', timeslot: 'not-a-date' }} />
+    );
+
+    expect(queryByTestId('alibe-event-card-time')).toBeNull();
+  });
+
+  test('shows the phone even without a budget', async () => {
+    const { getByTestId, queryByTestId } = await render(
+      <EventCard event={{ id: 'event-7', phone: '(51) 99999-0000' }} />
+    );
+
+    expect(getByTestId('alibe-event-card-phone')).toBeTruthy();
+    expect(queryByTestId('alibe-event-card-budget')).toBeNull();
   });
 
   test('calls onEditPress when the edit button is tapped', async () => {
@@ -156,6 +180,9 @@ describe('<EventCard mode="create" />', () => {
       expect(onChangeDraft).toHaveBeenCalledWith({ ...emptyDraft, imageUri: photo.uri });
     });
     expect(onImageSelected).toHaveBeenCalledWith(photo);
+    expect(mockLaunchImageLibrary).toHaveBeenCalledWith(
+      expect.objectContaining({ mediaTypes: ['images'], aspect: [16, 10] })
+    );
   });
 
   test('keeps the draft untouched when the gallery permission is denied', async () => {
@@ -216,6 +243,29 @@ describe('<EventCard mode="create" />', () => {
     );
     await fireEvent.press(getByTestId('alibe-event-card-confirm'));
     expect(onConfirm).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('<EventCard mode="create" /> submitting', () => {
+  test('shows the confirm button as busy and ignores presses while submitting', async () => {
+    const onConfirm = jest.fn();
+    const { getByTestId } = await render(
+      <EventCard
+        mode="create"
+        draft={{ name: '', imageUri: null, address: '', date: '', time: '' }}
+        onChangeDraft={jest.fn()}
+        onConfirm={onConfirm}
+        isSubmitting
+      />
+    );
+
+    const confirm = getByTestId('alibe-event-card-confirm');
+    await fireEvent.press(confirm);
+
+    expect(confirm.props.accessibilityState).toEqual(
+      expect.objectContaining({ busy: true, disabled: true })
+    );
+    expect(onConfirm).not.toHaveBeenCalled();
   });
 });
 
