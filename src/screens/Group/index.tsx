@@ -209,7 +209,7 @@ export function GroupScreen() {
 
           <View className="flex-1">
             <Text
-              className="text-wine font-poppins-semibold text-lg"
+              className="font-poppins-semibold text-lg text-wine"
               numberOfLines={1}
             >
               {groupName}
@@ -217,7 +217,7 @@ export function GroupScreen() {
 
             {members.length > 0 ? (
               <Text
-                className="text-wine font-poppins text-sm"
+                className="font-poppins text-sm text-wine"
                 numberOfLines={1}
                 testID="group-screen-members-names"
               >
