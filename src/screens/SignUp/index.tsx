@@ -7,10 +7,8 @@ import { isValidEmail } from '@/utils/email';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
-import tw from 'twrnc';
 
-import GreenSpin from '@/assets/images/green-spin.svg';
-import PinkSpin from '@/assets/images/pink-spin.svg';
+import AuthHandsDecoration from '@/assets/images/auth-hands-decoration.svg';
 
 export interface SignUpData {
   email: string;
@@ -39,24 +37,14 @@ export function SignUpScreen({ onContinue, emailError }: SignUpScreenProps) {
   return (
     <ScrollView
       className="flex-1 bg-canvas"
-      contentContainerClassName="flex-grow px-6 pt-16"
+      contentContainerClassName="flex-grow px-6"
       keyboardShouldPersistTaps="handled"
     >
       <View
         accessible={false}
-        style={tw`absolute -left-6 top-20 h-36 w-36`}
+        className="-mx-6 aspect-[390/280]"
       >
-        <GreenSpin
-          width="100%"
-          height="100%"
-        />
-      </View>
-
-      <View
-        accessible={false}
-        style={tw`absolute -right-4 top-12 h-36 w-32`}
-      >
-        <PinkSpin
+        <AuthHandsDecoration
           width="100%"
           height="100%"
         />
@@ -64,17 +52,17 @@ export function SignUpScreen({ onContinue, emailError }: SignUpScreenProps) {
 
       <BackButton
         fallbackHref="/auth"
-        className="mt-6 self-start"
+        className="absolute left-10 top-24"
       />
 
       <Text
-        className={`mt-36 text-center text-4xl leading-tight text-ink ${theme.typography.display}`}
+        className={`mt-4 text-center text-5xl leading-tight text-ink ${theme.typography.display}`}
       >
         Criar conta
       </Text>
 
-      <View className="mt-8 flex-1 rounded-t-3xl bg-pink/70 px-6 pb-10 pt-8">
-        <View className="gap-3">
+      <View className="mt-20 flex-1 rounded-t-3xl bg-pink/70 px-6 pb-28 pt-16">
+        <View className="gap-4">
           <EmailInput
             value={email}
             onChangeText={setEmail}
@@ -109,20 +97,20 @@ export function SignUpScreen({ onContinue, emailError }: SignUpScreenProps) {
             setShowPasswords((current) => !current);
           }}
           hitSlop={8}
-          className="mt-3 flex-row items-center gap-2 self-start px-2"
+          className="mt-3 flex-row items-center gap-2 self-start px-4"
           testID="sign-up-show-passwords"
         >
           <Ionicons
             name={showPasswords ? 'eye-outline' : 'eye-off-outline'}
-            size={16}
+            size={18}
             color={theme.colors.wine}
           />
-          <Text className="font-poppins-medium text-xs text-wine">
+          <Text className="font-poppins text-sm text-wine">
             {showPasswords ? 'Ocultar senhas' : 'Mostrar senhas'}
           </Text>
         </Pressable>
 
-        <View className="mt-auto pt-10">
+        <View className="mt-auto pt-6">
           <ContinueButton
             onPress={() => {
               onContinue({ email: trimmedEmail, password });
