@@ -1,4 +1,4 @@
-import { isValidDate, maskDate, parseDate } from './date';
+import { isValidDate, maskDate, maskDayMonth, parseDate, parseDayMonth } from './date';
 
 describe('maskDate', () => {
   test.each([
@@ -21,5 +21,30 @@ describe('parseDate', () => {
     expect(parseDate('31/02/2026')).toBeNull();
     expect(parseDate('18/05')).toBeNull();
     expect(isValidDate('00/00/2026')).toBe(false);
+  });
+});
+
+describe('maskDayMonth', () => {
+  test('keeps only DD/MM', () => {
+    expect(maskDayMonth('18052026')).toBe('18/05');
+    expect(maskDayMonth('1')).toBe('1');
+  });
+});
+
+describe('parseDayMonth', () => {
+  const today = new Date(2026, 8, 29);
+
+  test('uses the current year for today or future days', () => {
+    expect(parseDayMonth('29/09', today)).toEqual(new Date(2026, 8, 29));
+    expect(parseDayMonth('18/12', today)).toEqual(new Date(2026, 11, 18));
+  });
+
+  test('rolls past days over to the next year', () => {
+    expect(parseDayMonth('18/05', today)).toEqual(new Date(2027, 4, 18));
+  });
+
+  test('rejects invalid or incomplete values', () => {
+    expect(parseDayMonth('32/01', today)).toBeNull();
+    expect(parseDayMonth('18/0', today)).toBeNull();
   });
 });

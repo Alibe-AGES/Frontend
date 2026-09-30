@@ -1,4 +1,4 @@
-import { parseDate } from '@/utils/date';
+import { parseDayMonth } from '@/utils/date';
 import { isValidTime } from '@/utils/time';
 import { EventCardEvent } from './EventCard.types';
 
@@ -41,9 +41,9 @@ export function formatTime(timeslot: EventCardEvent['timeslot']): string | null 
   return `${hours}:${minutes}`;
 }
 
-// Combina a data (DD/MM/AAAA) e o horario (HH:mm) do rascunho no `timeslot` do backend.
-export function buildTimeslot(date: string, time: string): Date | null {
-  const day = parseDate(date);
+// Combina a data (DD/MM) e o horario (HH:mm) do rascunho no `timeslot` do backend.
+export function buildTimeslot(date: string, time: string, today?: Date): Date | null {
+  const day = parseDayMonth(date, today);
   if (!day || !isValidTime(time)) {
     return null;
   }

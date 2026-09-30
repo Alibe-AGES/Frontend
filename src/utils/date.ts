@@ -34,3 +34,22 @@ export function parseDate(date: string): Date | null {
 export function isValidDate(date: string): boolean {
   return parseDate(date) !== null;
 }
+
+export const DAY_MONTH_LENGTH = 5;
+
+// Mesma mascara, limitada a DD/MM (o ano e inferido em `parseDayMonth`).
+export function maskDayMonth(text: string): string {
+  return maskDate(text).slice(0, DAY_MONTH_LENGTH);
+}
+
+// Usa o ano atual; se o dia ja passou, assume o proximo ano.
+export function parseDayMonth(dayMonth: string, today: Date = new Date()): Date | null {
+  const year = today.getFullYear();
+  const date = parseDate(`${dayMonth}/${String(year)}`);
+  if (!date) {
+    return null;
+  }
+
+  const startOfToday = new Date(year, today.getMonth(), today.getDate());
+  return date < startOfToday ? parseDate(`${dayMonth}/${String(year + 1)}`) : date;
+}
