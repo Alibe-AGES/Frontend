@@ -8,14 +8,12 @@ jest.mock('expo-router', () => ({
 describe('<LoginScreen />', () => {
   const onContinue = jest.fn();
   const onForgotPassword = jest.fn();
-  const onBack = jest.fn();
 
   const renderScreen = () =>
     render(
       <LoginScreen
         onContinue={onContinue}
         onForgotPassword={onForgotPassword}
-        onBack={onBack}
       />
     );
 
@@ -47,14 +45,6 @@ describe('<LoginScreen />', () => {
 
     expect(getByTestId('login-password').props.secureTextEntry).toBe(false);
     expect(getByText('Ocultar')).toBeTruthy();
-  });
-
-  test('calls onBack', async () => {
-    const { getByLabelText } = await renderScreen();
-
-    await fireEvent.press(getByLabelText('Voltar'));
-
-    expect(onBack).toHaveBeenCalledTimes(1);
   });
 
   test('calls onForgotPassword', async () => {
