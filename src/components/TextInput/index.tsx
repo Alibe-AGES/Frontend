@@ -3,11 +3,11 @@ import type { KeyboardTypeOptions } from 'react-native';
 import { TextInput as RNTextInput, Text, View } from 'react-native';
 
 import { theme } from '@/theme';
+import { isValidEmail } from '@/utils/email';
 import type { TextInputProps, TextInputType } from './TextInput.types';
 
 export type { TextInputIconBackground, TextInputProps, TextInputType } from './TextInput.types';
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/;
 const NUMERIC_DISALLOWED_REGEX = /\D/g;
 const ALPHANUMERIC_DISALLOWED_REGEX = /[^\p{L}\p{N}\s]/gu;
 
@@ -16,6 +16,7 @@ const ERROR_MESSAGES: Record<TextInputType, string> = {
   email: 'Informe um e-mail válido.',
   numeric: 'Este campo aceita somente números.',
   alphanumeric: 'Este campo não aceita caracteres especiais.',
+  password: '',
 };
 
 const KEYBOARD_TYPES: Record<TextInputType, KeyboardTypeOptions> = {
@@ -23,6 +24,7 @@ const KEYBOARD_TYPES: Record<TextInputType, KeyboardTypeOptions> = {
   email: 'email-address',
   numeric: 'number-pad',
   alphanumeric: 'default',
+  password: 'default',
 };
 
 function sanitizeByType(type: TextInputType, text: string): string {
@@ -71,7 +73,7 @@ export function TextInput({
     setIsFocused(false);
 
     if (type === 'email') {
-      setTypeError(value.length > 0 && !EMAIL_REGEX.test(value) ? ERROR_MESSAGES.email : null);
+      setTypeError(value.length > 0 && !isValidEmail(value) ? ERROR_MESSAGES.email : null);
     }
 
     onBlur?.();
@@ -102,7 +104,8 @@ export function TextInput({
         <RNTextInput
           accessibilityLabel={label ?? placeholder}
           accessibilityState={{ disabled }}
-          autoCapitalize={type === 'email' ? 'none' : 'sentences'}
+          autoCapitalize={type === 'email' || type === 'password' ? 'none' : 'sentences'}
+          autoCorrect={type !== 'password'}
           autoFocus={autoFocus}
           className="flex-1 py-4 font-poppins text-base text-ink outline-none"
           editable={!disabled}
@@ -114,8 +117,6 @@ export function TextInput({
           placeholder={placeholder}
           placeholderTextColor={theme.colors.wineSoft}
           secureTextEntry={secureTextEntry}
-          // Android posiciona o hint pelo font padding extra, desalinhando o placeholder
-          // em relacao ao texto digitado. Ambos sao no-op no iOS e na web.
           style={{ includeFontPadding: false, textAlignVertical: 'center' }}
           testID={testID}
           value={value}
