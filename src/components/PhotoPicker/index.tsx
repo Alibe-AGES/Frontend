@@ -73,7 +73,7 @@ export const PhotoPicker: FC<PhotoPickerProps> = ({
             iconSize={80}
             fallbackIconName={currentPlaceholder.name}
             fallbackIconColor={currentPlaceholder.color}
-            testID={`${testID}-photo`}
+            testID={testID}
           />
         )}
       </Pressable>

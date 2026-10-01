@@ -24,12 +24,16 @@ jest.mock('../Avatar', () => {
   const RN = jest.requireActual<typeof import('react-native')>('react-native');
 
   return {
-    Avatar: ({ photoUri, fallbackIconName, testID = 'avatar' }: MockAvatarProps) => (
-      <RN.View testID={testID}>
-        <RN.Text testID={`${testID}-uri`}>{photoUri ?? 'null'}</RN.Text>
-        <RN.Text testID={`${testID}-icon`}>{fallbackIconName ?? 'none'}</RN.Text>
-      </RN.View>
-    ),
+    Avatar: ({ photoUri, fallbackIconName, testID = 'avatar' }: MockAvatarProps) => {
+      const avatarTestID = `${testID}-${photoUri ? 'photo' : 'placeholder'}`;
+
+      return (
+        <RN.View testID={avatarTestID}>
+          <RN.Text testID={`${avatarTestID}-uri`}>{photoUri ?? 'null'}</RN.Text>
+          <RN.Text testID={`${avatarTestID}-icon`}>{fallbackIconName ?? 'none'}</RN.Text>
+        </RN.View>
+      );
+    },
   };
 });
 
@@ -65,7 +69,7 @@ describe('<PhotoPicker />', () => {
     const { getByText, getByTestId } = await render(<PhotoPicker {...defaultProps} />);
 
     expect(getByText('Adicionar foto (opcional)')).toBeTruthy();
-    expect(getByTestId('alibe-photo-picker-photo-icon')).toHaveTextContent('people-outline');
+    expect(getByTestId('alibe-photo-picker-placeholder-icon')).toHaveTextContent('people-outline');
   });
 
   test('renders with a custom label', async () => {
@@ -88,7 +92,7 @@ describe('<PhotoPicker />', () => {
       />
     );
 
-    expect(getByTestId('alibe-photo-picker-photo-icon')).toHaveTextContent('camera-outline');
+    expect(getByTestId('alibe-photo-picker-placeholder-icon')).toHaveTextContent('camera-outline');
   });
 
   test('calls pickImage when pressed', async () => {

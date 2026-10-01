@@ -27,8 +27,7 @@ describe('<CreateProfileScreen />', () => {
   test('shows the camera placeholder while no photo is selected', async () => {
     const { getByTestId } = await render(<CreateProfileScreen onContinue={onContinue} />);
 
-    // Correção: o testID final é a junção do ID da Screen + PhotoPicker + Avatar
-    expect(getByTestId('create-profile-photo-photo-placeholder')).toBeTruthy();
+    expect(getByTestId('create-profile-photo-placeholder')).toBeTruthy();
   });
 
   test('renders the nickname input', async () => {
