@@ -37,7 +37,7 @@ export interface CurrentUser {
 }
 
 export async function getMe(): Promise<CurrentUser> {
-  const response = await fetch(`${API_BASE_URL}/auth/me`);
+  const response = await fetch(`${API_BASE_URL}/api/users/me`, { credentials: 'include' });
 
   if (!response.ok) {
     const text = await response.text();

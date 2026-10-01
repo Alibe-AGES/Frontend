@@ -88,7 +88,9 @@ describe('group details', () => {
     });
 
     await expect(getMe()).resolves.toEqual(user);
-    expect(global.fetch).toHaveBeenCalledWith(`${API_BASE_URL}/auth/me`);
+    expect(global.fetch).toHaveBeenCalledWith(`${API_BASE_URL}/api/users/me`, {
+      credentials: 'include',
+    });
   });
 
   test('gets group details and resolves participant photo URLs', async () => {

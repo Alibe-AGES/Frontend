@@ -9,7 +9,7 @@ export function LoadingScreen() {
   const router = useRouter();
 
   const handlePress = () => {
-    router.replace('/groups');
+    router.replace('/auth');
   };
 
   return (

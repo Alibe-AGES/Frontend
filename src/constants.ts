@@ -9,7 +9,7 @@ export const STORAGE_KEYS = {
 const LOCAL_API_URL = 'http://localhost:3000';
 
 // IP da máquina na rede local, usado quando o app roda em um dispositivo físico via Expo Go.
-const LAN_API_URL = 'https://192.000.0.00:8081';
+const LAN_API_URL = 'https://192.000.0.00:3000';
 
 const ENV_API_BASE_URL = (process as { env: { EXPO_PUBLIC_API_URL?: string } }).env
   .EXPO_PUBLIC_API_URL;
