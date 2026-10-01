@@ -38,11 +38,9 @@ jest.mock('react-native-toast-message', () => ({
 
 const mockUseFonts = useFonts as jest.Mock;
 const mockUsePathname = usePathname as jest.Mock;
-const mockAuthenticatedRoute = AuthenticatedRoute as jest.Mock;
+const mockAuthenticatedRoute = jest.mocked(AuthenticatedRoute);
 
 describe('<RootLayout />', () => {
-  const replace = jest.fn();
-
   beforeEach(() => {
     mockUseFonts.mockReturnValue([true]);
     mockUsePathname.mockReturnValue('/groups');

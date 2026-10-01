@@ -21,8 +21,9 @@ const IMAGE_EXTENSION_BY_MIME_TYPE: Record<string, string> = {
 };
 
 function imageFileName(image: UserProfilePictureInput, mimeType: string): string {
-  if (image.fileName?.match(/\.(jpe?g|png|webp)$/i)) {
-    return image.fileName;
+  const fileName = image.fileName ?? '';
+  if (/\.(jpe?g|png|webp)$/i.exec(fileName)) {
+    return fileName;
   }
 
   const extension = IMAGE_EXTENSION_BY_MIME_TYPE[mimeType] ?? 'jpg';
