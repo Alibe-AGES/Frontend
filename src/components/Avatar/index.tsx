@@ -17,7 +17,10 @@ export const Avatar: FC<AvatarProps> = ({
   fallbackIconColor = theme.colors.coral,
   testID = 'alibe-avatar',
 }) => {
-  const imageSource = useAuthenticatedImageSource(photoUri);
+  const authenticatedImageSource = useAuthenticatedImageSource(
+    typeof photoUri === 'string' ? photoUri : undefined
+  );
+  const imageSource = typeof photoUri === 'string' ? authenticatedImageSource : photoUri;
 
   if (imageSource) {
     return (
