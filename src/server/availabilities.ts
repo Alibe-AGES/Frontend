@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '@/constants';
 import { ApiError } from './api';
+import { authenticatedFetch } from './authenticated-fetch';
 import { getGroupCalendar } from './calendar';
 import { getGroupMembers } from './groups';
 
@@ -37,7 +38,7 @@ export async function createAvailability(
 
   console.log('[Availability] POST', url, body);
 
-  const response = await fetch(url, {
+  const response = await authenticatedFetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

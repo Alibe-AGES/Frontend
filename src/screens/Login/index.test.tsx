@@ -30,6 +30,22 @@ describe('<LoginScreen />', () => {
     expect(getByLabelText('Voltar')).toBeTruthy();
   });
 
+  test('shows a request error and loading state from the controller', async () => {
+    const { getByText, getByTestId } = await render(
+      <LoginScreen
+        onContinue={onContinue}
+        error="E-mail ou senha inválidos."
+        isSubmitting
+      />
+    );
+
+    expect(getByText('E-mail ou senha inválidos.')).toBeTruthy();
+    expect(getByTestId('login-continue').props.accessibilityState).toMatchObject({
+      disabled: true,
+      busy: true,
+    });
+  });
+
   test('does not offer Google sign in', async () => {
     const { queryByText } = await renderScreen();
 

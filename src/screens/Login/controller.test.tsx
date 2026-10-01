@@ -1,5 +1,6 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
+import { authClient } from '@/server/auth-client';
 import LoginController from './controller';
 
 jest.mock('expo-router', () => ({
@@ -7,6 +8,7 @@ jest.mock('expo-router', () => ({
 }));
 
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
+const mockSignInEmail = authClient.signIn.email as jest.Mock;
 
 describe('LoginController', () => {
   const replace = jest.fn();
@@ -14,6 +16,7 @@ describe('LoginController', () => {
   const canGoBack = jest.fn(() => true);
 
   beforeEach(() => {
+    mockSignInEmail.mockResolvedValue({ data: {}, error: null });
     mockUseRouter.mockReturnValue({ replace, back, canGoBack } as unknown as ReturnType<
       typeof useRouter
     >);
@@ -27,10 +30,30 @@ describe('LoginController', () => {
     const { getByPlaceholderText, getByTestId } = await render(<LoginController />);
 
     await fireEvent.changeText(getByPlaceholderText('Email'), 'user@example.com');
-    await fireEvent.changeText(getByPlaceholderText('Senha'), 'secret');
+    await fireEvent.changeText(getByPlaceholderText('Senha'), 'senha-segura');
     await fireEvent.press(getByTestId('login-continue'));
 
+    expect(mockSignInEmail).toHaveBeenCalledWith({
+      email: 'user@example.com',
+      password: 'senha-segura',
+      rememberMe: true,
+    });
     expect(replace).toHaveBeenCalledWith('/groups');
+  });
+
+  test('shows the backend error and does not navigate when credentials are invalid', async () => {
+    mockSignInEmail.mockResolvedValue({
+      data: null,
+      error: { message: 'E-mail ou senha inválidos.' },
+    });
+    const { getByPlaceholderText, getByTestId, getByText } = await render(<LoginController />);
+
+    await fireEvent.changeText(getByPlaceholderText('Email'), 'user@example.com');
+    await fireEvent.changeText(getByPlaceholderText('Senha'), 'senha-incorreta');
+    await fireEvent.press(getByTestId('login-continue'));
+
+    expect(getByText('E-mail ou senha inválidos.')).toBeTruthy();
+    expect(replace).not.toHaveBeenCalled();
   });
 
   test('pops back to the previous screen', async () => {
