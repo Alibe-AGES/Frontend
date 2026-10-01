@@ -28,11 +28,13 @@ function formatDate(date: string): string {
 
 function MemberRow({
   name,
+  profilePic,
   dates,
   isCurrentUser,
   testID,
 }: {
   name: string;
+  profilePic: string | null;
   dates: string[];
   isCurrentUser: boolean;
   testID: string;
@@ -42,6 +44,14 @@ function MemberRow({
       className="flex-row items-center gap-3 rounded-full bg-canvas px-5 py-3"
       testID={testID}
     >
+      <Avatar
+        photoUri={profilePic}
+        accessibilityLabel={'Foto de perfil de ' + name}
+        imageClassName="h-10 w-10 rounded-full"
+        iconSize={22}
+        testID={testID + '-avatar'}
+      />
+
       <View className="flex-1 flex-row items-center justify-between">
         <View className="flex-1">
           <Text className="font-poppins-medium text-base uppercase text-ink">{name}</Text>
@@ -135,6 +145,7 @@ export function GroupInfoScreen({
                 <MemberRow
                   key={member.id}
                   name={member.name}
+                  profilePic={member.profilePic}
                   dates={datesByMember.get(member.id) ?? []}
                   isCurrentUser={member.id === currentUserId}
                   testID={`group-info-member-${member.id}`}
