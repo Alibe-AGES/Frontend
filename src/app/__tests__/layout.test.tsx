@@ -1,13 +1,18 @@
 import RootLayout from '@/app/_layout';
+import { preloadGroups } from '@/hooks/useGroups';
 import { authClient } from '@/server/auth-client';
 import { useFonts } from '@expo-google-fonts/poppins';
-import { render } from '@testing-library/react-native';
+import { render, waitFor } from '@testing-library/react-native';
 import { useRouter, useSegments } from 'expo-router';
 
 jest.mock('@/global.css', () => ({}));
 
 jest.mock('@expo-google-fonts/poppins', () => ({
   useFonts: jest.fn(),
+}));
+
+jest.mock('@/hooks/useGroups', () => ({
+  preloadGroups: jest.fn(),
 }));
 
 jest.mock('expo-router', () => ({
@@ -37,6 +42,7 @@ const mockUseFonts = useFonts as jest.Mock;
 const mockUseRouter = useRouter as jest.Mock;
 const mockUseSegments = useSegments as jest.Mock;
 const mockUseSession = authClient.useSession as jest.Mock;
+const mockPreloadGroups = preloadGroups as jest.Mock;
 
 function mockSession({ hasSession, isPending }: { hasSession: boolean; isPending: boolean }) {
   mockUseSession.mockReturnValue({
@@ -52,6 +58,7 @@ describe('<RootLayout />', () => {
     mockUseFonts.mockReturnValue([true]);
     mockUseRouter.mockReturnValue({ replace });
     mockUseSegments.mockReturnValue([]);
+    mockPreloadGroups.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -81,19 +88,38 @@ describe('<RootLayout />', () => {
     await render(<RootLayout />);
 
     expect(replace).toHaveBeenCalledWith('/auth');
+    expect(mockPreloadGroups).not.toHaveBeenCalled();
   });
 
-  test('sends a signed in user to the groups screen on launch', async () => {
+  test('sends a signed in user to the groups screen after preloading the groups', async () => {
     mockSession({ hasSession: true, isPending: false });
 
     await render(<RootLayout />);
 
-    expect(replace).toHaveBeenCalledWith('/groups');
+    expect(mockPreloadGroups).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(replace).toHaveBeenCalledWith('/groups');
+    });
+  });
+
+  test('keeps the loading screen while the groups are preloading', async () => {
+    mockSession({ hasSession: true, isPending: false });
+    mockPreloadGroups.mockReturnValue(new Promise(() => undefined));
+    const screen = await render(<RootLayout />);
+
+    mockUseSession.mockReturnValue({ data: { user: { id: 'user-1' } }, isPending: false });
+    await screen.rerender(<RootLayout />);
+
+    expect(mockPreloadGroups).toHaveBeenCalledTimes(1);
+    expect(replace).not.toHaveBeenCalled();
   });
 
   test('keeps the user on the current screen after the launch redirect when no redirect is needed', async () => {
     mockSession({ hasSession: true, isPending: false });
     const screen = await render(<RootLayout />);
+    await waitFor(() => {
+      expect(replace).toHaveBeenCalledWith('/groups');
+    });
     replace.mockClear();
 
     mockUseSegments.mockReturnValue(['(app)']);

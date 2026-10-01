@@ -14,6 +14,7 @@ import { polyfillWebCrypto } from 'expo-standard-web-crypto';
 import { useEffect, useRef } from 'react';
 import Toast from 'react-native-toast-message';
 
+import { preloadGroups } from '@/hooks/useGroups';
 import { authClient } from '@/server/auth-client';
 import { getAuthRedirect } from '@/utils/auth-routing';
 
@@ -47,6 +48,7 @@ function RootNavigation() {
   const router = useRouter();
   const segments = useSegments();
   const hasHandledInitialSession = useRef(false);
+  const isPreloadingGroups = useRef(false);
   const { data: session, isPending } = authClient.useSession();
 
   useEffect(() => {
@@ -59,11 +61,20 @@ function RootNavigation() {
       isInitialCheck
     );
 
-    if (isPending) {
+    if (isPending || isPreloadingGroups.current) {
       return;
     }
 
     hasHandledInitialSession.current = true;
+
+    if (isInitialCheck && destination === '/groups') {
+      isPreloadingGroups.current = true;
+      void preloadGroups().then(() => {
+        isPreloadingGroups.current = false;
+        router.replace('/groups');
+      });
+      return;
+    }
 
     if (destination) {
       router.replace(destination);
