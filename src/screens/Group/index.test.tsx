@@ -29,18 +29,22 @@ jest.mock('@/components/NavigationBar', () => ({
 }));
 
 let mockDayPress: ((date: string) => void) | undefined;
+let mockDayCreatePress: ((date: string) => void) | undefined;
 let mockDayMarks: Record<string, DayMark> | undefined;
 
 jest.mock('@/components/Calendar', () => ({
   Calendar: ({
     onDayPress,
+    onDayCreatePress,
     dayMarks,
   }: {
     onDayPress: (date: string) => void;
+    onDayCreatePress: (date: string) => void;
     onMonthChange: (date: string) => void;
     dayMarks: Record<string, DayMark>;
   }) => {
     mockDayPress = onDayPress;
+    mockDayCreatePress = onDayCreatePress;
     mockDayMarks = dayMarks;
     return null;
   },
@@ -77,6 +81,7 @@ describe('GroupScreen', () => {
   afterEach(() => {
     jest.clearAllMocks();
     mockDayPress = undefined;
+    mockDayCreatePress = undefined;
     mockDayMarks = undefined;
   });
 
@@ -118,6 +123,17 @@ describe('GroupScreen', () => {
     expect(push).toHaveBeenCalledWith({
       pathname: '/group/[id]/info',
       params: { id: 'group-1' },
+    });
+  });
+
+  test('starts event creation with the pressed calendar date', async () => {
+    await render(<GroupScreen />);
+
+    mockDayCreatePress?.('2026-10-15');
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/group/[id]/create-event',
+      params: { id: 'group-1', date: '2026-10-15' },
     });
   });
 

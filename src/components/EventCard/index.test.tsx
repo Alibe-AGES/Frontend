@@ -131,7 +131,8 @@ describe('<EventCard mode="create" />', () => {
 
     expect(getByPlaceholderText('Definir nome do evento')).toBeTruthy();
     expect(getByPlaceholderText('Adicionar endereço')).toBeTruthy();
-    expect(getByPlaceholderText('00/00')).toBeTruthy();
+    expect(getByTestId('alibe-event-card-date-button')).toBeTruthy();
+    expect(getByText('00/00')).toBeTruthy();
     expect(getByPlaceholderText('Adicionar horário')).toBeTruthy();
     expect(getByText('Adicione uma imagem que representa seu evento')).toBeTruthy();
     expect(getByTestId('alibe-event-card-confirm')).toBeTruthy();
@@ -139,24 +140,26 @@ describe('<EventCard mode="create" />', () => {
 
   test('reports each edited field merged into the draft', async () => {
     const onChangeDraft = jest.fn();
+    const onDatePress = jest.fn();
     const draft = { ...emptyDraft, name: 'Bloom' };
     const { getByTestId } = await render(
       <EventCard
         mode="create"
         draft={draft}
         onChangeDraft={onChangeDraft}
+        onDatePress={onDatePress}
       />
     );
 
     await fireEvent.changeText(getByTestId('alibe-event-card-name-input'), 'Bloom Café');
     await fireEvent.changeText(getByTestId('alibe-event-card-address-input'), 'Av. João Wallig');
-    await fireEvent.changeText(getByTestId('alibe-event-card-date-input'), '1805');
+    await fireEvent.press(getByTestId('alibe-event-card-date-button'));
     await fireEvent.changeText(getByTestId('alibe-event-card-time-input'), '1000');
 
     expect(onChangeDraft).toHaveBeenNthCalledWith(1, { ...draft, name: 'Bloom Café' });
     expect(onChangeDraft).toHaveBeenNthCalledWith(2, { ...draft, address: 'Av. João Wallig' });
-    expect(onChangeDraft).toHaveBeenNthCalledWith(3, { ...draft, date: '18/05' });
-    expect(onChangeDraft).toHaveBeenNthCalledWith(4, { ...draft, time: '10:00' });
+    expect(onDatePress).toHaveBeenCalledTimes(1);
+    expect(onChangeDraft).toHaveBeenNthCalledWith(3, { ...draft, time: '10:00' });
   });
 
   test('picks an image from the gallery and stores it in the draft', async () => {

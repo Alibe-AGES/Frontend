@@ -46,6 +46,20 @@ describe('Calendar', () => {
     expect(onDayPress).toHaveBeenCalledWith('2026-10-18');
   });
 
+  test('forwards a date from its create action', async () => {
+    const onDayCreatePress = jest.fn();
+    const { getByTestId } = await render(
+      <Calendar
+        initialDate="2999-01-01"
+        onDayCreatePress={onDayCreatePress}
+      />
+    );
+
+    await fireEvent.press(getByTestId('calendar-create-2999-01-05'));
+
+    expect(onDayCreatePress).toHaveBeenCalledWith('2999-01-05');
+  });
+
   test('disables past days without events but keeps past event dates selectable', async () => {
     const onDayPress = jest.fn();
     const { getByLabelText } = await render(

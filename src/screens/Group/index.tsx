@@ -145,6 +145,17 @@ export function GroupScreen() {
     });
   };
 
+  const handleDayCreatePress = (dateString: string) => {
+    if (!groupId) {
+      return;
+    }
+
+    router.push({
+      pathname: '/group/[id]/create-event',
+      params: { id: groupId, date: dateString },
+    });
+  };
+
   const handleMonthChange = (dateString: string) => {
     const [year, month] = dateString.split('-').map(Number);
 
@@ -237,6 +248,7 @@ export function GroupScreen() {
           initialDate={today}
           dayMarks={dayMarks}
           onDayPress={handleDayPress}
+          onDayCreatePress={handleDayCreatePress}
           onMonthChange={handleMonthChange}
           showLegend
         />

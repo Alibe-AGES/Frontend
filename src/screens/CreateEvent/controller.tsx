@@ -4,7 +4,7 @@ import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
 import { CreateEventScreen } from '@/screens/CreateEvent';
 import { createEvent } from '@/server/events';
 import { getGroup, getMe } from '@/server/groups';
-import { toApiDate } from '@/utils/date';
+import { isValidApiDate } from '@/utils/date';
 import { isValidTime } from '@/utils/time';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -14,9 +14,10 @@ const EMPTY_DRAFT: EventCardDraft = { name: '', imageUri: null, address: '', dat
 
 export default function CreateEventController() {
   const router = useRouter();
-  const { id: groupId } = useLocalSearchParams<{ id: string }>();
+  const { id: groupId, date: initialDate } = useLocalSearchParams<{ id: string; date?: string }>();
 
-  const [draft, setDraft] = useState<EventCardDraft>(EMPTY_DRAFT);
+  const validInitialDate = initialDate && isValidApiDate(initialDate) ? initialDate : '';
+  const [draft, setDraft] = useState<EventCardDraft>({ ...EMPTY_DRAFT, date: validInitialDate });
   const [photo, setPhoto] = useState<SelectedPhoto | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
@@ -49,15 +50,14 @@ export default function CreateEventController() {
       });
   }, [groupId]);
 
-  const apiDate = toApiDate(draft.date);
   const isDraftComplete =
     draft.name.trim().length > 0 &&
     draft.address.trim().length > 0 &&
-    apiDate !== null &&
+    isValidApiDate(draft.date) &&
     isValidTime(draft.time);
 
   const handleConfirm = async () => {
-    if (!groupId || !apiDate || !isDraftComplete || isSubmitting) {
+    if (!groupId || !isDraftComplete || isSubmitting) {
       return;
     }
 
@@ -66,7 +66,7 @@ export default function CreateEventController() {
     try {
       const event = await createEvent(groupId, {
         name: draft.name,
-        date: apiDate,
+        date: draft.date,
         time: draft.time,
         location: draft.address,
         image: photo,
@@ -93,6 +93,9 @@ export default function CreateEventController() {
       groupId={groupId}
       draft={draft}
       onChangeDraft={setDraft}
+      onSelectDate={(date) => {
+        setDraft((currentDraft) => ({ ...currentDraft, date }));
+      }}
       onImageSelected={setPhoto}
       participants={participants}
       currentUserId={currentUserId}

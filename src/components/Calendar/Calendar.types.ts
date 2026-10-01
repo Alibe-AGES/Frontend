@@ -26,6 +26,7 @@ export interface CalendarProps {
   initialDate?: string;
   dayMarks?: Record<string, DayMark>;
   onDayPress?: (dateString: string) => void;
+  onDayCreatePress?: (dateString: string) => void;
   onMonthChange?: (dateString: string) => void;
   showLegend?: boolean;
   testID?: string;

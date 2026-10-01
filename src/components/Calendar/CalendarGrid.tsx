@@ -9,12 +9,14 @@ interface CalendarDayProps {
   day: number;
   mark: DayMark;
   onPress?: (dateString: string) => void;
+  onCreatePress?: (dateString: string) => void;
 }
 
 interface CalendarGridProps {
   monthDate: Date;
   dayMarks: Record<string, DayMark>;
   onDayPress?: (dateString: string) => void;
+  onDayCreatePress?: (dateString: string) => void;
 }
 
 interface DayContentProps {
@@ -146,7 +148,7 @@ function DayIndicators({
   );
 }
 
-function CalendarDayCell({ dateString, day, mark, onPress }: CalendarDayProps) {
+function CalendarDayCell({ dateString, day, mark, onPress, onCreatePress }: CalendarDayProps) {
   const eventCount = mark.eventIds?.length ?? 0;
   const availableUserCount = getAvailableUserCount(mark);
   const allUsersAvailable = getAllUsersAvailable(mark);
@@ -158,36 +160,59 @@ function CalendarDayCell({ dateString, day, mark, onPress }: CalendarDayProps) {
     allUsersAvailable
   );
 
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
-      accessibilityState={{ disabled: displayStatus === 'past' }}
-      disabled={displayStatus === 'past'}
-      className="h-11 flex-1 items-center justify-center"
-      onPress={() => {
-        onPress?.(dateString);
-      }}
-    >
-      <View
-        className={`h-9 w-9 items-center justify-center rounded-lg ${dayContainerClasses[displayStatus]}`}
-      >
-        <DayContent
-          status={displayStatus}
-          day={day}
-        />
-      </View>
+  const isFutureOrToday = dateString >= formatCalendarDate(new Date());
 
-      <DayIndicators
-        dot={mark.dot}
-        hasPartialAvailability={availableUserCount > 0 && !allUsersAvailable}
-        dateString={dateString}
-      />
-    </Pressable>
+  return (
+    <View className="relative h-11 flex-1 items-center justify-center">
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        accessibilityState={{ disabled: displayStatus === 'past' }}
+        disabled={displayStatus === 'past'}
+        className="h-full w-full items-center justify-center"
+        onPress={() => {
+          onPress?.(dateString);
+        }}
+      >
+        <View
+          className={`h-9 w-9 items-center justify-center rounded-lg ${dayContainerClasses[displayStatus]}`}
+        >
+          <DayContent
+            status={displayStatus}
+            day={day}
+          />
+        </View>
+
+        <DayIndicators
+          dot={mark.dot}
+          hasPartialAvailability={availableUserCount > 0 && !allUsersAvailable}
+          dateString={dateString}
+        />
+      </Pressable>
+      {onCreatePress && isFutureOrToday ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Criar encontro em ${dateString}`}
+          hitSlop={3}
+          className="absolute right-0 top-0 z-10 h-5 w-5 items-center justify-center rounded-full bg-lime"
+          onPress={() => {
+            onCreatePress(dateString);
+          }}
+          testID={`calendar-create-${dateString}`}
+        >
+          <Text className="text-xs font-bold text-ink">+</Text>
+        </Pressable>
+      ) : null}
+    </View>
   );
 }
 
-export function CalendarGrid({ monthDate, dayMarks, onDayPress }: CalendarGridProps) {
+export function CalendarGrid({
+  monthDate,
+  dayMarks,
+  onDayPress,
+  onDayCreatePress,
+}: CalendarGridProps) {
   const year = monthDate.getFullYear();
   const month = monthDate.getMonth();
   const firstWeekday = new Date(year, month, 1).getDay();
@@ -243,6 +268,7 @@ export function CalendarGrid({ monthDate, dayMarks, onDayPress }: CalendarGridPr
                   day={day}
                   mark={dayMarks[dateString] ?? { status: 'normal' }}
                   onPress={onDayPress}
+                  onCreatePress={onDayCreatePress}
                 />
               );
             })}

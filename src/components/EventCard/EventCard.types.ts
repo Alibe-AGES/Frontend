@@ -42,6 +42,7 @@ export interface EventCardCreateProps {
   mode: 'create';
   draft: EventCardDraft;
   onChangeDraft: (draft: EventCardDraft) => void;
+  onDatePress?: () => void;
   onImageSelected?: (photo: SelectedPhoto) => void;
   onConfirm?: () => void;
   isConfirmDisabled?: boolean;

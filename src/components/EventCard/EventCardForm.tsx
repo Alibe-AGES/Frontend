@@ -1,6 +1,5 @@
 import { useDefaultPhotoPickerController } from '@/components/PhotoPicker/controllers/useDefaultPhotoPickerController';
 import { theme } from '@/theme';
-import { DAY_MONTH_LENGTH, maskDayMonth } from '@/utils/date';
 import { maskTime, TIME_LENGTH } from '@/utils/time';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -14,6 +13,7 @@ import { PillInput } from './Pill';
 export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: string }> = ({
   draft,
   onChangeDraft,
+  onDatePress,
   onImageSelected,
   onConfirm,
   isConfirmDisabled = false,
@@ -85,19 +85,17 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
           color={theme.colors.ink}
         />
       </View>
-      <TextInput
-        accessibilityLabel="Data do evento"
-        className="w-28 text-center font-poppins text-4xl text-ink outline-none"
-        keyboardType="number-pad"
-        maxLength={DAY_MONTH_LENGTH}
-        onChangeText={(date) => {
-          updateDraft({ date: maskDayMonth(date) });
-        }}
-        placeholder="00/00"
-        placeholderTextColor={theme.colors.inkSoft}
-        testID={`${testID}-date-input`}
-        value={draft.date}
-      />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={draft.date ? `Data do evento ${draft.date}` : 'Escolher data do evento'}
+        className="min-w-28 items-center"
+        onPress={onDatePress}
+        testID={`${testID}-date-button`}
+      >
+        <Text className="text-center font-poppins text-3xl text-ink">
+          {draft.date ? `${draft.date.slice(8, 10)}/${draft.date.slice(5, 7)}` : '00/00'}
+        </Text>
+      </Pressable>
     </View>
   );
 

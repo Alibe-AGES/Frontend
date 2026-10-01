@@ -13,6 +13,30 @@ jest.mock('@/components/NavigationBar', () => ({
   },
 }));
 
+jest.mock('@/components/DatePickerSheet', () => ({
+  DatePickerSheet: ({
+    onSelectDate,
+    onClose,
+  }: {
+    onSelectDate: (dateString: string) => void;
+    onClose: () => void;
+  }) => {
+    const { Pressable, Text } = jest.requireActual<typeof import('react-native')>('react-native');
+    return (
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => {
+          onSelectDate('2026-10-15');
+          onClose();
+        }}
+        testID="mock-date-picker-sheet"
+      >
+        <Text>Selecionar data de teste</Text>
+      </Pressable>
+    );
+  },
+}));
+
 jest.mock('expo-image-picker', () => ({
   requestMediaLibraryPermissionsAsync: jest.fn(),
   launchImageLibraryAsync: jest.fn(),
@@ -29,6 +53,7 @@ function buildProps(overrides: Partial<CreateEventScreenProps> = {}): CreateEven
     groupId: 'group-1',
     draft: EMPTY_DRAFT,
     onChangeDraft: jest.fn(),
+    onSelectDate: jest.fn(),
     onImageSelected: jest.fn(),
     participants: [
       { id: 'user-1', name: 'Luiza', profilePic: null },
@@ -45,18 +70,30 @@ function buildProps(overrides: Partial<CreateEventScreenProps> = {}): CreateEven
 
 describe('<CreateEventScreen />', () => {
   test('renders the tabs, event form, and participants', async () => {
-    const { getByText, getByPlaceholderText, getByTestId, queryByTestId } = await render(
+    const { getByText, getByPlaceholderText, getByTestId } = await render(
       <CreateEventScreen {...buildProps()} />
     );
 
     expect(getByText('Evento')).toBeTruthy();
     expect(getByText('Sugestão')).toBeTruthy();
-    expect(queryByTestId('create-event-day')).toBeNull();
     expect(getByPlaceholderText('Definir nome do evento')).toBeTruthy();
     expect(getByText('Participantes')).toBeTruthy();
     expect(getByText('Eu')).toBeTruthy();
     expect(getByText('Kata')).toBeTruthy();
     expect(getByTestId('mock-navigation-bar').props.children).toBe('group-1');
+  });
+
+  test('opens the date sheet and forwards the selected date', async () => {
+    const onSelectDate = jest.fn();
+    const { getByTestId, queryByTestId } = await render(
+      <CreateEventScreen {...buildProps({ onSelectDate })} />
+    );
+
+    expect(queryByTestId('mock-date-picker-sheet')).toBeNull();
+    await fireEvent.press(getByTestId('create-event-card-date-button'));
+    await fireEvent.press(getByTestId('mock-date-picker-sheet'));
+
+    expect(onSelectDate).toHaveBeenCalledWith('2026-10-15');
   });
 
   test('forwards draft edits to the controller', async () => {

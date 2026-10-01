@@ -12,6 +12,7 @@ export function Calendar({
   initialDate,
   dayMarks = {},
   onDayPress,
+  onDayCreatePress,
   onMonthChange,
   showLegend = false,
   testID = 'alibe-calendar',
@@ -49,6 +50,7 @@ export function Calendar({
         monthDate={monthDate}
         dayMarks={dayMarks}
         onDayPress={onDayPress}
+        onDayCreatePress={onDayCreatePress}
       />
 
       {showLegend ? <CalendarLegend /> : null}
