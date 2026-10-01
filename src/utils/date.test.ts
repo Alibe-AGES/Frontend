@@ -1,4 +1,4 @@
-import { isValidDate, maskDate, maskDayMonth, parseDate, parseDayMonth } from './date';
+import { isValidDate, maskDate, maskDayMonth, parseDate, parseDayMonth, toApiDate } from './date';
 
 describe('maskDate', () => {
   test.each([
@@ -46,5 +46,24 @@ describe('parseDayMonth', () => {
   test('rejects invalid or incomplete values', () => {
     expect(parseDayMonth('32/01', today)).toBeNull();
     expect(parseDayMonth('18/0', today)).toBeNull();
+  });
+});
+
+describe('toApiDate', () => {
+  const today = new Date(2026, 8, 29);
+
+  test('converts DD/MM to YYYY-MM-DD in the current year', () => {
+    expect(toApiDate('05/10', today)).toBe('2026-10-05');
+    expect(toApiDate('29/09', today)).toBe('2026-09-29');
+  });
+
+  test('rolls a day that already passed over to the next year', () => {
+    expect(toApiDate('10/01', today)).toBe('2027-01-10');
+  });
+
+  test('returns null for invalid or incomplete dates', () => {
+    expect(toApiDate('31/02', today)).toBeNull();
+    expect(toApiDate('05/1', today)).toBeNull();
+    expect(toApiDate('', today)).toBeNull();
   });
 });
