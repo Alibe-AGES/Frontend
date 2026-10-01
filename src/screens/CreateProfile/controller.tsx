@@ -43,13 +43,12 @@ export default function CreateProfileController() {
 
       router.replace('/groups');
     } catch {
+      setIsSubmitting(false);
       Toast.show({
         type: 'error',
         text1: 'Erro',
         text2: 'Não foi possível concluir seu cadastro. Tente novamente.',
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
