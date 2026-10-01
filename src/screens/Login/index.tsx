@@ -16,11 +16,18 @@ export interface LoginData {
 }
 
 export interface LoginScreenProps {
-  onContinue: (credentials: LoginData) => void;
+  onContinue: (credentials: LoginData) => void | Promise<void>;
   onForgotPassword?: () => void;
+  errorMessage?: string;
+  isLoading?: boolean;
 }
 
-export function LoginScreen({ onContinue, onForgotPassword }: LoginScreenProps) {
+export function LoginScreen({
+  onContinue,
+  onForgotPassword,
+  errorMessage,
+  isLoading = false,
+}: LoginScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -103,11 +110,20 @@ export function LoginScreen({ onContinue, onForgotPassword }: LoginScreenProps) 
         </View>
 
         <View className="mt-auto pt-6">
+          {errorMessage ? (
+            <Text
+              accessibilityRole="alert"
+              className="mb-3 text-center font-poppins text-sm text-wine"
+            >
+              {errorMessage}
+            </Text>
+          ) : null}
           <ContinueButton
             onPress={() => {
-              onContinue({ email: trimmedEmail, password });
+              void onContinue({ email: trimmedEmail, password });
             }}
-            disabled={!canContinue}
+            disabled={!canContinue || isLoading}
+            isLoading={isLoading}
             testID="login-continue"
           />
         </View>

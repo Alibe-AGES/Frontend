@@ -11,6 +11,12 @@ import {
   listGroups,
 } from './groups';
 
+jest.mock('./auth', () => ({
+  authenticatedFetch: jest.fn((url: string, options?: RequestInit) =>
+    globalThis.fetch(url, { ...options, credentials: 'include' })
+  ),
+}));
+
 declare const global: { fetch: jest.Mock };
 
 const originalFetch = global.fetch;
@@ -35,7 +41,9 @@ describe('listGroups', () => {
 
     await listGroups();
 
-    expect(global.fetch).toHaveBeenCalledWith(API_BASE_URL + '/groups');
+    expect(global.fetch).toHaveBeenCalledWith(API_BASE_URL + '/groups', {
+      credentials: 'include',
+    });
   });
 
   test('resolves a relative profilePic into a full URL', async () => {
@@ -115,7 +123,9 @@ describe('group details', () => {
         { id: 'user-2', name: 'Bia', profilePic: null },
       ],
     });
-    expect(global.fetch).toHaveBeenCalledWith(`${API_BASE_URL}/groups/1`);
+    expect(global.fetch).toHaveBeenCalledWith(`${API_BASE_URL}/groups/1`, {
+      credentials: 'include',
+    });
   });
 
   test('returns group participants from getGroupMembers', async () => {
@@ -153,6 +163,7 @@ describe('createGroup', () => {
       API_BASE_URL + '/groups',
       expect.objectContaining({
         method: 'POST',
+        credentials: 'include',
         body: expect.any(FormData) as FormData,
       })
     );
@@ -182,6 +193,7 @@ describe('createGroup', () => {
       API_BASE_URL + '/groups',
       expect.objectContaining({
         method: 'POST',
+        credentials: 'include',
         body: expect.any(FormData) as FormData,
       })
     );
@@ -218,7 +230,9 @@ describe('group invites', () => {
     });
 
     await expect(getGroupInviteLink('group-id')).resolves.toEqual(invite);
-    expect(global.fetch).toHaveBeenCalledWith(API_BASE_URL + '/groups/group-id/invite-link');
+    expect(global.fetch).toHaveBeenCalledWith(API_BASE_URL + '/groups/group-id/invite-link', {
+      credentials: 'include',
+    });
   });
 
   test('joins a group using the invite token', async () => {
@@ -231,6 +245,7 @@ describe('group invites', () => {
     await expect(joinGroupByInvite(token)).resolves.toEqual({ token });
     expect(global.fetch).toHaveBeenCalledWith(API_BASE_URL + `/invite-links/${token}/join`, {
       method: 'POST',
+      credentials: 'include',
     });
   });
 

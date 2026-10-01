@@ -3,6 +3,12 @@ import { createAvailability, getAvailabilitiesByDate } from './availabilities';
 import { getGroupCalendar } from './calendar';
 import { getGroupMembers } from './groups';
 
+jest.mock('./auth', () => ({
+  authenticatedFetch: jest.fn((url: string, options?: RequestInit) =>
+    globalThis.fetch(url, { ...options, credentials: 'include' })
+  ),
+}));
+
 jest.mock('./calendar', () => ({
   getGroupCalendar: jest.fn(),
 }));
@@ -46,6 +52,7 @@ describe('createAvailability', () => {
     await expect(createAvailability('group-1', payload)).resolves.toEqual(response);
     expect(global.fetch).toHaveBeenCalledWith(`${API_BASE_URL}/groups/group-1/availabilities`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
