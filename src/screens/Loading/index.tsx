@@ -7,6 +7,7 @@ import Logo from '@/assets/images/Logo.svg';
 export function LoadingScreen() {
   return (
     <View
+      accessibilityLabel="Carregando sessão"
       className="relative flex-1 items-center justify-center overflow-hidden bg-canvas"
       testID="alibe-loading-screen"
     >

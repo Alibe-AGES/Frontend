@@ -1,4 +1,4 @@
-# Smoke test: the app launches, passes the loading screen and lands on the groups screen.
+# Smoke test: the app launches without a session, passes the loading screen and lands on the auth screen.
 
 # IMPORTANT: update the assertion below when the INITIAL screen changes.
 #
@@ -11,5 +11,6 @@ tags: [smoke]
 ---
 - runFlow: ../subflows/launch.yaml
 - extendedWaitUntil:
-    visible: 'Meus grupos'
+    visible:
+      id: auth-screen
     timeout: 60000

@@ -2,6 +2,7 @@ import { BackButton } from '@/components/BackButton';
 import { Calendar } from '@/components/Calendar';
 import { DayMark } from '@/components/Calendar/Calendar.types';
 import { NavigationBar } from '@/components/NavigationBar';
+import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
 import { CalendarDay, getGroupCalendar } from '@/server/calendar';
 import { getGroup, getGroupMembers, GroupMember } from '@/server/groups';
 import { theme } from '@/theme';
@@ -62,6 +63,7 @@ export function GroupScreen() {
   const [groupName, setGroupName] = useState('');
   const [groupPhoto, setGroupPhoto] = useState<string | null>(null);
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
+  const groupPhotoSource = useAuthenticatedImageSource(groupPhoto);
   const [visibleMonth, setVisibleMonth] = useState(() => {
     const now = new Date();
     return { month: now.getMonth() + 1, year: now.getFullYear() };
@@ -185,9 +187,9 @@ export function GroupScreen() {
           testID="group-screen-members"
         >
           <View className="h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-coral">
-            {groupPhoto ? (
+            {groupPhotoSource ? (
               <Image
-                source={{ uri: groupPhoto }}
+                source={groupPhotoSource}
                 accessibilityLabel={`Foto do grupo ${groupName}`}
                 contentFit="cover"
                 style={tw`h-14 w-14 rounded-full`}
@@ -205,7 +207,7 @@ export function GroupScreen() {
 
           <View className="flex-1">
             <Text
-              className="text-wine font-poppins-semibold text-lg"
+              className="font-poppins-semibold text-lg text-wine"
               numberOfLines={1}
             >
               {groupName}
@@ -213,7 +215,7 @@ export function GroupScreen() {
 
             {members.length > 0 ? (
               <Text
-                className="text-wine font-poppins text-sm"
+                className="font-poppins text-sm text-wine"
                 numberOfLines={1}
                 testID="group-screen-members-names"
               >

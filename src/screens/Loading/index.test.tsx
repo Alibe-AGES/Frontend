@@ -14,4 +14,10 @@ describe('<LoadingScreen />', () => {
 
     expect(getByLabelText('Alibe')).toBeTruthy();
   });
+
+  test('announces that the session is loading', async () => {
+    const { getByLabelText } = await render(<LoadingScreen />);
+
+    expect(getByLabelText('Carregando sessão')).toBeTruthy();
+  });
 });

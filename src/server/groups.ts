@@ -2,6 +2,7 @@ import { API_BASE_URL } from '@/constants';
 import { File } from 'expo-file-system';
 import { Platform } from 'react-native';
 import { ApiError } from './api';
+import { authenticatedFetch } from './authenticated-fetch';
 
 export interface Group {
   id: string;
@@ -37,7 +38,7 @@ export interface CurrentUser {
 }
 
 export async function getMe(): Promise<CurrentUser> {
-  const response = await fetch(`${API_BASE_URL}/auth/me`);
+  const response = await authenticatedFetch(`${API_BASE_URL}/auth/me`);
 
   if (!response.ok) {
     const text = await response.text();
@@ -93,7 +94,7 @@ function resolveGroupPhotoUrl(profilePic: string | null): string | null {
 }
 
 export async function listGroups(): Promise<Group[]> {
-  const response = await fetch(`${API_BASE_URL}/groups`);
+  const response = await authenticatedFetch(`${API_BASE_URL}/groups`);
 
   if (!response.ok) {
     const text = await response.text();
@@ -113,7 +114,7 @@ export async function createGroup(input: CreateGroupInput): Promise<Group> {
     await appendGroupImage(formData, input.image);
   }
 
-  const response = await fetch(API_BASE_URL + '/groups', {
+  const response = await authenticatedFetch(API_BASE_URL + '/groups', {
     method: 'POST',
     body: formData,
   });
@@ -145,7 +146,7 @@ export interface GroupDetails {
 }
 
 export async function getGroup(groupId: string): Promise<GroupDetails> {
-  const response = await fetch(`${API_BASE_URL}/groups/${groupId}`);
+  const response = await authenticatedFetch(`${API_BASE_URL}/groups/${groupId}`);
 
   if (!response.ok) {
     const text = await response.text();
@@ -171,7 +172,7 @@ export async function getGroupMembers(groupId: string): Promise<GroupMember[]> {
 }
 
 export async function getGroupInviteLink(groupId: string): Promise<GroupInviteLink> {
-  const response = await fetch(`${API_BASE_URL}/groups/${groupId}/invite-link`);
+  const response = await authenticatedFetch(`${API_BASE_URL}/groups/${groupId}/invite-link`);
 
   if (!response.ok) {
     const text = await response.text();
@@ -185,7 +186,7 @@ export async function getGroupInviteLink(groupId: string): Promise<GroupInviteLi
 }
 
 export async function joinGroupByInvite(token: string): Promise<JoinGroupByInviteResponse> {
-  const response = await fetch(`${API_BASE_URL}/invite-links/${token}/join`, {
+  const response = await authenticatedFetch(`${API_BASE_URL}/invite-links/${token}/join`, {
     method: 'POST',
   });
 

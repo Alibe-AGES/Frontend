@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '@/constants';
 import { ApiError } from './api';
+import { authenticatedFetch } from './authenticated-fetch';
 
 export interface CalendarDay {
   date: string;
@@ -15,7 +16,7 @@ export async function getGroupCalendar(
   month: number,
   year: number
 ): Promise<CalendarDay[]> {
-  const response = await fetch(
+  const response = await authenticatedFetch(
     `${API_BASE_URL}/groups/${groupId}/calendar?month=${String(month)}&year=${String(year)}`
   );
 

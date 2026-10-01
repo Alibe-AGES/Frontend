@@ -38,17 +38,31 @@ describe('createAvailability', () => {
         endTime: '10:00',
       },
     ];
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(response),
-    });
+    const fetchMock = jest
+      .fn<Promise<Response>, [RequestInfo | URL, RequestInit?]>()
+      .mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(response),
+      } as Response);
+    global.fetch = fetchMock;
 
     await expect(createAvailability('group-1', payload)).resolves.toEqual(response);
-    expect(global.fetch).toHaveBeenCalledWith(`${API_BASE_URL}/groups/group-1/availabilities`, {
+
+    const [requestUrl, requestOptions] = fetchMock.mock.calls[0] ?? [];
+    expect(requestUrl).toBe(API_BASE_URL + '/groups/group-1/availabilities');
+    expect(requestOptions).toMatchObject({
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      credentials: 'omit',
       body: JSON.stringify(payload),
     });
+    expect(requestOptions).toBeDefined();
+
+    if (!requestOptions) {
+      throw new Error('Request options were not provided');
+    }
+
+    expect(requestOptions.headers).toBeInstanceOf(Headers);
+    expect(new Headers(requestOptions.headers).get('Content-Type')).toBe('application/json');
   });
 
   test('throws an ApiError when saving availability fails', async () => {
