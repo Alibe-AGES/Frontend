@@ -18,10 +18,9 @@ export interface LoginData {
 export interface LoginScreenProps {
   onContinue: (credentials: LoginData) => void;
   onForgotPassword?: () => void;
-  onBack: () => void;
 }
 
-export function LoginScreen({ onContinue, onForgotPassword, onBack }: LoginScreenProps) {
+export function LoginScreen({ onContinue, onForgotPassword }: LoginScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -46,7 +45,7 @@ export function LoginScreen({ onContinue, onForgotPassword, onBack }: LoginScree
 
       <BackButton
         className="absolute left-10 top-24"
-        onPress={onBack}
+        fallbackHref="/auth"
       />
 
       <Text className="mt-4 text-center font-poppins-black text-5xl leading-tight tracking-[0.3rem] text-ink">
