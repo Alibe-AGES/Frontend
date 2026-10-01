@@ -53,7 +53,7 @@ export default function RootLayout() {
 
   return (
     <>
-      {isPublicRoute ? stack : <AuthenticatedRoute>{stack}</AuthenticatedRoute>}
+      <AuthenticatedRoute enabled={!isPublicRoute}>{stack}</AuthenticatedRoute>
       <Toast />
     </>
   );
