@@ -1,6 +1,7 @@
 import { API_BASE_URL } from '@/constants';
 import { ApiError } from './api';
 import { authenticatedFetch } from './authenticated-fetch';
+import { appendImage, UploadImage } from './images';
 
 export interface Group {
   id: string;
