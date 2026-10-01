@@ -1,3 +1,4 @@
+import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -16,8 +17,9 @@ export const Avatar: FC<AvatarProps> = ({
   fallbackIconColor = theme.colors.coral,
   testID = 'alibe-avatar',
 }) => {
-  if (photoUri) {
-    const imageSource = typeof photoUri === 'string' ? { uri: photoUri } : photoUri;
+  const imageSource = useAuthenticatedImageSource(photoUri);
+
+  if (imageSource) {
     return (
       <Image
         source={imageSource}

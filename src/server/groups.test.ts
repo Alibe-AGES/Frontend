@@ -35,7 +35,10 @@ describe('listGroups', () => {
 
     await listGroups();
 
-    expect(global.fetch).toHaveBeenCalledWith(API_BASE_URL + '/groups');
+    expect(global.fetch).toHaveBeenCalledWith(
+      API_BASE_URL + '/groups',
+      expect.objectContaining({ credentials: 'omit', headers: expect.any(Headers) as Headers })
+    );
   });
 
   test('resolves a relative profilePic into a full URL', async () => {
@@ -88,7 +91,10 @@ describe('group details', () => {
     });
 
     await expect(getMe()).resolves.toEqual(user);
-    expect(global.fetch).toHaveBeenCalledWith(`${API_BASE_URL}/auth/me`);
+    expect(global.fetch).toHaveBeenCalledWith(
+      `${API_BASE_URL}/auth/me`,
+      expect.objectContaining({ credentials: 'omit', headers: expect.any(Headers) as Headers })
+    );
   });
 
   test('gets group details and resolves participant photo URLs', async () => {
@@ -113,7 +119,10 @@ describe('group details', () => {
         { id: 'user-2', name: 'Bia', profilePic: null },
       ],
     });
-    expect(global.fetch).toHaveBeenCalledWith(`${API_BASE_URL}/groups/1`);
+    expect(global.fetch).toHaveBeenCalledWith(
+      `${API_BASE_URL}/groups/1`,
+      expect.objectContaining({ credentials: 'omit', headers: expect.any(Headers) as Headers })
+    );
   });
 
   test('returns group participants from getGroupMembers', async () => {
@@ -216,7 +225,10 @@ describe('group invites', () => {
     });
 
     await expect(getGroupInviteLink('group-id')).resolves.toEqual(invite);
-    expect(global.fetch).toHaveBeenCalledWith(API_BASE_URL + '/groups/group-id/invite-link');
+    expect(global.fetch).toHaveBeenCalledWith(
+      API_BASE_URL + '/groups/group-id/invite-link',
+      expect.objectContaining({ credentials: 'omit', headers: expect.any(Headers) as Headers })
+    );
   });
 
   test('joins a group using the invite token', async () => {
@@ -227,9 +239,14 @@ describe('group invites', () => {
     });
 
     await expect(joinGroupByInvite(token)).resolves.toEqual({ token });
-    expect(global.fetch).toHaveBeenCalledWith(API_BASE_URL + `/invite-links/${token}/join`, {
-      method: 'POST',
-    });
+    expect(global.fetch).toHaveBeenCalledWith(
+      API_BASE_URL + `/invite-links/${token}/join`,
+      expect.objectContaining({
+        method: 'POST',
+        credentials: 'omit',
+        headers: expect.any(Headers) as Headers,
+      })
+    );
   });
 
   test('throws an ApiError when the invite cannot be loaded', async () => {

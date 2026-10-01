@@ -1,18 +1,6 @@
-import { fireEvent, render } from '@testing-library/react-native';
-import { useRouter } from 'expo-router';
+import { render } from '@testing-library/react-native';
 
 import { LoadingScreen } from '.';
-
-jest.mock('expo-router', () => ({
-  useRouter: jest.fn(),
-}));
-
-const mockReplace = jest.fn();
-
-beforeEach(() => {
-  jest.clearAllMocks();
-  (useRouter as jest.Mock).mockReturnValue({ replace: mockReplace });
-});
 
 describe('<LoadingScreen />', () => {
   test('renders the loading screen container', async () => {
@@ -27,11 +15,9 @@ describe('<LoadingScreen />', () => {
     expect(getByLabelText('Alibe')).toBeTruthy();
   });
 
-  test('navigates to the groups screen when pressed', async () => {
-    const { getByTestId } = await render(<LoadingScreen />);
+  test('announces that the session is loading', async () => {
+    const { getByLabelText } = await render(<LoadingScreen />);
 
-    await fireEvent.press(getByTestId('alibe-loading-screen'));
-
-    expect(mockReplace).toHaveBeenCalledWith('/groups');
+    expect(getByLabelText('Carregando sessão')).toBeTruthy();
   });
 });
