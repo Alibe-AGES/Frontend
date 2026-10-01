@@ -60,7 +60,7 @@ async function appendProfilePicture(
 }
 
 export async function getMyProfile(): Promise<MyProfile> {
-  const response = await authenticatedFetch(API_BASE_URL + '/users/me');
+  const response = await authenticatedFetch(API_BASE_URL + '/api/users/me');
 
   if (!response.ok) {
     const text = await response.text();
@@ -79,7 +79,7 @@ export async function updateUserProfilePicture(
   const formData = new FormData();
   await appendProfilePicture(formData, image);
 
-  const response = await authenticatedFetch(API_BASE_URL + '/users/me/profile-picture', {
+  const response = await authenticatedFetch(API_BASE_URL + '/api/users/me/profile-picture', {
     method: 'PUT',
     body: formData,
   });
