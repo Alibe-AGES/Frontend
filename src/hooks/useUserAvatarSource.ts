@@ -1,12 +1,11 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-
 import { ImageSource } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router/build/hooks';
 import { useMemo } from 'react';
+import { API_BASE_URL } from '../constants';
 
 export const useUserAvatarSource = (userId?: string): ImageSource | undefined => {
   const { token } = useLocalSearchParams<{ token?: string }>();
-  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+  const apiUrl = API_BASE_URL;
 
   return useMemo(() => {
     if (!userId || !token) return undefined;

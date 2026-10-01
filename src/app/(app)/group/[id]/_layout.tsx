@@ -12,6 +12,10 @@ export default function GroupLayout() {
         options={{ presentation: 'modal', title: 'Create event', headerShown: false }}
       />
       <Stack.Screen
+        name="event-created"
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
+      <Stack.Screen
         name="info"
         options={{ title: 'Group info' }}
       />
