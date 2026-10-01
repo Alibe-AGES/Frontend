@@ -19,9 +19,13 @@ export interface CreateProfileData {
 
 export interface CreateProfileScreenProps {
   onContinue: (profile: CreateProfileData) => void;
+  isSubmitting?: boolean;
 }
 
-export function CreateProfileScreen({ onContinue }: CreateProfileScreenProps) {
+export function CreateProfileScreen({
+  onContinue,
+  isSubmitting = false,
+}: CreateProfileScreenProps) {
   const [nickname, setNickname] = useState('');
   const [photo, setPhoto] = useState<SelectedPhoto | null>(null);
   const trimmedNickname = nickname.trim();
@@ -65,11 +69,12 @@ export function CreateProfileScreen({ onContinue }: CreateProfileScreenProps) {
         perfil.
       </Text>
 
-      <View className="mt-20 flex-1 rounded-t-3xl bg-pink/70 px-6 pb-10 pt-10">
+      <View className="mt-20 flex-1 rounded-t-3xl bg-pink/70 px-6 pb-28 pt-10">
         <PhotoPicker
           placeholder="camera"
           imageClassName="h-44 w-44"
           onUploadSuccess={setPhoto}
+          disabled={isSubmitting}
           testID="create-profile-photo"
         />
 
@@ -90,16 +95,18 @@ export function CreateProfileScreen({ onContinue }: CreateProfileScreenProps) {
               />
             }
             iconBackground="ink"
+            disabled={isSubmitting}
             testID="create-profile-nickname"
           />
         </View>
 
-        <View className="mt-auto pt-8">
+        <View className="mt-auto pt-6">
           <ContinueButton
             onPress={() => {
               onContinue({ nickname: trimmedNickname, photo });
             }}
-            disabled={trimmedNickname.length === 0}
+            disabled={trimmedNickname.length === 0 || isSubmitting}
+            isLoading={isSubmitting}
             testID="create-profile-continue"
           />
         </View>

@@ -1,21 +1,41 @@
-import { LoginScreen } from '@/screens/Login';
+import { LoginScreen, type LoginData } from '@/screens/Login';
+import { authClient } from '@/server/auth';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 
 export default function LoginController() {
   const router = useRouter();
+  const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleContinue = () => {
-    router.replace('/groups');
-  };
+  const handleContinue = async ({ email, password }: LoginData) => {
+    setErrorMessage(undefined);
+    setIsSubmitting(true);
 
-  const handleBack = () => {
-    router.dismissTo('/auth');
+    try {
+      const { error } = await authClient.signIn.email({
+        email: email.toLowerCase(),
+        password,
+        rememberMe: true,
+      });
+      if (error) {
+        setErrorMessage('Não foi possível entrar. Confira seu e-mail e senha.');
+        return;
+      }
+
+      router.replace('/groups');
+    } catch {
+      setErrorMessage('Não foi possível conectar. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <LoginScreen
       onContinue={handleContinue}
-      onBack={handleBack}
+      errorMessage={errorMessage}
+      isLoading={isSubmitting}
     />
   );
 }
