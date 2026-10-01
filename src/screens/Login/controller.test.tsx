@@ -1,5 +1,5 @@
-import { fireEvent, render } from '@testing-library/react-native';
 import { authClient } from '@/server/auth';
+import { fireEvent, render } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
 import LoginController from './controller';
 
@@ -34,12 +34,13 @@ describe('LoginController', () => {
     const { getByPlaceholderText, getByTestId } = await render(<LoginController />);
 
     await fireEvent.changeText(getByPlaceholderText('Email'), 'user@example.com');
-    await fireEvent.changeText(getByPlaceholderText('Senha'), 'secret');
+    await fireEvent.changeText(getByPlaceholderText('Senha'), 'senha-segura');
     await fireEvent.press(getByTestId('login-continue'));
 
     expect(mockSignInEmail).toHaveBeenCalledWith({
       email: 'user@example.com',
-      password: 'secret',
+      password: 'senha-segura',
+      rememberMe: true,
     });
     expect(replace).toHaveBeenCalledWith('/groups');
   });

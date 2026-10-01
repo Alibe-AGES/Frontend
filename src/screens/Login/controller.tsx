@@ -1,4 +1,4 @@
-import { LoginScreen } from '@/screens/Login';
+import { LoginScreen, type LoginData } from '@/screens/Login';
 import { authClient } from '@/server/auth';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -8,12 +8,16 @@ export default function LoginController() {
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleContinue = async ({ email, password }: { email: string; password: string }) => {
+  const handleContinue = async ({ email, password }: LoginData) => {
     setErrorMessage(undefined);
     setIsSubmitting(true);
 
     try {
-      const { error } = await authClient.signIn.email({ email, password });
+      const { error } = await authClient.signIn.email({
+        email: email.toLowerCase(),
+        password,
+        rememberMe: true,
+      });
       if (error) {
         setErrorMessage('Não foi possível entrar. Confira seu e-mail e senha.');
         return;

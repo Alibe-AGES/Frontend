@@ -10,6 +10,8 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import AuthHandsDecoration from '@/assets/images/auth-hands-decoration.svg';
 
+const MIN_PASSWORD_LENGTH = 8;
+
 export interface SignUpData {
   email: string;
   password: string;
@@ -27,10 +29,11 @@ export function SignUpScreen({ onContinue, emailError }: SignUpScreenProps) {
   const [showPasswords, setShowPasswords] = useState(false);
 
   const trimmedEmail = email.trim();
+  const passwordTooShort = password.length > 0 && password.length < MIN_PASSWORD_LENGTH;
   const passwordsMismatch = passwordConfirmation.length > 0 && passwordConfirmation !== password;
   const canContinue =
     isValidEmail(trimmedEmail) &&
-    password.length > 0 &&
+    password.length >= MIN_PASSWORD_LENGTH &&
     passwordConfirmation.length > 0 &&
     !passwordsMismatch;
 
@@ -75,6 +78,11 @@ export function SignUpScreen({ onContinue, emailError }: SignUpScreenProps) {
             value={password}
             onChangeText={setPassword}
             visible={showPasswords}
+            error={
+              passwordTooShort
+                ? `A senha deve ter pelo menos ${String(MIN_PASSWORD_LENGTH)} caracteres.`
+                : undefined
+            }
             iconBackground="ink"
             testID="sign-up-password"
           />

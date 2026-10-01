@@ -1,12 +1,11 @@
-import { SignUpScreen } from '@/screens/SignUp';
+import { SignUpScreen, type SignUpData } from '@/screens/SignUp';
 import { useRouter } from 'expo-router';
 
 export default function SignUpController() {
   const router = useRouter();
 
-  // A conta ainda não é criada no backend e o e-mail não é checado; isso entra na task de integração do cadastro.
-  const handleContinue = () => {
-    router.push('/profile');
+  const handleContinue = ({ email, password }: SignUpData) => {
+    router.push({ pathname: '/profile', params: { email, password } });
   };
 
   return <SignUpScreen onContinue={handleContinue} />;

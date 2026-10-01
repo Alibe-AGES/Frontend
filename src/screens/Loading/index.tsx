@@ -15,7 +15,7 @@ export function LoadingScreen() {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="Continuar para meus grupos"
+      accessibilityLabel="Carregando sessão"
       className="flex-1"
       onPress={handlePress}
       testID="alibe-loading-screen"

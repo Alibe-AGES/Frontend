@@ -28,10 +28,13 @@ describe('getGroupCalendar', () => {
         allUsersAvailable: false,
       },
     ];
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(calendar),
-    });
+    const fetchMock = jest
+      .fn<Promise<Response>, [RequestInfo | URL, RequestInit?]>()
+      .mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(calendar),
+      } as Response);
+    global.fetch = fetchMock;
 
     await expect(getGroupCalendar('group-1', 9, 2026)).resolves.toEqual(calendar);
     expect(global.fetch).toHaveBeenCalledWith(

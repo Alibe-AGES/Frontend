@@ -1,30 +1,46 @@
 import { API_BASE_URL } from '@/constants';
-import { expoClient } from '@better-auth/expo/client';
-import { createAuthClient } from 'better-auth/react';
-import * as SecureStore from 'expo-secure-store';
-import { Platform } from 'react-native';
+import { ApiError } from './api';
 
-export const authClient = createAuthClient({
-  baseURL: API_BASE_URL,
-  plugins: [
-    expoClient({
-      scheme: 'alibe',
-      storage: SecureStore,
-    }),
-  ],
-});
+export { authClient } from './auth-client';
+export { authenticatedFetch } from './authenticated-fetch';
 
-export async function authenticatedFetch(url: string, options: RequestInit = {}): Promise<Response> {
-  const headers = new Headers(options.headers);
-  let credentials: RequestCredentials = 'include';
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
-  if (Platform.OS !== 'web') {
-    const cookie = await authClient.getCookie();
-    if (cookie) {
-      headers.set('Cookie', cookie);
-    }
-    credentials = 'omit';
+export interface SignUpWithEmailInput {
+  name: string;
+  email: string;
+  password: string;
+}
+
+export interface SignUpWithEmailResponse {
+  token: string | null;
+  user: AuthUser;
+}
+
+export async function signUpWithEmail(
+  input: SignUpWithEmailInput
+): Promise<SignUpWithEmailResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/sign-up/email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new ApiError(
+      text || response.statusText || 'Não foi possível criar a conta',
+      response.status
+    );
   }
 
-  return fetch(url, { ...options, headers, credentials });
+  return (await response.json()) as SignUpWithEmailResponse;
 }
