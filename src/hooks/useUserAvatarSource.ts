@@ -5,7 +5,7 @@ import { useLocalSearchParams } from 'expo-router/build/hooks';
 import { useMemo } from 'react';
 
 export const useUserAvatarSource = (userId?: string): ImageSource | undefined => {
-  const { token } = useLocalSearchParams();
+  const { token } = useLocalSearchParams<{ token?: string }>();
   const apiUrl = process.env.EXPO_PUBLIC_API_URL;
 
   return useMemo(() => {
