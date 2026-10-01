@@ -2,7 +2,7 @@ import { API_BASE_URL } from '@/constants';
 import { File } from 'expo-file-system';
 import { Platform } from 'react-native';
 import { ApiError } from './api';
-import { authenticatedFetch } from './authenticated-fetch';
+import { authenticatedFetch } from './auth';
 
 export interface Group {
   id: string;
@@ -38,7 +38,7 @@ export interface CurrentUser {
 }
 
 export async function getMe(): Promise<CurrentUser> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/auth/me`);
+  const response = await authenticatedFetch(`${API_BASE_URL}/api/users/me`);
 
   if (!response.ok) {
     const text = await response.text();

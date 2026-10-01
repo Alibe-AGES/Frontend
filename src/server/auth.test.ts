@@ -1,5 +1,9 @@
 import { API_BASE_URL } from '@/constants';
 import { ApiError } from './api';
+
+jest.mock('./auth-client', () => ({ authClient: {} }));
+jest.mock('./authenticated-fetch', () => ({ authenticatedFetch: jest.fn() }));
+
 import { signUpWithEmail } from './auth';
 
 declare const global: { fetch: jest.Mock };

@@ -3,6 +3,12 @@ import { createAvailability, getAvailabilitiesByDate } from './availabilities';
 import { getGroupCalendar } from './calendar';
 import { getGroupMembers } from './groups';
 
+jest.mock('./auth', () => ({
+  authenticatedFetch: jest.fn((url: string, options?: RequestInit) =>
+    globalThis.fetch(url, { ...options, credentials: 'include' })
+  ),
+}));
+
 jest.mock('./calendar', () => ({
   getGroupCalendar: jest.fn(),
 }));
@@ -52,7 +58,8 @@ describe('createAvailability', () => {
     expect(requestUrl).toBe(API_BASE_URL + '/groups/group-1/availabilities');
     expect(requestOptions).toMatchObject({
       method: 'POST',
-      credentials: 'omit',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
     expect(requestOptions).toBeDefined();
@@ -60,9 +67,6 @@ describe('createAvailability', () => {
     if (!requestOptions) {
       throw new Error('Request options were not provided');
     }
-
-    expect(requestOptions.headers).toBeInstanceOf(Headers);
-    expect(new Headers(requestOptions.headers).get('Content-Type')).toBe('application/json');
   });
 
   test('throws an ApiError when saving availability fails', async () => {
