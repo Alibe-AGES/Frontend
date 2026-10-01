@@ -1,10 +1,14 @@
+import { authClient } from '@/server/auth';
 import { fireEvent, render } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
-import { authClient } from '@/server/auth-client';
 import LoginController from './controller';
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
+}));
+
+jest.mock('@/server/auth', () => ({
+  authClient: { signIn: { email: jest.fn() } },
 }));
 
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
@@ -16,7 +20,7 @@ describe('LoginController', () => {
   const canGoBack = jest.fn(() => true);
 
   beforeEach(() => {
-    mockSignInEmail.mockResolvedValue({ data: {}, error: null });
+    mockSignInEmail.mockResolvedValue({ error: null });
     mockUseRouter.mockReturnValue({ replace, back, canGoBack } as unknown as ReturnType<
       typeof useRouter
     >);
@@ -26,7 +30,7 @@ describe('LoginController', () => {
     jest.clearAllMocks();
   });
 
-  test('goes to the groups home after filling the credentials', async () => {
+  test('authenticates with the entered credentials before routing to groups', async () => {
     const { getByPlaceholderText, getByTestId } = await render(<LoginController />);
 
     await fireEvent.changeText(getByPlaceholderText('Email'), 'user@example.com');
@@ -41,18 +45,15 @@ describe('LoginController', () => {
     expect(replace).toHaveBeenCalledWith('/groups');
   });
 
-  test('shows the backend error and does not navigate when credentials are invalid', async () => {
-    mockSignInEmail.mockResolvedValue({
-      data: null,
-      error: { message: 'E-mail ou senha inválidos.' },
-    });
-    const { getByPlaceholderText, getByTestId, getByText } = await render(<LoginController />);
+  test('shows an error and stays on login when authentication is rejected', async () => {
+    mockSignInEmail.mockResolvedValueOnce({ error: { message: 'Invalid credentials' } });
+    const { getByPlaceholderText, getByTestId, findByRole } = await render(<LoginController />);
 
     await fireEvent.changeText(getByPlaceholderText('Email'), 'user@example.com');
-    await fireEvent.changeText(getByPlaceholderText('Senha'), 'senha-incorreta');
+    await fireEvent.changeText(getByPlaceholderText('Senha'), 'wrong-password');
     await fireEvent.press(getByTestId('login-continue'));
 
-    expect(getByText('E-mail ou senha inválidos.')).toBeTruthy();
+    expect(await findByRole('alert')).toHaveTextContent(/Não foi possível entrar/);
     expect(replace).not.toHaveBeenCalled();
   });
 

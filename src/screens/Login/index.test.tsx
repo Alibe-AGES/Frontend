@@ -34,12 +34,12 @@ describe('<LoginScreen />', () => {
     const { getByText, getByTestId } = await render(
       <LoginScreen
         onContinue={onContinue}
-        error="E-mail ou senha inválidos."
-        isSubmitting
+        errorMessage="Não foi possível entrar. Confira seu e-mail e senha."
+        isLoading
       />
     );
 
-    expect(getByText('E-mail ou senha inválidos.')).toBeTruthy();
+    expect(getByText('Não foi possível entrar. Confira seu e-mail e senha.')).toBeTruthy();
     expect(getByTestId('login-continue').props.accessibilityState).toMatchObject({
       disabled: true,
       busy: true,

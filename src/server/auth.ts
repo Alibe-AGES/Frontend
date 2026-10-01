@@ -1,6 +1,9 @@
 import { API_BASE_URL } from '@/constants';
 import { ApiError } from './api';
 
+export { authClient } from './auth-client';
+export { authenticatedFetch } from './authenticated-fetch';
+
 export interface AuthUser {
   id: string;
   name: string;

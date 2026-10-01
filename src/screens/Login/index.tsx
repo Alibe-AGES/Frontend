@@ -17,22 +17,22 @@ export interface LoginData {
 
 export interface LoginScreenProps {
   onContinue: (credentials: LoginData) => void | Promise<void>;
-  error?: string | null;
-  isSubmitting?: boolean;
   onForgotPassword?: () => void;
+  errorMessage?: string;
+  isLoading?: boolean;
 }
 
 export function LoginScreen({
   onContinue,
   onForgotPassword,
-  error,
-  isSubmitting = false,
+  errorMessage,
+  isLoading = false,
 }: LoginScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const trimmedEmail = email.trim();
-  const canContinue = trimmedEmail.length > 0 && password.length > 0 && !isSubmitting;
+  const canContinue = trimmedEmail.length > 0 && password.length > 0;
 
   return (
     <ScrollView
@@ -109,22 +109,21 @@ export function LoginScreen({
           </Pressable>
         </View>
 
-        {error ? (
-          <Text
-            className="mt-4 text-center font-poppins-medium text-sm text-coral"
-            testID="login-error"
-          >
-            {error}
-          </Text>
-        ) : null}
-
         <View className="mt-auto pt-6">
+          {errorMessage ? (
+            <Text
+              accessibilityRole="alert"
+              className="mb-3 text-center font-poppins text-sm text-wine"
+            >
+              {errorMessage}
+            </Text>
+          ) : null}
           <ContinueButton
             onPress={() => {
               void onContinue({ email: trimmedEmail, password });
             }}
-            disabled={!canContinue}
-            isLoading={isSubmitting}
+            disabled={!canContinue || isLoading}
+            isLoading={isLoading}
             testID="login-continue"
           />
         </View>
