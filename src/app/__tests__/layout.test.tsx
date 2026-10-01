@@ -1,8 +1,8 @@
 import RootLayout from '@/app/_layout';
-import { authClient } from '@/server/auth-client';
+import { AuthenticatedRoute } from '@/components/AuthenticatedRoute';
 import { useFonts } from '@expo-google-fonts/poppins';
 import { render } from '@testing-library/react-native';
-import { useRouter, useSegments } from 'expo-router';
+import { usePathname } from 'expo-router';
 
 jest.mock('@/global.css', () => ({}));
 
@@ -10,9 +10,12 @@ jest.mock('@expo-google-fonts/poppins', () => ({
   useFonts: jest.fn(),
 }));
 
+jest.mock('@/components/AuthenticatedRoute', () => ({
+  AuthenticatedRoute: jest.fn(() => null),
+}));
+
 jest.mock('expo-router', () => ({
-  useRouter: jest.fn(),
-  useSegments: jest.fn(),
+  usePathname: jest.fn(),
 }));
 
 jest.mock('expo-router/stack', () => ({
@@ -34,24 +37,13 @@ jest.mock('react-native-toast-message', () => ({
 }));
 
 const mockUseFonts = useFonts as jest.Mock;
-const mockUseRouter = useRouter as jest.Mock;
-const mockUseSegments = useSegments as jest.Mock;
-const mockUseSession = authClient.useSession as jest.Mock;
-
-function mockSession({ hasSession, isPending }: { hasSession: boolean; isPending: boolean }) {
-  mockUseSession.mockReturnValue({
-    data: hasSession ? { user: { id: 'user-1' } } : null,
-    isPending,
-  });
-}
+const mockUsePathname = usePathname as jest.Mock;
+const mockAuthenticatedRoute = jest.mocked(AuthenticatedRoute);
 
 describe('<RootLayout />', () => {
-  const replace = jest.fn();
-
   beforeEach(() => {
     mockUseFonts.mockReturnValue([true]);
-    mockUseRouter.mockReturnValue({ replace });
-    mockUseSegments.mockReturnValue([]);
+    mockUsePathname.mockReturnValue('/groups');
   });
 
   afterEach(() => {
@@ -60,45 +52,26 @@ describe('<RootLayout />', () => {
 
   test('renders nothing while the fonts are loading', async () => {
     mockUseFonts.mockReturnValue([false]);
-    mockSession({ hasSession: false, isPending: false });
 
     await render(<RootLayout />);
 
-    expect(mockUseSession).not.toHaveBeenCalled();
+    expect(mockAuthenticatedRoute).not.toHaveBeenCalled();
   });
 
-  test('waits for the session check before redirecting', async () => {
-    mockSession({ hasSession: false, isPending: true });
-
+  test.each(['/groups', '/profile/user-123'])('protects private route %s', async (pathname) => {
+    mockUsePathname.mockReturnValue(pathname);
     await render(<RootLayout />);
 
-    expect(replace).not.toHaveBeenCalled();
+    expect(mockAuthenticatedRoute.mock.calls[0]?.[0].enabled).toBe(true);
   });
 
-  test('sends a user without session to the auth screen on launch', async () => {
-    mockSession({ hasSession: false, isPending: false });
+  test.each(['/', '/auth', '/login', '/sign-up'])(
+    'does not protect the public route %s',
+    async (pathname) => {
+      mockUsePathname.mockReturnValue(pathname);
+      await render(<RootLayout />);
 
-    await render(<RootLayout />);
-
-    expect(replace).toHaveBeenCalledWith('/auth');
-  });
-
-  test('sends a signed in user to the groups screen on launch', async () => {
-    mockSession({ hasSession: true, isPending: false });
-
-    await render(<RootLayout />);
-
-    expect(replace).toHaveBeenCalledWith('/groups');
-  });
-
-  test('keeps the user on the current screen after the launch redirect when no redirect is needed', async () => {
-    mockSession({ hasSession: true, isPending: false });
-    const screen = await render(<RootLayout />);
-    replace.mockClear();
-
-    mockUseSegments.mockReturnValue(['(app)']);
-    await screen.rerender(<RootLayout />);
-
-    expect(replace).not.toHaveBeenCalled();
-  });
+      expect(mockAuthenticatedRoute.mock.calls[0]?.[0].enabled).toBe(false);
+    }
+  );
 });

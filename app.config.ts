@@ -33,12 +33,13 @@ const config: ExpoConfig = {
   },
   plugins: [
     'expo-router',
+    'expo-secure-store',
     [
       'expo-splash-screen',
       {
-        backgroundColor: '#208AEF',
-        image: './assets/images/splash-icon.png',
-        imageWidth: 76,
+        backgroundColor: '#F7F2E9',
+        image: './assets/images/splash-logo.png',
+        imageWidth: 168,
       },
     ],
   ],

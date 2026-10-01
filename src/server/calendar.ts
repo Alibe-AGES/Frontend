@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '@/constants';
 import { ApiError } from './api';
-import { authenticatedFetch } from './authenticated-fetch';
+import { authenticatedFetch } from './auth';
 
 export interface CalendarDay {
   date: string;

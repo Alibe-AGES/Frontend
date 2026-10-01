@@ -1,14 +1,23 @@
-import { View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Pressable, View } from 'react-native';
 
 import GreenSpin from '@/assets/images/green-spin.svg';
 import GroupSpin from '@/assets/images/group-spin-2.svg';
 import Logo from '@/assets/images/Logo.svg';
 
 export function LoadingScreen() {
+  const router = useRouter();
+
+  const handlePress = () => {
+    router.replace('/auth');
+  };
+
   return (
-    <View
+    <Pressable
+      accessibilityRole="button"
       accessibilityLabel="Carregando sessão"
       className="flex-1"
+      onPress={handlePress}
       testID="alibe-loading-screen"
     >
       <View
@@ -61,6 +70,6 @@ export function LoadingScreen() {
           </View>
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 }

@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '@/constants';
 import { ApiError } from './api';
-import { authenticatedFetch } from './authenticated-fetch';
+import { authenticatedFetch } from './auth';
 import { appendImage, UploadImage } from './images';
 
 export interface Group {
@@ -33,7 +33,7 @@ export interface CurrentUser {
 }
 
 export async function getMe(): Promise<CurrentUser> {
-  const response = await authenticatedFetch(`${API_BASE_URL}/auth/me`);
+  const response = await authenticatedFetch(`${API_BASE_URL}/api/users/me`);
 
   if (!response.ok) {
     const text = await response.text();

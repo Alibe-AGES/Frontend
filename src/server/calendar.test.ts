@@ -1,6 +1,12 @@
 import { API_BASE_URL } from '@/constants';
 import { getGroupCalendar } from './calendar';
 
+jest.mock('./auth', () => ({
+  authenticatedFetch: jest.fn((url: string, options?: RequestInit) =>
+    globalThis.fetch(url, { ...options, credentials: 'include' })
+  ),
+}));
+
 declare const global: { fetch: jest.Mock };
 
 const originalFetch = global.fetch;
@@ -31,11 +37,10 @@ describe('getGroupCalendar', () => {
     global.fetch = fetchMock;
 
     await expect(getGroupCalendar('group-1', 9, 2026)).resolves.toEqual(calendar);
-
-    const [requestUrl, requestOptions] = fetchMock.mock.calls[0] ?? [];
-    expect(requestUrl).toBe(API_BASE_URL + '/groups/group-1/calendar?month=9&year=2026');
-    expect(requestOptions).toMatchObject({ credentials: 'omit' });
-    expect(requestOptions?.headers).toBeInstanceOf(Headers);
+    expect(global.fetch).toHaveBeenCalledWith(
+      `${API_BASE_URL}/groups/group-1/calendar?month=9&year=2026`,
+      { credentials: 'include' }
+    );
   });
 
   test('throws an ApiError using the response text', async () => {

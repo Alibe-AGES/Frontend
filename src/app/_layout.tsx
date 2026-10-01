@@ -7,21 +7,21 @@ import {
   Poppins_900Black,
   useFonts,
 } from '@expo-google-fonts/poppins';
-import { useRouter, useSegments } from 'expo-router';
+import { usePathname } from 'expo-router';
 import { Stack } from 'expo-router/stack';
 import * as SplashScreen from 'expo-splash-screen';
 import { polyfillWebCrypto } from 'expo-standard-web-crypto';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import Toast from 'react-native-toast-message';
 
-import { authClient } from '@/server/auth-client';
-import { getAuthRedirect } from '@/utils/auth-routing';
+import { AuthenticatedRoute } from '@/components/AuthenticatedRoute';
 
 polyfillWebCrypto();
 
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const pathname = usePathname();
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
     Poppins_500Medium,
@@ -40,44 +40,20 @@ export default function RootLayout() {
     return null;
   }
 
-  return <RootNavigation />;
-}
-
-function RootNavigation() {
-  const router = useRouter();
-  const segments = useSegments();
-  const hasHandledInitialSession = useRef(false);
-  const { data: session, isPending } = authClient.useSession();
-
-  useEffect(() => {
-    const currentSegment = segments[0] as string | undefined;
-    const isInitialCheck = !hasHandledInitialSession.current;
-    const destination = getAuthRedirect(
-      currentSegment,
-      Boolean(session),
-      isPending,
-      isInitialCheck
-    );
-
-    if (isPending) {
-      return;
-    }
-
-    hasHandledInitialSession.current = true;
-
-    if (destination) {
-      router.replace(destination);
-    }
-  }, [isPending, router, segments, session]);
+  const stack = (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="(auth)" />
+      <Stack.Screen name="(profile)" />
+      <Stack.Screen name="(app)" />
+    </Stack>
+  );
+  const publicPaths = ['/', '/auth', '/login', '/sign-up'];
+  const isPublicRoute = publicPaths.includes(pathname);
 
   return (
     <>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(profile)" />
-        <Stack.Screen name="(app)" />
-      </Stack>
+      <AuthenticatedRoute enabled={!isPublicRoute}>{stack}</AuthenticatedRoute>
       <Toast />
     </>
   );
