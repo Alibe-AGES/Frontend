@@ -1,5 +1,7 @@
+import { ImageSource } from 'expo-image';
+
 export interface ProfileCardProps {
-  avatarUrl?: string | null;
+  avatarUrl?: string | ImageSource | null;
   completedEventsCount: number;
   pendingEventsCount: number;
   className?: string;

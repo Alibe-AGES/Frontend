@@ -27,7 +27,7 @@ export class ApiError extends Error {
 
 const DEFAULT_BASE = 'https://jsonplaceholder.typicode.com';
 
-async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
+export async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
   const url = path.startsWith('http') ? path : `${DEFAULT_BASE}${path}`;
   const res = await fetch(url, opts);
   const contentType = res.headers.get('content-type') ?? '';

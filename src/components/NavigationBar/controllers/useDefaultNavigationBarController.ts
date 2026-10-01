@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 
 import { NavigationBarAction } from '@/components/NavigationBar/NavigationBar.types';
+import { useAuth } from '@/server/mock/useAuth';
 
 export interface UseDefaultNavigationBarControllerParams {
   groupId: string;
@@ -10,6 +11,7 @@ export const useDefaultNavigationBarController = ({
   groupId,
 }: UseDefaultNavigationBarControllerParams) => {
   const router = useRouter();
+  const { userId } = useAuth();
 
   const navigate = (action: NavigationBarAction) => {
     switch (action) {
@@ -27,6 +29,12 @@ export const useDefaultNavigationBarController = ({
         break;
       case 'groups':
         router.navigate('/groups');
+        break;
+      case 'profile':
+        router.navigate({
+          pathname: '/(profile)/profile/[userId]',
+          params: { userId, ...(groupId ? { groupId } : {}) },
+        });
         break;
     }
   };
