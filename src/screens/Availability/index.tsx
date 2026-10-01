@@ -1,10 +1,10 @@
 import { AvailabilityCard } from '@/components/AvailabilityCard';
+import { Avatar } from '@/components/Avatar';
 import { AvailabilityInterval } from '@/components/AvailabilityCard/Availability.types';
 import { BackButton } from '@/components/BackButton';
 import { Button } from '@/components/Button';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { useMemo, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -137,12 +137,13 @@ export function AvailabilityScreen({
           testID="availability-screen-participants"
         >
           {participants.map((participant, index) => (
-            <Image
+            <Avatar
               key={`${participant.id}-${String(index)}`}
-              source={{ uri: participant.avatarUrl }}
+              photoUri={participant.avatarUrl}
               accessibilityLabel={participant.name}
-              contentFit="cover"
-              className="h-12 w-12 rounded-full border-2 border-canvas"
+              imageClassName="h-12 w-12 rounded-full border-2 border-canvas"
+              iconSize={24}
+              testID={`availability-participant-${participant.id}`}
             />
           ))}
         </View>

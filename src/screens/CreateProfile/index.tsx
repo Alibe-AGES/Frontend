@@ -19,9 +19,13 @@ export interface CreateProfileData {
 
 export interface CreateProfileScreenProps {
   onContinue: (profile: CreateProfileData) => void;
+  isSubmitting?: boolean;
 }
 
-export function CreateProfileScreen({ onContinue }: CreateProfileScreenProps) {
+export function CreateProfileScreen({
+  onContinue,
+  isSubmitting = false,
+}: CreateProfileScreenProps) {
   const [nickname, setNickname] = useState('');
   const [photo, setPhoto] = useState<SelectedPhoto | null>(null);
   const trimmedNickname = nickname.trim();
@@ -70,6 +74,7 @@ export function CreateProfileScreen({ onContinue }: CreateProfileScreenProps) {
           placeholder="camera"
           imageClassName="h-44 w-44"
           onUploadSuccess={setPhoto}
+          disabled={isSubmitting}
           testID="create-profile-photo"
         />
 
@@ -90,6 +95,7 @@ export function CreateProfileScreen({ onContinue }: CreateProfileScreenProps) {
               />
             }
             iconBackground="ink"
+            disabled={isSubmitting}
             testID="create-profile-nickname"
           />
         </View>
@@ -99,7 +105,8 @@ export function CreateProfileScreen({ onContinue }: CreateProfileScreenProps) {
             onPress={() => {
               onContinue({ nickname: trimmedNickname, photo });
             }}
-            disabled={trimmedNickname.length === 0}
+            disabled={trimmedNickname.length === 0 || isSubmitting}
+            isLoading={isSubmitting}
             testID="create-profile-continue"
           />
         </View>

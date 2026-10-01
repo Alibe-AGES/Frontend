@@ -16,7 +16,7 @@ export function AuthScreen() {
   return (
     <SafeAreaView
       edges={['top', 'left', 'right']}
-      style={[tw`flex-1`, { backgroundColor: theme.colors.surface }]}
+      style={[tw`flex-1`, { backgroundColor: theme.colors.canvas }]}
     >
       <ScrollView
         className="flex-1"

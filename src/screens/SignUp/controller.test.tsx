@@ -24,7 +24,7 @@ describe('SignUpController', () => {
     jest.clearAllMocks();
   });
 
-  test('goes to the profile step after the account data is filled', async () => {
+  test('goes to the profile step with the account data', async () => {
     const { getByPlaceholderText, getByTestId } = await render(<SignUpController />);
 
     await fireEvent.changeText(getByPlaceholderText('Email'), 'rica@alibe.com');
@@ -32,6 +32,9 @@ describe('SignUpController', () => {
     await fireEvent.changeText(getByPlaceholderText('Confirmar senha'), 'segredo123');
     await fireEvent.press(getByTestId('sign-up-continue'));
 
-    expect(push).toHaveBeenCalledWith('/profile');
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/profile',
+      params: { email: 'rica@alibe.com', password: 'segredo123' },
+    });
   });
 });

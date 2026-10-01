@@ -78,6 +78,19 @@ describe('<SignUpScreen />', () => {
     });
   });
 
+  test('warns and keeps the button disabled when the password is too short', async () => {
+    const { getByPlaceholderText, getByTestId, getByText } = await render(
+      <SignUpScreen onContinue={onContinue} />
+    );
+
+    await fillForm(getByPlaceholderText, { password: 'curta', confirmation: 'curta' });
+
+    expect(getByText('A senha deve ter pelo menos 8 caracteres.')).toBeTruthy();
+    expect(getByTestId('sign-up-continue').props.accessibilityState).toMatchObject({
+      disabled: true,
+    });
+  });
+
   test('does not warn about the passwords before the confirmation is typed', async () => {
     const { getByPlaceholderText, queryByText } = await render(
       <SignUpScreen onContinue={onContinue} />
