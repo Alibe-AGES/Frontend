@@ -9,18 +9,20 @@ import Toast from 'react-native-toast-message';
 
 interface UseDefaultPhotoPickerControllerParams extends UsePhotoPickerParams {
   uploadUrl?: string;
+  initialPhotoUri?: string | null;
   successMessageDurationMs?: number;
   aspect?: [number, number];
 }
 
 export const useDefaultPhotoPickerController = ({
   uploadUrl,
+  initialPhotoUri = null,
   onUploadSuccess,
   onUploadError,
   successMessageDurationMs = 3000,
   aspect = [1, 1],
 }: UseDefaultPhotoPickerControllerParams = {}): PhotoPickerStrategy => {
-  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [photoUri, setPhotoUri] = useState<string | null>(initialPhotoUri);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -33,6 +35,12 @@ export const useDefaultPhotoPickerController = ({
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (initialPhotoUri) {
+      setPhotoUri(initialPhotoUri);
+    }
+  }, [initialPhotoUri]);
 
   const showSuccess = useCallback(() => {
     setSuccess(true);

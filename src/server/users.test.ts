@@ -2,7 +2,7 @@ import { API_BASE_URL } from '@/constants';
 import { File } from 'expo-file-system';
 import { Platform } from 'react-native';
 import { ApiError } from './api';
-import { updateUserProfilePicture } from './users';
+import { getMyProfile, updateUserProfilePicture } from './users';
 
 declare const global: { fetch: jest.Mock };
 
@@ -12,6 +12,24 @@ afterEach(() => {
   global.fetch = originalFetch;
   jest.restoreAllMocks();
   jest.clearAllMocks();
+});
+
+test('loads the authenticated current-user profile', async () => {
+  const profile = {
+    name: 'Ana',
+    image: '/users/user-1/profile-picture',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    completedEvents: 4,
+    eventsInDecision: 2,
+  };
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: true,
+    json: () => Promise.resolve(profile),
+  });
+
+  await expect(getMyProfile()).resolves.toEqual(profile);
+
+  expect(global.fetch).toHaveBeenCalledWith(API_BASE_URL + '/users/me', expect.any(Object));
 });
 
 test('uploads the selected profile picture using the authenticated endpoint', async () => {

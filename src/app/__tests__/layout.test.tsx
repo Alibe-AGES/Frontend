@@ -58,7 +58,8 @@ describe('<RootLayout />', () => {
     expect(mockAuthenticatedRoute).not.toHaveBeenCalled();
   });
 
-  test('protects private routes', async () => {
+  test.each(['/groups', '/profile/user-123'])('protects private route %s', async (pathname) => {
+    mockUsePathname.mockReturnValue(pathname);
     await render(<RootLayout />);
 
     expect(mockAuthenticatedRoute.mock.calls[0]?.[0].enabled).toBe(true);
