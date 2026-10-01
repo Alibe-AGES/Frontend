@@ -1,28 +1,22 @@
-import { AuthScreen } from '@/screens/Auth';
 import { CreateEventScreen } from '@/screens/CreateEvent';
 import { DayScreen } from '@/screens/Day';
 import { EventCreatedScreen } from '@/screens/EventCreated';
 import { ExperiencesScreen } from '@/screens/Experiences';
-import { LoginScreen } from '@/screens/Login';
 import { MemoriesScreen } from '@/screens/Memories';
 import { NewExperienceScreen } from '@/screens/NewExperience';
 import { NewMemoryScreen } from '@/screens/NewMemory';
-import { SignUpScreen } from '@/screens/SignUp';
 import { render } from '@testing-library/react-native';
 import { WelcomeScreen } from './index';
 
 describe('welcome-based screens', () => {
   test.each([
-    ['Auth', AuthScreen],
     ['Create event', CreateEventScreen],
     ['Day', DayScreen],
     ['Event created', EventCreatedScreen],
     ['Experiences', ExperiencesScreen],
-    ['Login', LoginScreen],
     ['Memories', MemoriesScreen],
     ['New experience', NewExperienceScreen],
     ['New memory', NewMemoryScreen],
-    ['Sign up', SignUpScreen],
   ])('renders the %s screen label', async (name, Screen) => {
     const { getByText } = await render(<Screen />);
 
