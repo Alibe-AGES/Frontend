@@ -9,6 +9,7 @@ const config: ExpoConfig = {
   scheme: 'alibe',
   userInterfaceStyle: 'automatic',
   extra: {
+    apiBaseUrl: process.env.EXPO_PUBLIC_API_URL ?? process.env.ENV_API_BASE_URL,
     eas: {
       projectId: '0fe4c9c6-8bca-4a1e-8506-7dca9c7901e7',
     },
@@ -33,12 +34,13 @@ const config: ExpoConfig = {
   },
   plugins: [
     'expo-router',
+    'expo-secure-store',
     [
       'expo-splash-screen',
       {
-        backgroundColor: '#208AEF',
-        image: './assets/images/splash-icon.png',
-        imageWidth: 76,
+        backgroundColor: '#F7F2E9',
+        image: './assets/images/splash-logo.png',
+        imageWidth: 168,
       },
     ],
   ],

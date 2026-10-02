@@ -92,14 +92,22 @@ describe('AvailabilityScreen', () => {
     const { getByTestId, queryByTestId } = await render(<AvailabilityScreen date="2026-09-14" />);
     const heading: unknown = getByTestId('availability-screen-participants-heading');
 
-    expect(getChildren(heading)).toContain('Nenhum participante');
+    expect(getChildren(heading)).toContain('Nenhum participante no grupo');
     expect(queryByTestId('availability-screen-participants')).toBeNull();
   });
 
-  it('shows participant avatars and heading when participants are present', async () => {
-    const participants = [{ id: '1', name: 'Ana', avatarUrl: 'https://example.com/ana.png' }];
+  it('shows participant names and availability statuses', async () => {
+    const participants = [
+      {
+        id: '1',
+        name: 'Ana',
+        avatarUrl: 'https://example.com/ana.png',
+        status: 'available' as const,
+      },
+      { id: '2', name: 'Bia', avatarUrl: '', status: 'no-response' as const },
+    ];
 
-    const { getByTestId } = await render(
+    const { getByTestId, getByText } = await render(
       <AvailabilityScreen
         date="2026-09-14"
         participants={participants}
@@ -108,8 +116,12 @@ describe('AvailabilityScreen', () => {
 
     const heading: unknown = getByTestId('availability-screen-participants-heading');
 
-    expect(getChildren(heading)).toContain('Participantes disponíveis');
+    expect(getChildren(heading)).toContain('1/2');
     expect(getByTestId('availability-screen-participants')).toBeTruthy();
+    expect(getByText('Ana')).toBeTruthy();
+    expect(getByText('Disponível')).toBeTruthy();
+    expect(getByText('Bia')).toBeTruthy();
+    expect(getByText('Sem resposta')).toBeTruthy();
   });
 
   it('calls onConfirm and shows success toast when confirmed', async () => {
@@ -162,7 +174,7 @@ describe('AvailabilityScreen', () => {
       />
     );
 
-    const btnDecline = getByTestId('button-Não estarei disponível neste dia.');
+    const btnDecline = getByTestId('button-Sair sem informar disponibilidade');
     void fireEvent.press(btnDecline);
 
     await waitFor(() => {
@@ -170,7 +182,7 @@ describe('AvailabilityScreen', () => {
     });
 
     expect(Toast.show).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'success', text1: 'Sucesso!' })
+      expect.objectContaining({ type: 'success', text1: 'Sem resposta' })
     );
   });
 
@@ -183,7 +195,7 @@ describe('AvailabilityScreen', () => {
       />
     );
 
-    const btnDecline = getByTestId('button-Não estarei disponível neste dia.');
+    const btnDecline = getByTestId('button-Sair sem informar disponibilidade');
     void fireEvent.press(btnDecline);
 
     await waitFor(() => {
