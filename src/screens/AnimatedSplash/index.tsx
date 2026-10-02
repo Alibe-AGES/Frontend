@@ -25,8 +25,8 @@ const LOGO_WIDTH = 268;
 
 export interface AnimatedSplashProps {
   /** Whether the app finished loading. The splash only leaves at the end of an animation cycle. */
-  isReady: boolean;
-  onFinish: () => void;
+  readonly isReady: boolean;
+  readonly onFinish: () => void;
 }
 
 export function AnimatedSplash({ isReady, onFinish }: AnimatedSplashProps) {

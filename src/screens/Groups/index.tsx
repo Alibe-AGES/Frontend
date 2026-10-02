@@ -10,7 +10,7 @@ import { Pressable, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 import GreenSpin from '@/assets/images/green-spin.svg';
-import GroupSpin from '@/assets/images/group-spin.svg';
+import GroupSpin from '@/assets/images/group-spin-dark-green.svg';
 import PinkSpin from '@/assets/images/pink-spin.svg';
 
 export function GroupsScreen() {
