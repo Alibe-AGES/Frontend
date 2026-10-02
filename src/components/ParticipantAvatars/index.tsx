@@ -1,3 +1,4 @@
+import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -12,6 +13,49 @@ const CURRENT_USER_LABEL = 'Eu';
 
 function firstName(name: string): string {
   return name.trim().split(/\s+/)[0] ?? name;
+}
+
+interface ParticipantAvatarItemProps {
+  participant: Participant;
+  label: string;
+  testID: string;
+}
+
+function ParticipantAvatarItem({ participant, label, testID }: ParticipantAvatarItemProps) {
+  const imageSource = useAuthenticatedImageSource(participant.profilePic);
+
+  return (
+    <View
+      className="w-14 items-center gap-1"
+      testID={`${testID}-${participant.id}`}
+    >
+      <View className="h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-pink">
+        {imageSource ? (
+          <Image
+            source={imageSource}
+            accessible
+            accessibilityLabel={`Foto de ${participant.name}`}
+            contentFit="cover"
+            style={tw`h-full w-full`}
+            testID={`${testID}-${participant.id}-photo`}
+          />
+        ) : (
+          <Ionicons
+            name="person-outline"
+            size={22}
+            color={theme.colors.wine}
+            testID={`${testID}-${participant.id}-placeholder`}
+          />
+        )}
+      </View>
+      <Text
+        className="font-poppins text-sm text-wine"
+        numberOfLines={1}
+      >
+        {label}
+      </Text>
+    </View>
+  );
 }
 
 export const ParticipantAvatars: FC<ParticipantAvatarsProps> = ({
@@ -46,37 +90,12 @@ export const ParticipantAvatars: FC<ParticipantAvatarsProps> = ({
           participant.id === currentUserId ? CURRENT_USER_LABEL : firstName(participant.name);
 
         return (
-          <View
+          <ParticipantAvatarItem
             key={participant.id}
-            className="w-14 items-center gap-1"
-            testID={`${testID}-${participant.id}`}
-          >
-            <View className="h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-pink">
-              {participant.profilePic ? (
-                <Image
-                  source={{ uri: participant.profilePic }}
-                  accessible
-                  accessibilityLabel={`Foto de ${participant.name}`}
-                  contentFit="cover"
-                  style={tw`h-full w-full`}
-                  testID={`${testID}-${participant.id}-photo`}
-                />
-              ) : (
-                <Ionicons
-                  name="person-outline"
-                  size={22}
-                  color={theme.colors.wine}
-                  testID={`${testID}-${participant.id}-placeholder`}
-                />
-              )}
-            </View>
-            <Text
-              className="font-poppins text-sm text-wine"
-              numberOfLines={1}
-            >
-              {label}
-            </Text>
-          </View>
+            participant={participant}
+            label={label}
+            testID={testID}
+          />
         );
       })}
     </View>

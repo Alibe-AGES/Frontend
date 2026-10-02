@@ -53,7 +53,7 @@ test('uploads the selected profile picture using the authenticated endpoint', as
   });
 
   expect(global.fetch).toHaveBeenCalledWith(
-    API_BASE_URL + '/api/users/me/profile-picture',
+    API_BASE_URL + '/users/me/profile-picture',
     expect.objectContaining({
       method: 'PUT',
       body: expect.any(FormData) as FormData,

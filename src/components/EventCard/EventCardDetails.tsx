@@ -1,3 +1,4 @@
+import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -21,10 +22,11 @@ export const EventCardDetails: FC<Omit<EventCardReadProps, 'mode'> & { testID: s
   const time = formatTime(event.timeslot);
   const budget = formatBudget(event.budgetStart, event.budgetEnd);
   const openingHours = event.openingHours?.filter(Boolean).join('\n');
+  const imageSource = useAuthenticatedImageSource(event.imageUrl);
 
-  const image = event.imageUrl ? (
+  const image = imageSource ? (
     <Image
-      source={{ uri: event.imageUrl }}
+      source={imageSource}
       accessible
       accessibilityLabel={`Foto de ${title}`}
       contentFit="cover"

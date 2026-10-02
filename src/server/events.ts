@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '@/constants';
 import { ApiError } from './api';
+import { authenticatedFetch } from './authenticated-fetch';
 import { appendImage, UploadImage } from './images';
 
 export type EventStatus = 'pending' | 'confirmed' | 'declined';
@@ -51,7 +52,7 @@ export async function createEvent(groupId: string, input: CreateEventInput): Pro
     await appendImage(formData, 'image', input.image, 'event-image');
   }
 
-  const response = await fetch(`${API_BASE_URL}/groups/${groupId}/events`, {
+  const response = await authenticatedFetch(`${API_BASE_URL}/groups/${groupId}/events`, {
     method: 'POST',
     body: formData,
   });
