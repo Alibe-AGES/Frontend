@@ -38,7 +38,8 @@ const config: ExpoConfig = {
       'expo-splash-screen',
       {
         backgroundColor: '#F7F2E9',
-        image: './assets/images/splash-logo.png',
+        // Blank on purpose: AnimatedSplash draws the logo in as soon as JavaScript loads.
+        image: './assets/images/splash-blank.png',
         imageWidth: 276,
       },
     ],

@@ -1,49 +1,132 @@
-import { act, fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { AccessibilityInfo } from 'react-native';
 
 import { AnimatedSplash } from '.';
 
 jest.useFakeTimers();
 
+const finishCycle = async () => {
+  await fireEvent(await screen.findByTestId('splash-logo'), 'animationFinish', false);
+};
+
+const advance = async (milliseconds: number) => {
+  await act(() => jest.advanceTimersByTimeAsync(milliseconds));
+};
+
 describe('<AnimatedSplash />', () => {
+  beforeEach(() => {
+    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
+  });
+
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
-  test('draws both ribbons with Lottie and finishes after the bottom one ends', async () => {
-    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
+  test('draws the ribbons and the logo with Lottie and leaves after the animation ends', async () => {
     const onFinish = jest.fn();
 
-    const { getByLabelText, findByTestId } = await render(<AnimatedSplash onFinish={onFinish} />);
+    await render(
+      <AnimatedSplash
+        isReady
+        onFinish={onFinish}
+      />
+    );
 
-    expect(getByLabelText('Alibe')).toBeTruthy();
-    expect(await findByTestId('splash-ribbon-top')).toBeTruthy();
+    expect(screen.getByLabelText('Alibe')).toBeTruthy();
+    expect(await screen.findByTestId('splash-ribbon-top')).toBeTruthy();
+    expect(screen.getByTestId('splash-ribbon-bottom')).toBeTruthy();
 
-    await fireEvent(await findByTestId('splash-ribbon-bottom'), 'animationFinish', false);
+    await advance(1000);
     expect(onFinish).not.toHaveBeenCalled();
 
-    await act(() => jest.advanceTimersByTimeAsync(5000));
+    await finishCycle();
+    await advance(1000);
     expect(onFinish).toHaveBeenCalledTimes(1);
   });
 
-  test('shows the still ribbons and finishes without animating when reduce motion is on', async () => {
+  test('replays the animation until the app is ready and then finishes the current cycle', async () => {
+    const onFinish = jest.fn();
+
+    await render(
+      <AnimatedSplash
+        isReady={false}
+        onFinish={onFinish}
+      />
+    );
+    await finishCycle();
+    await advance(1000);
+    expect(onFinish).not.toHaveBeenCalled();
+
+    await finishCycle();
+    await advance(1000);
+    await screen.rerender(
+      <AnimatedSplash
+        isReady
+        onFinish={onFinish}
+      />
+    );
+    await advance(1000);
+    expect(onFinish).not.toHaveBeenCalled();
+
+    await finishCycle();
+    await advance(1000);
+    expect(onFinish).toHaveBeenCalledTimes(1);
+  });
+
+  test('ends a cycle on its own if the animation never reports its end', async () => {
+    const onFinish = jest.fn();
+
+    await render(
+      <AnimatedSplash
+        isReady
+        onFinish={onFinish}
+      />
+    );
+    await advance(4000);
+    expect(onFinish).not.toHaveBeenCalled();
+
+    await advance(1000);
+    expect(onFinish).toHaveBeenCalledTimes(1);
+  });
+
+  test('shows the still splash until the app is ready when reduce motion is on', async () => {
     jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
     const onFinish = jest.fn();
 
-    const { queryByTestId } = await render(<AnimatedSplash onFinish={onFinish} />);
-    await act(() => jest.advanceTimersByTimeAsync(5000));
+    await render(
+      <AnimatedSplash
+        isReady={false}
+        onFinish={onFinish}
+      />
+    );
+    await advance(5000);
 
-    expect(queryByTestId('splash-ribbon-top')).toBeNull();
+    expect(screen.queryByTestId('splash-logo')).toBeNull();
+    expect(onFinish).not.toHaveBeenCalled();
+
+    await screen.rerender(
+      <AnimatedSplash
+        isReady
+        onFinish={onFinish}
+      />
+    );
+    await advance(1000);
     expect(onFinish).toHaveBeenCalledTimes(1);
   });
 
-  test('finishes on its own if the animation never reports its end', async () => {
-    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
+  test('falls back to the still splash when an animation fails to load', async () => {
     const onFinish = jest.fn();
 
-    await render(<AnimatedSplash onFinish={onFinish} />);
-    await act(() => jest.advanceTimersByTimeAsync(5000));
+    await render(
+      <AnimatedSplash
+        isReady
+        onFinish={onFinish}
+      />
+    );
+    await fireEvent(await screen.findByTestId('splash-ribbon-top'), 'animationFailure', 'error');
+    await advance(1000);
 
+    expect(screen.queryByTestId('splash-logo')).toBeNull();
     expect(onFinish).toHaveBeenCalledTimes(1);
   });
 });
