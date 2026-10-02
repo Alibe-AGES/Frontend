@@ -9,6 +9,7 @@ const config: ExpoConfig = {
   scheme: 'alibe',
   userInterfaceStyle: 'automatic',
   extra: {
+    apiBaseUrl: process.env.EXPO_PUBLIC_API_URL ?? process.env.ENV_API_BASE_URL,
     eas: {
       projectId: '0fe4c9c6-8bca-4a1e-8506-7dca9c7901e7',
     },
