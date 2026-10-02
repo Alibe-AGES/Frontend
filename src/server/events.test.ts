@@ -1,11 +1,17 @@
 import { API_BASE_URL } from '@/constants';
 import { File } from 'expo-file-system';
 import { ApiError } from './api';
-import { createEvent } from './events';
+import { authenticatedFetch } from './auth';
+import { createEvent, getEventDetails, respondToEventProposal } from './events';
+
+jest.mock('./auth', () => ({
+  authenticatedFetch: jest.fn((url: string, options?: RequestInit) => fetch(url, options)),
+}));
 
 declare const global: { fetch: jest.Mock };
 
 const originalFetch = global.fetch;
+const mockAuthenticatedFetch = authenticatedFetch as jest.MockedFunction<typeof authenticatedFetch>;
 
 const CREATED_EVENT = {
   id: 'event-1',
@@ -33,6 +39,87 @@ const INPUT = {
   location: ' Av. João Wallig, 1800 ',
 };
 
+describe('getEventDetails', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.clearAllMocks();
+  });
+
+  test('fetches event details using the authenticated event endpoint', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ id: 'event-1', name: 'Bloom Café' }),
+    });
+
+    await expect(getEventDetails('event-1')).resolves.toMatchObject({
+      id: 'event-1',
+      name: 'Bloom Café',
+    });
+    expect(global.fetch).toHaveBeenCalledWith(`${API_BASE_URL}/api/events/event-1`, undefined);
+  });
+
+  test('surfaces the backend error when event details cannot be loaded', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found',
+      text: () => Promise.resolve('Evento não encontrado'),
+    });
+
+    await expect(getEventDetails('missing-event')).rejects.toMatchObject({
+      message: 'Evento não encontrado',
+      status: 404,
+    });
+  });
+});
+
+describe('respondToEventProposal', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.clearAllMocks();
+  });
+
+  test('creates the current user response when no response exists yet', async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: true });
+
+    await respondToEventProposal('event-1', 'yes', false);
+
+    expect(mockAuthenticatedFetch).toHaveBeenCalledWith(
+      `${API_BASE_URL}/api/events/event-1/proposal/responses`,
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answer: 'yes' }),
+      })
+    );
+  });
+
+  test('updates the current user response when one already exists', async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: true });
+
+    await respondToEventProposal('event-1', 'no', true);
+
+    expect(mockAuthenticatedFetch).toHaveBeenCalledWith(
+      `${API_BASE_URL}/api/events/event-1/proposal/responses/me`,
+      expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ answer: 'no' }) })
+    );
+  });
+
+  test('surfaces response update failures', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 403,
+      statusText: 'Forbidden',
+      text: () => Promise.resolve('O usuário não pertence ao grupo do evento'),
+    });
+
+    await expect(respondToEventProposal('event-1', 'yes', false)).rejects.toMatchObject({
+      status: 403,
+      message: 'O usuário não pertence ao grupo do evento',
+    });
+  });
+});
+
 describe('createEvent', () => {
   afterEach(() => {
     global.fetch = originalFetch;
@@ -49,6 +136,10 @@ describe('createEvent', () => {
 
     await expect(createEvent('group-1', INPUT)).resolves.toEqual(CREATED_EVENT);
 
+    expect(mockAuthenticatedFetch).toHaveBeenCalledWith(
+      `${API_BASE_URL}/groups/group-1/events`,
+      expect.objectContaining({ method: 'POST', body: expect.any(FormData) as FormData })
+    );
     expect(global.fetch).toHaveBeenCalledWith(
       `${API_BASE_URL}/groups/group-1/events`,
       expect.objectContaining({ method: 'POST', body: expect.any(FormData) as FormData })

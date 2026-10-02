@@ -1,6 +1,6 @@
 import { AvailabilityCard } from '@/components/AvailabilityCard';
-import { Avatar } from '@/components/Avatar';
 import { AvailabilityInterval } from '@/components/AvailabilityCard/Availability.types';
+import { Avatar } from '@/components/Avatar';
 import { BackButton } from '@/components/BackButton';
 import { Button } from '@/components/Button';
 import { theme } from '@/theme';
@@ -13,6 +13,7 @@ export interface AvailabilityParticipant {
   readonly id: string;
   readonly name: string;
   readonly avatarUrl: string;
+  readonly status: 'available' | 'no-response';
 }
 
 export interface AvailabilityScreenProps {
@@ -46,8 +47,10 @@ export function AvailabilityScreen({
     return `${day}/${month}`;
   }, [date]);
 
-  const label = 'Nenhum participante \ndisponível por enquanto';
   const hasParticipants = participants.length > 0;
+  const availableCount = participants.filter(
+    (participant) => participant.status === 'available'
+  ).length;
 
   const handleConfirm = async () => {
     try {
@@ -75,8 +78,8 @@ export function AvailabilityScreen({
       await onDecline?.();
       Toast.show({
         type: 'success',
-        text1: 'Sucesso!',
-        text2: 'Marcado como indisponível.',
+        text1: 'Sem resposta',
+        text2: 'Você não enviou disponibilidade para este dia.',
       });
     } catch {
       Toast.show({
@@ -128,23 +131,40 @@ export function AvailabilityScreen({
         style={{ color: theme.colors.wine }}
         testID="availability-screen-participants-heading"
       >
-        {hasParticipants ? 'Participantes disponíveis' : label}
+        {hasParticipants
+          ? `Status de disponibilidade (${String(availableCount)}/${String(participants.length)})`
+          : 'Nenhum participante no grupo'}
       </Text>
 
       {hasParticipants ? (
         <View
-          className="flex-row flex-wrap justify-center gap-4 px-2"
+          className="gap-3 px-1"
           testID="availability-screen-participants"
         >
           {participants.map((participant, index) => (
-            <Avatar
+            <View
               key={`${participant.id}-${String(index)}`}
-              photoUri={participant.avatarUrl}
-              accessibilityLabel={participant.name}
-              imageClassName="h-12 w-12 rounded-full border-2 border-canvas"
-              iconSize={24}
+              className="flex-row items-center gap-3 rounded-2xl bg-surface p-3"
               testID={`availability-participant-${participant.id}`}
-            />
+            >
+              <Avatar
+                photoUri={participant.avatarUrl}
+                accessibilityLabel={participant.name}
+                imageClassName="h-12 w-12 rounded-full border-2 border-canvas"
+                iconSize={24}
+              />
+              <Text className="flex-1 font-poppins-medium text-sm text-ink">
+                {participant.name}
+              </Text>
+              <Text
+                className={`font-poppins-semibold text-xs ${
+                  participant.status === 'available' ? 'text-ink' : 'text-inkSoft'
+                }`}
+                testID={`availability-status-${participant.id}`}
+              >
+                {participant.status === 'available' ? 'Disponível' : 'Sem resposta'}
+              </Text>
+            </View>
           ))}
         </View>
       ) : null}
@@ -160,7 +180,7 @@ export function AvailabilityScreen({
         />
 
         <Button
-          title="Não estarei disponível neste dia."
+          title="Sair sem informar disponibilidade"
           variant="tertiary"
           onPress={() => void handleDecline()}
           disabled={isSubmitting}

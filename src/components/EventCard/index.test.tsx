@@ -15,6 +15,10 @@ jest.mock('react-native-toast-message', () => ({
   show: jest.fn(),
 }));
 
+jest.mock('@/hooks/use-authenticated-image-source', () => ({
+  useAuthenticatedImageSource: (uri: string | null | undefined) => (uri ? { uri } : null),
+}));
+
 const fullEvent: EventCardEvent = {
   id: 'event-1',
   name: 'Bloom Café',

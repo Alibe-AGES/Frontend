@@ -139,6 +139,20 @@ export function GroupScreen() {
       return;
     }
 
+    const day = calendarDays.find((calendarDay) => calendarDay.date === dateString);
+    if (
+      day &&
+      (day.scheduledEventIds.length > 0 ||
+        day.completedEventIds.length > 0 ||
+        day.proposalIds.length > 0)
+    ) {
+      router.push({
+        pathname: '/group/[id]/day/[date]',
+        params: { id: groupId, date: dateString },
+      });
+      return;
+    }
+
     router.push({
       pathname: '/group/[id]/day/[date]/availability',
       params: { id: groupId, date: dateString },

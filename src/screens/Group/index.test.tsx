@@ -216,4 +216,29 @@ describe('GroupScreen', () => {
       });
     });
   });
+
+  test('navigates to the standalone details screen when the day has events or proposals', async () => {
+    mockGetGroupCalendar.mockResolvedValue([
+      {
+        date: '2026-10-12',
+        scheduledEventIds: ['event-1'],
+        proposalIds: ['proposal-2'],
+        availableUserIds: [],
+        completedEventIds: [],
+        allUsersAvailable: false,
+      },
+    ]);
+
+    await render(<GroupScreen />);
+
+    await waitFor(() => {
+      expect(mockDayMarks?.['2026-10-12'].proposalIds).toEqual(['proposal-2']);
+    });
+    mockDayPress?.('2026-10-12');
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/group/[id]/day/[date]',
+      params: { id: 'group-1', date: '2026-10-12' },
+    });
+  });
 });

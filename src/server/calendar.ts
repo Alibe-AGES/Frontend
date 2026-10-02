@@ -6,6 +6,7 @@ export interface CalendarDay {
   date: string;
   scheduledEventIds: string[];
   proposalIds: string[];
+  proposalEventIds?: { proposalId: string; eventId: string }[];
   availableUserIds: string[];
   completedEventIds: string[];
   allUsersAvailable: boolean;
