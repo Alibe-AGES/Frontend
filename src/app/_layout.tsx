@@ -15,6 +15,7 @@ import { useEffect } from 'react';
 import Toast from 'react-native-toast-message';
 
 import { AuthenticatedRoute } from '@/components/AuthenticatedRoute';
+import { SignUpDraftProvider } from '@/hooks/useSignUpDraft';
 
 polyfillWebCrypto();
 
@@ -52,9 +53,9 @@ export default function RootLayout() {
   const isPublicRoute = publicPaths.includes(pathname);
 
   return (
-    <>
+    <SignUpDraftProvider>
       <AuthenticatedRoute enabled={!isPublicRoute}>{stack}</AuthenticatedRoute>
       <Toast />
-    </>
+    </SignUpDraftProvider>
   );
 }

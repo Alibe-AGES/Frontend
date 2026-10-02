@@ -1,18 +1,21 @@
+import { useSignUpDraft } from '@/hooks/useSignUpDraft';
 import { CreateProfileScreen, type CreateProfileData } from '@/screens/CreateProfile';
 import { authClient } from '@/server/auth-client';
 import { signUpWithEmail } from '@/server/auth';
 import { updateUserProfilePicture } from '@/server/users';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import Toast from 'react-native-toast-message';
 
 export default function CreateProfileController() {
   const router = useRouter();
-  const { email, password } = useLocalSearchParams<{ email?: string; password?: string }>();
+  const { getDraft, setDraft } = useSignUpDraft();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleContinue = async ({ nickname, photo }: CreateProfileData) => {
-    if (!email || !password) {
+    const draft = getDraft();
+
+    if (!draft) {
       Toast.show({
         type: 'error',
         text1: 'Erro',
@@ -22,6 +25,7 @@ export default function CreateProfileController() {
       return;
     }
 
+    const { email, password } = draft;
     setIsSubmitting(true);
 
     try {
@@ -41,6 +45,7 @@ export default function CreateProfileController() {
         await updateUserProfilePicture(photo);
       }
 
+      setDraft(null);
       router.replace('/groups');
     } catch {
       setIsSubmitting(false);
