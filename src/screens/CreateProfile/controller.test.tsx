@@ -1,9 +1,10 @@
+import { useSignUpDraft } from '@/hooks/useSignUpDraft';
 import { ApiError } from '@/server/api';
 import { authClient } from '@/server/auth-client';
 import { signUpWithEmail } from '@/server/auth';
 import { updateUserProfilePicture } from '@/server/users';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import CreateProfileController from './controller';
 
@@ -20,8 +21,11 @@ const mockRequestPermissions = jest.fn();
 const mockLaunchImageLibrary = jest.fn();
 
 jest.mock('expo-router', () => ({
-  useLocalSearchParams: jest.fn(),
   useRouter: jest.fn(),
+}));
+
+jest.mock('@/hooks/useSignUpDraft', () => ({
+  useSignUpDraft: jest.fn(),
 }));
 
 jest.mock('@/server/auth-client', () => ({
@@ -53,9 +57,7 @@ jest.mock('react-native-toast-message', () => ({
 }));
 
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
-const mockUseLocalSearchParams = useLocalSearchParams as jest.MockedFunction<
-  typeof useLocalSearchParams
->;
+const mockUseSignUpDraft = useSignUpDraft as jest.MockedFunction<typeof useSignUpDraft>;
 const mockSignUp = signUpWithEmail as jest.MockedFunction<typeof signUpWithEmail>;
 const mockSignIn = authClient.signIn.email as jest.Mock;
 const mockUpdateProfilePicture = updateUserProfilePicture as jest.MockedFunction<
@@ -70,10 +72,11 @@ const PHOTO = {
 
 describe('CreateProfileController', () => {
   const replace = jest.fn();
+  const setDraft = jest.fn();
 
   beforeEach(() => {
     mockUseRouter.mockReturnValue({ replace } as unknown as ReturnType<typeof useRouter>);
-    mockUseLocalSearchParams.mockReturnValue(ACCOUNT);
+    mockUseSignUpDraft.mockReturnValue({ getDraft: () => ACCOUNT, setDraft });
     mockSignUp.mockResolvedValue({ token: null, user: {} as never });
     mockSignIn.mockResolvedValue({ data: {}, error: null });
     mockUpdateProfilePicture.mockResolvedValue({
@@ -118,6 +121,7 @@ describe('CreateProfileController', () => {
       rememberMe: true,
     });
     expect(mockUpdateProfilePicture).not.toHaveBeenCalled();
+    expect(setDraft).toHaveBeenCalledWith(null);
   });
 
   test('uploads the selected profile picture after signing in', async () => {
@@ -168,7 +172,7 @@ describe('CreateProfileController', () => {
   });
 
   test('returns to sign up when the account data is missing', async () => {
-    mockUseLocalSearchParams.mockReturnValue({});
+    mockUseSignUpDraft.mockReturnValue({ getDraft: () => null, setDraft });
 
     await renderAndFill();
 
