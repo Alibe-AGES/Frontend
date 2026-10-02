@@ -2,6 +2,23 @@ import { fireEvent, render } from '@testing-library/react-native';
 
 import { ComponentGalleryScreen } from '.';
 
+jest.mock('@/components/DatePickerSheet', () => ({
+  DatePickerSheet: ({ onSelectDate }: { onSelectDate: (dateString: string) => void }) => {
+    const { Pressable, Text } = jest.requireActual<typeof import('react-native')>('react-native');
+    return (
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => {
+          onSelectDate('2026-10-15');
+        }}
+        testID="gallery-date-picker-sheet"
+      >
+        <Text>Selecionar data de teste</Text>
+      </Pressable>
+    );
+  },
+}));
+
 describe('<ComponentGalleryScreen />', () => {
   test('renders the available button states', async () => {
     const { getByText } = await render(<ComponentGalleryScreen />);
@@ -29,7 +46,8 @@ describe('<ComponentGalleryScreen /> event card', () => {
 
     await fireEvent.changeText(getByTestId('gallery-event-card-create-name-input'), 'Bloom Café');
     await fireEvent.changeText(getByTestId('gallery-event-card-create-address-input'), 'Av. X');
-    await fireEvent.changeText(getByTestId('gallery-event-card-create-date-input'), '1805');
+    await fireEvent.press(getByTestId('gallery-event-card-create-date-button'));
+    await fireEvent.press(getByTestId('gallery-date-picker-sheet'));
     await fireEvent.changeText(getByTestId('gallery-event-card-create-time-input'), '1000');
 
     expect(confirm().props.accessibilityState).toEqual(

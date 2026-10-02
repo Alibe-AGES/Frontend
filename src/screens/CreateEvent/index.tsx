@@ -1,14 +1,17 @@
 import { BackButton } from '@/components/BackButton';
+import { DatePickerSheet } from '@/components/DatePickerSheet';
 import { EventCard, EventCardDraft } from '@/components/EventCard';
 import { NavigationBar } from '@/components/NavigationBar';
 import { Participant, ParticipantAvatars } from '@/components/ParticipantAvatars';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
+import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
 export interface CreateEventScreenProps {
   groupId?: string;
   draft: EventCardDraft;
   onChangeDraft: (draft: EventCardDraft) => void;
+  onSelectDate: (dateString: string) => void;
   onImageSelected: (photo: SelectedPhoto) => void;
   participants: Participant[];
   currentUserId?: string;
@@ -51,6 +54,7 @@ export function CreateEventScreen({
   groupId,
   draft,
   onChangeDraft,
+  onSelectDate,
   onImageSelected,
   participants,
   currentUserId,
@@ -59,6 +63,8 @@ export function CreateEventScreen({
   isSubmitting,
   onConfirm,
 }: CreateEventScreenProps) {
+  const [isDateSheetVisible, setIsDateSheetVisible] = useState(false);
+
   return (
     <View className="flex-1 bg-canvas">
       <ScrollView
@@ -79,6 +85,9 @@ export function CreateEventScreen({
           mode="create"
           draft={draft}
           onChangeDraft={onChangeDraft}
+          onDatePress={() => {
+            setIsDateSheetVisible(true);
+          }}
           onImageSelected={onImageSelected}
           onConfirm={onConfirm}
           isConfirmDisabled={isConfirmDisabled}
@@ -101,6 +110,20 @@ export function CreateEventScreen({
         <View className="absolute inset-x-0 bottom-0">
           <NavigationBar groupId={groupId} />
         </View>
+      ) : null}
+
+      {isDateSheetVisible ? (
+        <DatePickerSheet
+          visible
+          initialDate={draft.date || undefined}
+          onSelectDate={(dateString) => {
+            onSelectDate(dateString);
+            setIsDateSheetVisible(false);
+          }}
+          onClose={() => {
+            setIsDateSheetVisible(false);
+          }}
+        />
       ) : null}
     </View>
   );

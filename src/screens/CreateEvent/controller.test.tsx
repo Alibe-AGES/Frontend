@@ -2,7 +2,6 @@ import type { EventCardDraft } from '@/components/EventCard';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
 import { createEvent } from '@/server/events';
 import { getGroup, getMe } from '@/server/groups';
-import { toApiDate } from '@/utils/date';
 import { act, render, waitFor } from '@testing-library/react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
@@ -12,6 +11,7 @@ interface MockScreenProps {
   groupId?: string;
   draft: EventCardDraft;
   onChangeDraft: (draft: EventCardDraft) => void;
+  onSelectDate: (dateString: string) => void;
   onImageSelected: (photo: SelectedPhoto) => void;
   participants: unknown[];
   currentUserId?: string;
@@ -59,7 +59,7 @@ const COMPLETE_DRAFT: EventCardDraft = {
   name: ' Bloom Café ',
   imageUri: null,
   address: 'Av. João Wallig, 1800',
-  date: '15/10',
+  date: '2026-10-15',
   time: '20:00',
 };
 
@@ -105,6 +105,15 @@ describe('CreateEventController', () => {
     expect(mockScreenProps.groupId).toBe('group-1');
   });
 
+  test('prefills the date passed from the group calendar', async () => {
+    mockUseLocalSearchParams.mockReturnValue({ id: 'group-1', date: '2026-10-15' });
+
+    await render(<CreateEventController />);
+
+    expect(mockScreenProps.draft.date).toBe('2026-10-15');
+    expect(mockScreenProps.isConfirmDisabled).toBe(true);
+  });
+
   test('stops loading when the participants request fails', async () => {
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
     mockGetGroup.mockRejectedValue(new Error('offline'));
@@ -132,7 +141,7 @@ describe('CreateEventController', () => {
     await render(<CreateEventController />);
     expect(mockScreenProps.isConfirmDisabled).toBe(true);
 
-    await fillDraft({ ...COMPLETE_DRAFT, date: '31/02' });
+    await fillDraft({ ...COMPLETE_DRAFT, date: '2026-02-31' });
     expect(mockScreenProps.isConfirmDisabled).toBe(true);
 
     await fillDraft({ ...COMPLETE_DRAFT, time: '25:00' });
@@ -169,7 +178,7 @@ describe('CreateEventController', () => {
 
     expect(mockCreateEvent).toHaveBeenCalledWith('group-1', {
       name: ' Bloom Café ',
-      date: toApiDate('15/10'),
+      date: '2026-10-15',
       time: '20:00',
       location: 'Av. João Wallig, 1800',
       image: photo,

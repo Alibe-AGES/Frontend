@@ -1,8 +1,11 @@
 import { Button } from '@/components/Button';
 import { Calendar } from '@/components/Calendar';
 import { DayMark } from '@/components/Calendar/Calendar.types';
-import { buildTimeslot, EventCard, EventCardDraft } from '@/components/EventCard';
+import { DatePickerSheet } from '@/components/DatePickerSheet';
+import { EventCard, EventCardDraft } from '@/components/EventCard';
 import { ProfileCard } from '@/components/ProfileCard';
+import { isValidApiDate } from '@/utils/date';
+import { isValidTime } from '@/utils/time';
 import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
@@ -49,10 +52,12 @@ export function ComponentGalleryScreen() {
     time: '',
   });
   const [isSubmittingEvent, setIsSubmittingEvent] = useState(false);
+  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const isEventDraftValid =
     eventDraft.name.trim() !== '' &&
     eventDraft.address.trim() !== '' &&
-    buildTimeslot(eventDraft.date, eventDraft.time) !== null;
+    isValidApiDate(eventDraft.date) &&
+    isValidTime(eventDraft.time);
 
   return (
     <ScrollView
@@ -123,6 +128,9 @@ export function ComponentGalleryScreen() {
           mode="create"
           draft={eventDraft}
           onChangeDraft={setEventDraft}
+          onDatePress={() => {
+            setIsDatePickerVisible(true);
+          }}
           isConfirmDisabled={!isEventDraftValid}
           isSubmitting={isSubmittingEvent}
           onConfirm={() => {
@@ -134,6 +142,20 @@ export function ComponentGalleryScreen() {
           testID="gallery-event-card-create"
         />
       </View>
+
+      {isDatePickerVisible ? (
+        <DatePickerSheet
+          visible
+          initialDate={eventDraft.date || undefined}
+          onSelectDate={(date) => {
+            setEventDraft((currentDraft) => ({ ...currentDraft, date }));
+            setIsDatePickerVisible(false);
+          }}
+          onClose={() => {
+            setIsDatePickerVisible(false);
+          }}
+        />
+      ) : null}
     </ScrollView>
   );
 }

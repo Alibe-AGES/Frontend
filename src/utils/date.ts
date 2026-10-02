@@ -1,5 +1,6 @@
 const NON_DIGITS_REGEX = /\D/g;
 const DATE_REGEX = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+const API_DATE_REGEX = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 export const DATE_LENGTH = 10;
 
@@ -33,6 +34,21 @@ export function parseDate(date: string): Date | null {
 
 export function isValidDate(date: string): boolean {
   return parseDate(date) !== null;
+}
+
+export function isValidApiDate(value: string): boolean {
+  const match = API_DATE_REGEX.exec(value);
+  if (!match) {
+    return false;
+  }
+
+  const [, year, month, day] = match;
+  const parsed = new Date(Number(year), Number(month) - 1, Number(day));
+  return (
+    parsed.getFullYear() === Number(year) &&
+    parsed.getMonth() === Number(month) - 1 &&
+    parsed.getDate() === Number(day)
+  );
 }
 
 export const DAY_MONTH_LENGTH = 5;
