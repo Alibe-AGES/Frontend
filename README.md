@@ -66,6 +66,18 @@ npm run format:check
 npm run test:unit
 ```
 
+## Splash Animation
+
+The native splash (configured in `app.config.ts`) shows the logo on the canvas color. When the root layout mounts, `src/components/AnimatedSplash` covers the app with the same logo, draws the two ribbons with `lottie-react-native`, and then fades out. With the system "reduce motion" setting on, it shows the still ribbons instead.
+
+The ribbon animations in `assets/animations/` are generated from `assets/images/splash-detail-top.svg` and `assets/images/splash-detail-bottom.svg`. After changing either SVG or the timing at the top of the script, regenerate them:
+
+```bash
+node scripts/build-splash-lottie.mjs
+```
+
+`lottie-react-native` is a native module, so development builds made before it was added must be rebuilt (`npm run android` / `npm run ios`). Expo Go already includes it. On web it renders through `@lottiefiles/dotlottie-react`.
+
 ## Contributor Guide
 
 ### 1. Clone and install

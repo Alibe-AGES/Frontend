@@ -11,9 +11,10 @@ import { usePathname } from 'expo-router';
 import { Stack } from 'expo-router/stack';
 import * as SplashScreen from 'expo-splash-screen';
 import { polyfillWebCrypto } from 'expo-standard-web-crypto';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Toast from 'react-native-toast-message';
 
+import { AnimatedSplash } from '@/components/AnimatedSplash';
 import { AuthenticatedRoute } from '@/components/AuthenticatedRoute';
 import { SignUpDraftProvider } from '@/hooks/useSignUpDraft';
 
@@ -23,6 +24,7 @@ void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const pathname = usePathname();
+  const [isSplashVisible, setIsSplashVisible] = useState(true);
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
     Poppins_500Medium,
@@ -55,6 +57,13 @@ export default function RootLayout() {
   return (
     <SignUpDraftProvider>
       <AuthenticatedRoute enabled={!isPublicRoute}>{stack}</AuthenticatedRoute>
+      {isSplashVisible ? (
+        <AnimatedSplash
+          onFinish={() => {
+            setIsSplashVisible(false);
+          }}
+        />
+      ) : null}
       <Toast />
     </SignUpDraftProvider>
   );
