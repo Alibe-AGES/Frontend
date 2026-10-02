@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import LottieView from 'lottie-react-native';
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, View } from 'react-native';
+import { AccessibilityInfo, Animated, useWindowDimensions, View } from 'react-native';
 import tw from 'twrnc';
 
 import ribbonBottomAnimation from '@/assets/animations/splash-ribbon-bottom.json';
@@ -14,6 +14,12 @@ const HOLD_DURATION_MS = 250;
 const FADE_DURATION_MS = 350;
 // Never keep the app behind the splash if the animation fails to report its end.
 const MAX_DURATION_MS = 4000;
+// The splash layout was drawn on a 390 x 844 screen; the ribbons scale with it so they
+// keep clear of the logo on short screens too.
+const DESIGN_WIDTH = 390;
+const DESIGN_HEIGHT = 844;
+const RIBBON_TOP_WIDTH = 344;
+const RIBBON_BOTTOM_WIDTH = 304;
 
 export interface AnimatedSplashProps {
   onFinish: () => void;
@@ -55,6 +61,8 @@ export function AnimatedSplash({ onFinish }: AnimatedSplashProps) {
     if (reduceMotion) leave();
   }, [reduceMotion]);
 
+  const screen = useWindowDimensions();
+  const designScale = Math.min(screen.width / DESIGN_WIDTH, screen.height / DESIGN_HEIGHT);
   const ribbonStyle = tw`h-full w-full`;
 
   return (
@@ -69,7 +77,8 @@ export function AnimatedSplash({ onFinish }: AnimatedSplashProps) {
           <>
             <View
               accessible={false}
-              className="absolute right-0 top-0 aspect-[344/312] w-[88%] max-w-md"
+              className="absolute right-0 top-0 aspect-[344/312]"
+              style={{ width: RIBBON_TOP_WIDTH * designScale }}
             >
               {reduceMotion ? (
                 <RibbonTop
@@ -90,7 +99,8 @@ export function AnimatedSplash({ onFinish }: AnimatedSplashProps) {
 
             <View
               accessible={false}
-              className="absolute bottom-0 left-0 aspect-[304/320] w-[78%] max-w-md"
+              className="absolute bottom-0 left-0 aspect-[304/320]"
+              style={{ width: RIBBON_BOTTOM_WIDTH * designScale }}
             >
               {reduceMotion ? (
                 <RibbonBottom
@@ -118,7 +128,7 @@ export function AnimatedSplash({ onFinish }: AnimatedSplashProps) {
           accessible={false}
           contentFit="contain"
           source={splashLogo}
-          style={tw`h-42 w-42`}
+          style={tw`h-69 w-69`}
         />
       </View>
     </Animated.View>
