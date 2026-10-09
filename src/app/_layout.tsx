@@ -16,6 +16,8 @@ import Toast from 'react-native-toast-message';
 
 import { AuthenticatedRoute } from '@/components/AuthenticatedRoute';
 import { SignUpDraftProvider } from '@/hooks/useSignUpDraft';
+import { theme } from '@/theme';
+import { StatusBar } from 'react-native';
 
 polyfillWebCrypto();
 
@@ -40,6 +42,11 @@ export default function RootLayout() {
   if (!fontsLoaded) {
     return null;
   }
+
+  <StatusBar
+    barStyle={'dark-content'}
+    backgroundColor={theme.colors.canvas}
+  />;
 
   const stack = (
     <Stack screenOptions={{ headerShown: false }}>

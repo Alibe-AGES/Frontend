@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { KeyboardTypeOptions } from 'react-native';
 import { TextInput as RNTextInput, Text, View } from 'react-native';
 
+import { useKeyboardScrollContext } from '@/components/KeyboardAvoidingScrollView';
 import { theme } from '@/theme';
 import { isValidEmail } from '@/utils/email';
 import type { TextInputProps, TextInputType } from './TextInput.types';
@@ -53,10 +54,13 @@ export function TextInput({
   icon,
   iconBackground,
   onBlur,
+  onFocus,
   testID = 'alibe-text-input',
 }: TextInputProps) {
   const [typeError, setTypeError] = useState<string | null>(null);
   const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<RNTextInput>(null);
+  const onKeyboardScrollFocus = useKeyboardScrollContext();
 
   const handleChangeText = (text: string) => {
     const sanitized = sanitizeByType(type, text);
@@ -67,6 +71,10 @@ export function TextInput({
 
   const handleFocus = () => {
     setIsFocused(true);
+    onFocus?.();
+    if (inputRef.current) {
+      onKeyboardScrollFocus?.(inputRef.current);
+    }
   };
 
   const handleBlur = () => {
@@ -102,6 +110,7 @@ export function TextInput({
         testID={`${testID}-field`}
       >
         <RNTextInput
+          ref={inputRef}
           accessibilityLabel={label ?? placeholder}
           accessibilityState={{ disabled }}
           autoCapitalize={type === 'email' || type === 'password' ? 'none' : 'sentences'}

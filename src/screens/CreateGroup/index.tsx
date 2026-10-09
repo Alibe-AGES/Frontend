@@ -13,7 +13,7 @@ import tw from 'twrnc';
 
 import CreateGroupDecoration from '@/assets/images/create-group-decoration.svg';
 import PencilIcon from '@/assets/images/pencil.svg';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
 
 export function CreateGroupScreen() {
   const [groupName, setGroupName] = useState('');
@@ -51,11 +51,10 @@ export function CreateGroupScreen() {
   };
 
   return (
-    <KeyboardAwareScrollView
+    <KeyboardAvoidingScrollView
       className="flex-1 bg-canvas"
       contentContainerClassName="flex-grow px-6 pt-16"
       keyboardShouldPersistTaps="handled"
-      bottomOffset={20}
     >
       <View
         accessible={false}
@@ -119,6 +118,6 @@ export function CreateGroupScreen() {
           />
         </View>
       </View>
-    </KeyboardAwareScrollView>
+    </KeyboardAvoidingScrollView>
   );
 }

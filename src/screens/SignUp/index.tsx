@@ -1,12 +1,13 @@
 import { BackButton } from '@/components/BackButton';
 import { ContinueButton } from '@/components/ContinueButton';
 import { EmailInput } from '@/components/EmailInput';
+import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
 import { PasswordInput } from '@/components/PasswordInput';
 import { theme } from '@/theme';
 import { isValidEmail } from '@/utils/email';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import AuthHandsDecoration from '@/assets/images/auth-hands-decoration.svg';
 
@@ -38,7 +39,7 @@ export function SignUpScreen({ onContinue, emailError }: SignUpScreenProps) {
     !passwordsMismatch;
 
   return (
-    <ScrollView
+    <KeyboardAvoidingScrollView
       className="flex-1 bg-canvas"
       contentContainerClassName="flex-grow px-6"
       keyboardShouldPersistTaps="handled"
@@ -128,6 +129,6 @@ export function SignUpScreen({ onContinue, emailError }: SignUpScreenProps) {
           />
         </View>
       </View>
-    </ScrollView>
+    </KeyboardAvoidingScrollView>
   );
 }
