@@ -202,26 +202,22 @@ export function GroupScreen() {
             fallbackHref="/groups"
             accessibilityLabel="Voltar para meus grupos"
           />
-
-          <Text className="flex-1 pr-10 text-center text-3xl font-black text-ink">
-            Calendário do grupo
-          </Text>
         </View>
 
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Ver informações do grupo"
           onPress={handleOpenInfo}
-          className="flex-row items-center gap-3 rounded-2xl bg-surface p-3"
+          className="flex-row items-center gap-3"
           testID="group-screen-members"
         >
-          <View className="h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-coral">
+          <View className="h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-coral">
             {groupPhotoSource ? (
               <Image
                 source={groupPhotoSource}
                 accessibilityLabel={`Foto do grupo ${groupName}`}
                 contentFit="cover"
-                style={tw`h-14 w-14 rounded-full`}
+                style={tw`h-16 w-16 rounded-full`}
                 testID="group-screen-photo"
               />
             ) : (
@@ -236,7 +232,7 @@ export function GroupScreen() {
 
           <View className="flex-1">
             <Text
-              className="font-poppins-semibold text-lg text-wine"
+              className="font-poppins-light text-xl text-wine"
               numberOfLines={1}
             >
               {groupName}
@@ -244,7 +240,7 @@ export function GroupScreen() {
 
             {members.length > 0 ? (
               <Text
-                className="font-poppins text-sm text-wine"
+                className="font-poppins-semibold text-base text-wine"
                 numberOfLines={1}
                 testID="group-screen-members-names"
               >
