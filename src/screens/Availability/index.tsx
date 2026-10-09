@@ -1,10 +1,10 @@
 import { AvailabilityCard } from '@/components/AvailabilityCard';
 import { AvailabilityInterval } from '@/components/AvailabilityCard/Availability.types';
+import { Avatar } from '@/components/Avatar';
 import { BackButton } from '@/components/BackButton';
 import { Button } from '@/components/Button';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { useMemo, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
@@ -14,6 +14,7 @@ export interface AvailabilityParticipant {
   readonly id: string;
   readonly name: string;
   readonly avatarUrl: string;
+  readonly status: 'available' | 'no-response';
 }
 
 export interface AvailabilityScreenProps {
@@ -47,8 +48,10 @@ export function AvailabilityScreen({
     return `${day}/${month}`;
   }, [date]);
 
-  const label = 'Nenhum participante \ndisponível por enquanto';
   const hasParticipants = participants.length > 0;
+  const availableCount = participants.filter(
+    (participant) => participant.status === 'available'
+  ).length;
 
   const handleConfirm = async () => {
     try {
@@ -76,8 +79,8 @@ export function AvailabilityScreen({
       await onDecline?.();
       Toast.show({
         type: 'success',
-        text1: 'Sucesso!',
-        text2: 'Marcado como indisponível.',
+        text1: 'Sem resposta',
+        text2: 'Você não enviou disponibilidade para este dia.',
       });
     } catch {
       Toast.show({
@@ -129,30 +132,48 @@ export function AvailabilityScreen({
           </Text>
         </View>
 
-        <Text
-          className="text-center font-poppins-medium text-xl"
-          style={{ color: theme.colors.wine }}
-          testID="availability-screen-participants-heading"
-        >
-          {hasParticipants ? 'Participantes disponíveis' : label}
-        </Text>
+      <Text
+        className="text-center font-poppins-medium text-xl"
+        style={{ color: theme.colors.wine }}
+        testID="availability-screen-participants-heading"
+      >
+        {hasParticipants
+          ? `Status de disponibilidade (${String(availableCount)}/${String(participants.length)})`
+          : 'Nenhum participante no grupo'}
+      </Text>
 
-        {hasParticipants ? (
-          <View
-            className="flex-row flex-wrap justify-center gap-4 px-2"
-            testID="availability-screen-participants"
-          >
-            {participants.map((participant, index) => (
-              <Image
-                key={`${participant.id}-${String(index)}`}
-                source={{ uri: participant.avatarUrl }}
+      {hasParticipants ? (
+        <View
+          className="gap-3 px-1"
+          testID="availability-screen-participants"
+        >
+          {participants.map((participant, index) => (
+            <View
+              key={`${participant.id}-${String(index)}`}
+              className="flex-row items-center gap-3 rounded-2xl bg-surface p-3"
+              testID={`availability-participant-${participant.id}`}
+            >
+              <Avatar
+                photoUri={participant.avatarUrl}
                 accessibilityLabel={participant.name}
-                contentFit="cover"
-                className="h-12 w-12 rounded-full border-2 border-canvas"
+                imageClassName="h-12 w-12 rounded-full border-2 border-canvas"
+                iconSize={24}
               />
-            ))}
-          </View>
-        ) : null}
+              <Text className="flex-1 font-poppins-medium text-sm text-ink">
+                {participant.name}
+              </Text>
+              <Text
+                className={`font-poppins-semibold text-xs ${
+                  participant.status === 'available' ? 'text-ink' : 'text-inkSoft'
+                }`}
+                testID={`availability-status-${participant.id}`}
+              >
+                {participant.status === 'available' ? 'Disponível' : 'Sem resposta'}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
 
         <AvailabilityCard onIntervalsChange={setIntervals} />
 
@@ -164,14 +185,13 @@ export function AvailabilityScreen({
             disabled={isSubmitting}
           />
 
-          <Button
-            title="Não estarei disponível neste dia."
-            variant="tertiary"
-            onPress={() => void handleDecline()}
-            disabled={isSubmitting}
-          />
-        </View>
-      </ScrollView>
-    </KeyboardAwareScrollView>
+        <Button
+          title="Sair sem informar disponibilidade"
+          variant="tertiary"
+          onPress={() => void handleDecline()}
+          disabled={isSubmitting}
+        />
+      </View>
+    </ScrollView>
   );
 }

@@ -28,6 +28,7 @@ export interface PhotoPickerProps extends Omit<PressableProps, 'children'> {
   label?: string;
   placeholder?: PhotoPickerPlaceholder;
   uploadUrl?: string;
+  initialPhotoUri?: string | null;
   onUploadSuccess?: (photo: SelectedPhoto) => void;
   onUploadError?: (error: unknown) => void;
   className?: string;

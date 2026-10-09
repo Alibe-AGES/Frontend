@@ -1,3 +1,4 @@
+import { DayMark } from '@/components/Calendar/Calendar.types';
 import { getGroupCalendar } from '@/server/calendar';
 import { getGroup, getGroupMembers } from '@/server/groups';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
@@ -28,15 +29,23 @@ jest.mock('@/components/NavigationBar', () => ({
 }));
 
 let mockDayPress: ((date: string) => void) | undefined;
+let mockDayCreatePress: ((date: string) => void) | undefined;
+let mockDayMarks: Record<string, DayMark> | undefined;
 
 jest.mock('@/components/Calendar', () => ({
   Calendar: ({
     onDayPress,
+    onDayCreatePress,
+    dayMarks,
   }: {
     onDayPress: (date: string) => void;
+    onDayCreatePress: (date: string) => void;
     onMonthChange: (date: string) => void;
+    dayMarks: Record<string, DayMark>;
   }) => {
     mockDayPress = onDayPress;
+    mockDayCreatePress = onDayCreatePress;
+    mockDayMarks = dayMarks;
     return null;
   },
 }));
@@ -72,6 +81,8 @@ describe('GroupScreen', () => {
   afterEach(() => {
     jest.clearAllMocks();
     mockDayPress = undefined;
+    mockDayCreatePress = undefined;
+    mockDayMarks = undefined;
   });
 
   test('loads and renders the group name and members', async () => {
@@ -112,6 +123,122 @@ describe('GroupScreen', () => {
     expect(push).toHaveBeenCalledWith({
       pathname: '/group/[id]/info',
       params: { id: 'group-1' },
+    });
+  });
+
+  test('starts event creation with the pressed calendar date', async () => {
+    await render(<GroupScreen />);
+
+    mockDayCreatePress?.('2026-10-15');
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/group/[id]/create-event',
+      params: { id: 'group-1', date: '2026-10-15' },
+    });
+  });
+
+  test('matches backend event and proposal IDs to their calendar dates', async () => {
+    mockGetGroupCalendar.mockResolvedValue([
+      {
+        date: '2026-09-30',
+        scheduledEventIds: ['event-1', 'event-2'],
+        proposalIds: ['proposal-1'],
+        availableUserIds: [],
+        completedEventIds: [],
+        allUsersAvailable: false,
+      },
+      {
+        date: '2026-10-01',
+        scheduledEventIds: [],
+        proposalIds: [],
+        availableUserIds: [],
+        completedEventIds: ['event-3'],
+        allUsersAvailable: false,
+      },
+      {
+        date: '2026-10-02',
+        scheduledEventIds: [],
+        proposalIds: [],
+        availableUserIds: [],
+        completedEventIds: [],
+        allUsersAvailable: true,
+      },
+      {
+        date: '2026-10-03',
+        scheduledEventIds: [],
+        proposalIds: [],
+        availableUserIds: ['member-1'],
+        completedEventIds: [],
+        allUsersAvailable: false,
+      },
+      {
+        date: '2026-10-04',
+        scheduledEventIds: [],
+        proposalIds: ['proposal-2'],
+        availableUserIds: [],
+        completedEventIds: [],
+        allUsersAvailable: false,
+      },
+      {
+        date: '2026-10-05',
+        scheduledEventIds: ['shared-event'],
+        proposalIds: ['shared-event'],
+        availableUserIds: ['shared-event'],
+        completedEventIds: ['shared-event'],
+        allUsersAvailable: false,
+      },
+    ]);
+
+    await render(<GroupScreen />);
+
+    await waitFor(() => {
+      expect(mockDayMarks?.['2026-09-30']).toMatchObject({
+        status: 'suggested',
+        eventIds: ['event-1', 'event-2'],
+        proposalIds: ['proposal-1'],
+        dot: 'pink',
+      });
+      expect(mockDayMarks?.['2026-10-01'].status).toBe('realized');
+      expect(mockDayMarks?.['2026-10-02'].status).toBe('allAvailable');
+      expect(mockDayMarks?.['2026-10-03'].status).toBe('available');
+      expect(mockDayMarks?.['2026-10-04']).toMatchObject({ status: 'normal', dot: 'pink' });
+      expect(mockDayMarks?.['2026-10-05']).toMatchObject({
+        status: 'realized',
+        eventIds: ['shared-event'],
+        proposalIds: ['shared-event'],
+        dot: 'pink',
+        availableUserCount: 1,
+        allUsersAvailable: false,
+      });
+      expect(mockDayMarks?.['2026-10-02']).toMatchObject({
+        availableUserCount: 0,
+        allUsersAvailable: true,
+      });
+    });
+  });
+
+  test('navigates to the standalone details screen when the day has events or proposals', async () => {
+    mockGetGroupCalendar.mockResolvedValue([
+      {
+        date: '2026-10-12',
+        scheduledEventIds: ['event-1'],
+        proposalIds: ['proposal-2'],
+        availableUserIds: [],
+        completedEventIds: [],
+        allUsersAvailable: false,
+      },
+    ]);
+
+    await render(<GroupScreen />);
+
+    await waitFor(() => {
+      expect(mockDayMarks?.['2026-10-12'].proposalIds).toEqual(['proposal-2']);
+    });
+    mockDayPress?.('2026-10-12');
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/group/[id]/day/[date]',
+      params: { id: 'group-1', date: '2026-10-12' },
     });
   });
 });

@@ -1,9 +1,13 @@
-import { ScrollView, Text, View } from 'react-native';
-
 import { Button } from '@/components/Button';
 import { Calendar } from '@/components/Calendar';
 import { DayMark } from '@/components/Calendar/Calendar.types';
+import { DatePickerSheet } from '@/components/DatePickerSheet';
+import { EventCard, EventCardDraft } from '@/components/EventCard';
 import { ProfileCard } from '@/components/ProfileCard';
+import { isValidApiDate } from '@/utils/date';
+import { isValidTime } from '@/utils/time';
+import { useState } from 'react';
+import { ScrollView, Text, View } from 'react-native';
 
 const dayMarks: Record<string, DayMark> = {
   '2025-05-01': { status: 'available' },
@@ -40,6 +44,21 @@ const dayMarks: Record<string, DayMark> = {
 };
 
 export function ComponentGalleryScreen() {
+  const [eventDraft, setEventDraft] = useState<EventCardDraft>({
+    name: '',
+    imageUri: null,
+    address: '',
+    date: '',
+    time: '',
+  });
+  const [isSubmittingEvent, setIsSubmittingEvent] = useState(false);
+  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
+  const isEventDraftValid =
+    eventDraft.name.trim() !== '' &&
+    eventDraft.address.trim() !== '' &&
+    isValidApiDate(eventDraft.date) &&
+    isValidTime(eventDraft.time);
+
   return (
     <ScrollView
       className="flex-1 bg-canvas"
@@ -76,12 +95,67 @@ export function ComponentGalleryScreen() {
           showLegend
         />
       </View>
+
       <View>
         <ProfileCard
           completedEventsCount={24}
           pendingEventsCount={2}
         ></ProfileCard>
       </View>
+
+      <View className="gap-4 rounded-3xl bg-surface p-5">
+        <Text className="text-xl font-black text-ink">EventCard</Text>
+        <EventCard
+          event={{
+            id: 'gallery-event',
+            name: 'Bloom Café',
+            timeslot: '2026-05-18T13:00:00.000Z',
+            budgetStart: '20',
+            budgetEnd: '100',
+            location: { address: 'Av. Carlos Gomes, 600' },
+            phone: '(00) 00000-0000',
+            openingHours: ['Segunda à sábado: 9:00 - 18:00', 'Domingo: Fechado'],
+            website: 'www.BloomCafé.com',
+          }}
+          onEditPress={() => undefined}
+        />
+        <EventCard event={{ id: 'gallery-event-minimal', name: 'Evento sem foto' }} />
+      </View>
+
+      <View className="gap-4 rounded-3xl bg-surface p-5">
+        <Text className="text-xl font-black text-ink">EventCard (create)</Text>
+        <EventCard
+          mode="create"
+          draft={eventDraft}
+          onChangeDraft={setEventDraft}
+          onDatePress={() => {
+            setIsDatePickerVisible(true);
+          }}
+          isConfirmDisabled={!isEventDraftValid}
+          isSubmitting={isSubmittingEvent}
+          onConfirm={() => {
+            setIsSubmittingEvent(true);
+            setTimeout(() => {
+              setIsSubmittingEvent(false);
+            }, 1500);
+          }}
+          testID="gallery-event-card-create"
+        />
+      </View>
+
+      {isDatePickerVisible ? (
+        <DatePickerSheet
+          visible
+          initialDate={eventDraft.date || undefined}
+          onSelectDate={(date) => {
+            setEventDraft((currentDraft) => ({ ...currentDraft, date }));
+            setIsDatePickerVisible(false);
+          }}
+          onClose={() => {
+            setIsDatePickerVisible(false);
+          }}
+        />
+      ) : null}
     </ScrollView>
   );
 }

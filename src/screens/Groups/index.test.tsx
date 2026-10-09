@@ -66,6 +66,26 @@ describe('<GroupsScreen />', () => {
     expect(getByText('Meus grupos')).toBeTruthy();
     expect(getByText('Clique no + para criar um novo grupo.')).toBeTruthy();
     expect(getByLabelText('Logo Alibe')).toBeTruthy();
+    expect(getByLabelText('Perfil do usuário')).toBeTruthy();
+  });
+
+  test('navigates to the signed-in user profile from the top-right icon', async () => {
+    mockUseGroups.mockReturnValue({
+      groups: [],
+      isLoading: false,
+      isRefreshing: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    const { getByTestId } = await render(<GroupsScreen />);
+
+    await fireEvent.press(getByTestId('groups-user-profile'));
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/(profile)/profile/[userId]',
+      params: { userId: 'user-1' },
+    });
   });
 
   test('shows a loading indicator while the groups are being fetched', async () => {

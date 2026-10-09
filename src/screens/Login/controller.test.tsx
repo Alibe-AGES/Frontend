@@ -1,3 +1,4 @@
+import { authClient } from '@/server/auth';
 import { fireEvent, render } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
 import LoginController from './controller';
@@ -6,7 +7,12 @@ jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
 }));
 
+jest.mock('@/server/auth', () => ({
+  authClient: { signIn: { email: jest.fn() } },
+}));
+
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
+const mockSignInEmail = authClient.signIn.email as jest.Mock;
 
 describe('LoginController', () => {
   const replace = jest.fn();
@@ -14,6 +20,7 @@ describe('LoginController', () => {
   const canGoBack = jest.fn(() => true);
 
   beforeEach(() => {
+    mockSignInEmail.mockResolvedValue({ error: null });
     mockUseRouter.mockReturnValue({ replace, back, canGoBack } as unknown as ReturnType<
       typeof useRouter
     >);
@@ -23,14 +30,31 @@ describe('LoginController', () => {
     jest.clearAllMocks();
   });
 
-  test('goes to the groups home after filling the credentials', async () => {
+  test('authenticates with the entered credentials before routing to groups', async () => {
     const { getByPlaceholderText, getByTestId } = await render(<LoginController />);
 
     await fireEvent.changeText(getByPlaceholderText('Email'), 'user@example.com');
-    await fireEvent.changeText(getByPlaceholderText('Senha'), 'secret');
+    await fireEvent.changeText(getByPlaceholderText('Senha'), 'senha-segura');
     await fireEvent.press(getByTestId('login-continue'));
 
+    expect(mockSignInEmail).toHaveBeenCalledWith({
+      email: 'user@example.com',
+      password: 'senha-segura',
+      rememberMe: true,
+    });
     expect(replace).toHaveBeenCalledWith('/groups');
+  });
+
+  test('shows an error and stays on login when authentication is rejected', async () => {
+    mockSignInEmail.mockResolvedValueOnce({ error: { message: 'Invalid credentials' } });
+    const { getByPlaceholderText, getByTestId, findByRole } = await render(<LoginController />);
+
+    await fireEvent.changeText(getByPlaceholderText('Email'), 'user@example.com');
+    await fireEvent.changeText(getByPlaceholderText('Senha'), 'wrong-password');
+    await fireEvent.press(getByTestId('login-continue'));
+
+    expect(await findByRole('alert')).toHaveTextContent(/Não foi possível entrar/);
+    expect(replace).not.toHaveBeenCalled();
   });
 
   test('pops back to the previous screen', async () => {

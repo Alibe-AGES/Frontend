@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '@/constants';
 import { ApiError } from './api';
+import { authenticatedFetch } from './auth';
 import { getGroupCalendar } from './calendar';
 import { getGroupMembers } from './groups';
 
@@ -37,7 +38,7 @@ export async function createAvailability(
 
   console.log('[Availability] POST', url, body);
 
-  const response = await fetch(url, {
+  const response = await authenticatedFetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -57,16 +58,17 @@ export async function createAvailability(
   return (await response.json()) as AvailabilityResponse[];
 }
 
-export interface GroupParticipant {
+export interface GroupAvailabilityStatus {
   id: string;
   name: string;
   profilePic: string | null;
+  hasAvailability: boolean;
 }
 
-export async function getAvailabilitiesByDate(
+export async function getAvailabilityStatusesByDate(
   groupId: string,
   date: string
-): Promise<GroupParticipant[]> {
+): Promise<GroupAvailabilityStatus[]> {
   const [year, month] = date.split('-').map(Number);
 
   if (!year || !month) {
@@ -80,17 +82,12 @@ export async function getAvailabilitiesByDate(
 
   const day = days.find((item) => item.date === date);
 
-  if (!day || day.availableUserIds.length === 0) {
-    return [];
-  }
+  const availableIds = new Set(day?.availableUserIds ?? []);
 
-  const availableIds = new Set(day.availableUserIds);
-
-  return members
-    .filter((member) => availableIds.has(member.id))
-    .map((member) => ({
-      id: member.id,
-      name: member.name,
-      profilePic: member.profilePic,
-    }));
+  return members.map((member) => ({
+    id: member.id,
+    name: member.name,
+    profilePic: member.profilePic,
+    hasAvailability: availableIds.has(member.id),
+  }));
 }

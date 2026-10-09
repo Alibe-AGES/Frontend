@@ -1,6 +1,11 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import { CreateProfileScreen } from '.';
 
+jest.mock('@/assets/images/create-group-decoration.svg', () => {
+  const RN = jest.requireActual<typeof import('react-native')>('react-native');
+  return () => <RN.View testID="mock-decoration-svg" />;
+});
+
 describe('<CreateProfileScreen />', () => {
   const onContinue = jest.fn();
 
@@ -67,6 +72,26 @@ describe('<CreateProfileScreen />', () => {
     expect(getByTestId('create-profile-continue').props.accessibilityState).toMatchObject({
       disabled: false,
     });
+  });
+
+  test('disables the form while the profile is being submitted', async () => {
+    const { getByPlaceholderText, getByTestId } = await render(
+      <CreateProfileScreen
+        onContinue={onContinue}
+        isSubmitting
+      />
+    );
+
+    await fireEvent.changeText(getByPlaceholderText('Nome de usuário'), 'Rica');
+    await fireEvent.press(getByTestId('create-profile-continue'));
+
+    expect(getByTestId('create-profile-continue').props.accessibilityState).toMatchObject({
+      disabled: true,
+    });
+    expect(getByTestId('create-profile-photo').props.accessibilityState).toMatchObject({
+      disabled: true,
+    });
+    expect(onContinue).not.toHaveBeenCalled();
   });
 
   test('continues with the trimmed nickname and no photo', async () => {
