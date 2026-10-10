@@ -17,6 +17,32 @@ npm run web
 npm run build
 ```
 
+## Run on a Phone with Expo Go
+
+The phone and development computer must be on the same Wi-Fi network. Start the backend in a separate terminal:
+
+```bash
+cd Backend
+cp .env.template .env
+docker compose up --build
+```
+
+Find the computer's private IPv4 address on that network (on Linux, run `hostname -I` and use the Wi-Fi address). In `Frontend/.env`, set the API URL to that address:
+
+```dotenv
+EXPO_PUBLIC_API_URL=http://<COMPUTER_LAN_IP>:3000
+```
+
+Replace `<COMPUTER_LAN_IP>` with the computer's address; do not use `localhost`, which would refer to the phone itself. `.env` is ignored by Git, so keep this machine-specific setting local.
+
+Then start Expo in LAN mode from the `Frontend` directory and scan its QR code with Expo Go:
+
+```bash
+npx expo start --lan
+```
+
+If you change `.env`, restart Expo so it reloads the API URL. The phone must be able to reach the computer on ports `8081` (Expo) and `3000` (API); check Wi-Fi client isolation or firewall settings if the QR code loads but API requests fail.
+
 ## Component Gallery
 
 The project includes a dependency-free isolated component gallery at `/component-gallery`. Use it to see reusable components without navigating through the application flow.
