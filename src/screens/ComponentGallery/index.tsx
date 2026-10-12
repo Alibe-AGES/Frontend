@@ -159,14 +159,12 @@ export function ComponentGalleryScreen() {
         />
       ) : null}
 
-    <SearchBar
-      value={searchQuery}
-      onChangeText={setSearchQuery}
-      placeholder="Pesquisar..."
-      testID="gallery-search-bar"
-    />
-
-
+      <SearchBar
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        placeholder="Pesquisar..."
+        testID="gallery-search-bar"
+      />
     </ScrollView>
   );
 }
