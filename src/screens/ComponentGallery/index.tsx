@@ -4,6 +4,7 @@ import { DayMark } from '@/components/Calendar/Calendar.types';
 import { DatePickerSheet } from '@/components/DatePickerSheet';
 import { EventCard, EventCardDraft } from '@/components/EventCard';
 import { ProfileCard } from '@/components/ProfileCard';
+import { SearchBar } from '@/components/SearchBar';
 import { isValidApiDate } from '@/utils/date';
 import { isValidTime } from '@/utils/time';
 import { useState } from 'react';
@@ -53,6 +54,7 @@ export function ComponentGalleryScreen() {
   });
   const [isSubmittingEvent, setIsSubmittingEvent] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const isEventDraftValid =
     eventDraft.name.trim() !== '' &&
     eventDraft.address.trim() !== '' &&
@@ -156,6 +158,15 @@ export function ComponentGalleryScreen() {
           }}
         />
       ) : null}
+
+    <SearchBar
+      value={searchQuery}
+      onChangeText={setSearchQuery}
+      placeholder="Pesquisar..."
+      testID="gallery-search-bar"
+    />
+
+
     </ScrollView>
   );
 }
