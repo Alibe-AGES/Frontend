@@ -3,6 +3,7 @@ import { Calendar } from '@/components/Calendar';
 import { DayMark } from '@/components/Calendar/Calendar.types';
 import { DatePickerSheet } from '@/components/DatePickerSheet';
 import { EventCard, EventCardDraft } from '@/components/EventCard';
+import { PlaceCard } from '@/components/PlaceCard';
 import { ProfileCard } from '@/components/ProfileCard';
 import { isValidApiDate } from '@/utils/date';
 import { isValidTime } from '@/utils/time';
@@ -156,6 +157,24 @@ export function ComponentGalleryScreen() {
           }}
         />
       ) : null}
+
+      <View className="flex-row gap-4 rounded-3xl bg-surface p-5">
+        <View className="flex-1">
+          <PlaceCard
+            name="Bloom Café"
+            address="Endereço"
+            color="coral"
+          />
+        </View>
+        <View className="flex-1">
+          <PlaceCard
+            name="Cinepolis Shopping Central"
+            address="Endereço"
+            color="lime"
+            isFavorite
+          />
+        </View>
+      </View>
     </ScrollView>
   );
 }
