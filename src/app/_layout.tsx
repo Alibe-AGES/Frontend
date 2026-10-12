@@ -49,7 +49,7 @@ export default function RootLayout() {
       <Stack.Screen name="(app)" />
     </Stack>
   );
-  const publicPaths = ['/', '/auth', '/login', '/sign-up'];
+  const publicPaths = ['/', '/auth', '/login', '/sign-up', '/component-gallery'];
   const isPublicRoute = publicPaths.includes(pathname);
 
   return (
