@@ -56,3 +56,25 @@ describe('<ComponentGalleryScreen /> event card', () => {
     expect(confirm().props.className).toContain('bg-ink active:bg-ink-soft');
   });
 });
+
+describe('<ComponentGalleryScreen /> notification card', () => {
+  test('dismisses a notification and restores the list', async () => {
+    const { getByTestId, queryByTestId, getByText } = await render(<ComponentGalleryScreen />);
+
+    await fireEvent.press(getByTestId('gallery-notification-notification-4-dismiss'));
+
+    expect(queryByTestId('gallery-notification-notification-4')).toBeNull();
+
+    await fireEvent.press(getByText('Restaurar notificações'));
+
+    expect(getByTestId('gallery-notification-notification-4')).toBeTruthy();
+  });
+
+  test('shows which group a tapped notification would open', async () => {
+    const { getByTestId, getByText } = await render(<ComponentGalleryScreen />);
+
+    await fireEvent.press(getByTestId('gallery-notification-notification-1'));
+
+    expect(getByText('Abriria o grupo Hermanas (group-hermanas)')).toBeTruthy();
+  });
+});

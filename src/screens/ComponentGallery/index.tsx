@@ -3,7 +3,9 @@ import { Calendar } from '@/components/Calendar';
 import { DayMark } from '@/components/Calendar/Calendar.types';
 import { DatePickerSheet } from '@/components/DatePickerSheet';
 import { EventCard, EventCardDraft } from '@/components/EventCard';
+import { AppNotification, NotificationCard } from '@/components/NotificationCard';
 import { ProfileCard } from '@/components/ProfileCard';
+import { mockNotifications } from '@/server/mock/notifications';
 import { isValidApiDate } from '@/utils/date';
 import { isValidTime } from '@/utils/time';
 import { useState } from 'react';
@@ -53,6 +55,10 @@ export function ComponentGalleryScreen() {
   });
   const [isSubmittingEvent, setIsSubmittingEvent] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
+  const [notifications, setNotifications] = useState<AppNotification[]>(mockNotifications);
+  const [lastOpenedNotification, setLastOpenedNotification] = useState<AppNotification | null>(
+    null
+  );
   const isEventDraftValid =
     eventDraft.name.trim() !== '' &&
     eventDraft.address.trim() !== '' &&
@@ -93,6 +99,43 @@ export function ComponentGalleryScreen() {
           initialDate="2025-05-01"
           dayMarks={dayMarks}
           showLegend
+        />
+      </View>
+
+      <View className="gap-4 rounded-3xl bg-surface p-5">
+        <Text className="text-xl font-black text-ink">NotificationCard</Text>
+
+        {notifications.map((notification) => (
+          <NotificationCard
+            key={notification.id}
+            notification={notification}
+            onPress={setLastOpenedNotification}
+            onDismiss={(id) => {
+              setNotifications((current) => current.filter((item) => item.id !== id));
+            }}
+            testID={`gallery-notification-${notification.id}`}
+          />
+        ))}
+
+        <NotificationCard
+          notification={mockNotifications[2]}
+          showGroupName
+          testID="gallery-notification-with-group"
+        />
+
+        <Text className="font-poppins text-sm text-ink">
+          {lastOpenedNotification
+            ? `Abriria o grupo ${lastOpenedNotification.groupName} (${lastOpenedNotification.groupId})`
+            : 'Toque em uma notificação para simular a navegação.'}
+        </Text>
+
+        <Button
+          title="Restaurar notificações"
+          variant="secondary"
+          onPress={() => {
+            setNotifications(mockNotifications);
+            setLastOpenedNotification(null);
+          }}
         />
       </View>
 
