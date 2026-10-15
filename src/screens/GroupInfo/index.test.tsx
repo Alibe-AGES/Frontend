@@ -7,7 +7,11 @@ const group = {
   profilePic: null,
   createdAt: '2026-01-01T00:00:00.000Z',
   participants: [
-    { id: 'user-1', name: 'Ana', profilePic: null },
+    {
+      id: 'user-1',
+      name: 'Ana',
+      profilePic: 'https://api.alibe.test/users/user-1/profile-picture',
+    },
     { id: 'user-2', name: 'Bia', profilePic: null },
   ],
 };
@@ -30,6 +34,8 @@ describe('GroupInfoScreen', () => {
     expect(getByText('Hermanas')).toBeTruthy();
     expect(getByText('02/09 · 12/09')).toBeTruthy();
     expect(getByText('(você)')).toBeTruthy();
+    expect(getByTestId('group-info-member-user-1-avatar-photo')).toBeTruthy();
+    expect(getByTestId('group-info-member-user-2-avatar-placeholder')).toBeTruthy();
     expect(getByTestId('group-info-member-user-2')).toBeTruthy();
   });
 

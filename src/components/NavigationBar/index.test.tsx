@@ -8,6 +8,10 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ navigate: mockNavigate }),
 }));
 
+jest.mock('@/server/mock/useAuth', () => ({
+  useAuth: () => ({ userId: 'user-1' }),
+}));
+
 describe('<NavigationBar />', () => {
   beforeEach(() => {
     mockNavigate.mockClear();
@@ -37,6 +41,18 @@ describe('<NavigationBar />', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/groups');
   });
 
+  test('profile button is the rightmost action and retains the group context', async () => {
+    const { getByTestId, getByLabelText } = await render(<NavigationBar groupId="g1" />);
+
+    expect(getByLabelText('Perfil do usuário')).toBeTruthy();
+    await fireEvent.press(getByTestId('alibe-navigation-bar-profile'));
+
+    expect(mockNavigate).toHaveBeenCalledWith({
+      pathname: '/(profile)/profile/[userId]',
+      params: { userId: 'user-1', groupId: 'g1' },
+    });
+  });
+
   test('exposes accessible labels for every action', async () => {
     const { getByLabelText } = await render(<NavigationBar groupId="g1" />);
 
@@ -45,5 +61,6 @@ describe('<NavigationBar />', () => {
     expect(getByLabelText('Experiências')).toBeTruthy();
     expect(getByLabelText('Memórias')).toBeTruthy();
     expect(getByLabelText('Meus grupos')).toBeTruthy();
+    expect(getByLabelText('Perfil do usuário')).toBeTruthy();
   });
 });

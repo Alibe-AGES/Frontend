@@ -35,7 +35,7 @@ export const GroupCard: FC<GroupCardProps> = ({
 
       <View className="flex-1">
         <Text
-          className="text-wine font-poppins-semibold text-lg"
+          className="font-poppins-semibold text-lg text-wine"
           numberOfLines={1}
           testID={`${testID}-name`}
         >
@@ -44,7 +44,7 @@ export const GroupCard: FC<GroupCardProps> = ({
 
         {membersPreview ? (
           <Text
-            className="text-wine font-poppins text-sm"
+            className="font-poppins text-sm text-wine"
             numberOfLines={1}
             testID={`${testID}-members`}
           >

@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useContext } from 'react';
 import { Pressable, View } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
@@ -94,6 +95,23 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ groupId, className
           {LEFT_ITEMS.map(renderIcon)}
           <View className="w-[3.25rem]" />
           {RIGHT_ITEMS.map(renderIcon)}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Perfil do usuário"
+            hitSlop={16}
+            onPress={() => {
+              navigate('profile');
+            }}
+            className="h-12 flex-1 items-center justify-center"
+            style={({ pressed }) => tw`${pressed ? 'opacity-60' : ''}`}
+            testID="alibe-navigation-bar-profile"
+          >
+            <Ionicons
+              name="person-outline"
+              size={25}
+              color={theme.colors.white}
+            />
+          </Pressable>
         </View>
 
         <View

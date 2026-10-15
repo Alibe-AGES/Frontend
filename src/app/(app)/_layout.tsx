@@ -4,6 +4,10 @@ export default function AppLayout() {
   return (
     <Stack screenOptions={{ headerShown: true, headerBackTitle: 'Groups' }}>
       <Stack.Screen
+        name="groups"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
         name="create-group"
         options={{ headerShown: false }}
       />

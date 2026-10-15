@@ -1,4 +1,5 @@
-export type DayStatus = 'available' | 'realized' | 'suggested' | 'allAvailable' | 'past' | 'normal';
+export type DayStatus =
+  'available' | 'realized' | 'suggested' | 'allAvailable' | 'past' | 'pastEvent' | 'normal';
 
 export type DayDot = 'pink' | 'coral';
 
@@ -15,12 +16,17 @@ export interface CalendarDay {
 export interface DayMark {
   status: DayStatus;
   dot?: DayDot;
+  eventIds?: string[];
+  proposalIds?: string[];
+  availableUserCount?: number;
+  allUsersAvailable?: boolean;
 }
 
 export interface CalendarProps {
   initialDate?: string;
   dayMarks?: Record<string, DayMark>;
   onDayPress?: (dateString: string) => void;
+  onDayCreatePress?: (dateString: string) => void;
   onMonthChange?: (dateString: string) => void;
   showLegend?: boolean;
   testID?: string;
