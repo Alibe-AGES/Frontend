@@ -1,5 +1,6 @@
 import '@/global.css';
 import {
+  Poppins_300Light,
   Poppins_400Regular,
   Poppins_500Medium,
   Poppins_600SemiBold,
@@ -24,6 +25,7 @@ void SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const pathname = usePathname();
   const [fontsLoaded] = useFonts({
+    Poppins_300Light,
     Poppins_400Regular,
     Poppins_500Medium,
     Poppins_600SemiBold,
