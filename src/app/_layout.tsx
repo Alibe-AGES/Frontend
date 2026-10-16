@@ -1,5 +1,6 @@
 import '@/global.css';
 import {
+  Poppins_300Light,
   Poppins_400Regular,
   Poppins_500Medium,
   Poppins_600SemiBold,
@@ -26,6 +27,7 @@ void SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const pathname = usePathname();
   const [fontsLoaded] = useFonts({
+    Poppins_300Light,
     Poppins_400Regular,
     Poppins_500Medium,
     Poppins_600SemiBold,
@@ -43,11 +45,6 @@ export default function RootLayout() {
     return null;
   }
 
-  <StatusBar
-    barStyle={'dark-content'}
-    backgroundColor={theme.colors.canvas}
-  />;
-
   const stack = (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
@@ -56,11 +53,15 @@ export default function RootLayout() {
       <Stack.Screen name="(app)" />
     </Stack>
   );
-  const publicPaths = ['/', '/auth', '/login', '/sign-up'];
+  const publicPaths = ['/', '/auth', '/login', '/sign-up', '/component-gallery'];
   const isPublicRoute = publicPaths.includes(pathname);
 
   return (
     <SignUpDraftProvider>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor={theme.colors.canvas}
+      />
       <AuthenticatedRoute enabled={!isPublicRoute}>{stack}</AuthenticatedRoute>
       <Toast />
     </SignUpDraftProvider>

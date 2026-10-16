@@ -19,7 +19,8 @@ const SCROLL_DELAY_MS = 100;
 export function KeyboardAvoidingScrollView({
   children,
   contentContainerStyle,
-  topOffset = 100,
+  topOffset = 60,
+  bottomOffset = 0,
   onScroll,
   ...props
 }: KeyboardAvoidingScrollViewProps) {
@@ -33,10 +34,12 @@ export function KeyboardAvoidingScrollView({
     const input = focusedInput as {
       measureInWindow?: (cb: (x: number, y: number, w: number, h: number) => void) => void;
     };
-    if (typeof input?.measureInWindow === 'function') {
+    if (typeof input.measureInWindow === 'function') {
       input.measureInWindow((_x: number, y: number, _width: number, height: number) => {
         const windowHeight = Dimensions.get('window').height;
-        const currentKbHeight = keyboardHeightRef.current;
+        // No Android o sistema já redimensiona a janela com o teclado aberto (adjustResize).
+        // No iOS a janela permanece estática, então subtraímos a altura do teclado.
+        const currentKbHeight = Platform.OS === 'ios' ? keyboardHeightRef.current : 0;
         const keyboardTop = windowHeight - currentKbHeight;
         const inputBottom = y + height;
 
@@ -89,7 +92,7 @@ export function KeyboardAvoidingScrollView({
   };
 
   const scrollToFocusedInput = () => {
-    const focusedInput = TextInput.State?.currentlyFocusedInput?.();
+    const focusedInput: unknown = TextInput.State.currentlyFocusedInput();
     if (focusedInput) {
       scrollToInput(focusedInput);
     }
@@ -132,6 +135,16 @@ export function KeyboardAvoidingScrollView({
     onScroll?.(event);
   };
 
+  const effectivePaddingBottom =
+    Platform.OS === 'ios' ? keyboardHeight + bottomOffset : keyboardHeight > 0 ? bottomOffset : 0;
+
+  const effectivePaddingBottom =
+    Platform.OS === 'ios'
+      ? keyboardHeight + bottomOffset
+      : keyboardHeight > 0
+        ? bottomOffset
+        : 0;
+
   return (
     <KeyboardScrollContext.Provider value={handleInputFocus}>
       <ScrollView
@@ -140,7 +153,7 @@ export function KeyboardAvoidingScrollView({
         onScroll={handleScroll}
         scrollEventThrottle={16}
         {...props}
-        contentContainerStyle={[contentContainerStyle, { paddingBottom: keyboardHeight }]}
+        contentContainerStyle={[contentContainerStyle, { paddingBottom: effectivePaddingBottom }]}
       >
         <View
           ref={contentRef}

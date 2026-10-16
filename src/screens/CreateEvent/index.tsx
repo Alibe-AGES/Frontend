@@ -6,7 +6,6 @@ import { Participant, ParticipantAvatars } from '@/components/ParticipantAvatars
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import tw from 'twrnc';
 import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
 
 export interface CreateEventScreenProps {
