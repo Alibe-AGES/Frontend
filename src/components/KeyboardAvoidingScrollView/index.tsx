@@ -141,12 +141,9 @@ export function KeyboardAvoidingScrollView({
     onScroll?.(event);
   };
 
-  let effectivePaddingBottom = 0;
-  if (Platform.OS === 'ios') {
-    effectivePaddingBottom = keyboardHeight + bottomOffset;
-  } else if (keyboardHeight > 0) {
-    effectivePaddingBottom = bottomOffset;
-  }
+  const androidPaddingBottom = keyboardHeight > 0 ? bottomOffset : 0;
+  const effectivePaddingBottom =
+    Platform.OS === 'ios' ? keyboardHeight + bottomOffset : androidPaddingBottom;
 
   return (
     <KeyboardScrollContext.Provider value={handleInputFocus}>

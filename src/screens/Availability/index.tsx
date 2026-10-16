@@ -3,10 +3,11 @@ import { AvailabilityInterval } from '@/components/AvailabilityCard/Availability
 import { Avatar } from '@/components/Avatar';
 import { BackButton } from '@/components/BackButton';
 import { Button } from '@/components/Button';
+import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 export interface AvailabilityParticipant {
@@ -93,7 +94,7 @@ export function AvailabilityScreen({
   };
 
   return (
-    <ScrollView
+    <KeyboardAvoidingScrollView
       className="flex-1"
       style={{ backgroundColor: '#FFFBF6' }}
       contentContainerClassName="gap-6 px-6 py-16"
@@ -186,6 +187,6 @@ export function AvailabilityScreen({
           disabled={isSubmitting}
         />
       </View>
-    </ScrollView>
+    </KeyboardAvoidingScrollView>
   );
 }
