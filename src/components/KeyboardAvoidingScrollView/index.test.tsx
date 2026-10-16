@@ -2,7 +2,7 @@ import { act, render } from '@testing-library/react-native';
 import type { KeyboardEvent } from 'react-native';
 import { Keyboard, Platform, Text, TextInput } from 'react-native';
 
-import { KeyboardAvoidingScrollView } from './index';
+import { KeyboardAvoidingScrollView, useKeyboardScrollContext } from './index';
 
 type KeyboardListener = (event: KeyboardEvent) => void;
 
@@ -112,5 +112,161 @@ describe('<KeyboardAvoidingScrollView />', () => {
     expect(bottomPadding(getStyle())).toContain('"paddingBottom":0');
 
     Object.defineProperty(Platform, 'OS', { get: () => 'ios', configurable: true });
+  });
+
+  test('falls back to measureInWindow when measureLayout calls onFail', async () => {
+    jest.useFakeTimers();
+    const mockMeasureInWindow = jest.fn(
+      (cb: (x: number, y: number, w: number, h: number) => void) => {
+        cb(0, 1100, 100, 50);
+      }
+    );
+    const mockMeasureLayout = jest.fn((_ref: unknown, _onSuccess: unknown, onFail: () => void) => {
+      onFail();
+    });
+
+    jest.spyOn(TextInput.State, 'currentlyFocusedInput').mockReturnValue({
+      measureLayout: mockMeasureLayout,
+      measureInWindow: mockMeasureInWindow,
+    } as unknown as ReturnType<typeof TextInput.State.currentlyFocusedInput>);
+
+    await render(
+      <KeyboardAvoidingScrollView testID="keyboard-scroll">
+        <Text>Conteúdo</Text>
+      </KeyboardAvoidingScrollView>
+    );
+
+    await emit('Show', 300);
+
+    await act(() => {
+      jest.advanceTimersByTime(150);
+    });
+
+    expect(mockMeasureLayout).toHaveBeenCalled();
+    expect(mockMeasureInWindow).toHaveBeenCalled();
+    jest.useRealTimers();
+  });
+
+  test('falls back to measureInWindow when measureLayout throws an error', async () => {
+    jest.useFakeTimers();
+    const mockMeasureInWindow = jest.fn(
+      (cb: (x: number, y: number, w: number, h: number) => void) => {
+        cb(0, 200, 100, 50);
+      }
+    );
+    const mockMeasureLayout = jest.fn(() => {
+      throw new Error('measurement error');
+    });
+
+    jest.spyOn(TextInput.State, 'currentlyFocusedInput').mockReturnValue({
+      measureLayout: mockMeasureLayout,
+      measureInWindow: mockMeasureInWindow,
+    } as unknown as ReturnType<typeof TextInput.State.currentlyFocusedInput>);
+
+    await render(
+      <KeyboardAvoidingScrollView testID="keyboard-scroll">
+        <Text>Conteúdo</Text>
+      </KeyboardAvoidingScrollView>
+    );
+
+    await emit('Show', 300);
+
+    await act(() => {
+      jest.advanceTimersByTime(150);
+    });
+
+    expect(mockMeasureInWindow).toHaveBeenCalled();
+    jest.useRealTimers();
+  });
+
+  test('measures directly with measureInWindow when measureLayout is not provided', async () => {
+    jest.useFakeTimers();
+    const mockMeasureInWindow = jest.fn(
+      (cb: (x: number, y: number, w: number, h: number) => void) => {
+        cb(0, 700, 100, 50);
+      }
+    );
+
+    jest.spyOn(TextInput.State, 'currentlyFocusedInput').mockReturnValue({
+      measureInWindow: mockMeasureInWindow,
+    } as unknown as ReturnType<typeof TextInput.State.currentlyFocusedInput>);
+
+    await render(
+      <KeyboardAvoidingScrollView testID="keyboard-scroll">
+        <Text>Conteúdo</Text>
+      </KeyboardAvoidingScrollView>
+    );
+
+    await emit('Show', 300);
+
+    await act(() => {
+      jest.advanceTimersByTime(150);
+    });
+
+    expect(mockMeasureInWindow).toHaveBeenCalled();
+    jest.useRealTimers();
+  });
+
+  test('notifies scrollToInput via context when focused input triggers focus while keyboard is active', async () => {
+    jest.useFakeTimers();
+    const mockMeasureInWindow = jest.fn(
+      (cb: (x: number, y: number, w: number, h: number) => void) => {
+        cb(0, 500, 100, 50);
+      }
+    );
+    const mockInput = { measureInWindow: mockMeasureInWindow };
+
+    function FocusableChild() {
+      const notifyFocus = useKeyboardScrollContext();
+      return (
+        <Text
+          testID="trigger-focus-child"
+          onPress={() => {
+            notifyFocus?.(mockInput);
+            notifyFocus?.(null);
+          }}
+        >
+          Foco
+        </Text>
+      );
+    }
+
+    const { getByTestId } = await render(
+      <KeyboardAvoidingScrollView testID="keyboard-scroll">
+        <FocusableChild />
+      </KeyboardAvoidingScrollView>
+    );
+
+    await emit('Show', 300);
+
+    await act(() => {
+      (getByTestId('trigger-focus-child').props as { onPress: () => void }).onPress();
+      jest.advanceTimersByTime(100);
+    });
+
+    expect(mockMeasureInWindow).toHaveBeenCalled();
+    jest.useRealTimers();
+  });
+
+  test('forwards scroll events and records offset', async () => {
+    const onScrollMock = jest.fn();
+    const { getByTestId } = await render(
+      <KeyboardAvoidingScrollView
+        testID="keyboard-scroll"
+        onScroll={onScrollMock}
+      >
+        <Text>Conteúdo</Text>
+      </KeyboardAvoidingScrollView>
+    );
+
+    await act(() => {
+      (
+        getByTestId('keyboard-scroll').props as {
+          onScroll: (e: { nativeEvent: { contentOffset: { y: number } } }) => void;
+        }
+      ).onScroll({ nativeEvent: { contentOffset: { y: 120 } } });
+    });
+
+    expect(onScrollMock).toHaveBeenCalled();
   });
 });
