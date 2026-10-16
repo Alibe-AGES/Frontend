@@ -248,6 +248,31 @@ describe('<KeyboardAvoidingScrollView />', () => {
     jest.useRealTimers();
   });
 
+  test('keeps the context focus handler stable across rerenders', async () => {
+    const observedHandlers: (((input: unknown) => void) | null)[] = [];
+
+    function FocusableChild({ label }: { label: string }) {
+      observedHandlers.push(useKeyboardScrollContext());
+      return <Text>{label}</Text>;
+    }
+
+    const { rerender } = await render(
+      <KeyboardAvoidingScrollView>
+        <FocusableChild label="First" />
+      </KeyboardAvoidingScrollView>
+    );
+
+    await act(() =>
+      rerender(
+        <KeyboardAvoidingScrollView>
+          <FocusableChild label="Second" />
+        </KeyboardAvoidingScrollView>
+      )
+    );
+
+    expect(observedHandlers[1]).toBe(observedHandlers[0]);
+  });
+
   test('forwards scroll events and records offset', async () => {
     const onScrollMock = jest.fn();
     const { getByTestId } = await render(

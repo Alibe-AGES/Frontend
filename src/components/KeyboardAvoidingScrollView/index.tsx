@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type { KeyboardEvent, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { Dimensions, Keyboard, Platform, ScrollView, TextInput, View } from 'react-native';
 
@@ -30,7 +30,7 @@ export function KeyboardAvoidingScrollView({
   const keyboardHeightRef = useRef(0);
   const scrollYRef = useRef(0);
 
-  const measureWithWindow = (focusedInput: unknown) => {
+  const measureWithWindow = useCallback((focusedInput: unknown) => {
     const input = focusedInput as {
       measureInWindow?: (cb: (x: number, y: number, w: number, h: number) => void) => void;
     };
@@ -52,59 +52,65 @@ export function KeyboardAvoidingScrollView({
         }
       });
     }
-  };
+  }, []);
 
-  const scrollToInput = (input: unknown) => {
-    if (!input) {
-      return;
-    }
-
-    const nativeInput = input as {
-      measureLayout?: (
-        relativeTo: unknown,
-        onSuccess: (left: number, top: number, width: number, height: number) => void,
-        onFail: () => void
-      ) => void;
-    };
-
-    if (contentRef.current && typeof nativeInput.measureLayout === 'function') {
-      try {
-        nativeInput.measureLayout(
-          contentRef.current,
-          (_left: number, top: number) => {
-            scrollRef.current?.scrollTo({
-              y: Math.max(0, top - topOffset),
-              animated: true,
-            });
-          },
-          () => {
-            measureWithWindow(input);
-          }
-        );
-        return;
-      } catch {
-        measureWithWindow(input);
+  const scrollToInput = useCallback(
+    (input: unknown) => {
+      if (!input) {
         return;
       }
-    }
 
-    measureWithWindow(input);
-  };
+      const nativeInput = input as {
+        measureLayout?: (
+          relativeTo: unknown,
+          onSuccess: (left: number, top: number, width: number, height: number) => void,
+          onFail: () => void
+        ) => void;
+      };
 
-  const scrollToFocusedInput = () => {
+      if (contentRef.current && typeof nativeInput.measureLayout === 'function') {
+        try {
+          nativeInput.measureLayout(
+            contentRef.current,
+            (_left: number, top: number) => {
+              scrollRef.current?.scrollTo({
+                y: Math.max(0, top - topOffset),
+                animated: true,
+              });
+            },
+            () => {
+              measureWithWindow(input);
+            }
+          );
+          return;
+        } catch {
+          measureWithWindow(input);
+          return;
+        }
+      }
+
+      measureWithWindow(input);
+    },
+    [measureWithWindow, topOffset]
+  );
+
+  const scrollToFocusedInput = useCallback(() => {
     const focusedInput: unknown = TextInput.State.currentlyFocusedInput();
     if (focusedInput) {
       scrollToInput(focusedInput);
     }
-  };
+  }, [scrollToInput]);
 
-  const handleInputFocus = (input: unknown) => {
-    if (keyboardHeightRef.current > 0) {
-      setTimeout(() => {
-        scrollToInput(input);
-      }, 50);
-    }
-  };
+  const handleInputFocus = useCallback(
+    (input: unknown) => {
+      if (keyboardHeightRef.current > 0) {
+        setTimeout(() => {
+          scrollToInput(input);
+        }, 50);
+      }
+    },
+    [scrollToInput]
+  );
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout> | undefined;
@@ -128,15 +134,19 @@ export function KeyboardAvoidingScrollView({
       showSubscription.remove();
       hideSubscription.remove();
     };
-  }, [topOffset]);
+  }, [scrollToFocusedInput]);
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     scrollYRef.current = event.nativeEvent.contentOffset.y;
     onScroll?.(event);
   };
 
-  const effectivePaddingBottom =
-    Platform.OS === 'ios' ? keyboardHeight + bottomOffset : keyboardHeight > 0 ? bottomOffset : 0;
+  let effectivePaddingBottom = 0;
+  if (Platform.OS === 'ios') {
+    effectivePaddingBottom = keyboardHeight + bottomOffset;
+  } else if (keyboardHeight > 0) {
+    effectivePaddingBottom = bottomOffset;
+  }
 
   return (
     <KeyboardScrollContext.Provider value={handleInputFocus}>
