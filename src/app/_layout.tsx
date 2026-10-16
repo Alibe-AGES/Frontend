@@ -12,9 +12,10 @@ import { usePathname } from 'expo-router';
 import { Stack } from 'expo-router/stack';
 import * as SplashScreen from 'expo-splash-screen';
 import { polyfillWebCrypto } from 'expo-standard-web-crypto';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Toast from 'react-native-toast-message';
 
+import { AnimatedSplash } from '@/screens/AnimatedSplash';
 import { AuthenticatedRoute } from '@/components/AuthenticatedRoute';
 import { SignUpDraftProvider } from '@/hooks/useSignUpDraft';
 
@@ -24,6 +25,7 @@ void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const pathname = usePathname();
+  const [isSplashVisible, setIsSplashVisible] = useState(true);
   const [fontsLoaded] = useFonts({
     Poppins_300Light,
     Poppins_400Regular,
@@ -33,15 +35,13 @@ export default function RootLayout() {
     Poppins_900Black,
   });
 
-  useEffect(() => {
-    if (fontsLoaded) {
-      void SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
+  // Everything the app waits for before leaving the splash.
+  const isAppReady = fontsLoaded;
 
-  if (!fontsLoaded) {
-    return null;
-  }
+  useEffect(() => {
+    // The animated splash takes over from the native one, which only shows the background.
+    void SplashScreen.hideAsync();
+  }, []);
 
   const stack = (
     <Stack screenOptions={{ headerShown: false }}>
@@ -56,7 +56,17 @@ export default function RootLayout() {
 
   return (
     <SignUpDraftProvider>
-      <AuthenticatedRoute enabled={!isPublicRoute}>{stack}</AuthenticatedRoute>
+      {isAppReady ? (
+        <AuthenticatedRoute enabled={!isPublicRoute}>{stack}</AuthenticatedRoute>
+      ) : null}
+      {isSplashVisible ? (
+        <AnimatedSplash
+          isReady={isAppReady}
+          onFinish={() => {
+            setIsSplashVisible(false);
+          }}
+        />
+      ) : null}
       <Toast />
     </SignUpDraftProvider>
   );
