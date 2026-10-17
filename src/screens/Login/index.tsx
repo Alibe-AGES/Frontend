@@ -5,8 +5,9 @@ import { PasswordInput } from '@/components/PasswordInput';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import tw from 'twrnc';
+import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
 
 import LoginHandsDecoration from '@/assets/images/login-hands-decoration.svg';
 
@@ -35,7 +36,7 @@ export function LoginScreen({
   const canContinue = trimmedEmail.length > 0 && password.length > 0;
 
   return (
-    <ScrollView
+    <KeyboardAvoidingScrollView
       className="flex-1 bg-canvas"
       contentContainerClassName="flex-grow px-6"
       keyboardShouldPersistTaps="handled"
@@ -128,6 +129,6 @@ export function LoginScreen({
           />
         </View>
       </View>
-    </ScrollView>
+    </KeyboardAvoidingScrollView>
   );
 }

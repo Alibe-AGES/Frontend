@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { TextInput as RNTextInput, Text, View } from 'react-native';
 
+import { useKeyboardScrollContext } from '@/components/KeyboardAvoidingScrollView';
 import { theme } from '@/theme';
 import { isValidTime, maskTime, TIME_LENGTH } from '@/utils/time';
 import type { TimeInputProps } from './TimeInput.types';
@@ -18,10 +19,13 @@ export function TimeInput({
   error,
   disabled = false,
   onBlur,
+  onFocus,
   testID = 'alibe-time-input',
 }: TimeInputProps) {
   const [formatError, setFormatError] = useState<string | null>(null);
   const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<RNTextInput>(null);
+  const onKeyboardScrollFocus = useKeyboardScrollContext();
 
   const handleChangeText = (text: string) => {
     setFormatError(null);
@@ -30,6 +34,10 @@ export function TimeInput({
 
   const handleFocus = () => {
     setIsFocused(true);
+    onFocus?.();
+    if (inputRef.current) {
+      onKeyboardScrollFocus?.(inputRef.current);
+    }
   };
 
   const handleBlur = () => {
@@ -71,6 +79,7 @@ export function TimeInput({
           />
         </View>
         <RNTextInput
+          ref={inputRef}
           accessibilityLabel={label ?? placeholder}
           accessibilityState={{ disabled }}
           className="flex-1 py-2 font-poppins text-base text-ink outline-none"
