@@ -61,6 +61,7 @@ Current route ownership:
 | `/group/[id]/day/[date]`                                 | Day detail stack                               |
 | `/group/[id]/create-event`, `/group/[id]/event-created`  | Event creation modal and confirmation          |
 | `/group/[id]/info`, `/group/[id]/leave`                  | Group information and leave confirmation modal |
+| `/group/[id]/notifications`                              | Group notifications list                       |
 | `/group/[id]/memories`, `/group/[id]/memories/new`       | Memories stack                                 |
 | `/group/[id]/experiences`, `/group/[id]/experiences/new` | Experiences stack                              |
 

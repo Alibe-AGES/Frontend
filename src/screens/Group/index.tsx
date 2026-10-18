@@ -188,6 +188,14 @@ export function GroupScreen() {
     router.push({ pathname: '/group/[id]/info', params: { id: groupId } });
   };
 
+  const handleOpenNotifications = () => {
+    if (!groupId) {
+      return;
+    }
+
+    router.push({ pathname: '/group/[id]/notifications', params: { id: groupId } });
+  };
+
   const membersText = members.map((member) => member.name).join(', ');
 
   return (
@@ -197,11 +205,25 @@ export function GroupScreen() {
         contentContainerClassName="gap-6 px-6 pb-32 pt-16"
         testID="group-screen"
       >
-        <View className="flex-row items-center">
+        <View className="flex-row items-center justify-between">
           <BackButton
             fallbackHref="/groups"
             accessibilityLabel="Voltar para meus grupos"
           />
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Ver notificações do grupo"
+            hitSlop={12}
+            onPress={handleOpenNotifications}
+            testID="group-screen-notifications"
+          >
+            <Ionicons
+              name="notifications-outline"
+              size={24}
+              color={theme.colors.ink}
+            />
+          </Pressable>
         </View>
 
         <Pressable

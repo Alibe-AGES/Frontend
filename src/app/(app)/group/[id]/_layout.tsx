@@ -20,6 +20,10 @@ export default function GroupLayout() {
         options={{ title: 'Group info' }}
       />
       <Stack.Screen
+        name="notifications"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
         name="leave"
         options={{ presentation: 'modal', title: 'Leave group' }}
       />
