@@ -4,24 +4,23 @@ import { FC } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import tw from 'twrnc';
 import { NotificationCardProps } from './NotificationCard.types';
-import { getNotificationContent, getNotificationPlainText } from './notificationContent';
+import { getNotificationContent } from './notificationContent';
 
 export type {
   AppNotification,
   NotificationCardProps,
   NotificationType,
 } from './NotificationCard.types';
-export { getNotificationContent, getNotificationPlainText } from './notificationContent';
+export { getNotificationContent } from './notificationContent';
 
 export const NotificationCard: FC<NotificationCardProps> = ({
   notification,
   onPress,
+  onActionPress,
   onDismiss,
-  showGroupName = false,
   testID = 'alibe-notification-card',
 }) => {
-  const { icon, message, actionLabel } = getNotificationContent(notification);
-  const handlePress = () => onPress?.(notification);
+  const { icon, actionLabel } = getNotificationContent(notification.type);
 
   return (
     <View
@@ -32,42 +31,27 @@ export const NotificationCard: FC<NotificationCardProps> = ({
         {/* Sibling pressables: nesting buttons is invalid HTML on web. */}
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Abrir grupo ${notification.groupName}: ${getNotificationPlainText(notification)}`}
-          onPress={handlePress}
+          accessibilityLabel={`Abrir grupo: ${notification.message}`}
+          onPress={() => onPress?.(notification)}
           style={({ pressed }) => tw`${pressed ? 'opacity-75' : 'opacity-100'}`}
           className="gap-1 pr-5 pt-3"
           testID={testID}
         >
-          {showGroupName ? (
-            <Text
-              className="font-poppins-semibold text-xs uppercase tracking-wide text-ink"
-              numberOfLines={1}
-              testID={`${testID}-group`}
-            >
-              {notification.groupName}
-            </Text>
-          ) : null}
-
           <Text
             className="font-poppins text-sm leading-5 text-wine"
             testID={`${testID}-message`}
           >
-            {message.map((segment, index) => (
-              <Text
-                key={index}
-                className={segment.bold ? 'font-poppins-semibold' : undefined}
-              >
-                {segment.text}
-              </Text>
-            ))}
+            {notification.message}
           </Text>
         </Pressable>
 
-        {actionLabel ? (
+        {onActionPress ? (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={actionLabel}
-            onPress={handlePress}
+            onPress={() => {
+              onActionPress(notification);
+            }}
             style={({ pressed }) => tw`${pressed ? 'opacity-75' : 'opacity-100'}`}
             className="flex-row items-center justify-center gap-2 rounded-full bg-ink px-4 py-2"
             testID={`${testID}-action`}

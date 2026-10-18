@@ -1,54 +1,111 @@
-import type { AppNotification } from '@/components/NotificationCard';
-import { mockNotifications } from './mock/notifications';
+import type { AppNotification, NotificationType } from '@/components/NotificationCard';
+import { API_BASE_URL } from '@/constants';
+import { ApiError } from './api';
+import { authenticatedFetch } from './auth';
 
-// TODO(ALI-94): swap for the real endpoints once the backend defines them.
-// Until then every group gets a copy of the fixtures, kept in memory, so the
-// screen can be built and tested against any real group id.
-const MOCK_DELAY_MS = 400;
+export const NOTIFICATIONS_PAGE_SIZE = 7;
 
-const store = new Map<string, AppNotification[]>();
-
-function wait() {
-  return new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
+export interface NotificationsPage {
+  notifications: AppNotification[];
+  hasMore: boolean;
 }
 
-function getStoredNotifications(groupId: string): AppNotification[] {
-  const stored = store.get(groupId);
-  if (stored) {
-    return stored;
+interface RawNotification {
+  id?: unknown;
+  type?: unknown;
+  message?: unknown;
+  createdAt?: unknown;
+  eventId?: unknown;
+  eventID?: unknown;
+}
+
+interface RawPageMeta {
+  totalPages?: unknown;
+  lastPage?: unknown;
+  hasNextPage?: unknown;
+}
+
+const NOTIFICATION_TYPES: readonly NotificationType[] = ['match', 'createdEvent'];
+
+function isNotificationType(value: unknown): value is NotificationType {
+  return NOTIFICATION_TYPES.includes(value as NotificationType);
+}
+
+function parseNotification(raw: RawNotification): AppNotification | null {
+  if (typeof raw.id !== 'string' || !isNotificationType(raw.type)) {
+    return null;
   }
 
-  const seeded = mockNotifications.map((notification) => ({
-    ...notification,
-    id: `${groupId}-${notification.id}`,
-    groupId,
-  }));
-  store.set(groupId, seeded);
+  const eventId = raw.eventId ?? raw.eventID;
 
-  return seeded;
+  return {
+    id: raw.id,
+    type: raw.type,
+    message: typeof raw.message === 'string' ? raw.message : '',
+    createdAt: typeof raw.createdAt === 'string' ? raw.createdAt : '',
+    eventId: typeof eventId === 'string' ? eventId : null,
+  };
 }
 
-export async function getGroupNotifications(groupId: string): Promise<AppNotification[]> {
-  await wait();
+// The pagination envelope is not final yet: accept a bare array or { data, meta }.
+function parsePage(body: unknown, page: number, limit: number): NotificationsPage {
+  const envelope = (body ?? {}) as { data?: unknown; items?: unknown; meta?: RawPageMeta };
+  const rawList = Array.isArray(body) ? body : (envelope.data ?? envelope.items);
+  const list = Array.isArray(rawList) ? (rawList as RawNotification[]) : [];
+  const notifications = list
+    .map(parseNotification)
+    .filter((notification): notification is AppNotification => notification !== null);
 
-  return getStoredNotifications(groupId);
+  const meta = envelope.meta;
+  const totalPages = meta?.totalPages ?? meta?.lastPage;
+  const hasMore =
+    typeof meta?.hasNextPage === 'boolean'
+      ? meta.hasNextPage
+      : typeof totalPages === 'number'
+        ? page < totalPages
+        : list.length >= limit;
+
+  return { notifications, hasMore };
 }
 
-export async function dismissNotification(groupId: string, notificationId: string): Promise<void> {
-  await wait();
+async function throwIfFailed(response: Response, fallback: string) {
+  if (!response.ok) {
+    const text = await response.text();
+    throw new ApiError(text || response.statusText || fallback, response.status);
+  }
+}
 
-  store.set(
-    groupId,
-    getStoredNotifications(groupId).filter((notification) => notification.id !== notificationId)
+export async function getGroupNotifications(
+  groupId: string,
+  page = 1,
+  limit = NOTIFICATIONS_PAGE_SIZE
+): Promise<NotificationsPage> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/groups/${groupId}/notifications?page=${String(page)}&limit=${String(limit)}`
   );
+
+  await throwIfFailed(response, 'Não foi possível carregar as notificações');
+
+  return parsePage(await response.json(), page, limit);
 }
 
-export async function clearGroupNotifications(groupId: string): Promise<void> {
-  await wait();
+export async function markNotificationAsRead(
+  groupId: string,
+  notificationId: string
+): Promise<void> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/groups/${groupId}/notifications/${notificationId}/read`,
+    { method: 'PATCH' }
+  );
 
-  store.set(groupId, []);
+  await throwIfFailed(response, 'Não foi possível marcar a notificação como lida');
 }
 
-export function resetMockNotifications() {
-  store.clear();
+export async function markAllNotificationsAsRead(groupId: string): Promise<void> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/groups/${groupId}/notifications/read`,
+    { method: 'PATCH' }
+  );
+
+  await throwIfFailed(response, 'Não foi possível limpar as notificações');
 }

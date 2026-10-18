@@ -16,12 +16,16 @@ export interface NotificationsScreenProps {
   groupPhoto: string | null;
   membersText: string;
   notifications: AppNotification[];
+  hasMore: boolean;
   isLoading: boolean;
+  isLoadingMore: boolean;
   isClearing: boolean;
   errorMessage: string | null;
   onPressNotification: (notification: AppNotification) => void;
+  onActionPressNotification: (notification: AppNotification) => void;
   onDismissNotification: (id: string) => void;
   onClearNotifications: () => void;
+  onLoadMore: () => void;
   onRetry: () => void;
 }
 
@@ -31,12 +35,16 @@ export function NotificationsScreen({
   groupPhoto,
   membersText,
   notifications,
+  hasMore,
   isLoading,
+  isLoadingMore,
   isClearing,
   errorMessage,
   onPressNotification,
+  onActionPressNotification,
   onDismissNotification,
   onClearNotifications,
+  onLoadMore,
   onRetry,
 }: NotificationsScreenProps) {
   const groupPhotoSource = useAuthenticatedImageSource(groupPhoto);
@@ -140,12 +148,23 @@ export function NotificationsScreen({
                 key={notification.id}
                 notification={notification}
                 onPress={onPressNotification}
+                onActionPress={onActionPressNotification}
                 onDismiss={onDismissNotification}
                 testID={`notifications-card-${notification.id}`}
               />
             ))}
 
-            <View className="items-center pt-2">
+            <View className="items-center gap-3 pt-2">
+              {hasMore ? (
+                <Button
+                  title="Carregar mais"
+                  variant="secondary"
+                  isLoading={isLoadingMore}
+                  onPress={onLoadMore}
+                  testID="notifications-load-more"
+                />
+              ) : null}
+
               <Button
                 title="Limpar notificações"
                 variant="tertiary"

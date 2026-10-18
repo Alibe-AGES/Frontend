@@ -61,20 +61,20 @@ describe('<ComponentGalleryScreen /> notification card', () => {
   test('dismisses a notification and restores the list', async () => {
     const { getByTestId, queryByTestId, getByText } = await render(<ComponentGalleryScreen />);
 
-    await fireEvent.press(getByTestId('gallery-notification-notification-4-dismiss'));
+    await fireEvent.press(getByTestId('gallery-notification-notification-3-dismiss'));
 
-    expect(queryByTestId('gallery-notification-notification-4')).toBeNull();
+    expect(queryByTestId('gallery-notification-notification-3')).toBeNull();
 
     await fireEvent.press(getByText('Restaurar notificações'));
 
-    expect(getByTestId('gallery-notification-notification-4')).toBeTruthy();
+    expect(getByTestId('gallery-notification-notification-3')).toBeTruthy();
   });
 
-  test('shows which group a tapped notification would open', async () => {
+  test('shows where a notification action would lead', async () => {
     const { getByTestId, getByText } = await render(<ComponentGalleryScreen />);
 
-    await fireEvent.press(getByTestId('gallery-notification-notification-1'));
+    await fireEvent.press(getByTestId('gallery-notification-notification-2-action'));
 
-    expect(getByText('Abriria o grupo Hermanas (group-hermanas)')).toBeTruthy();
+    expect(getByText('Abriria o encontro event-2')).toBeTruthy();
   });
 });

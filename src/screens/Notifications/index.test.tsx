@@ -21,12 +21,16 @@ async function renderScreen(overrides: Partial<NotificationsScreenProps> = {}) {
     groupPhoto: null,
     membersText: 'Eu, Kata, Manu e May',
     notifications: mockNotifications,
+    hasMore: false,
     isLoading: false,
+    isLoadingMore: false,
     isClearing: false,
     errorMessage: null,
     onPressNotification: jest.fn(),
+    onActionPressNotification: jest.fn(),
     onDismissNotification: jest.fn(),
     onClearNotifications: jest.fn(),
+    onLoadMore: jest.fn(),
     onRetry: jest.fn(),
     ...overrides,
   };
@@ -57,12 +61,27 @@ describe('<NotificationsScreen />', () => {
     const { props, getByTestId } = await renderScreen();
 
     await fireEvent.press(getByTestId('notifications-card-notification-3'));
+    await fireEvent.press(getByTestId('notifications-card-notification-2-action'));
     await fireEvent.press(getByTestId('notifications-card-notification-3-dismiss'));
     await fireEvent.press(getByTestId('notifications-clear'));
 
     expect(props.onPressNotification).toHaveBeenCalledWith(mockNotifications[2]);
+    expect(props.onActionPressNotification).toHaveBeenCalledWith(mockNotifications[1]);
     expect(props.onDismissNotification).toHaveBeenCalledWith('notification-3');
     expect(props.onClearNotifications).toHaveBeenCalledTimes(1);
+  });
+
+  test('shows the load more button only when there are more pages', async () => {
+    const { queryByTestId, getByTestId, props } = await renderScreen({ hasMore: true });
+
+    await fireEvent.press(getByTestId('notifications-load-more'));
+
+    expect(props.onLoadMore).toHaveBeenCalledTimes(1);
+
+    const { queryByTestId: queryWithoutMore } = await renderScreen({ hasMore: false });
+
+    expect(queryByTestId('notifications-load-more')).toBeTruthy();
+    expect(queryWithoutMore('notifications-load-more')).toBeNull();
   });
 
   test('shows the empty state when there are no notifications', async () => {

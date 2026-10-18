@@ -56,9 +56,7 @@ export function ComponentGalleryScreen() {
   const [isSubmittingEvent, setIsSubmittingEvent] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>(mockNotifications);
-  const [lastOpenedNotification, setLastOpenedNotification] = useState<AppNotification | null>(
-    null
-  );
+  const [lastNotificationAction, setLastNotificationAction] = useState<string | null>(null);
   const isEventDraftValid =
     eventDraft.name.trim() !== '' &&
     eventDraft.address.trim() !== '' &&
@@ -109,7 +107,16 @@ export function ComponentGalleryScreen() {
           <NotificationCard
             key={notification.id}
             notification={notification}
-            onPress={setLastOpenedNotification}
+            onPress={() => {
+              setLastNotificationAction('Abriria o calendário do grupo');
+            }}
+            onActionPress={(pressed) => {
+              setLastNotificationAction(
+                pressed.type === 'match'
+                  ? 'Abriria o calendário do grupo'
+                  : `Abriria o encontro ${pressed.eventId ?? ''}`
+              );
+            }}
             onDismiss={(id) => {
               setNotifications((current) => current.filter((item) => item.id !== id));
             }}
@@ -117,16 +124,8 @@ export function ComponentGalleryScreen() {
           />
         ))}
 
-        <NotificationCard
-          notification={mockNotifications[2]}
-          showGroupName
-          testID="gallery-notification-with-group"
-        />
-
         <Text className="font-poppins text-sm text-ink">
-          {lastOpenedNotification
-            ? `Abriria o grupo ${lastOpenedNotification.groupName} (${lastOpenedNotification.groupId})`
-            : 'Toque em uma notificação para simular a navegação.'}
+          {lastNotificationAction ?? 'Toque em uma notificação para simular a navegação.'}
         </Text>
 
         <Button
@@ -134,7 +133,7 @@ export function ComponentGalleryScreen() {
           variant="secondary"
           onPress={() => {
             setNotifications(mockNotifications);
-            setLastOpenedNotification(null);
+            setLastNotificationAction(null);
           }}
         />
       </View>

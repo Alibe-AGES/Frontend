@@ -1,10 +1,11 @@
 import type { AppNotification } from '@/components/NotificationCard';
 import { NotificationsScreen } from '@/screens/Notifications';
+import { getEventDetails } from '@/server/events';
 import { getGroup, type GroupDetails } from '@/server/groups';
 import {
-  clearGroupNotifications,
-  dismissNotification,
   getGroupNotifications,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
 } from '@/server/notifications';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
@@ -13,13 +14,22 @@ const LOAD_ERROR = 'Não foi possível carregar as notificações.';
 const DISMISS_ERROR = 'Não foi possível remover a notificação. Tente de novo.';
 const CLEAR_ERROR = 'Não foi possível limpar as notificações. Tente de novo.';
 
+function mergeNotifications(current: AppNotification[], next: AppNotification[]) {
+  const knownIds = new Set(current.map((notification) => notification.id));
+
+  return [...current, ...next.filter((notification) => !knownIds.has(notification.id))];
+}
+
 export default function NotificationsController() {
   const router = useRouter();
   const { id: groupId } = useLocalSearchParams<{ id: string }>();
 
   const [group, setGroup] = useState<GroupDetails | null>(null);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -32,13 +42,15 @@ export default function NotificationsController() {
     setErrorMessage(null);
 
     try {
-      const [groupData, groupNotifications] = await Promise.all([
+      const [groupData, firstPage] = await Promise.all([
         getGroup(groupId),
-        getGroupNotifications(groupId),
+        getGroupNotifications(groupId, 1),
       ]);
 
       setGroup(groupData);
-      setNotifications(groupNotifications);
+      setNotifications(firstPage.notifications);
+      setHasMore(firstPage.hasMore);
+      setPage(1);
     } catch (error) {
       console.error('Erro ao carregar notificações', error);
       setErrorMessage(LOAD_ERROR);
@@ -51,8 +63,65 @@ export default function NotificationsController() {
     void load();
   }, [load]);
 
-  const handlePressNotification = (notification: AppNotification) => {
-    router.navigate({ pathname: '/group/[id]', params: { id: notification.groupId } });
+  const handleLoadMore = async () => {
+    if (!groupId || isLoadingMore) {
+      return;
+    }
+
+    setIsLoadingMore(true);
+
+    try {
+      const nextPage = await getGroupNotifications(groupId, page + 1);
+      setNotifications((current) => mergeNotifications(current, nextPage.notifications));
+      setHasMore(nextPage.hasMore);
+      setPage(page + 1);
+    } catch (error) {
+      console.error('Erro ao carregar mais notificações', error);
+      setErrorMessage(LOAD_ERROR);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
+
+  const openGroupCalendar = () => {
+    if (!groupId) {
+      return;
+    }
+
+    router.navigate({ pathname: '/group/[id]', params: { id: groupId } });
+  };
+
+  const openEvent = async (eventId: string) => {
+    if (!groupId) {
+      return;
+    }
+
+    try {
+      const event = await getEventDetails(eventId);
+      const date = event.date?.slice(0, 10);
+
+      if (!date) {
+        openGroupCalendar();
+        return;
+      }
+
+      router.push({
+        pathname: '/group/[id]/day/[date]',
+        params: { id: event.groupId, date },
+      });
+    } catch (error) {
+      console.error('Erro ao abrir o encontro da notificação', error);
+      openGroupCalendar();
+    }
+  };
+
+  const handleActionPress = (notification: AppNotification) => {
+    if (notification.type === 'createdEvent' && notification.eventId) {
+      void openEvent(notification.eventId);
+      return;
+    }
+
+    openGroupCalendar();
   };
 
   const handleDismissNotification = async (notificationId: string) => {
@@ -64,9 +133,9 @@ export default function NotificationsController() {
     setNotifications((current) => current.filter((item) => item.id !== notificationId));
 
     try {
-      await dismissNotification(groupId, notificationId);
+      await markNotificationAsRead(groupId, notificationId);
     } catch (error) {
-      console.error('Erro ao remover notificação', error);
+      console.error('Erro ao marcar notificação como lida', error);
       setNotifications(previous);
       setErrorMessage(DISMISS_ERROR);
     }
@@ -80,8 +149,9 @@ export default function NotificationsController() {
     setIsClearing(true);
 
     try {
-      await clearGroupNotifications(groupId);
+      await markAllNotificationsAsRead(groupId);
       setNotifications([]);
+      setHasMore(false);
     } catch (error) {
       console.error('Erro ao limpar notificações', error);
       setErrorMessage(CLEAR_ERROR);
@@ -101,12 +171,16 @@ export default function NotificationsController() {
       groupPhoto={group?.profilePic ?? null}
       membersText={group?.participants.map((member) => member.name).join(', ') ?? ''}
       notifications={notifications}
+      hasMore={hasMore}
       isLoading={isLoading}
+      isLoadingMore={isLoadingMore}
       isClearing={isClearing}
       errorMessage={errorMessage}
-      onPressNotification={handlePressNotification}
+      onPressNotification={openGroupCalendar}
+      onActionPressNotification={handleActionPress}
       onDismissNotification={(id) => void handleDismissNotification(id)}
       onClearNotifications={() => void handleClearNotifications()}
+      onLoadMore={() => void handleLoadMore()}
       onRetry={() => void load()}
     />
   );

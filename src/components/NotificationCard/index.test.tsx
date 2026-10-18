@@ -1,116 +1,96 @@
 import { mockNotifications } from '@/server/mock/notifications';
 import { fireEvent, render } from '@testing-library/react-native';
-import { AppNotification, getNotificationPlainText, NotificationCard } from './index';
+import { getNotificationContent, NotificationCard } from './index';
 
-const [eventSuggested, moodRegistered, memoryAdded, ideaFavorited, memberJoined] =
-  mockNotifications as [
-    AppNotification,
-    AppNotification,
-    AppNotification,
-    AppNotification,
-    AppNotification,
-  ];
+const [match, createdEvent] = mockNotifications;
 
 describe('<NotificationCard />', () => {
   test.each([
-    [eventSuggested, 'Um novo encontro foi sugerido!'],
-    [
-      moodRegistered,
-      'May registrou que está se sentindo triste hoje. Que tal mandar uma mensagem ou sugerir um encontro?',
-    ],
-    [memoryAdded, 'Kata adicionou uma nova foto à Cápsula do Tempo. Confira!'],
-    [ideaFavorited, 'Manu favoritou a ideia "Piquenique no Parque".'],
-    [memberJoined, 'Manu entrou no "Hermanas"'],
-  ])('builds the message for each notification type', (notification, expected) => {
-    expect(getNotificationPlainText(notification)).toBe(expected);
+    ['match', 'people-outline', 'Confira mais detalhes no calendário!'],
+    ['createdEvent', 'calendar-outline', 'Ver encontro'],
+  ] as const)('maps the %s type to its icon and action', (type, icon, actionLabel) => {
+    expect(getNotificationContent(type)).toEqual({ icon, actionLabel });
   });
 
-  test('renders the message built from props', async () => {
-    const { getByText } = await render(<NotificationCard notification={memoryAdded} />);
+  test('renders the message sent by the backend', async () => {
+    const { getByText } = await render(<NotificationCard notification={createdEvent} />);
 
-    expect(getByText('Kata adicionou uma nova foto à Cápsula do Tempo. Confira!')).toBeTruthy();
+    expect(getByText('Kata criou um novo encontro: Café na Padre Chagas.')).toBeTruthy();
   });
 
-  test('shows the calendar action only for suggested events', async () => {
-    const { getByTestId, rerender, queryByTestId } = await render(
-      <NotificationCard notification={eventSuggested} />
+  test('shows the action button only when there is an action handler', async () => {
+    const { queryByTestId, rerender, getByText } = await render(
+      <NotificationCard notification={match} />
     );
 
-    expect(getByTestId('alibe-notification-card-action')).toBeTruthy();
-
-    await rerender(<NotificationCard notification={memoryAdded} />);
-
     expect(queryByTestId('alibe-notification-card-action')).toBeNull();
+
+    await rerender(
+      <NotificationCard
+        notification={match}
+        onActionPress={jest.fn()}
+      />
+    );
+
+    expect(getByText('Confira mais detalhes no calendário!')).toBeTruthy();
   });
 
-  test('calls onPress with the notification so the screen can open its group', async () => {
+  test('calls onPress with the notification when the card is tapped', async () => {
     const onPress = jest.fn();
     const { getByTestId } = await render(
       <NotificationCard
-        notification={moodRegistered}
+        notification={createdEvent}
         onPress={onPress}
       />
     );
 
     await fireEvent.press(getByTestId('alibe-notification-card'));
 
-    expect(onPress).toHaveBeenCalledWith(moodRegistered);
+    expect(onPress).toHaveBeenCalledWith(createdEvent);
   });
 
-  test('calls onPress from the calendar action too', async () => {
+  test('calls onActionPress from the action button', async () => {
     const onPress = jest.fn();
+    const onActionPress = jest.fn();
     const { getByTestId } = await render(
       <NotificationCard
-        notification={eventSuggested}
+        notification={createdEvent}
         onPress={onPress}
+        onActionPress={onActionPress}
       />
     );
 
     await fireEvent.press(getByTestId('alibe-notification-card-action'));
 
-    expect(onPress).toHaveBeenCalledWith(eventSuggested);
+    expect(onActionPress).toHaveBeenCalledWith(createdEvent);
+    expect(onPress).not.toHaveBeenCalled();
   });
 
   test('calls onDismiss with the notification id', async () => {
     const onDismiss = jest.fn();
     const { getByLabelText } = await render(
       <NotificationCard
-        notification={ideaFavorited}
+        notification={match}
         onDismiss={onDismiss}
       />
     );
 
     await fireEvent.press(getByLabelText('Dispensar notificação'));
 
-    expect(onDismiss).toHaveBeenCalledWith('notification-4');
+    expect(onDismiss).toHaveBeenCalledWith('notification-1');
   });
 
   test('hides the dismiss button without an onDismiss handler', async () => {
-    const { queryByTestId } = await render(<NotificationCard notification={ideaFavorited} />);
+    const { queryByTestId } = await render(<NotificationCard notification={match} />);
 
     expect(queryByTestId('alibe-notification-card-dismiss')).toBeNull();
   });
 
-  test('shows the group name only when requested', async () => {
-    const { queryByTestId, rerender, getByTestId } = await render(
-      <NotificationCard notification={memoryAdded} />
-    );
+  test('exposes an accessible label with the message', async () => {
+    const { getByLabelText } = await render(<NotificationCard notification={match} />);
 
-    expect(queryByTestId('alibe-notification-card-group')).toBeNull();
-
-    await rerender(
-      <NotificationCard
-        notification={memoryAdded}
-        showGroupName
-      />
-    );
-
-    expect(getByTestId('alibe-notification-card-group').props.children).toBe('Hermanas');
-  });
-
-  test('exposes an accessible label with the group and the message', async () => {
-    const { getByLabelText } = await render(<NotificationCard notification={memberJoined} />);
-
-    expect(getByLabelText('Abrir grupo Hermanas: Manu entrou no "Hermanas"')).toBeTruthy();
+    expect(
+      getByLabelText('Abrir grupo: Deu match! Todo mundo curtiu o Piquenique no Parque.')
+    ).toBeTruthy();
   });
 });

@@ -1,10 +1,11 @@
 import type { AppNotification } from '@/components/NotificationCard';
+import { getEventDetails, type EventDetailsResponse } from '@/server/events';
 import { getGroup, type GroupDetails } from '@/server/groups';
 import { mockNotifications } from '@/server/mock/notifications';
 import {
-  clearGroupNotifications,
-  dismissNotification,
   getGroupNotifications,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
 } from '@/server/notifications';
 import { act, render, waitFor } from '@testing-library/react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -14,11 +15,14 @@ interface CapturedProps {
   groupName: string;
   membersText: string;
   notifications: AppNotification[];
+  hasMore: boolean;
   isLoading: boolean;
   errorMessage: string | null;
   onPressNotification: (notification: AppNotification) => void;
+  onActionPressNotification: (notification: AppNotification) => void;
   onDismissNotification: (id: string) => void;
   onClearNotifications: () => void;
+  onLoadMore: () => void;
 }
 
 let mockScreenProps: CapturedProps | null = null;
@@ -32,10 +36,14 @@ jest.mock('@/server/groups', () => ({
   getGroup: jest.fn(),
 }));
 
+jest.mock('@/server/events', () => ({
+  getEventDetails: jest.fn(),
+}));
+
 jest.mock('@/server/notifications', () => ({
   getGroupNotifications: jest.fn(),
-  dismissNotification: jest.fn(),
-  clearGroupNotifications: jest.fn(),
+  markNotificationAsRead: jest.fn(),
+  markAllNotificationsAsRead: jest.fn(),
 }));
 
 jest.mock('@/screens/Notifications', () => ({
@@ -50,14 +58,15 @@ const mockUseLocalSearchParams = useLocalSearchParams as jest.MockedFunction<
 >;
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
 const mockGetGroup = getGroup as jest.MockedFunction<typeof getGroup>;
+const mockGetEventDetails = getEventDetails as jest.MockedFunction<typeof getEventDetails>;
 const mockGetGroupNotifications = getGroupNotifications as jest.MockedFunction<
   typeof getGroupNotifications
 >;
-const mockDismissNotification = dismissNotification as jest.MockedFunction<
-  typeof dismissNotification
+const mockMarkNotificationAsRead = markNotificationAsRead as jest.MockedFunction<
+  typeof markNotificationAsRead
 >;
-const mockClearGroupNotifications = clearGroupNotifications as jest.MockedFunction<
-  typeof clearGroupNotifications
+const mockMarkAllNotificationsAsRead = markAllNotificationsAsRead as jest.MockedFunction<
+  typeof markAllNotificationsAsRead
 >;
 
 function screenProps(): CapturedProps {
@@ -66,6 +75,15 @@ function screenProps(): CapturedProps {
   }
   return mockScreenProps;
 }
+
+async function renderLoaded() {
+  await render(<NotificationsController />);
+  await waitFor(() => {
+    expect(screenProps().isLoading).toBe(false);
+  });
+}
+
+const [matchNotification, createdEventNotification] = mockNotifications;
 
 const group = {
   id: 'group-hermanas',
@@ -79,26 +97,26 @@ const group = {
 
 describe('NotificationsController', () => {
   const navigate = jest.fn();
+  const push = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockScreenProps = null;
     mockUseLocalSearchParams.mockReturnValue({ id: 'group-hermanas' });
-    mockUseRouter.mockReturnValue({ navigate } as unknown as ReturnType<typeof useRouter>);
+    mockUseRouter.mockReturnValue({ navigate, push } as unknown as ReturnType<typeof useRouter>);
     mockGetGroup.mockResolvedValue(group);
-    mockGetGroupNotifications.mockResolvedValue(mockNotifications);
-    mockDismissNotification.mockResolvedValue();
-    mockClearGroupNotifications.mockResolvedValue();
+    mockGetGroupNotifications.mockResolvedValue({
+      notifications: mockNotifications,
+      hasMore: false,
+    });
+    mockMarkNotificationAsRead.mockResolvedValue();
+    mockMarkAllNotificationsAsRead.mockResolvedValue();
   });
 
-  test('loads the group and its notifications', async () => {
-    await render(<NotificationsController />);
+  test('loads the group and the first page of notifications', async () => {
+    await renderLoaded();
 
-    await waitFor(() => {
-      expect(screenProps().isLoading).toBe(false);
-    });
-
-    expect(mockGetGroupNotifications).toHaveBeenCalledWith('group-hermanas');
+    expect(mockGetGroupNotifications).toHaveBeenCalledWith('group-hermanas', 1);
     expect(screenProps().groupName).toBe('Hermanas');
     expect(screenProps().membersText).toBe('Kata, Manu');
     expect(screenProps().notifications).toHaveLength(mockNotifications.length);
@@ -115,46 +133,106 @@ describe('NotificationsController', () => {
     });
   });
 
-  test('opens the notification group when a card is pressed', async () => {
-    await render(<NotificationsController />);
-    await waitFor(() => {
-      expect(screenProps().isLoading).toBe(false);
-    });
+  test('appends the next page without duplicates', async () => {
+    mockGetGroupNotifications
+      .mockResolvedValueOnce({ notifications: [matchNotification], hasMore: true })
+      .mockResolvedValueOnce({
+        notifications: [matchNotification, createdEventNotification],
+        hasMore: false,
+      });
+
+    await renderLoaded();
+    expect(screenProps().hasMore).toBe(true);
 
     await act(async () => {
-      screenProps().onPressNotification(mockNotifications[0]);
+      screenProps().onLoadMore();
       await Promise.resolve();
     });
 
+    await waitFor(() => {
+      expect(screenProps().notifications.map((item) => item.id)).toEqual([
+        'notification-1',
+        'notification-2',
+      ]);
+    });
+    expect(mockGetGroupNotifications).toHaveBeenLastCalledWith('group-hermanas', 2);
+    expect(screenProps().hasMore).toBe(false);
+  });
+
+  test('opens the group calendar when a card or a match action is pressed', async () => {
+    await renderLoaded();
+
+    await act(async () => {
+      screenProps().onPressNotification(createdEventNotification);
+      screenProps().onActionPressNotification(matchNotification);
+      await Promise.resolve();
+    });
+
+    expect(navigate).toHaveBeenCalledTimes(2);
     expect(navigate).toHaveBeenCalledWith({
       pathname: '/group/[id]',
       params: { id: 'group-hermanas' },
     });
   });
 
-  test('removes a dismissed notification', async () => {
-    await render(<NotificationsController />);
-    await waitFor(() => {
-      expect(screenProps().isLoading).toBe(false);
+  test('opens the event day when a created event action is pressed', async () => {
+    mockGetEventDetails.mockResolvedValue({
+      groupId: 'group-hermanas',
+      date: '2026-10-20',
+    } as EventDetailsResponse);
+
+    await renderLoaded();
+
+    await act(async () => {
+      screenProps().onActionPressNotification(createdEventNotification);
+      await Promise.resolve();
     });
+
+    await waitFor(() => {
+      expect(push).toHaveBeenCalledWith({
+        pathname: '/group/[id]/day/[date]',
+        params: { id: 'group-hermanas', date: '2026-10-20' },
+      });
+    });
+    expect(mockGetEventDetails).toHaveBeenCalledWith('event-2');
+  });
+
+  test('falls back to the calendar when the event cannot be loaded', async () => {
+    mockGetEventDetails.mockRejectedValue(new Error('boom'));
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    await renderLoaded();
+
+    await act(async () => {
+      screenProps().onActionPressNotification(createdEventNotification);
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(navigate).toHaveBeenCalledWith({
+        pathname: '/group/[id]',
+        params: { id: 'group-hermanas' },
+      });
+    });
+  });
+
+  test('marks a dismissed notification as read', async () => {
+    await renderLoaded();
 
     await act(async () => {
       screenProps().onDismissNotification('notification-2');
       await Promise.resolve();
     });
 
-    expect(mockDismissNotification).toHaveBeenCalledWith('group-hermanas', 'notification-2');
+    expect(mockMarkNotificationAsRead).toHaveBeenCalledWith('group-hermanas', 'notification-2');
     expect(screenProps().notifications.map((item) => item.id)).not.toContain('notification-2');
   });
 
-  test('restores a notification when dismissing fails', async () => {
-    mockDismissNotification.mockRejectedValue(new Error('boom'));
+  test('restores a notification when marking it as read fails', async () => {
+    mockMarkNotificationAsRead.mockRejectedValue(new Error('boom'));
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
 
-    await render(<NotificationsController />);
-    await waitFor(() => {
-      expect(screenProps().isLoading).toBe(false);
-    });
+    await renderLoaded();
 
     await act(async () => {
       screenProps().onDismissNotification('notification-2');
@@ -166,11 +244,8 @@ describe('NotificationsController', () => {
     });
   });
 
-  test('clears every notification of the group', async () => {
-    await render(<NotificationsController />);
-    await waitFor(() => {
-      expect(screenProps().isLoading).toBe(false);
-    });
+  test('marks every notification as read when clearing', async () => {
+    await renderLoaded();
 
     await act(async () => {
       screenProps().onClearNotifications();
@@ -180,6 +255,6 @@ describe('NotificationsController', () => {
     await waitFor(() => {
       expect(screenProps().notifications).toHaveLength(0);
     });
-    expect(mockClearGroupNotifications).toHaveBeenCalledWith('group-hermanas');
+    expect(mockMarkAllNotificationsAsRead).toHaveBeenCalledWith('group-hermanas');
   });
 });
