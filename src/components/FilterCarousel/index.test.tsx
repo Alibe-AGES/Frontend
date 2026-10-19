@@ -26,4 +26,18 @@ describe('<FilterCarousel />', () => {
     expect(onOpenFilters).toHaveBeenCalled();
     expect(getByLabelText('Tag A')).toBeSelected();
   });
+
+  test('moves selected tags to the start of the carousel', async () => {
+    const { getAllByRole } = await render(
+      <FilterCarousel
+        tags={tags}
+        selectedTagIds={['b']}
+        onToggleTag={jest.fn()}
+        onOpenFilters={jest.fn()}
+      />
+    );
+
+    const labels = getAllByRole('button').map((button) => String(button.props.accessibilityLabel));
+    expect(labels).toEqual(['Abrir filtros', 'Tag B', 'Tag A']);
+  });
 });

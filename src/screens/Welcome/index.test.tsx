@@ -1,4 +1,3 @@
-import { ExperiencesScreen } from '@/screens/Experiences';
 import { MemoriesScreen } from '@/screens/Memories';
 import { NewExperienceScreen } from '@/screens/NewExperience';
 import { NewMemoryScreen } from '@/screens/NewMemory';
@@ -7,7 +6,6 @@ import { WelcomeScreen } from './index';
 
 describe('welcome-based screens', () => {
   test.each([
-    ['Experiences', ExperiencesScreen],
     ['Memories', MemoriesScreen],
     ['New experience', NewExperienceScreen],
     ['New memory', NewMemoryScreen],

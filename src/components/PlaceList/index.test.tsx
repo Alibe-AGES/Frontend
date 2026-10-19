@@ -1,4 +1,5 @@
 import { fireEvent, render } from '@testing-library/react-native';
+import { Text } from 'react-native';
 import { Place, PlaceList } from './index';
 
 const places: Place[] = Array.from({ length: 5 }, (_, index) => ({
@@ -84,5 +85,46 @@ describe('<PlaceList />', () => {
     );
     await fireEvent.press(failed.getByLabelText('Tentar novamente'));
     expect(onRetry).toHaveBeenCalled();
+  });
+
+  test('keeps the header visible with places, empty and loading states', async () => {
+    const header = <Text>Cabeçalho</Text>;
+    const { getByText, rerender } = await render(
+      <PlaceList
+        places={places}
+        header={header}
+      />
+    );
+    expect(getByText('Cabeçalho')).toBeTruthy();
+
+    await rerender(
+      <PlaceList
+        places={places}
+        filter={() => false}
+        header={header}
+      />
+    );
+    expect(getByText('Cabeçalho')).toBeTruthy();
+    expect(getByText('Nenhum local encontrado.')).toBeTruthy();
+
+    await rerender(
+      <PlaceList
+        places={places}
+        isLoading
+        header={header}
+      />
+    );
+    expect(getByText('Cabeçalho')).toBeTruthy();
+  });
+
+  test('pads an odd last row so a lone card keeps its column width', async () => {
+    const { getByTestId } = await render(
+      <PlaceList
+        places={places.slice(0, 3)}
+        pageSize={3}
+      />
+    );
+
+    expect(getByTestId('alibe-place-list').props.data).toHaveLength(4);
   });
 });

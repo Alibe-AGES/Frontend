@@ -1,14 +1,19 @@
 import { PlaceCard } from '@/components/PlaceCard';
 import { PlaceCardColor } from '@/components/PlaceCard/PlaceCard.types';
 import { theme } from '@/theme';
-import { FC, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
-import { PlaceListProps } from './PlaceList.types';
+import { FC, ReactElement, useState } from 'react';
+import { ActivityIndicator, FlatList, Pressable, ScrollView, Text, View } from 'react-native';
+import { Place, PlaceListProps } from './PlaceList.types';
 
 export type { Place, PlaceListProps } from './PlaceList.types';
 
 // Fixed value until backend defines pagination size.
 export const DEFAULT_PLACE_PAGE_SIZE = 6;
+
+const NUM_COLUMNS = 2;
+const SPACER_KEY = '__place-list-spacer';
+
+const DEFAULT_CONTENT_CLASS_NAME = 'gap-4 pb-6';
 
 const CARD_COLORS: PlaceCardColor[] = ['coral', 'lime', 'pink', 'wine'];
 
@@ -20,12 +25,28 @@ export const PlaceList: FC<PlaceListProps> = ({
   error = null,
   onRetry,
   onPlacePress,
+  header,
+  contentContainerClassName = DEFAULT_CONTENT_CLASS_NAME,
   testID = 'alibe-place-list',
 }) => {
   const [pageCount, setPageCount] = useState(1);
 
+  // Loading, error and empty states keep the header and share the list's scrolling layout.
+  const renderState = (state: ReactElement) =>
+    header ? (
+      <ScrollView
+        contentContainerClassName={contentContainerClassName}
+        keyboardShouldPersistTaps="handled"
+      >
+        {header}
+        {state}
+      </ScrollView>
+    ) : (
+      state
+    );
+
   if (isLoading) {
-    return (
+    return renderState(
       <View
         className="items-center justify-center py-10"
         testID={`${testID}-loading`}
@@ -36,7 +57,7 @@ export const PlaceList: FC<PlaceListProps> = ({
   }
 
   if (error) {
-    return (
+    return renderState(
       <View
         className="items-center justify-center gap-3 rounded-3xl bg-surface p-6"
         testID={`${testID}-error`}
@@ -59,7 +80,7 @@ export const PlaceList: FC<PlaceListProps> = ({
   const filteredPlaces = filter ? places.filter(filter) : places;
 
   if (filteredPlaces.length === 0) {
-    return (
+    return renderState(
       <View
         className="items-center justify-center rounded-3xl bg-surface p-6"
         testID={`${testID}-empty`}
@@ -73,26 +94,35 @@ export const PlaceList: FC<PlaceListProps> = ({
 
   const visiblePlaces = filteredPlaces.slice(0, pageSize * pageCount);
   const hasMore = visiblePlaces.length < filteredPlaces.length;
+  // A lone card in the last row keeps the width of a regular column instead of stretching.
+  const entries: (Place | null)[] =
+    visiblePlaces.length % NUM_COLUMNS === 0 ? visiblePlaces : [...visiblePlaces, null];
 
   return (
     <FlatList
-      data={visiblePlaces}
-      numColumns={2}
-      keyExtractor={(place) => place.id}
-      renderItem={({ item, index }) => (
-        <View className="flex-1">
-          <PlaceCard
-            name={item.name}
-            address={item.address}
-            imageUri={item.photoUri}
-            color={CARD_COLORS[index % CARD_COLORS.length]}
-            onClickCard={() => onPlacePress?.(item.id)}
-            testID={`${testID}-item-${item.id}`}
-          />
-        </View>
-      )}
+      data={entries}
+      numColumns={NUM_COLUMNS}
+      keyExtractor={(place) => place?.id ?? SPACER_KEY}
+      renderItem={({ item, index }) =>
+        item ? (
+          <View className="flex-1">
+            <PlaceCard
+              name={item.name}
+              address={item.address}
+              imageUri={item.photoUri}
+              color={CARD_COLORS[index % CARD_COLORS.length]}
+              onClickCard={() => onPlacePress?.(item.id)}
+              testID={`${testID}-item-${item.id}`}
+            />
+          </View>
+        ) : (
+          <View className="flex-1" />
+        )
+      }
       columnWrapperClassName="gap-4"
-      contentContainerClassName="gap-4 pb-6"
+      contentContainerClassName={contentContainerClassName}
+      ListHeaderComponent={header}
+      keyboardShouldPersistTaps="handled"
       onEndReached={() => {
         if (hasMore) {
           setPageCount((current) => current + 1);
