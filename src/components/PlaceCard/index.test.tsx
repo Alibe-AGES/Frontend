@@ -56,52 +56,6 @@ describe('<PlaceCard />', () => {
     expect(onClickCard).toHaveBeenCalledWith('Bloom Café');
   });
 
-  test('is not marked as favorite by default', async () => {
-    const { getByLabelText } = await render(
-      <PlaceCard
-        name="Bloom Café"
-        address="Endereço"
-      />
-    );
-
-    expect(getByLabelText('Favoritar Bloom Café').props.accessibilityState).toEqual(
-      expect.objectContaining({ selected: false })
-    );
-  });
-
-  test('is marked as favorite when isFavorite is true', async () => {
-    const { getByLabelText, queryByLabelText } = await render(
-      <PlaceCard
-        name="Bloom Café"
-        address="Endereço"
-        isFavorite
-      />
-    );
-
-    expect(getByLabelText('Desfavoritar Bloom Café').props.accessibilityState).toEqual(
-      expect.objectContaining({ selected: true })
-    );
-    expect(queryByLabelText('Favoritar Bloom Café')).toBeNull();
-  });
-
-  test('calls onToggleFavorite without opening the card when the star is pressed', async () => {
-    const onClickCard = jest.fn();
-    const onToggleFavorite = jest.fn();
-    const { getByLabelText } = await render(
-      <PlaceCard
-        name="Bloom Café"
-        address="Endereço"
-        onClickCard={onClickCard}
-        onToggleFavorite={onToggleFavorite}
-      />
-    );
-
-    await fireEvent.press(getByLabelText('Favoritar Bloom Café'));
-
-    expect(onToggleFavorite).toHaveBeenCalledTimes(1);
-    expect(onClickCard).not.toHaveBeenCalled();
-  });
-
   test('truncates name and address to two lines', async () => {
     const { getByTestId } = await render(
       <PlaceCard

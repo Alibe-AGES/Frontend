@@ -1,6 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react-native';
 
-jest.mock('@/server/places', () => ({ listPlaces: jest.fn() }));
 import { MOCK_PLACES } from '@/server/mock/places';
 import { usePlaces } from './usePlaces';
 

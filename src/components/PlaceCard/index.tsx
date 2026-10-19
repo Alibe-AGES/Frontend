@@ -16,8 +16,6 @@ export function PlaceCard({
   imageUri,
   color = 'coral',
   onClickCard,
-  onToggleFavorite,
-  isFavorite = false,
   testID = 'place-card',
 }: PlaceCardProps) {
   return (

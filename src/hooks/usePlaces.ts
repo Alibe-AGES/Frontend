@@ -1,7 +1,5 @@
-import { PLACES_ENDPOINT } from '@/constants';
 import { Place } from '@/components/PlaceList/PlaceList.types';
 import { MOCK_PLACES } from '@/server/mock/places';
-import { listPlaces, ServerPlace } from '@/server/places';
 import { useCallback, useEffect, useState } from 'react';
 
 interface UsePlacesResult {
@@ -11,21 +9,9 @@ interface UsePlacesResult {
   refetch: () => Promise<void>;
 }
 
-function toPlace(place: ServerPlace): Place {
-  return {
-    id: place.id,
-    name: place.name,
-    address: place.address,
-    photoUri: place.photoUrl ?? undefined,
-    category: place.category,
-  };
-}
-
-// Without a configured endpoint the hook serves mock data.
-async function loadPlaces(): Promise<Place[]> {
-  const serverPlaces = PLACES_ENDPOINT ? await listPlaces() : MOCK_PLACES;
-
-  return serverPlaces.map(toPlace);
+// Mocked until the backend locations endpoint is merged; swap this for the HTTP call then.
+function loadPlaces(): Promise<Place[]> {
+  return Promise.resolve(MOCK_PLACES);
 }
 
 export function usePlaces(): UsePlacesResult {
