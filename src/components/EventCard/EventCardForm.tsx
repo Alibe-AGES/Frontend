@@ -11,6 +11,7 @@ import { EventCardFrame } from './EventCardFrame';
 import { PillInput } from './Pill';
 
 export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: string }> = ({
+  variant = 'event',
   draft,
   onChangeDraft,
   onDatePress,
@@ -20,6 +21,8 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
   isSubmitting = false,
   testID,
 }) => {
+  const isSuggestion = variant === 'suggestion';
+
   const updateDraft = (changes: Partial<EventCardDraft>) => {
     onChangeDraft({ ...draft, ...changes });
   };
@@ -56,7 +59,9 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
           />
         </View>
         <Text className="text-center font-poppins text-sm text-white">
-          Adicione uma imagem que representa seu evento
+          {isSuggestion
+            ? 'Adicione uma imagem que representa sua sugestão'
+            : 'Adicione uma imagem que representa seu evento'}
         </Text>
       </View>
     );
@@ -131,12 +136,12 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
       testID={testID}
     >
       <TextInput
-        accessibilityLabel="Nome do evento"
+        accessibilityLabel={isSuggestion ? 'Nome da sugestão' : 'Nome do evento'}
         className="py-1 text-center font-poppins-medium text-3xl text-wine outline-none"
         onChangeText={(name) => {
           updateDraft({ name });
         }}
-        placeholder="Definir nome do evento"
+        placeholder={isSuggestion ? 'Definir nome da sugestão' : 'Definir nome do evento'}
         placeholderTextColor={theme.colors.wineSoft}
         testID={`${testID}-name-input`}
         value={draft.name}

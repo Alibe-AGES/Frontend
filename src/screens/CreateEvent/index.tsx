@@ -119,6 +119,7 @@ export function CreateEventScreen({
 
         <EventCard
           mode="create"
+          variant={activeTab}
           draft={draft}
           onChangeDraft={onChangeDraft}
           onDatePress={() => {

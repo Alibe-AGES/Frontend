@@ -145,7 +145,7 @@ describe('<CreateEventScreen />', () => {
 
   test('switches between the event and suggestion tabs when pressed', async () => {
     const onSelectTab = jest.fn();
-    const { getByTestId, rerender } = await render(
+    const { getByTestId, getByPlaceholderText, getByText, rerender } = await render(
       <CreateEventScreen {...buildProps({ activeTab: 'event', onSelectTab })} />
     );
 
@@ -155,6 +155,8 @@ describe('<CreateEventScreen />', () => {
     expect(getByTestId('create-event-tab-suggestion').props.accessibilityState).toEqual({
       selected: false,
     });
+    expect(getByPlaceholderText('Definir nome do evento')).toBeTruthy();
+    expect(getByText('Adicione uma imagem que representa seu evento')).toBeTruthy();
 
     await fireEvent.press(getByTestId('create-event-tab-suggestion'));
     expect(onSelectTab).toHaveBeenCalledWith('suggestion');
@@ -167,6 +169,8 @@ describe('<CreateEventScreen />', () => {
     expect(getByTestId('create-event-tab-suggestion').props.accessibilityState).toEqual({
       selected: true,
     });
+    expect(getByPlaceholderText('Definir nome da sugestão')).toBeTruthy();
+    expect(getByText('Adicione uma imagem que representa sua sugestão')).toBeTruthy();
 
     await fireEvent.press(getByTestId('create-event-tab-event'));
     expect(onSelectTab).toHaveBeenCalledWith('event');
