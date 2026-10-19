@@ -142,4 +142,33 @@ describe('<CreateEventScreen />', () => {
 
     expect(queryByTestId('mock-navigation-bar')).toBeNull();
   });
+
+  test('switches between the event and suggestion tabs when pressed', async () => {
+    const onSelectTab = jest.fn();
+    const { getByTestId, rerender } = await render(
+      <CreateEventScreen {...buildProps({ activeTab: 'event', onSelectTab })} />
+    );
+
+    expect(getByTestId('create-event-tab-event').props.accessibilityState).toEqual({
+      selected: true,
+    });
+    expect(getByTestId('create-event-tab-suggestion').props.accessibilityState).toEqual({
+      selected: false,
+    });
+
+    await fireEvent.press(getByTestId('create-event-tab-suggestion'));
+    expect(onSelectTab).toHaveBeenCalledWith('suggestion');
+
+    await rerender(<CreateEventScreen {...buildProps({ activeTab: 'suggestion', onSelectTab })} />);
+
+    expect(getByTestId('create-event-tab-event').props.accessibilityState).toEqual({
+      selected: false,
+    });
+    expect(getByTestId('create-event-tab-suggestion').props.accessibilityState).toEqual({
+      selected: true,
+    });
+
+    await fireEvent.press(getByTestId('create-event-tab-event'));
+    expect(onSelectTab).toHaveBeenCalledWith('event');
+  });
 });
