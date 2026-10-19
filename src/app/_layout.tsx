@@ -16,6 +16,7 @@ import { useEffect } from 'react';
 import Toast from 'react-native-toast-message';
 
 import { AuthenticatedRoute } from '@/components/AuthenticatedRoute';
+import { PendingInviteProvider } from '@/hooks/usePendingInvite';
 import { SignUpDraftProvider } from '@/hooks/useSignUpDraft';
 
 polyfillWebCrypto();
@@ -51,13 +52,15 @@ export default function RootLayout() {
       <Stack.Screen name="(app)" />
     </Stack>
   );
-  const publicPaths = ['/', '/auth', '/login', '/sign-up', '/component-gallery'];
+  const publicPaths = ['/', '/auth', '/login', '/sign-up', '/profile', '/component-gallery'];
   const isPublicRoute = publicPaths.includes(pathname);
 
   return (
     <SignUpDraftProvider>
-      <AuthenticatedRoute enabled={!isPublicRoute}>{stack}</AuthenticatedRoute>
-      <Toast />
+      <PendingInviteProvider>
+        <AuthenticatedRoute enabled={!isPublicRoute}>{stack}</AuthenticatedRoute>
+        <Toast />
+      </PendingInviteProvider>
     </SignUpDraftProvider>
   );
 }
