@@ -46,7 +46,7 @@ export function NotificationsScreen({
   onClearNotifications,
   onLoadMore,
   onRetry,
-}: NotificationsScreenProps) {
+}: Readonly<NotificationsScreenProps>) {
   const groupPhotoSource = useAuthenticatedImageSource(groupPhoto);
   const isEmpty = !isLoading && !errorMessage && notifications.length === 0;
 

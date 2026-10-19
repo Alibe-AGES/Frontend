@@ -25,10 +25,10 @@ interface RawPageMeta {
   hasNextPage?: unknown;
 }
 
-const NOTIFICATION_TYPES: readonly NotificationType[] = ['match', 'createdEvent'];
+const NOTIFICATION_TYPES = new Set<string>(['match', 'createdEvent'] satisfies NotificationType[]);
 
 function isNotificationType(value: unknown): value is NotificationType {
-  return NOTIFICATION_TYPES.includes(value as NotificationType);
+  return typeof value === 'string' && NOTIFICATION_TYPES.has(value);
 }
 
 function parseNotification(raw: RawNotification): AppNotification | null {
@@ -47,6 +47,19 @@ function parseNotification(raw: RawNotification): AppNotification | null {
   };
 }
 
+function getHasMore(meta: RawPageMeta | undefined, page: number, filledPage: boolean): boolean {
+  if (typeof meta?.hasNextPage === 'boolean') {
+    return meta.hasNextPage;
+  }
+
+  const totalPages = meta?.totalPages ?? meta?.lastPage;
+  if (typeof totalPages === 'number') {
+    return page < totalPages;
+  }
+
+  return filledPage;
+}
+
 // The pagination envelope is not final yet: accept a bare array or { data, meta }.
 function parsePage(body: unknown, page: number, limit: number): NotificationsPage {
   const envelope = (body ?? {}) as { data?: unknown; items?: unknown; meta?: RawPageMeta };
@@ -56,16 +69,7 @@ function parsePage(body: unknown, page: number, limit: number): NotificationsPag
     .map(parseNotification)
     .filter((notification): notification is AppNotification => notification !== null);
 
-  const meta = envelope.meta;
-  const totalPages = meta?.totalPages ?? meta?.lastPage;
-  const hasMore =
-    typeof meta?.hasNextPage === 'boolean'
-      ? meta.hasNextPage
-      : typeof totalPages === 'number'
-        ? page < totalPages
-        : list.length >= limit;
-
-  return { notifications, hasMore };
+  return { notifications, hasMore: getHasMore(envelope.meta, page, list.length >= limit) };
 }
 
 async function throwIfFailed(response: Response, fallback: string) {
