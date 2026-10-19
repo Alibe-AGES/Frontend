@@ -3,6 +3,8 @@ import { Calendar } from '@/components/Calendar';
 import { DayMark } from '@/components/Calendar/Calendar.types';
 import { DatePickerSheet } from '@/components/DatePickerSheet';
 import { EventCard, EventCardDraft } from '@/components/EventCard';
+import { FilterCarousel } from '@/components/FilterCarousel';
+import { EMPTY_FILTER_VALUE, FilterGroup, FilterSheet } from '@/components/FilterSheet';
 import { PlaceCard } from '@/components/PlaceCard';
 import { PlaceList } from '@/components/PlaceList';
 import { usePlaces } from '@/hooks/usePlaces';
@@ -12,6 +14,55 @@ import { isValidApiDate } from '@/utils/date';
 import { isValidTime } from '@/utils/time';
 import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
+
+const filterTags = [
+  { id: 'recommended', label: 'Recomendados' },
+  { id: 'restaurant', label: 'Restaurantes' },
+  { id: 'class', label: 'Aulas' },
+  { id: 'bar', label: 'Bares' },
+  { id: 'outdoor', label: 'Ao ar livre' },
+];
+
+const filterGroups: FilterGroup[] = [
+  {
+    key: 'distance',
+    title: 'Distância',
+    options: [
+      { value: '5', label: 'Até 5 km' },
+      { value: '10', label: 'Até 10 km' },
+      { value: 'any', label: 'Qualquer distância' },
+    ],
+  },
+  {
+    key: 'period',
+    title: 'Horário',
+    multiple: true,
+    options: [
+      { value: 'morning', label: 'Manhã' },
+      { value: 'afternoon', label: 'Tarde' },
+      { value: 'night', label: 'Noite' },
+    ],
+  },
+  {
+    key: 'environment',
+    title: 'Ambiente',
+    multiple: true,
+    options: [
+      { value: 'outdoor', label: 'Ao ar livre' },
+      { value: 'indoor', label: 'Ambiente fechado' },
+    ],
+  },
+  {
+    key: 'idealFor',
+    title: 'Ideal para',
+    multiple: true,
+    options: [
+      { value: 'pair', label: 'Dupla' },
+      { value: 'small', label: 'Grupo pequeno' },
+      { value: 'large', label: 'Grupo grande' },
+    ],
+  },
+];
 
 const dayMarks: Record<string, DayMark> = {
   '2025-05-01': { status: 'available' },
@@ -58,6 +109,9 @@ export function ComponentGalleryScreen() {
   const [isSubmittingEvent, setIsSubmittingEvent] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [filters, setFilters] = useState(EMPTY_FILTER_VALUE);
+  const [isFilterSheetVisible, setIsFilterSheetVisible] = useState(false);
   const { places, isLoading, error, refetch } = usePlaces();
   const isEventDraftValid =
     eventDraft.name.trim() !== '' &&
@@ -186,6 +240,45 @@ export function ComponentGalleryScreen() {
           />
         </View>
       </View>
+
+      <View className="gap-4 rounded-3xl bg-surface p-5">
+        <Text className="text-xl font-black text-ink">FilterCarousel + FilterSheet</Text>
+        <FilterCarousel
+          tags={filterTags}
+          selectedTagIds={selectedTagIds}
+          onToggleTag={(id) => {
+            setSelectedTagIds((current) =>
+              current.includes(id) ? current.filter((tagId) => tagId !== id) : [...current, id]
+            );
+          }}
+          onOpenFilters={() => {
+            setIsFilterSheetVisible(true);
+          }}
+          hasActiveFilters={JSON.stringify(filters) !== JSON.stringify(EMPTY_FILTER_VALUE)}
+          testID="gallery-filter-carousel"
+        />
+        <Text
+          className="font-poppins text-xs text-ink"
+          testID="gallery-filter-state"
+        >
+          {`Tags: ${selectedTagIds.join(', ') || '-'}\nFiltros: ${JSON.stringify(filters)}`}
+        </Text>
+      </View>
+
+      <FilterSheet
+        visible={isFilterSheetVisible}
+        value={filters}
+        groups={filterGroups}
+        budgetTitle="Orçamento"
+        onConfirm={(value) => {
+          setFilters(value);
+          setIsFilterSheetVisible(false);
+        }}
+        onClose={() => {
+          setIsFilterSheetVisible(false);
+        }}
+        testID="gallery-filter-sheet"
+      />
 
       <View className="gap-4 rounded-3xl bg-surface p-5">
         <Text className="text-xl font-black text-ink">PlaceList</Text>
