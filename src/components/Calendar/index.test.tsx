@@ -36,14 +36,14 @@ describe('Calendar', () => {
     const onDayPress = jest.fn();
     const { getByLabelText } = await render(
       <Calendar
-        initialDate="2026-10-01"
+        initialDate="2999-01-01"
         onDayPress={onDayPress}
       />
     );
 
-    await fireEvent.press(getByLabelText('Dia 2026-10-18'));
+    await fireEvent.press(getByLabelText('Dia 2999-01-05'));
 
-    expect(onDayPress).toHaveBeenCalledWith('2026-10-18');
+    expect(onDayPress).toHaveBeenCalledWith('2999-01-05');
   });
 
   test('forwards a date from its create action', async () => {
