@@ -1,5 +1,3 @@
-import StarFilledIcon from '@/assets/images/star-filled.svg';
-import StarIcon from '@/assets/images/star.svg';
 import { Image, Pressable, Text, View } from 'react-native';
 import { PlaceCardColor, PlaceCardProps } from './PlaceCard.types';
 
@@ -60,7 +58,7 @@ export function PlaceCard({
         </View>
       </Pressable>
 
-      <Pressable
+      {/* <Pressable
         accessibilityRole="button"
         accessibilityLabel={isFavorite ? `Desfavoritar ${name}` : `Favoritar ${name}`}
         accessibilityState={{ selected: isFavorite }}
@@ -80,7 +78,7 @@ export function PlaceCard({
             height={20}
           />
         )}
-      </Pressable>
+      </Pressable> */}
     </View>
   );
 }
