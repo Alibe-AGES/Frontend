@@ -2,6 +2,8 @@ import { fireEvent, render } from '@testing-library/react-native';
 
 import { ComponentGalleryScreen } from '.';
 
+jest.mock('@/server/places', () => ({ listPlaces: jest.fn() }));
+
 jest.mock('@/components/DatePickerSheet', () => ({
   DatePickerSheet: ({ onSelectDate }: { onSelectDate: (dateString: string) => void }) => {
     const { Pressable, Text } = jest.requireActual<typeof import('react-native')>('react-native');

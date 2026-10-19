@@ -30,3 +30,6 @@ export const API_BASE_URL: string =
     : Platform.OS === 'web'
       ? LOCAL_API_URL
       : LAN_API_URL;
+
+// Path do endpoint de locais (ex.: '/places'). Enquanto estiver vazio, useAlibePlaces usa dados mocados.
+export const PLACES_ENDPOINT = '' as string;
