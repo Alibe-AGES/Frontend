@@ -2,13 +2,7 @@ import { API_BASE_URL } from '@/constants';
 import { File } from 'expo-file-system';
 import { ApiError } from './api';
 import { authenticatedFetch } from './auth';
-import {
-  createEvent,
-  createProposal,
-  getEventDetails,
-  respondToEventProposal,
-  updateEvent,
-} from './events';
+import { createEvent, createProposal, getEventDetails, respondToEventProposal } from './events';
 
 jest.mock('./auth', () => ({
   authenticatedFetch: jest.fn((url: string, options?: RequestInit) => fetch(url, options)),
@@ -303,42 +297,6 @@ describe('createProposal', () => {
     await expect(createProposal('group-1', PROPOSAL_INPUT)).rejects.toMatchObject({
       message: 'Não foi possível criar a sugestão',
       status: 500,
-    });
-  });
-});
-
-describe('updateEvent', () => {
-  afterEach(() => {
-    global.fetch = originalFetch;
-    jest.restoreAllMocks();
-    jest.clearAllMocks();
-  });
-
-  test('patches custom location as JSON when no image is provided', async () => {
-    global.fetch = jest.fn().mockResolvedValue({ ok: true });
-
-    await expect(
-      updateEvent('event-1', { location: ' Rua João Pessoa, 123 ' })
-    ).resolves.toBeUndefined();
-
-    expect(mockAuthenticatedFetch).toHaveBeenCalledWith(`${API_BASE_URL}/api/events/event-1`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ location: 'Rua João Pessoa, 123' }),
-    });
-  });
-
-  test('throws an ApiError when updating the event fails', async () => {
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: false,
-      status: 400,
-      statusText: 'Bad Request',
-      text: () => Promise.resolve('Endereço inválido'),
-    });
-
-    await expect(updateEvent('event-1', { location: 'Rua João Pessoa' })).rejects.toMatchObject({
-      message: 'Endereço inválido',
-      status: 400,
     });
   });
 });

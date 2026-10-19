@@ -2,7 +2,7 @@ import type { EventCardDraft } from '@/components/EventCard';
 import type { Participant } from '@/components/ParticipantAvatars';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
 import { CreateEventScreen, CreateEventTab } from '@/screens/CreateEvent';
-import { createEvent, createProposal, updateEvent } from '@/server/events';
+import { createEvent, createProposal } from '@/server/events';
 import { getGroup, getMe } from '@/server/groups';
 import { isValidApiDate } from '@/utils/date';
 import { isValidTime } from '@/utils/time';
@@ -118,24 +118,12 @@ export default function CreateEventController() {
 
     try {
       if (activeTab === 'suggestion') {
-        const resolvedLocationId = resolveSuggestionLocationId(draft.address, initialLocationId);
         const proposal = await createProposal(groupId, {
-          locationId: resolvedLocationId,
+          locationId: resolveSuggestionLocationId(draft.address, initialLocationId),
           name: draft.name,
           date: draft.date,
           time: draft.time,
         });
-
-        const shouldUpdateCustomLocation =
-          resolvedLocationId === DEFAULT_SUGGESTION_LOCATION_ID &&
-          !UUID_REGEX.test(draft.address.trim());
-
-        if (shouldUpdateCustomLocation || photo) {
-          await updateEvent(proposal.event.id, {
-            ...(shouldUpdateCustomLocation ? { location: draft.address.trim() } : {}),
-            ...(photo ? { image: photo } : {}),
-          });
-        }
 
         router.replace({
           pathname: '/group/[id]/event-created',

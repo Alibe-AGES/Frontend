@@ -1,7 +1,7 @@
 import type { EventCardDraft } from '@/components/EventCard';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
 import type { CreateEventTab } from '@/screens/CreateEvent';
-import { createEvent, createProposal, updateEvent } from '@/server/events';
+import { createEvent, createProposal } from '@/server/events';
 import { getGroup, getMe } from '@/server/groups';
 import { act, render, waitFor } from '@testing-library/react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -38,7 +38,6 @@ jest.mock('react-native-toast-message', () => ({
 jest.mock('@/server/events', () => ({
   createEvent: jest.fn(),
   createProposal: jest.fn(),
-  updateEvent: jest.fn(),
 }));
 
 jest.mock('@/server/groups', () => ({
@@ -57,7 +56,6 @@ const mockUseLocalSearchParams = jest.mocked(useLocalSearchParams);
 const mockUseRouter = jest.mocked(useRouter);
 const mockCreateEvent = jest.mocked(createEvent);
 const mockCreateProposal = jest.mocked(createProposal);
-const mockUpdateEvent = jest.mocked(updateEvent);
 const mockGetGroup = jest.mocked(getGroup);
 const mockGetMe = jest.mocked(getMe);
 const mockToastShow = jest.mocked(Toast.show);
@@ -98,7 +96,6 @@ describe('CreateEventController', () => {
       id: 'proposal-1',
       event: { id: 'event-from-proposal-1' },
     } as Awaited<ReturnType<typeof createProposal>>);
-    mockUpdateEvent.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -236,7 +233,7 @@ describe('CreateEventController', () => {
     expect(mockScreenProps.isConfirmDisabled).toBe(true);
   });
 
-  test('switches to the suggestion tab, creates a proposal, and saves custom address', async () => {
+  test('switches to the suggestion tab and creates a proposal with the resolved locationId', async () => {
     await render(<CreateEventController />);
 
     expect(mockScreenProps.activeTab).toBe('event');
@@ -257,9 +254,6 @@ describe('CreateEventController', () => {
       name: ' Bloom Café ',
       date: '2026-10-15',
       time: '20:00',
-    });
-    expect(mockUpdateEvent).toHaveBeenCalledWith('event-from-proposal-1', {
-      location: 'Av. João Wallig, 1800',
     });
     expect(mockCreateEvent).not.toHaveBeenCalled();
     expect(replace).toHaveBeenCalledWith({
