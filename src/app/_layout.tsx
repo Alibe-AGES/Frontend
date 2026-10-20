@@ -73,7 +73,6 @@ export default function RootLayout() {
         barStyle="dark-content"
         backgroundColor={theme.colors.canvas}
       />
-      <AuthenticatedRoute enabled={!isPublicRoute}>{stack}</AuthenticatedRoute>
       <Toast />
     </SignUpDraftProvider>
   );
