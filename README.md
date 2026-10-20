@@ -66,6 +66,23 @@ npm run format:check
 npm run test:unit
 ```
 
+## Splash Animation
+
+The native splash (configured in `app.config.ts`) only shows the canvas color. As soon as the root layout mounts, `src/components/AnimatedSplash` covers the app and plays three `lottie-react-native` animations: the two ribbons and the logo, whose symbol and "Alibe" letters draw themselves in.
+
+The splash stays up while the app loads. The root layout passes `isReady` (today, the fonts being loaded; add any other startup work to `isAppReady` in `src/app/_layout.tsx`):
+
+- If the animation ends before the app is ready, the drawing fades away and plays again from the start.
+- If the app is ready before the animation ends, the animation still plays to the end, then the splash fades out.
+
+With the system "reduce motion" setting on, or if an animation fails to load, it shows the still ribbons and logo until the app is ready.
+
+The files in `assets/animations/` are final Lottie exports, imported directly by the component. The still versions, `assets/images/splash-detail-top.svg`, `assets/images/splash-detail-bottom.svg`, and `assets/images/splash-logo.svg`, match the last frame of each animation; when an animation is replaced, update its still SVG too.
+
+`lottie-react-native` is a native module, so development builds made before it was added must be rebuilt (`npm run android` / `npm run ios`), and so must builds made before the native splash image changed. Expo Go already includes it. On web it renders through `@lottiefiles/dotlottie-react`.
+
+`svgr.config.js` adds SVGO's `prefixIds` to the SVG transformer, so gradient ids stay unique when several SVGs share a web page. Restart Metro with `npx expo start -c` after changing it.
+
 ## Contributor Guide
 
 ### 1. Clone and install
