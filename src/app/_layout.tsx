@@ -1,5 +1,6 @@
 import '@/global.css';
 import {
+  Poppins_300Light,
   Poppins_400Regular,
   Poppins_500Medium,
   Poppins_600SemiBold,
@@ -26,6 +27,7 @@ export default function RootLayout() {
   const pathname = usePathname();
   const [isSplashVisible, setIsSplashVisible] = useState(true);
   const [fontsLoaded] = useFonts({
+    Poppins_300Light,
     Poppins_400Regular,
     Poppins_500Medium,
     Poppins_600SemiBold,
