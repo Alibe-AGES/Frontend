@@ -17,5 +17,6 @@ export interface TextInputProps {
   icon?: ReactNode;
   iconBackground?: TextInputIconBackground;
   onBlur?: () => void;
+  onFocus?: () => void;
   testID?: string;
 }

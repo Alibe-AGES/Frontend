@@ -1,7 +1,10 @@
+export type ParticipantAnswer = 'yes' | 'no' | 'pending';
+
 export interface Participant {
   id: string;
   name: string;
   profilePic: string | null;
+  answer?: ParticipantAnswer | null;
 }
 
 export interface ParticipantAvatarsProps {
