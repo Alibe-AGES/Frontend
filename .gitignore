@@ -47,3 +47,5 @@ src/screens/ComponentGalleryScreen.test.tsx
 # generated native folders
 /ios
 /android
+
+googleKey/

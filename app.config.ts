@@ -19,6 +19,7 @@ const config: ExpoConfig = {
   },
   android: {
     package: 'com.alibe.app',
+    googleServicesFile: './google-services.json',
     adaptiveIcon: {
       backgroundColor: '#E6F4FE',
       foregroundImage: './assets/images/android-icon-foreground.png',
@@ -35,6 +36,7 @@ const config: ExpoConfig = {
   plugins: [
     'expo-router',
     'expo-secure-store',
+    'expo-notifications',
     [
       'expo-splash-screen',
       {

@@ -7,6 +7,7 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import CreateProfileController from './controller';
+import { synchronizePushToken } from '@/notifications/synchronize-push-token';
 
 interface PermissionResult {
   granted: boolean;
@@ -44,6 +45,10 @@ jest.mock('@/server/users', () => ({
   updateUserProfilePicture: jest.fn(),
 }));
 
+jest.mock('@/notifications/synchronize-push-token', () => ({
+  synchronizePushToken: jest.fn(),
+}));
+
 jest.mock('expo-image-picker', () => ({
   requestMediaLibraryPermissionsAsync: (): Promise<PermissionResult> =>
     mockRequestPermissions() as Promise<PermissionResult>,
@@ -62,6 +67,9 @@ const mockSignUp = signUpWithEmail as jest.MockedFunction<typeof signUpWithEmail
 const mockSignIn = authClient.signIn.email as jest.Mock;
 const mockUpdateProfilePicture = updateUserProfilePicture as jest.MockedFunction<
   typeof updateUserProfilePicture
+>;
+const mockSynchronizePushToken = synchronizePushToken as jest.MockedFunction<
+  typeof synchronizePushToken
 >;
 const ACCOUNT = { email: 'rica@alibe.com', password: 'segredo123' };
 const PHOTO = {
@@ -82,6 +90,7 @@ describe('CreateProfileController', () => {
     mockUpdateProfilePicture.mockResolvedValue({
       profilePic: '/users/user-1/profile-picture',
     });
+    mockSynchronizePushToken.mockResolvedValue('registered');
     mockRequestPermissions.mockResolvedValue({ granted: true });
     mockLaunchImageLibrary.mockResolvedValue({
       canceled: false,
@@ -121,6 +130,7 @@ describe('CreateProfileController', () => {
       rememberMe: true,
     });
     expect(mockUpdateProfilePicture).not.toHaveBeenCalled();
+    expect(mockSynchronizePushToken).toHaveBeenCalledTimes(1);
     expect(setDraft).toHaveBeenCalledWith(null);
   });
 
@@ -168,6 +178,7 @@ describe('CreateProfileController', () => {
       );
     });
     expect(mockUpdateProfilePicture).not.toHaveBeenCalled();
+    expect(mockSynchronizePushToken).not.toHaveBeenCalled();
     expect(replace).not.toHaveBeenCalledWith('/groups');
   });
 
