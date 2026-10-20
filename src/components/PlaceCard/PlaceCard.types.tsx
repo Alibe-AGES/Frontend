@@ -6,7 +6,8 @@ export interface PlaceCardProps {
   imageUri?: string;
   color?: PlaceCardColor;
   onClickCard?: (text: string) => void;
-  onToggleFavorite?: () => void;
-  isFavorite?: boolean;
+  // TODO: Restore these props when backend favorite integration is ready.
+  // onToggleFavorite?: () => void;
+  // isFavorite?: boolean;
   testID?: string;
 }
