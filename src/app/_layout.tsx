@@ -15,9 +15,11 @@ import { polyfillWebCrypto } from 'expo-standard-web-crypto';
 import { useEffect, useState } from 'react';
 import Toast from 'react-native-toast-message';
 
-import { AnimatedSplash } from '@/screens/AnimatedSplash';
 import { AuthenticatedRoute } from '@/components/AuthenticatedRoute';
 import { SignUpDraftProvider } from '@/hooks/useSignUpDraft';
+import { AnimatedSplash } from '@/screens/AnimatedSplash';
+import { theme } from '@/theme';
+import { StatusBar } from 'react-native';
 
 polyfillWebCrypto();
 
@@ -67,6 +69,10 @@ export default function RootLayout() {
           }}
         />
       ) : null}
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor={theme.colors.canvas}
+      />
       <Toast />
     </SignUpDraftProvider>
   );
