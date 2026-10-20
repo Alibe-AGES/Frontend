@@ -3,7 +3,7 @@ import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
 
-import FriendsIcon from '@/assets/images/auth-friends-icon.svg';
+import FriendsIcon from '@/assets/images/group-spin-light-green.svg';
 import HandsDecoration from '@/assets/images/auth-hands-decoration.svg';
 import { Button } from '@/components/Button';
 import { theme } from '@/theme';

@@ -20,7 +20,7 @@ const config: ExpoConfig = {
   android: {
     package: 'com.alibe.app',
     adaptiveIcon: {
-      backgroundColor: '#E6F4FE',
+      backgroundColor: '#F7F2E9',
       foregroundImage: './assets/images/android-icon-foreground.png',
       backgroundImage: './assets/images/android-icon-background.png',
       monochromeImage: './assets/images/android-icon-monochrome.png',
@@ -39,8 +39,9 @@ const config: ExpoConfig = {
       'expo-splash-screen',
       {
         backgroundColor: '#F7F2E9',
-        image: './assets/images/splash-logo.png',
-        imageWidth: 168,
+        // Blank on purpose: AnimatedSplash draws the logo in as soon as JavaScript loads.
+        image: './assets/images/splash-blank.png',
+        imageWidth: 276,
       },
     ],
   ],
