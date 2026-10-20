@@ -48,6 +48,41 @@ export const ParticipantAvatars: FC<ParticipantAvatarsProps> = ({
       {ordered.map((participant) => {
         const label =
           participant.id === currentUserId ? CURRENT_USER_LABEL : firstName(participant.name);
+        let answerBadge = null;
+
+        if (participant.answer === 'yes') {
+          answerBadge = (
+            <View
+              accessibilityLabel="Presença confirmada"
+              className="absolute -bottom-1 left-0 right-0 items-center"
+              testID={`${testID}-${participant.id}-badge-yes`}
+            >
+              <View className="h-5 w-5 items-center justify-center rounded-full bg-ink">
+                <Ionicons
+                  name="checkmark"
+                  size={12}
+                  color={theme.colors.white}
+                />
+              </View>
+            </View>
+          );
+        } else if (participant.answer === 'no') {
+          answerBadge = (
+            <View
+              accessibilityLabel="Não vai participar"
+              className="absolute -bottom-1 left-0 right-0 items-center"
+              testID={`${testID}-${participant.id}-badge-no`}
+            >
+              <View className="h-5 w-5 items-center justify-center rounded-full bg-coral">
+                <Ionicons
+                  name="close"
+                  size={12}
+                  color={theme.colors.white}
+                />
+              </View>
+            </View>
+          );
+        }
 
         return (
           <View
@@ -75,35 +110,7 @@ export const ParticipantAvatars: FC<ParticipantAvatarsProps> = ({
                   />
                 )}
               </View>
-              {participant.answer === 'yes' ? (
-                <View
-                  accessibilityLabel="Presença confirmada"
-                  className="absolute -bottom-1 left-0 right-0 items-center"
-                  testID={`${testID}-${participant.id}-badge-yes`}
-                >
-                  <View className="h-5 w-5 items-center justify-center rounded-full bg-ink">
-                    <Ionicons
-                      name="checkmark"
-                      size={12}
-                      color={theme.colors.white}
-                    />
-                  </View>
-                </View>
-              ) : participant.answer === 'no' ? (
-                <View
-                  accessibilityLabel="Não vai participar"
-                  className="absolute -bottom-1 left-0 right-0 items-center"
-                  testID={`${testID}-${participant.id}-badge-no`}
-                >
-                  <View className="h-5 w-5 items-center justify-center rounded-full bg-coral">
-                    <Ionicons
-                      name="close"
-                      size={12}
-                      color={theme.colors.white}
-                    />
-                  </View>
-                </View>
-              ) : null}
+              {answerBadge}
             </View>
             <Text
               className="font-poppins text-sm text-wine"
