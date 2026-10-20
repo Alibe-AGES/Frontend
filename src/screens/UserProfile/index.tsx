@@ -1,4 +1,5 @@
 import { BackButton } from '@/components/BackButton';
+import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
 import { NavigationBar } from '@/components/NavigationBar';
 import { PasswordInput } from '@/components/PasswordInput';
 import { PhotoPicker } from '@/components/PhotoPicker';
@@ -240,7 +241,11 @@ export const UserProfileScreen = ({
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           className="flex-1"
         >
-          <View className="flex-1 items-center justify-center bg-black/50 px-6">
+          <KeyboardAvoidingScrollView
+            className="flex-1 bg-black/50"
+            contentContainerClassName="flex-grow items-center justify-center px-6"
+            keyboardShouldPersistTaps="handled"
+          >
             <View className="w-full gap-5 rounded-3xl bg-canvas p-6 shadow-lg">
               <Text className="text-center font-poppins-semibold text-xl text-wine">
                 Editar Perfil
@@ -287,7 +292,7 @@ export const UserProfileScreen = ({
                 </TouchableOpacity>
               </View>
             </View>
-          </View>
+          </KeyboardAvoidingScrollView>
         </KeyboardAvoidingView>
         <Toast />
       </Modal>
@@ -302,7 +307,11 @@ export const UserProfileScreen = ({
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           className="flex-1"
         >
-          <View className="flex-1 items-center justify-center bg-black/50 px-6">
+          <KeyboardAvoidingScrollView
+            className="flex-1 bg-black/50"
+            contentContainerClassName="flex-grow items-center justify-center px-6"
+            keyboardShouldPersistTaps="handled"
+          >
             <View className="w-full gap-5 rounded-3xl bg-canvas p-6 shadow-lg">
               <Text className="text-center font-poppins-semibold text-xl text-wine">
                 Alterar Senha
@@ -345,7 +354,7 @@ export const UserProfileScreen = ({
                 </TouchableOpacity>
               </View>
             </View>
-          </View>
+          </KeyboardAvoidingScrollView>
         </KeyboardAvoidingView>
         <Toast />
       </Modal>
