@@ -1,5 +1,7 @@
 import { updateCurrentDevicePushToken } from '@/server/push-notifications';
+import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
 import { synchronizePushToken } from './synchronize-push-token';
 
 let mockIsPhysicalDevice = true;
@@ -42,10 +44,18 @@ const mockGetExpoPushToken = Notifications.getExpoPushTokenAsync as jest.MockedF
 const mockUpdateToken = updateCurrentDevicePushToken as jest.MockedFunction<
   typeof updateCurrentDevicePushToken
 >;
+const mockConstants = Constants as unknown as {
+  easConfig: { projectId?: string } | null;
+  expoConfig?: { extra?: { eas?: unknown } };
+};
+const originalPlatform = Platform.OS;
 
 describe('synchronizePushToken', () => {
   beforeEach(() => {
     mockIsPhysicalDevice = true;
+    mockConstants.easConfig = { projectId: '0fe4c9c6-8bca-4a1e-8506-7dca9c7901e7' };
+    mockConstants.expoConfig = undefined;
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: originalPlatform });
     mockGetPermissions.mockResolvedValue({ status: 'granted' } as never);
     mockRequestPermissions.mockResolvedValue({ status: 'granted' } as never);
     mockGetExpoPushToken.mockResolvedValue({ data: 'ExpoPushToken[test-token]' } as never);
@@ -90,6 +100,51 @@ describe('synchronizePushToken', () => {
 
     expect(mockGetPermissions).not.toHaveBeenCalled();
     expect(mockUpdateToken).not.toHaveBeenCalled();
+  });
+
+  test('does nothing on web even when device detection reports a physical device', async () => {
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
+
+    await expect(synchronizePushToken()).resolves.toBe('unsupported');
+
+    expect(mockGetPermissions).not.toHaveBeenCalled();
+    expect(mockUpdateToken).not.toHaveBeenCalled();
+  });
+
+  test('creates the default notification channel on Android', async () => {
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: 'android' });
+
+    await expect(synchronizePushToken()).resolves.toBe('registered');
+
+    expect(Notifications.setNotificationChannelAsync).toHaveBeenCalledWith('default', {
+      name: 'Notificações',
+      importance: Notifications.AndroidImportance.MAX,
+    });
+  });
+
+  test('uses the Expo config project id when the native EAS config is unavailable', async () => {
+    mockConstants.easConfig = null;
+    mockConstants.expoConfig = { extra: { eas: { projectId: 'fallback-project-id' } } };
+
+    await expect(synchronizePushToken()).resolves.toBe('registered');
+
+    expect(mockGetExpoPushToken).toHaveBeenCalledWith({ projectId: 'fallback-project-id' });
+  });
+
+  test('fails safely when no EAS project id is configured', async () => {
+    const consoleWarning = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    mockConstants.easConfig = null;
+    mockConstants.expoConfig = { extra: { eas: null } };
+
+    await expect(synchronizePushToken()).resolves.toBe('failed');
+
+    expect(mockGetExpoPushToken).not.toHaveBeenCalled();
+    expect(mockUpdateToken).not.toHaveBeenCalled();
+    expect(consoleWarning).toHaveBeenCalledWith(
+      'Não foi possível sincronizar o token de notificações.',
+      expect.objectContaining({ message: 'EAS projectId não configurado' })
+    );
+    consoleWarning.mockRestore();
   });
 
   test('does not block authentication when synchronization fails', async () => {
