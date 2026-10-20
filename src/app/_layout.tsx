@@ -17,6 +17,7 @@ import Toast from 'react-native-toast-message';
 
 import { AuthenticatedRoute } from '@/components/AuthenticatedRoute';
 import { SignUpDraftProvider } from '@/hooks/useSignUpDraft';
+import { AnimatedSplash } from '@/screens/AnimatedSplash';
 import { theme } from '@/theme';
 import { StatusBar } from 'react-native';
 
@@ -57,6 +58,17 @@ export default function RootLayout() {
 
   return (
     <SignUpDraftProvider>
+      {isAppReady ? (
+        <AuthenticatedRoute enabled={!isPublicRoute}>{stack}</AuthenticatedRoute>
+      ) : null}
+      {isSplashVisible ? (
+        <AnimatedSplash
+          isReady={isAppReady}
+          onFinish={() => {
+            setIsSplashVisible(false);
+          }}
+        />
+      ) : null}
       <StatusBar
         barStyle="dark-content"
         backgroundColor={theme.colors.canvas}
