@@ -2,9 +2,11 @@ import { BackButton } from '@/components/BackButton';
 import { Calendar } from '@/components/Calendar';
 import { DayMark } from '@/components/Calendar/Calendar.types';
 import { NavigationBar } from '@/components/NavigationBar';
+import { NextEventBanner } from '@/components/NextEventBanner';
+import { ProfileButton } from '@/components/ProfileButton';
 import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
 import { CalendarDay, getGroupCalendar } from '@/server/calendar';
-import { getGroup, getGroupMembers, GroupMember } from '@/server/groups';
+import { getGroup, getGroupMembers, GroupMember, GroupNextEvent } from '@/server/groups';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -67,6 +69,7 @@ export function GroupScreen() {
   const [groupName, setGroupName] = useState('');
   const [groupPhoto, setGroupPhoto] = useState<string | null>(null);
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
+  const [nextEvent, setNextEvent] = useState<GroupNextEvent | null | undefined>(undefined);
   const groupPhotoSource = useAuthenticatedImageSource(groupPhoto);
   const [visibleMonth, setVisibleMonth] = useState(() => {
     const now = new Date();
@@ -99,6 +102,7 @@ export function GroupScreen() {
       const data = await getGroup(groupId);
       setGroupName(data.name);
       setGroupPhoto(data.profilePic);
+      setNextEvent(data.nextEvent ?? null);
     } catch (error) {
       console.error('Erro ao buscar o grupo', error);
     }
@@ -224,6 +228,11 @@ export function GroupScreen() {
               color={theme.colors.ink}
             />
           </Pressable>
+
+          <ProfileButton
+            groupId={groupId}
+            testID="group-screen-profile"
+          />
         </View>
 
         <Pressable
@@ -275,6 +284,8 @@ export function GroupScreen() {
             )}
           </View>
         </Pressable>
+
+        {nextEvent !== undefined ? <NextEventBanner event={nextEvent} /> : null}
 
         <Calendar
           initialDate={today}

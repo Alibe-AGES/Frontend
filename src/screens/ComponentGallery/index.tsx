@@ -5,6 +5,7 @@ import { DatePickerSheet } from '@/components/DatePickerSheet';
 import { EventCard, EventCardDraft } from '@/components/EventCard';
 import { AppNotification, NotificationCard } from '@/components/NotificationCard';
 import { ProfileCard } from '@/components/ProfileCard';
+import { SearchBar } from '@/components/SearchBar';
 import { mockNotifications } from '@/server/mock/notifications';
 import { isValidApiDate } from '@/utils/date';
 import { isValidTime } from '@/utils/time';
@@ -57,6 +58,7 @@ export function ComponentGalleryScreen() {
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>(mockNotifications);
   const [lastNotificationAction, setLastNotificationAction] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const isEventDraftValid =
     eventDraft.name.trim() !== '' &&
     eventDraft.address.trim() !== '' &&
@@ -198,6 +200,13 @@ export function ComponentGalleryScreen() {
           }}
         />
       ) : null}
+
+      <SearchBar
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        placeholder="Pesquisar..."
+        testID="gallery-search-bar"
+      />
     </ScrollView>
   );
 }

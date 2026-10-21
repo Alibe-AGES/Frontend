@@ -54,6 +54,7 @@ function mapEventToCarouselItem(
         return {
           userId: member.id,
           name: member.name,
+          profilePic: member.profilePic,
           answer: response?.answer ?? 'pending',
         };
       }),
@@ -195,6 +196,7 @@ export default function DayController() {
       isLoading={isLoading}
       error={error}
       pendingEventId={pendingEventId}
+      currentUserId={currentUserId}
       onPresenceResponse={handlePresenceResponse}
       onAvailabilityPress={() => {
         if (groupId) {
