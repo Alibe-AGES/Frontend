@@ -126,6 +126,21 @@ describe('GroupScreen', () => {
     });
   });
 
+  test('opens the user profile from the header keeping the group context', async () => {
+    const { getByTestId } = await render(<GroupScreen />);
+
+    await waitFor(() => {
+      expect(getByTestId('group-screen')).toBeTruthy();
+    });
+
+    await fireEvent.press(getByTestId('group-screen-profile'));
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/(profile)/profile/[userId]',
+      params: { userId: 'user-1', groupId: 'group-1' },
+    });
+  });
+
   test('starts event creation with the pressed calendar date', async () => {
     await render(<GroupScreen />);
 
@@ -239,6 +254,36 @@ describe('GroupScreen', () => {
     expect(push).toHaveBeenCalledWith({
       pathname: '/group/[id]/day/[date]',
       params: { id: 'group-1', date: '2026-10-12' },
+    });
+  });
+
+  test('shows the next event banner with the event returned by the group', async () => {
+    mockGetGroup.mockResolvedValue({
+      id: 'group-1',
+      name: 'Hermanas',
+      profilePic: null,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      participants: [],
+      nextEvent: {
+        id: 'event-1',
+        name: 'Cinema',
+        timeslot: new Date(2026, 4, 22, 16, 0).toISOString(),
+        status: 'confirmed',
+      },
+    });
+
+    const { getByText } = await render(<GroupScreen />);
+
+    await waitFor(() => {
+      expect(getByText('• Cinema')).toBeTruthy();
+    });
+  });
+
+  test('shows the empty next event banner when the group has no events', async () => {
+    const { getByTestId } = await render(<GroupScreen />);
+
+    await waitFor(() => {
+      expect(getByTestId('alibe-next-event-banner-empty')).toBeTruthy();
     });
   });
 });

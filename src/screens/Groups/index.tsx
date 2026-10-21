@@ -1,23 +1,21 @@
 import { CreateGroupButton } from '@/components/CreateGroupButton';
 import { GroupsList } from '@/components/GroupsList';
+import { ProfileButton } from '@/components/ProfileButton';
 import { usePendingInvite } from '@/hooks/usePendingInvite';
 import { ApiError } from '@/server/api';
 import { joinGroupByInvite, listGroups } from '@/server/groups';
-import { useAuth } from '@/server/mock/useAuth';
 import { theme } from '@/theme';
-import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 import GreenSpin from '@/assets/images/green-spin.svg';
-import GroupSpin from '@/assets/images/group-spin.svg';
+import GroupSpin from '@/assets/images/group-spin-dark-green.svg';
 import PinkSpin from '@/assets/images/pink-spin.svg';
 
 export function GroupsScreen() {
   const router = useRouter();
-  const { userId } = useAuth();
   const { invite } = useLocalSearchParams<{ invite?: string }>();
   const { getPendingInvite, setPendingInvite } = usePendingInvite();
   const handledToken = useRef<string | null>(null);
@@ -105,25 +103,13 @@ export function GroupsScreen() {
     router.push({ pathname: '/group/[id]', params: { id } });
   };
 
-  const handleProfilePress = () => {
-    router.push({ pathname: '/(profile)/profile/[userId]', params: { userId } });
-  };
-
   return (
     <View className="relative flex-1 overflow-hidden bg-canvas px-12">
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Perfil do usuário"
-        onPress={handleProfilePress}
-        className="absolute right-6 top-10 z-10 h-12 w-12 items-center justify-center"
+      <ProfileButton
+        size={34}
+        className="absolute right-6 top-16 z-10 h-12 w-12 items-center justify-center"
         testID="groups-user-profile"
-      >
-        <Ionicons
-          name="person-outline"
-          size={34}
-          color={theme.colors.ink}
-        />
-      </Pressable>
+      />
       <View
         accessible={false}
         className="absolute -left-3 -top-2 h-32 w-32 sm:h-40 sm:w-40"

@@ -223,4 +223,20 @@ describe('CreateEventController', () => {
     expect(mockCreateEvent).not.toHaveBeenCalled();
     expect(mockScreenProps.isConfirmDisabled).toBe(true);
   });
+
+  test('updates the draft date when onSelectDate is called', async () => {
+    mockUseLocalSearchParams.mockReturnValue({ id: 'group-1' });
+
+    await render(<CreateEventController />);
+
+    await waitFor(() => {
+      expect(mockScreenProps.groupId).toBe('group-1');
+    });
+
+    await act(() => {
+      mockScreenProps.onSelectDate('2026-12-25');
+    });
+
+    expect(mockScreenProps.draft.date).toBe('2026-12-25');
+  });
 });

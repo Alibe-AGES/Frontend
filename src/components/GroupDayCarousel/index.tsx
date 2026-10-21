@@ -1,4 +1,5 @@
 import { EventCard, type EventCardEvent } from '@/components/EventCard';
+import { ParticipantAvatars, type ParticipantAnswer } from '@/components/ParticipantAvatars';
 import type { EventPresenceAnswer } from '@/server/events';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,7 +18,12 @@ export interface GroupDayCarouselItem {
   event: EventCardEvent;
   proposal?: {
     ownerName: string;
-    responses: { userId: string; name: string; answer: string }[];
+    responses: {
+      userId: string;
+      name: string;
+      answer: ParticipantAnswer;
+      profilePic?: string | null;
+    }[];
     currentUserAnswer?: string;
   };
 }
@@ -30,13 +36,8 @@ interface GroupDayCarouselProps {
   onAvailabilityPress: () => void;
   onPresenceResponse: (eventId: string, answer: EventPresenceAnswer) => Promise<void>;
   pendingEventId?: string | null;
+  currentUserId?: string | null;
   testID?: string;
-}
-
-function getResponseLabel(answer: string): string {
-  if (answer === 'yes') return 'Vai participar';
-  if (answer === 'no') return 'Não vai participar';
-  return 'Pendente';
 }
 
 export function GroupDayCarousel({
@@ -47,6 +48,7 @@ export function GroupDayCarousel({
   onAvailabilityPress,
   onPresenceResponse,
   pendingEventId = null,
+  currentUserId = null,
   testID = 'group-day-carousel',
 }: GroupDayCarouselProps) {
   const scrollRef = useRef<ScrollView>(null);
@@ -169,22 +171,21 @@ export function GroupDayCarousel({
                   testID={`${testID}-${item.kind}-${item.event.id}`}
                 />
                 {item.proposal ? (
-                  <View className="bg-limeSoft gap-2 rounded-2xl p-3">
-                    <Text className="font-poppins-semibold text-sm text-ink">
+                  <View className="gap-4 pt-2">
+                    <Text className="text-center font-poppins-semibold text-lg text-wine">
                       Status dos participantes
                     </Text>
-                    {item.proposal.responses.map((response) => (
-                      <Text
-                        key={response.userId}
-                        className="font-poppins text-sm text-ink"
-                      >
-                        {response.name}: {getResponseLabel(response.answer)}
-                      </Text>
-                    ))}
-                    <Text className="text-inkSoft font-poppins text-sm">
-                      Proposta de {item.proposal.ownerName}
-                    </Text>
-                    <View className="flex-row gap-2 pt-1">
+                    <ParticipantAvatars
+                      participants={item.proposal.responses.map((response) => ({
+                        id: response.userId,
+                        name: response.name,
+                        profilePic: response.profilePic ?? null,
+                        answer: response.answer,
+                      }))}
+                      currentUserId={currentUserId ?? undefined}
+                      testID={`${testID}-participants-${item.event.id}`}
+                    />
+                    <View className="gap-3 pt-2">
                       <Pressable
                         accessibilityRole="button"
                         accessibilityLabel="Confirmar presença no evento"
@@ -192,8 +193,8 @@ export function GroupDayCarousel({
                           selected: item.proposal.currentUserAnswer === 'yes',
                           disabled: pendingEventId === item.event.id,
                         }}
-                        className={`flex-1 items-center rounded-full px-3 py-3 ${
-                          item.proposal.currentUserAnswer === 'yes' ? 'bg-ink' : 'bg-canvas'
+                        className={`w-full items-center justify-center rounded-full bg-ink py-4 ${
+                          pendingEventId === item.event.id ? 'opacity-60' : 'opacity-100'
                         }`}
                         disabled={pendingEventId === item.event.id}
                         onPress={() => {
@@ -201,12 +202,8 @@ export function GroupDayCarousel({
                         }}
                         testID={`${testID}-presence-yes-${item.event.id}`}
                       >
-                        <Text
-                          className={`font-poppins-semibold text-sm ${
-                            item.proposal.currentUserAnswer === 'yes' ? 'text-canvas' : 'text-ink'
-                          }`}
-                        >
-                          {pendingEventId === item.event.id ? 'Salvando...' : 'Vou participar'}
+                        <Text className="font-poppins text-base text-canvas">
+                          {pendingEventId === item.event.id ? 'Salvando...' : 'Confirmar!'}
                         </Text>
                       </Pressable>
                       <Pressable
@@ -216,8 +213,8 @@ export function GroupDayCarousel({
                           selected: item.proposal.currentUserAnswer === 'no',
                           disabled: pendingEventId === item.event.id,
                         }}
-                        className={`flex-1 items-center rounded-full px-3 py-3 ${
-                          item.proposal.currentUserAnswer === 'no' ? 'bg-wine' : 'bg-canvas'
+                        className={`w-full items-center justify-center rounded-full bg-ink py-4 ${
+                          pendingEventId === item.event.id ? 'opacity-60' : 'opacity-100'
                         }`}
                         disabled={pendingEventId === item.event.id}
                         onPress={() => {
@@ -225,12 +222,8 @@ export function GroupDayCarousel({
                         }}
                         testID={`${testID}-presence-no-${item.event.id}`}
                       >
-                        <Text
-                          className={`font-poppins-semibold text-sm ${
-                            item.proposal.currentUserAnswer === 'no' ? 'text-canvas' : 'text-ink'
-                          }`}
-                        >
-                          Não vou
+                        <Text className="font-poppins text-base text-canvas">
+                          Não estarei disponível neste dia
                         </Text>
                       </Pressable>
                     </View>
@@ -246,7 +239,7 @@ export function GroupDayCarousel({
 
   return (
     <View
-      className="gap-3 rounded-3xl bg-surface p-4"
+      className="gap-3 rounded-3xl bg-canvas p-4"
       testID={testID}
     >
       <View className="flex-row items-center justify-between gap-3">

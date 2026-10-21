@@ -1,8 +1,9 @@
 import RootLayout from '@/app/_layout';
 import { AuthenticatedRoute } from '@/components/AuthenticatedRoute';
 import { useFonts } from '@expo-google-fonts/poppins';
-import { render } from '@testing-library/react-native';
+import { render, screen } from '@testing-library/react-native';
 import { usePathname } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 
 jest.mock('@/global.css', () => ({}));
 
@@ -50,11 +51,13 @@ describe('<RootLayout />', () => {
     jest.clearAllMocks();
   });
 
-  test('renders nothing while the fonts are loading', async () => {
+  test('shows only the splash while the fonts are loading', async () => {
     mockUseFonts.mockReturnValue([false]);
 
     await render(<RootLayout />);
 
+    expect(screen.getByTestId('splash-screen')).toBeTruthy();
+    expect(SplashScreen.hideAsync).toHaveBeenCalled();
     expect(mockAuthenticatedRoute).not.toHaveBeenCalled();
   });
 
