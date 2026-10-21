@@ -20,10 +20,6 @@ jest.mock('@/server/groups', () => ({
   getGroupMembers: jest.fn(),
 }));
 
-jest.mock('@/components/BackButton', () => ({
-  BackButton: () => null,
-}));
-
 jest.mock('@/components/NavigationBar', () => ({
   NavigationBar: () => null,
 }));

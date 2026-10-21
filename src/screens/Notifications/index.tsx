@@ -77,7 +77,7 @@ export function NotificationsScreen({
               <Ionicons
                 name="people-outline"
                 size={26}
-                color={theme.colors.surface}
+                color={theme.colors.coral}
               />
             )}
           </View>

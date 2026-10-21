@@ -122,7 +122,7 @@ describe('NotificationsController', () => {
     expect(screenProps().notifications).toHaveLength(mockNotifications.length);
   });
 
-  test('shows an error when loading fails', async () => {
+  test('shows an error but keeps the group header when the notifications fail', async () => {
     mockGetGroupNotifications.mockRejectedValue(new Error('boom'));
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
 
@@ -131,6 +131,8 @@ describe('NotificationsController', () => {
     await waitFor(() => {
       expect(screenProps().errorMessage).toBe('Não foi possível carregar as notificações.');
     });
+    expect(screenProps().groupName).toBe('Hermanas');
+    expect(screenProps().membersText).toBe('Kata, Manu');
   });
 
   test('appends the next page without duplicates', async () => {

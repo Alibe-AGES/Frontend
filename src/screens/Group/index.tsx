@@ -1,4 +1,3 @@
-import { BackButton } from '@/components/BackButton';
 import { Calendar } from '@/components/Calendar';
 import { DayMark } from '@/components/Calendar/Calendar.types';
 import { NavigationBar } from '@/components/NavigationBar';
@@ -210,11 +209,6 @@ export function GroupScreen() {
         testID="group-screen"
       >
         <View className="flex-row items-center justify-between">
-          <BackButton
-            fallbackHref="/groups"
-            accessibilityLabel="Voltar para meus grupos"
-          />
-
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Ver notificações do grupo"

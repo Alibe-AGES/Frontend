@@ -41,22 +41,28 @@ export default function NotificationsController() {
     setIsLoading(true);
     setErrorMessage(null);
 
-    try {
-      const [groupData, firstPage] = await Promise.all([
-        getGroup(groupId),
-        getGroupNotifications(groupId, 1),
-      ]);
+    const [groupResult, notificationsResult] = await Promise.allSettled([
+      getGroup(groupId),
+      getGroupNotifications(groupId, 1),
+    ]);
 
-      setGroup(groupData);
-      setNotifications(firstPage.notifications);
-      setHasMore(firstPage.hasMore);
-      setPage(1);
-    } catch (error) {
-      console.error('Erro ao carregar notificações', error);
-      setErrorMessage(LOAD_ERROR);
-    } finally {
-      setIsLoading(false);
+    // O cabeçalho do grupo continua útil mesmo quando a lista falha.
+    if (groupResult.status === 'fulfilled') {
+      setGroup(groupResult.value);
+    } else {
+      console.error('Erro ao carregar o grupo', groupResult.reason);
     }
+
+    if (notificationsResult.status === 'fulfilled') {
+      setNotifications(notificationsResult.value.notifications);
+      setHasMore(notificationsResult.value.hasMore);
+      setPage(1);
+    } else {
+      console.error('Erro ao carregar notificações', notificationsResult.reason);
+      setErrorMessage(LOAD_ERROR);
+    }
+
+    setIsLoading(false);
   }, [groupId]);
 
   useEffect(() => {
