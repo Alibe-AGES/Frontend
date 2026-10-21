@@ -3,6 +3,7 @@ import { Calendar } from '@/components/Calendar';
 import { DayMark } from '@/components/Calendar/Calendar.types';
 import { NavigationBar } from '@/components/NavigationBar';
 import { NextEventBanner } from '@/components/NextEventBanner';
+import { ProfileButton } from '@/components/ProfileButton';
 import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
 import { CalendarDay, getGroupCalendar } from '@/server/calendar';
 import { getGroup, getGroupMembers, GroupMember, GroupNextEvent } from '@/server/groups';
@@ -200,10 +201,15 @@ export function GroupScreen() {
         contentContainerClassName="gap-6 px-6 pb-32 pt-16"
         testID="group-screen"
       >
-        <View className="flex-row items-center">
+        <View className="flex-row items-center justify-between">
           <BackButton
             fallbackHref="/groups"
             accessibilityLabel="Voltar para meus grupos"
+          />
+
+          <ProfileButton
+            groupId={groupId}
+            testID="group-screen-profile"
           />
         </View>
 
