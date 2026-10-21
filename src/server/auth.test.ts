@@ -1,10 +1,18 @@
 import { API_BASE_URL } from '@/constants';
 import { ApiError } from './api';
 
-jest.mock('./auth-client', () => ({ authClient: {} }));
+const mockSignOut = jest.fn();
+
+jest.mock('./auth-client', () => ({
+  authClient: {
+    get signOut() {
+      return mockSignOut;
+    },
+  },
+}));
 jest.mock('./authenticated-fetch', () => ({ authenticatedFetch: jest.fn() }));
 
-import { signUpWithEmail } from './auth';
+import { signOut, signUpWithEmail } from './auth';
 
 declare const global: { fetch: jest.Mock };
 
@@ -62,5 +70,25 @@ describe('signUpWithEmail', () => {
     mockFetchRejectedWith(422, 'User already exists');
 
     await expect(signUpWithEmail(input)).rejects.toBeInstanceOf(ApiError);
+  });
+});
+
+describe('signOut', () => {
+  test('calls authClient.signOut and returns success', async () => {
+    mockSignOut.mockResolvedValue({ data: { success: true }, error: null });
+
+    const response = await signOut();
+
+    expect(mockSignOut).toHaveBeenCalledTimes(1);
+    expect(response).toEqual({ success: true });
+  });
+
+  test('throws an ApiError when authClient.signOut returns an error', async () => {
+    mockSignOut.mockResolvedValue({
+      data: null,
+      error: { message: 'Failed to sign out', status: 500 },
+    });
+
+    await expect(signOut()).rejects.toBeInstanceOf(ApiError);
   });
 });
