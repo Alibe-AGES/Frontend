@@ -68,7 +68,7 @@ describe('<RootLayout />', () => {
     expect(mockAuthenticatedRoute.mock.calls[0]?.[0].enabled).toBe(true);
   });
 
-  test.each(['/', '/auth', '/login', '/sign-up'])(
+  test.each(['/', '/auth', '/login', '/sign-up', '/profile'])(
     'does not protect the public route %s',
     async (pathname) => {
       mockUsePathname.mockReturnValue(pathname);

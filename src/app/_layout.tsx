@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react';
 import Toast from 'react-native-toast-message';
 
 import { AuthenticatedRoute } from '@/components/AuthenticatedRoute';
+import { PendingInviteProvider } from '@/hooks/usePendingInvite';
 import { SignUpDraftProvider } from '@/hooks/useSignUpDraft';
 import { AnimatedSplash } from '@/screens/AnimatedSplash';
 import { theme } from '@/theme';
@@ -53,27 +54,29 @@ export default function RootLayout() {
       <Stack.Screen name="(app)" />
     </Stack>
   );
-  const publicPaths = ['/', '/auth', '/login', '/sign-up', '/component-gallery'];
+  const publicPaths = ['/', '/auth', '/login', '/sign-up', '/profile', '/component-gallery'];
   const isPublicRoute = publicPaths.includes(pathname);
 
   return (
     <SignUpDraftProvider>
-      {isAppReady ? (
-        <AuthenticatedRoute enabled={!isPublicRoute}>{stack}</AuthenticatedRoute>
-      ) : null}
-      {isSplashVisible ? (
-        <AnimatedSplash
-          isReady={isAppReady}
-          onFinish={() => {
-            setIsSplashVisible(false);
-          }}
+      <PendingInviteProvider>
+        {isAppReady ? (
+          <AuthenticatedRoute enabled={!isPublicRoute}>{stack}</AuthenticatedRoute>
+        ) : null}
+        {isSplashVisible ? (
+          <AnimatedSplash
+            isReady={isAppReady}
+            onFinish={() => {
+              setIsSplashVisible(false);
+            }}
+          />
+        ) : null}
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor={theme.colors.canvas}
         />
-      ) : null}
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={theme.colors.canvas}
-      />
-      <Toast />
+        <Toast />
+      </PendingInviteProvider>
     </SignUpDraftProvider>
   );
 }
