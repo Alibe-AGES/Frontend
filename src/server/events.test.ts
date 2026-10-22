@@ -2,7 +2,7 @@ import { API_BASE_URL } from '@/constants';
 import { File } from 'expo-file-system';
 import { ApiError } from './api';
 import { authenticatedFetch } from './auth';
-import { createEvent, getEventDetails, respondToEventProposal } from './events';
+import { createEvent, createProposal, getEventDetails, respondToEventProposal } from './events';
 
 jest.mock('./auth', () => ({
   authenticatedFetch: jest.fn((url: string, options?: RequestInit) => fetch(url, options)),
@@ -32,11 +32,44 @@ const CREATED_EVENT = {
   },
 };
 
+const CREATED_PROPOSAL = {
+  id: 'proposal-1',
+  createdAt: '2026-10-09T17:00:00.000Z',
+  owner: {
+    id: 'user-1',
+    name: 'Ana Beatriz Silva',
+    image: '/users/user-1/profile-picture',
+  },
+  event: {
+    id: 'event-1',
+    name: 'Café de sábado',
+    date: '2026-10-17',
+    time: '15:00',
+    budgetStart: '30.00',
+    budgetEnd: '60.00',
+    status: 'pending' as const,
+    groupId: 'group-1',
+  },
+  location: {
+    id: '44444444-4444-4444-8444-444444444444',
+    description: 'Café tranquilo',
+    address: 'Rua Padre Chagas, 320',
+  },
+  myAnswer: 'yes' as const,
+};
+
 const INPUT = {
   name: '  Bloom Café  ',
   date: '2026-10-15',
   time: '20:00',
   location: ' Av. João Wallig, 1800 ',
+};
+
+const PROPOSAL_INPUT = {
+  locationId: '44444444-4444-4444-8444-444444444444',
+  name: '  Café de sábado  ',
+  date: '2026-10-17',
+  time: '15:00',
 };
 
 describe('getEventDetails', () => {
@@ -193,6 +226,76 @@ describe('createEvent', () => {
 
     await expect(createEvent('group-1', INPUT)).rejects.toMatchObject({
       message: 'Não foi possível criar o evento',
+      status: 500,
+    });
+  });
+});
+
+describe('createProposal', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.restoreAllMocks();
+    jest.clearAllMocks();
+  });
+
+  test('posts the trimmed proposal fields as JSON to /api/groups/:groupId/proposals', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(CREATED_PROPOSAL),
+    });
+
+    await expect(
+      createProposal('group-1', {
+        ...PROPOSAL_INPUT,
+        budgetStart: '30.00',
+        budgetEnd: '60.00',
+      })
+    ).resolves.toEqual(CREATED_PROPOSAL);
+
+    expect(mockAuthenticatedFetch).toHaveBeenCalledWith(
+      `${API_BASE_URL}/api/groups/group-1/proposals`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          locationId: '44444444-4444-4444-8444-444444444444',
+          name: 'Café de sábado',
+          date: '2026-10-17',
+          time: '15:00',
+          budgetStart: '30.00',
+          budgetEnd: '60.00',
+        }),
+      }
+    );
+  });
+
+  test('throws an ApiError with the backend message when proposal creation fails', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found',
+      text: () => Promise.resolve('Localização não encontrada'),
+    });
+
+    const request = createProposal('group-1', PROPOSAL_INPUT);
+
+    await expect(request).rejects.toBeInstanceOf(ApiError);
+    await expect(request).rejects.toMatchObject({
+      message: 'Localização não encontrada',
+      status: 404,
+    });
+  });
+
+  test('falls back to a default message when the proposal error body is empty', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: '',
+      text: () => Promise.resolve(''),
+    });
+
+    await expect(createProposal('group-1', PROPOSAL_INPUT)).rejects.toMatchObject({
+      message: 'Não foi possível criar a sugestão',
       status: 500,
     });
   });

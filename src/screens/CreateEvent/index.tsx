@@ -8,8 +8,12 @@ import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
 
+export type CreateEventTab = 'event' | 'suggestion';
+
 export interface CreateEventScreenProps {
   groupId?: string;
+  activeTab?: CreateEventTab;
+  onSelectTab?: (tab: CreateEventTab) => void;
   draft: EventCardDraft;
   onChangeDraft: (draft: EventCardDraft) => void;
   onSelectDate: (dateString: string) => void;
@@ -22,7 +26,16 @@ export interface CreateEventScreenProps {
   onConfirm: () => void;
 }
 
-function EventTypeTabs() {
+function EventTypeTabs({
+  activeTab,
+  onSelectTab,
+}: {
+  activeTab: CreateEventTab;
+  onSelectTab?: (tab: CreateEventTab) => void;
+}) {
+  const isEventSelected = activeTab === 'event';
+  const isSuggestionSelected = activeTab === 'suggestion';
+
   return (
     <View
       accessibilityRole="tablist"
@@ -30,22 +43,40 @@ function EventTypeTabs() {
     >
       <Pressable
         accessibilityRole="tab"
-        accessibilityState={{ selected: true }}
-        className="flex-1 items-center rounded-full bg-pink py-3"
+        accessibilityState={{ selected: isEventSelected }}
+        className={`flex-1 items-center rounded-full py-3 ${
+          isEventSelected ? 'bg-pink' : 'border border-pink'
+        }`}
+        onPress={() => {
+          onSelectTab?.('event');
+        }}
         testID="create-event-tab-event"
       >
-        <Text className="font-poppins-medium text-lg text-ink">Evento</Text>
+        <Text
+          className={`font-poppins-medium text-lg ${isEventSelected ? 'text-ink' : 'text-pink'}`}
+        >
+          Evento
+        </Text>
       </Pressable>
 
-      {/* Suggestions are not available yet; the tab mirrors the design without navigating. */}
       <Pressable
         accessibilityRole="tab"
-        accessibilityState={{ selected: false, disabled: true }}
-        disabled
-        className="flex-1 items-center rounded-full border border-pink py-3"
+        accessibilityState={{ selected: isSuggestionSelected }}
+        className={`flex-1 items-center rounded-full py-3 ${
+          isSuggestionSelected ? 'bg-pink' : 'border border-pink'
+        }`}
+        onPress={() => {
+          onSelectTab?.('suggestion');
+        }}
         testID="create-event-tab-suggestion"
       >
-        <Text className="font-poppins-medium text-lg text-pink">Sugestão</Text>
+        <Text
+          className={`font-poppins-medium text-lg ${
+            isSuggestionSelected ? 'text-ink' : 'text-pink'
+          }`}
+        >
+          Sugestão
+        </Text>
       </Pressable>
     </View>
   );
@@ -53,6 +84,8 @@ function EventTypeTabs() {
 
 export function CreateEventScreen({
   groupId,
+  activeTab = 'event',
+  onSelectTab,
   draft,
   onChangeDraft,
   onSelectDate,
@@ -79,11 +112,15 @@ export function CreateEventScreen({
             fallbackHref={groupId ? `/group/${groupId}` : '/groups'}
             accessibilityLabel="Voltar para o grupo"
           />
-          <EventTypeTabs />
+          <EventTypeTabs
+            activeTab={activeTab}
+            onSelectTab={onSelectTab}
+          />
         </View>
 
         <EventCard
           mode="create"
+          variant={activeTab}
           draft={draft}
           onChangeDraft={onChangeDraft}
           onDatePress={() => {

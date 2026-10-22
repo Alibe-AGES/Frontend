@@ -40,6 +40,7 @@ export interface EventCardReadProps {
 
 export interface EventCardCreateProps {
   mode: 'create';
+  variant?: 'event' | 'suggestion';
   draft: EventCardDraft;
   onChangeDraft: (draft: EventCardDraft) => void;
   onDatePress?: () => void;
