@@ -16,6 +16,9 @@ export function PlaceCard({
   imageUri,
   color = 'coral',
   onClickCard,
+  // TODO: Re-enable favorite props after the backend API is available.
+  // onToggleFavorite,
+  // isFavorite = false,
   testID = 'place-card',
 }: PlaceCardProps) {
   return (
@@ -56,7 +59,8 @@ export function PlaceCard({
         </View>
       </Pressable>
 
-      {/* <Pressable
+      {/* TODO: Restore the favorite control when backend favorite integration is ready.
+      <Pressable
         accessibilityRole="button"
         accessibilityLabel={isFavorite ? `Desfavoritar ${name}` : `Favoritar ${name}`}
         accessibilityState={{ selected: isFavorite }}

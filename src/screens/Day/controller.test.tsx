@@ -115,8 +115,12 @@ describe('DayController', () => {
       expect(mockGetEventDetails).toHaveBeenCalledWith('event-2');
       expect(getByText('Bloom Café')).toBeTruthy();
       expect(getByText('Cinema')).toBeTruthy();
-      expect(getAllByText('Kata: Pendente')).toHaveLength(2);
-      expect(getAllByText('Bia: Vai participar')).toHaveLength(2);
+      expect(getAllByText('Status dos participantes')).toHaveLength(2);
+      expect(getAllByText('Eu')).toHaveLength(2);
+      expect(getAllByText('Bia')).toHaveLength(2);
+      expect(getAllByText('Ana')).toHaveLength(2);
+      expect(getAllByText('Confirmar!')).toHaveLength(2);
+      expect(getAllByText('Não estarei disponível neste dia')).toHaveLength(2);
       expect(getByText('1 / 2')).toBeTruthy();
     });
 

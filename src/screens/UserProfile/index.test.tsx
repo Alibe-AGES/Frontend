@@ -1,4 +1,5 @@
-import { render } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import Toast from 'react-native-toast-message';
 import { UserProfileScreen, UserProfileScreenProps } from './index';
 
 jest.mock('../../../src/hooks/useUserAvatarSource', () => ({
@@ -44,6 +45,7 @@ describe('UserProfileScreen', () => {
     isLoading: false,
     error: null,
     refetch: jest.fn(),
+    onLogout: jest.fn(),
   };
 
   beforeEach(() => {
@@ -79,10 +81,11 @@ describe('UserProfileScreen', () => {
     expect(getByText('no alibe desde 21 de Setembro de 2026')).toBeTruthy();
 
     expect(getByText('Editar perfil')).toBeTruthy();
-    expect(getByText('Senha')).toBeTruthy();
+    expect(getByText('Alterar Senha')).toBeTruthy();
+    expect(getByText('Sair')).toBeTruthy();
   });
 
-  test('does not render edit/password buttons when it is not the user own profile', async () => {
+  test('does not render edit/password/logout buttons when it is not the user own profile', async () => {
     const thirdPartyProfileProps: UserProfileScreenProps = {
       ...defaultProps,
       isOwnProfile: false,
@@ -101,6 +104,69 @@ describe('UserProfileScreen', () => {
 
     expect(getByTestId('user-profile-screen-name')).toHaveTextContent('Carlos Silva');
     expect(queryByText('Editar perfil')).toBeNull();
-    expect(queryByText('Senha')).toBeNull();
+    expect(queryByText('Alterar Senha')).toBeNull();
+    expect(queryByText('Sair')).toBeNull();
+  });
+
+  test('opens logout confirmation modal and cancels logout', async () => {
+    const onLogout = jest.fn();
+    const { getByTestId, getByText, queryByText } = await render(
+      <UserProfileScreen
+        {...defaultProps}
+        onLogout={onLogout}
+      />
+    );
+
+    await fireEvent.press(getByTestId('user-profile-logout-button'));
+
+    expect(getByText('Sair da conta')).toBeTruthy();
+    expect(getByText('Tem certeza de que deseja sair da sua conta?')).toBeTruthy();
+
+    await fireEvent.press(getByTestId('user-profile-logout-cancel'));
+
+    expect(queryByText('Tem certeza de que deseja sair da sua conta?')).toBeNull();
+    expect(onLogout).not.toHaveBeenCalled();
+  });
+
+  test('calls onLogout when confirming in the logout modal', async () => {
+    const onLogout = jest.fn().mockResolvedValue(undefined);
+    const { getByTestId } = await render(
+      <UserProfileScreen
+        {...defaultProps}
+        onLogout={onLogout}
+      />
+    );
+
+    await fireEvent.press(getByTestId('user-profile-logout-button'));
+    await fireEvent.press(getByTestId('user-profile-logout-confirm'));
+
+    await waitFor(() => {
+      expect(onLogout).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  test('shows error toast when onLogout rejects', async () => {
+    const toastShowSpy = jest.spyOn(Toast, 'show').mockImplementation(jest.fn());
+    const onLogout = jest.fn().mockRejectedValue(new Error('Network error'));
+
+    const { getByTestId } = await render(
+      <UserProfileScreen
+        {...defaultProps}
+        onLogout={onLogout}
+      />
+    );
+
+    await fireEvent.press(getByTestId('user-profile-logout-button'));
+    await fireEvent.press(getByTestId('user-profile-logout-confirm'));
+
+    await waitFor(() => {
+      expect(toastShowSpy).toHaveBeenCalledWith({
+        type: 'error',
+        text1: 'Erro!',
+        text2: 'Não foi possível sair da conta. Tente novamente.',
+      });
+    });
+
+    toastShowSpy.mockRestore();
   });
 });

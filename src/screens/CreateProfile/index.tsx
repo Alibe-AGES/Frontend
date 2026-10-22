@@ -1,11 +1,12 @@
 import { ContinueButton } from '@/components/ContinueButton';
+import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
 import { PhotoPicker } from '@/components/PhotoPicker';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
 import { TextInput } from '@/components/TextInput';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import ProfileDecoration from '@/assets/images/create-group-decoration.svg';
 
@@ -31,7 +32,7 @@ export function CreateProfileScreen({
   const trimmedNickname = nickname.trim();
 
   return (
-    <ScrollView
+    <KeyboardAvoidingScrollView
       className="flex-1 bg-canvas"
       contentContainerClassName="flex-grow px-6 pt-16"
       keyboardShouldPersistTaps="handled"
@@ -111,6 +112,6 @@ export function CreateProfileScreen({
           />
         </View>
       </View>
-    </ScrollView>
+    </KeyboardAvoidingScrollView>
   );
 }
