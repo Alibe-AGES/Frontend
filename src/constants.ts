@@ -6,27 +6,34 @@ export const STORAGE_KEYS = {
   token: '@alibe:token',
 };
 
-// No emulador Android, troque para http://10.0.2.2:3000 (localhost aponta para o próprio emulador).
-const LOCAL_API_URL = 'http://localhost:3000';
-
-// IP da máquina na rede local, usado quando o app roda em um dispositivo físico via Expo Go.
-const LAN_API_URL = 'https://192.000.0.00:3000';
-
 const extraApiBaseUrl: unknown = Constants.expoConfig?.extra?.apiBaseUrl;
-const processApiBaseUrl = (
-  process as {
-    env: { EXPO_PUBLIC_API_URL?: string; ENV_API_BASE_URL?: string };
-  }
-).env.EXPO_PUBLIC_API_URL;
+const extraMobileApiBaseUrl: unknown = Constants.expoConfig?.extra?.mobileApiBaseUrl;
+const processApiBaseUrl = process.env.EXPO_PUBLIC_API_URL;
+const processMobileApiBaseUrl = process.env.EXPO_PUBLIC_API_URL_MOBILE;
 const configuredApiBaseUrl =
   typeof extraApiBaseUrl === 'string' && extraApiBaseUrl.length > 0
     ? extraApiBaseUrl
-    : (processApiBaseUrl ??
-      (process as { env: { ENV_API_BASE_URL?: string } }).env.ENV_API_BASE_URL);
+    : (processApiBaseUrl ?? process.env.ENV_API_BASE_URL);
+const configuredMobileApiBaseUrl =
+  typeof extraMobileApiBaseUrl === 'string' && extraMobileApiBaseUrl.length > 0
+    ? extraMobileApiBaseUrl
+    : processMobileApiBaseUrl;
 
-export const API_BASE_URL: string =
+export function resolveApiBaseUrl(
+  webApiBaseUrl: string,
+  mobileApiBaseUrl: string | undefined,
+  platform: string
+): string {
+  const apiBaseUrl = platform === 'web' ? webApiBaseUrl : (mobileApiBaseUrl ?? webApiBaseUrl);
+  return apiBaseUrl.replace(/\/$/, '');
+}
+
+export const API_BASE_URL = resolveApiBaseUrl(
   typeof configuredApiBaseUrl === 'string' && configuredApiBaseUrl.length > 0
-    ? configuredApiBaseUrl.replace(/\/$/, '')
-    : Platform.OS === 'web'
-      ? LOCAL_API_URL
-      : LAN_API_URL;
+    ? configuredApiBaseUrl
+    : 'http://localhost:3000',
+  typeof configuredMobileApiBaseUrl === 'string' && configuredMobileApiBaseUrl.length > 0
+    ? configuredMobileApiBaseUrl
+    : undefined,
+  Platform.OS
+);

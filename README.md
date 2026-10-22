@@ -27,13 +27,14 @@ cp .env.template .env
 docker compose up --build
 ```
 
-Find the computer's private IPv4 address on that network (on Linux, run `hostname -I` and use the Wi-Fi address). In `Frontend/.env`, set the API URL to that address:
+Find the computer's private IPv4 address on that network (on Linux, run `hostname -I` and use the Wi-Fi address). Configure both targets in `Frontend/.env`:
 
 ```dotenv
-EXPO_PUBLIC_API_URL=http://<COMPUTER_LAN_IP>:3000
+EXPO_PUBLIC_API_URL=http://localhost:3000
+EXPO_PUBLIC_API_URL_MOBILE=http://<COMPUTER_LAN_IP>:3000
 ```
 
-Replace `<COMPUTER_LAN_IP>` with the computer's address; do not use `localhost`, which would refer to the phone itself. `.env` is ignored by Git, so keep this machine-specific setting local.
+Replace `<COMPUTER_LAN_IP>` with the computer's address; the web app uses the localhost URL, while Expo Go uses the mobile URL because `localhost` on a phone refers to the phone itself. `.env` is ignored by Git, so keep this machine-specific setting local.
 
 Then start Expo in LAN mode from the `Frontend` directory and scan its QR code with Expo Go:
 
@@ -427,7 +428,7 @@ component      -> props/state -> visual output
 
 `src/server/api.ts` uses `fetch`, typed models, and `ApiError` as an example client targeting JSONPlaceholder; replace or configure it before production use. `src/server/groups.ts` is a real client, connected to the Backend's `GET /groups` endpoint and consumed by `src/hooks/useGroups.ts`.
 
-The Backend base URL is the `API_BASE_URL` constant in `src/constants.ts` (`http://localhost:3000` by default). On the Android emulator, change it to `http://10.0.2.2:3000` instead of `localhost`.
+The Backend base URLs are configured with `EXPO_PUBLIC_API_URL` for web/local testing and `EXPO_PUBLIC_API_URL_MOBILE` for Expo Go in the ignored `.env` file. Set the mobile URL to the computer's LAN address and backend port.
 
 ## Testing
 
