@@ -1,3 +1,5 @@
+import { ReactElement } from 'react';
+
 import { PlaceCardColor } from '@/components/PlaceCard/PlaceCard.types';
 
 export interface Place {
@@ -5,7 +7,13 @@ export interface Place {
   name: string;
   address: string;
   photoUri?: string;
+  photoHeaders?: Record<string, string>;
   category?: string;
+  distanceKm?: number;
+  periods?: string[];
+  environments?: string[];
+  idealFor?: string[];
+  averagePrice?: number;
 }
 
 export interface PlaceListProps {
@@ -16,6 +24,8 @@ export interface PlaceListProps {
   error?: string | null;
   onRetry?: () => void;
   onPlacePress?: (id: string) => void;
+  header?: ReactElement;
+  contentContainerClassName?: string;
   testID?: string;
 }
 

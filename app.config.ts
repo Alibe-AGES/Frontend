@@ -37,6 +37,12 @@ const config: ExpoConfig = {
     'expo-router',
     'expo-secure-store',
     [
+      'expo-location',
+      {
+        locationWhenInUsePermission: 'Permita que o Alibe encontre experiências perto de você.',
+      },
+    ],
+    [
       'expo-splash-screen',
       {
         backgroundColor: '#F7F2E9',
