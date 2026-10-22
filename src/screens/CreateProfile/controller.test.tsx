@@ -1,7 +1,7 @@
 import { useSignUpDraft } from '@/hooks/useSignUpDraft';
 import { ApiError } from '@/server/api';
-import { authClient } from '@/server/auth-client';
 import { signUpWithEmail } from '@/server/auth';
+import { authClient } from '@/server/auth-client';
 import { updateUserProfilePicture } from '@/server/users';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
@@ -122,6 +122,30 @@ describe('CreateProfileController', () => {
     });
     expect(mockUpdateProfilePicture).not.toHaveBeenCalled();
     expect(setDraft).toHaveBeenCalledWith(null);
+  });
+
+  test('waits for account creation to finish before signing in', async () => {
+    let finishSignUp!: () => void;
+    mockSignUp.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finishSignUp = () => {
+            resolve({ token: null, user: {} as never });
+          };
+        })
+    );
+
+    await renderAndFill();
+
+    expect(mockSignUp).toHaveBeenCalled();
+    expect(mockSignIn).not.toHaveBeenCalled();
+
+    finishSignUp();
+
+    await waitFor(() => {
+      expect(mockSignIn).toHaveBeenCalledWith({ ...ACCOUNT, rememberMe: true });
+      expect(replace).toHaveBeenCalledWith('/groups');
+    });
   });
 
   test('uploads the selected profile picture after signing in', async () => {
