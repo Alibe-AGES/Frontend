@@ -108,6 +108,43 @@ export async function getEventDetails(eventId: string): Promise<EventDetailsResp
   return (await response.json()) as EventDetailsResponse;
 }
 
+export interface CreateProposalInput {
+  locationId: string;
+  name: string;
+  // YYYY-MM-DD
+  date: string;
+  // HH:mm
+  time: string;
+  budgetStart?: string;
+  budgetEnd?: string;
+}
+
+export interface CreatedProposal {
+  id: string;
+  createdAt: string;
+  owner: {
+    id: string;
+    name: string;
+    image: string | null;
+  };
+  event: {
+    id: string;
+    name: string;
+    date: string;
+    time: string;
+    budgetStart: string | null;
+    budgetEnd: string | null;
+    status: EventStatus;
+    groupId: string;
+  };
+  location: {
+    id: string;
+    description: string | null;
+    address: string | null;
+  };
+  myAnswer: 'yes';
+}
+
 export async function createEvent(groupId: string, input: CreateEventInput): Promise<CreatedEvent> {
   const formData = new FormData();
   formData.append('name', input.name.trim());
@@ -133,4 +170,34 @@ export async function createEvent(groupId: string, input: CreateEventInput): Pro
   }
 
   return (await response.json()) as CreatedEvent;
+}
+
+export async function createProposal(
+  groupId: string,
+  input: CreateProposalInput
+): Promise<CreatedProposal> {
+  const payload: CreateProposalInput = {
+    locationId: input.locationId,
+    name: input.name.trim(),
+    date: input.date,
+    time: input.time,
+    ...(input.budgetStart ? { budgetStart: input.budgetStart } : {}),
+    ...(input.budgetEnd ? { budgetEnd: input.budgetEnd } : {}),
+  };
+
+  const response = await authenticatedFetch(`${API_BASE_URL}/api/groups/${groupId}/proposals`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new ApiError(
+      text || response.statusText || 'Não foi possível criar a sugestão',
+      response.status
+    );
+  }
+
+  return (await response.json()) as CreatedProposal;
 }

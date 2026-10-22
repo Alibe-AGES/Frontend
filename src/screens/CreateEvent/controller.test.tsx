@@ -1,14 +1,17 @@
 import type { EventCardDraft } from '@/components/EventCard';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
-import { createEvent } from '@/server/events';
+import type { CreateEventTab } from '@/screens/CreateEvent';
+import { createEvent, createProposal } from '@/server/events';
 import { getGroup, getMe } from '@/server/groups';
 import { act, render, waitFor } from '@testing-library/react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
-import CreateEventController from './controller';
+import CreateEventController, { DEFAULT_SUGGESTION_LOCATION_ID } from './controller';
 
 interface MockScreenProps {
   groupId?: string;
+  activeTab?: CreateEventTab;
+  onSelectTab?: (tab: CreateEventTab) => void;
   draft: EventCardDraft;
   onChangeDraft: (draft: EventCardDraft) => void;
   onSelectDate: (dateString: string) => void;
@@ -34,6 +37,7 @@ jest.mock('react-native-toast-message', () => ({
 
 jest.mock('@/server/events', () => ({
   createEvent: jest.fn(),
+  createProposal: jest.fn(),
 }));
 
 jest.mock('@/server/groups', () => ({
@@ -51,6 +55,7 @@ jest.mock('@/screens/CreateEvent', () => ({
 const mockUseLocalSearchParams = jest.mocked(useLocalSearchParams);
 const mockUseRouter = jest.mocked(useRouter);
 const mockCreateEvent = jest.mocked(createEvent);
+const mockCreateProposal = jest.mocked(createProposal);
 const mockGetGroup = jest.mocked(getGroup);
 const mockGetMe = jest.mocked(getMe);
 const mockToastShow = jest.mocked(Toast.show);
@@ -87,6 +92,10 @@ describe('CreateEventController', () => {
     });
     mockGetMe.mockResolvedValue({ id: 'user-1', name: 'Luiza', profilePic: null });
     mockCreateEvent.mockResolvedValue({ id: 'event-1' } as Awaited<ReturnType<typeof createEvent>>);
+    mockCreateProposal.mockResolvedValue({
+      id: 'proposal-1',
+      event: { id: 'event-from-proposal-1' },
+    } as Awaited<ReturnType<typeof createProposal>>);
   });
 
   afterEach(() => {
@@ -224,19 +233,88 @@ describe('CreateEventController', () => {
     expect(mockScreenProps.isConfirmDisabled).toBe(true);
   });
 
-  test('updates the draft date when onSelectDate is called', async () => {
-    mockUseLocalSearchParams.mockReturnValue({ id: 'group-1' });
+  test('switches to the suggestion tab and creates a proposal with the resolved locationId', async () => {
+    await render(<CreateEventController />);
+
+    expect(mockScreenProps.activeTab).toBe('event');
+
+    await act(() => {
+      mockScreenProps.onSelectTab?.('suggestion');
+    });
+
+    expect(mockScreenProps.activeTab).toBe('suggestion');
+
+    await fillDraft(COMPLETE_DRAFT);
+    await act(() => {
+      mockScreenProps.onConfirm();
+    });
+
+    expect(mockCreateProposal).toHaveBeenCalledWith('group-1', {
+      locationId: DEFAULT_SUGGESTION_LOCATION_ID,
+      name: ' Bloom Café ',
+      date: '2026-10-15',
+      time: '20:00',
+    });
+    expect(mockCreateEvent).not.toHaveBeenCalled();
+    expect(replace).toHaveBeenCalledWith({
+      pathname: '/group/[id]/event-created',
+      params: { id: 'group-1', eventId: 'event-from-proposal-1' },
+    });
+  });
+
+  test('uses locationId and address from route params when creating a suggestion', async () => {
+    const customLocationId = 'cc33027e-cfb6-4611-b104-158ba673d98d';
+    mockUseLocalSearchParams.mockReturnValue({
+      id: 'group-1',
+      locationId: customLocationId,
+      address: 'Rua Padre Chagas, 320 - Moinhos de Vento, Porto Alegre - RS',
+    });
 
     await render(<CreateEventController />);
 
-    await waitFor(() => {
-      expect(mockScreenProps.groupId).toBe('group-1');
+    expect(mockScreenProps.activeTab).toBe('suggestion');
+    expect(mockScreenProps.draft.address).toBe(
+      'Rua Padre Chagas, 320 - Moinhos de Vento, Porto Alegre - RS'
+    );
+
+    await fillDraft({
+      ...mockScreenProps.draft,
+      name: 'Bloom Café',
+      date: '2026-10-15',
+      time: '20:00',
     });
+    await act(() => {
+      mockScreenProps.onConfirm();
+    });
+
+    expect(mockCreateProposal).toHaveBeenCalledWith('group-1', {
+      locationId: customLocationId,
+      name: 'Bloom Café',
+      date: '2026-10-15',
+      time: '20:00',
+    });
+  });
+
+  test('shows a suggestion-specific error toast when proposal creation fails', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockCreateProposal.mockRejectedValue(new Error('Location not found'));
+    await render(<CreateEventController />);
 
     await act(() => {
-      mockScreenProps.onSelectDate('2026-12-25');
+      mockScreenProps.onSelectTab?.('suggestion');
+    });
+    await fillDraft(COMPLETE_DRAFT);
+    await act(() => {
+      mockScreenProps.onConfirm();
     });
 
-    expect(mockScreenProps.draft.date).toBe('2026-12-25');
+    expect(mockToastShow).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'error',
+        text2: 'Não foi possível criar a sugestão. Tente novamente.',
+      })
+    );
+    expect(replace).not.toHaveBeenCalled();
+    expect(mockScreenProps.isSubmitting).toBe(false);
   });
 });
