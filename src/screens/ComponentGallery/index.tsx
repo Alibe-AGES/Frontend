@@ -3,8 +3,11 @@ import { Calendar } from '@/components/Calendar';
 import { DayMark } from '@/components/Calendar/Calendar.types';
 import { DatePickerSheet } from '@/components/DatePickerSheet';
 import { EventCard, EventCardDraft } from '@/components/EventCard';
+import { PlaceCard } from '@/components/PlaceCard';
+import { PlaceList } from '@/components/PlaceList';
 import { ProfileCard } from '@/components/ProfileCard';
 import { SearchBar } from '@/components/SearchBar';
+import { usePlaces } from '@/hooks/usePlaces';
 import { isValidApiDate } from '@/utils/date';
 import { isValidTime } from '@/utils/time';
 import { useState } from 'react';
@@ -55,6 +58,7 @@ export function ComponentGalleryScreen() {
   const [isSubmittingEvent, setIsSubmittingEvent] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const { places, isLoading, error, refetch } = usePlaces();
   const isEventDraftValid =
     eventDraft.name.trim() !== '' &&
     eventDraft.address.trim() !== '' &&
@@ -165,6 +169,36 @@ export function ComponentGalleryScreen() {
         placeholder="Pesquisar..."
         testID="gallery-search-bar"
       />
+      <View className="flex-row gap-4 rounded-3xl bg-surface p-5">
+        <View className="flex-1">
+          <PlaceCard
+            name="Bloom Café"
+            address="Endereço"
+            color="coral"
+          />
+        </View>
+        <View className="flex-1">
+          <PlaceCard
+            name="Cinepolis Shopping Central"
+            address="Endereço"
+            color="lime"
+          />
+        </View>
+      </View>
+
+      <View className="gap-4 rounded-3xl bg-surface p-5">
+        <Text className="text-xl font-black text-ink">PlaceList</Text>
+        <PlaceList
+          places={places}
+          isLoading={isLoading}
+          error={error}
+          onRetry={() => {
+            void refetch();
+          }}
+          pageSize={4}
+          testID="gallery-place-list"
+        />
+      </View>
     </ScrollView>
   );
 }
