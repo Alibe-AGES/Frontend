@@ -9,7 +9,7 @@ import { PlaceCard } from '@/components/PlaceCard';
 import { PlaceList } from '@/components/PlaceList';
 import { ProfileCard } from '@/components/ProfileCard';
 import { SearchBar } from '@/components/SearchBar';
-import { usePlaces } from '@/hooks/usePlaces';
+import { MOCK_PLACES } from '@/server/mock/places';
 import { CATEGORY_TAGS, FILTER_GROUPS } from '@/screens/Experiences/filters';
 import { isValidApiDate } from '@/utils/date';
 import { isValidTime } from '@/utils/time';
@@ -64,7 +64,6 @@ export function ComponentGalleryScreen() {
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [filters, setFilters] = useState(EMPTY_FILTER_VALUE);
   const [isFilterSheetVisible, setIsFilterSheetVisible] = useState(false);
-  const { places, isLoading, error, refetch } = usePlaces();
   const isEventDraftValid =
     eventDraft.name.trim() !== '' &&
     eventDraft.address.trim() !== '' &&
@@ -234,12 +233,7 @@ export function ComponentGalleryScreen() {
       <View className="gap-4 rounded-3xl bg-surface p-5">
         <Text className="text-xl font-black text-ink">PlaceList</Text>
         <PlaceList
-          places={places}
-          isLoading={isLoading}
-          error={error}
-          onRetry={() => {
-            void refetch();
-          }}
+          places={MOCK_PLACES}
           pageSize={4}
           testID="gallery-place-list"
         />

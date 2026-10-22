@@ -110,6 +110,7 @@ export const PlaceList: FC<PlaceListProps> = ({
               name={item.name}
               address={item.address}
               imageUri={item.photoUri}
+              imageHeaders={item.photoHeaders}
               color={CARD_COLORS[index % CARD_COLORS.length]}
               onClickCard={() => onPlacePress?.(item.id)}
               testID={`${testID}-item-${item.id}`}

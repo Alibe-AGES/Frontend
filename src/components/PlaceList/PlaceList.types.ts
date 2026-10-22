@@ -7,6 +7,7 @@ export interface Place {
   name: string;
   address: string;
   photoUri?: string;
+  photoHeaders?: Record<string, string>;
   category?: string;
   distanceKm?: number;
   periods?: string[];

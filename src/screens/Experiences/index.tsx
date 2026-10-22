@@ -5,7 +5,6 @@ import { PlaceList } from '@/components/PlaceList';
 import { SearchBar } from '@/components/SearchBar';
 import { usePlaces } from '@/hooks/usePlaces';
 import { theme } from '@/theme';
-import { matchesPlaceFilters } from '@/utils/placeFilters';
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
@@ -14,13 +13,16 @@ import { CATEGORY_TAGS, FILTER_GROUPS } from './filters';
 
 export function ExperiencesScreen() {
   const { id: groupId } = useLocalSearchParams<{ id: string }>();
-  const { places, isLoading, error, refetch } = usePlaces();
   const [query, setQuery] = useState('');
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [filters, setFilters] = useState(EMPTY_FILTER_VALUE);
   const [isFilterSheetVisible, setIsFilterSheetVisible] = useState(false);
+  const { places, isLoading, error, refetch } = usePlaces({
+    query,
+    tagIds: selectedTagIds,
+    filters,
+  });
 
-  const criteria = { query, tagIds: selectedTagIds, sheet: filters };
   const hasActiveFilters = JSON.stringify(filters) !== JSON.stringify(EMPTY_FILTER_VALUE);
 
   const handleToggleTag = (id: string) => {
@@ -34,7 +36,6 @@ export function ExperiencesScreen() {
       <View className="w-full max-w-2xl flex-1 self-center">
         <PlaceList
           places={places}
-          filter={(place) => matchesPlaceFilters(place, criteria)}
           isLoading={isLoading}
           error={error}
           onRetry={() => {
