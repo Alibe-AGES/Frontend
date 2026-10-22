@@ -13,6 +13,7 @@ interface DayScreenProps {
   onAvailabilityPress: () => void;
   onPresenceResponse: (eventId: string, answer: EventPresenceAnswer) => Promise<void>;
   pendingEventId: string | null;
+  currentUserId?: string | null;
 }
 
 export function DayScreen({
@@ -24,6 +25,7 @@ export function DayScreen({
   onAvailabilityPress,
   onPresenceResponse,
   pendingEventId,
+  currentUserId,
 }: DayScreenProps) {
   return (
     <View className="flex-1 bg-canvas">
@@ -49,6 +51,7 @@ export function DayScreen({
           onAvailabilityPress={onAvailabilityPress}
           onPresenceResponse={onPresenceResponse}
           pendingEventId={pendingEventId}
+          currentUserId={currentUserId}
         />
       </ScrollView>
 

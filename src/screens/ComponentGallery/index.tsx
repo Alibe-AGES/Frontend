@@ -7,10 +7,10 @@ import { FilterCarousel } from '@/components/FilterCarousel';
 import { EMPTY_FILTER_VALUE, FilterSheet } from '@/components/FilterSheet';
 import { PlaceCard } from '@/components/PlaceCard';
 import { PlaceList } from '@/components/PlaceList';
-import { usePlaces } from '@/hooks/usePlaces';
-import { CATEGORY_TAGS, FILTER_GROUPS } from '@/screens/Experiences/filters';
 import { ProfileCard } from '@/components/ProfileCard';
 import { SearchBar } from '@/components/SearchBar';
+import { usePlaces } from '@/hooks/usePlaces';
+import { CATEGORY_TAGS, FILTER_GROUPS } from '@/screens/Experiences/filters';
 import { isValidApiDate } from '@/utils/date';
 import { isValidTime } from '@/utils/time';
 import { useState } from 'react';
@@ -188,7 +188,6 @@ export function ComponentGalleryScreen() {
             name="Cinepolis Shopping Central"
             address="Endereço"
             color="lime"
-            isFavorite
           />
         </View>
       </View>

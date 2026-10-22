@@ -1,3 +1,4 @@
+import { KeyboardScrollContext } from '@/components/KeyboardAvoidingScrollView';
 import { fireEvent, render } from '@testing-library/react-native';
 import { useState } from 'react';
 
@@ -181,5 +182,27 @@ describe('<TimeInput />', () => {
     expect(getByLabelText('Horário de fim')).toBeTruthy();
     expect(getByTestId('availability-end-time-field')).toBeTruthy();
     expect(getByTestId('availability-end-time-icon')).toBeTruthy();
+  });
+
+  test('notifies keyboard scroll context and calls onFocus on focus', async () => {
+    const handleScrollFocus = jest.fn();
+    const handleFocus = jest.fn();
+
+    const { getByTestId } = await render(
+      <KeyboardScrollContext.Provider value={handleScrollFocus}>
+        <TimeInput
+          placeholder="Horário"
+          value=""
+          onChangeTime={jest.fn()}
+          onFocus={handleFocus}
+          testID="focused-time-input"
+        />
+      </KeyboardScrollContext.Provider>
+    );
+
+    await fireEvent(getByTestId('focused-time-input'), 'focus');
+
+    expect(handleFocus).toHaveBeenCalled();
+    expect(handleScrollFocus).toHaveBeenCalled();
   });
 });
