@@ -1,5 +1,4 @@
-export type NavigationBarAction =
-  'matches' | 'search' | 'create' | 'memories' | 'groups' | 'profile';
+export type NavigationBarAction = 'matches' | 'search' | 'create' | 'memories' | 'groups';
 
 export interface NavigationBarProps {
   groupId: string;

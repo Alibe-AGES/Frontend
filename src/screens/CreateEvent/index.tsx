@@ -5,7 +5,8 @@ import { NavigationBar } from '@/components/NavigationBar';
 import { Participant, ParticipantAvatars } from '@/components/ParticipantAvatars';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
 
 export type CreateEventTab = 'event' | 'suggestion';
 
@@ -100,7 +101,7 @@ export function CreateEventScreen({
 
   return (
     <View className="flex-1 bg-canvas">
-      <ScrollView
+      <KeyboardAvoidingScrollView
         className="flex-1"
         contentContainerClassName="gap-4 px-6 pb-36 pt-16"
         keyboardShouldPersistTaps="handled"
@@ -141,7 +142,7 @@ export function CreateEventScreen({
             testID="create-event-participants"
           />
         </View>
-      </ScrollView>
+      </KeyboardAvoidingScrollView>
 
       {groupId ? (
         <View className="absolute inset-x-0 bottom-0">

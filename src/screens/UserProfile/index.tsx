@@ -1,4 +1,5 @@
 import { BackButton } from '@/components/BackButton';
+import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
 import { NavigationBar } from '@/components/NavigationBar';
 import { PasswordInput } from '@/components/PasswordInput';
 import { PhotoPicker } from '@/components/PhotoPicker';
@@ -27,16 +28,19 @@ const ProfileMenuButton = ({
   icon,
   label,
   onPress,
+  testID,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
   onPress: () => void;
+  testID?: string;
 }) => (
   <TouchableOpacity
     onPress={onPress}
     className="w-full flex-row items-center rounded-full border bg-surface p-2"
     style={{ borderColor: theme.colors.ink }}
     activeOpacity={0.7}
+    testID={testID}
   >
     <View className="mr-4 h-10 w-10 items-center justify-center rounded-full border bg-coral">
       <Ionicons
@@ -70,6 +74,7 @@ export interface UserProfileScreenProps {
   isLoading: boolean;
   error: Error | null;
   refetch: () => void;
+  onLogout?: () => Promise<void> | void;
 }
 
 export const UserProfileScreen = ({
@@ -80,6 +85,7 @@ export const UserProfileScreen = ({
   isLoading,
   error,
   refetch,
+  onLogout,
 }: UserProfileScreenProps) => {
   const insets = useSafeAreaInsets();
   const networkAvatarSource = useUserAvatarSource(userId);
@@ -97,6 +103,9 @@ export const UserProfileScreen = ({
   const [editName, setEditName] = useState('');
   const [editPhoto, setEditPhoto] = useState<SelectedPhoto | null>(null);
   const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
+
+  const [isLogoutModalVisible, setLogoutModalVisible] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -162,6 +171,34 @@ export const UserProfileScreen = ({
     handleClosePasswordModal();
   };
 
+  const handleOpenLogoutModal = () => {
+    setLogoutModalVisible(true);
+  };
+
+  const handleCloseLogoutModal = () => {
+    if (isLoggingOut) return;
+    setLogoutModalVisible(false);
+  };
+
+  const handleConfirmLogout = async () => {
+    if (!onLogout) return;
+
+    setIsLoggingOut(true);
+
+    try {
+      await onLogout();
+      setLogoutModalVisible(false);
+    } catch {
+      Toast.show({
+        type: 'error',
+        text1: 'Erro!',
+        text2: 'Não foi possível sair da conta. Tente novamente.',
+      });
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
   if (!userId) {
     return null;
   }
@@ -223,8 +260,14 @@ export const UserProfileScreen = ({
             />
             <ProfileMenuButton
               icon="lock-closed-outline"
-              label="Senha"
+              label="Alterar Senha"
               onPress={handleOpenPasswordModal}
+            />
+            <ProfileMenuButton
+              icon="log-out-outline"
+              label="Sair"
+              onPress={handleOpenLogoutModal}
+              testID="user-profile-logout-button"
             />
           </View>
         )}
@@ -240,7 +283,11 @@ export const UserProfileScreen = ({
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           className="flex-1"
         >
-          <View className="flex-1 items-center justify-center bg-black/50 px-6">
+          <KeyboardAvoidingScrollView
+            className="flex-1 bg-black/50"
+            contentContainerClassName="flex-grow items-center justify-center px-6"
+            keyboardShouldPersistTaps="handled"
+          >
             <View className="w-full gap-5 rounded-3xl bg-canvas p-6 shadow-lg">
               <Text className="text-center font-poppins-semibold text-xl text-wine">
                 Editar Perfil
@@ -287,7 +334,7 @@ export const UserProfileScreen = ({
                 </TouchableOpacity>
               </View>
             </View>
-          </View>
+          </KeyboardAvoidingScrollView>
         </KeyboardAvoidingView>
         <Toast />
       </Modal>
@@ -302,7 +349,11 @@ export const UserProfileScreen = ({
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           className="flex-1"
         >
-          <View className="flex-1 items-center justify-center bg-black/50 px-6">
+          <KeyboardAvoidingScrollView
+            className="flex-1 bg-black/50"
+            contentContainerClassName="flex-grow items-center justify-center px-6"
+            keyboardShouldPersistTaps="handled"
+          >
             <View className="w-full gap-5 rounded-3xl bg-canvas p-6 shadow-lg">
               <Text className="text-center font-poppins-semibold text-xl text-wine">
                 Alterar Senha
@@ -345,8 +396,54 @@ export const UserProfileScreen = ({
                 </TouchableOpacity>
               </View>
             </View>
-          </View>
+          </KeyboardAvoidingScrollView>
         </KeyboardAvoidingView>
+        <Toast />
+      </Modal>
+
+      <Modal
+        visible={isLogoutModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCloseLogoutModal}
+      >
+        <View className="flex-1 items-center justify-center bg-black/50 px-6">
+          <View className="w-full gap-5 rounded-3xl bg-canvas p-6 shadow-lg">
+            <Text className="text-center font-poppins-semibold text-xl text-wine">
+              Sair da conta
+            </Text>
+
+            <Text className="text-center font-poppins text-base text-wine">
+              Tem certeza de que deseja sair da sua conta?
+            </Text>
+
+            <View className="mt-2 flex-row gap-4">
+              <TouchableOpacity
+                onPress={handleCloseLogoutModal}
+                disabled={isLoggingOut}
+                className="flex-1 items-center justify-center rounded-full border-2 border-coral py-3"
+                testID="user-profile-logout-cancel"
+              >
+                <Text className="font-poppins-semibold text-coral">Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  void handleConfirmLogout();
+                }}
+                disabled={isLoggingOut}
+                className={`flex-1 items-center justify-center rounded-full bg-coral py-3 ${
+                  isLoggingOut ? 'opacity-60' : ''
+                }`}
+                testID="user-profile-logout-confirm"
+              >
+                <Text className="font-poppins-semibold text-surface">
+                  {isLoggingOut ? 'Saindo...' : 'Sair'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
         <Toast />
       </Modal>
 
