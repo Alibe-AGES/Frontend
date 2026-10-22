@@ -236,7 +236,6 @@ export function ComponentGalleryScreen() {
             name="Cinepolis Shopping Central"
             address="Endereço"
             color="lime"
-            isFavorite
           />
         </View>
       </View>
