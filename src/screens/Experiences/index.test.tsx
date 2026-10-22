@@ -1,5 +1,5 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import type { Place } from '@/components/PlaceList/PlaceList.types';
 import { searchPlaces } from '@/server/places';
@@ -10,6 +10,7 @@ import { ExperiencesScreen } from '.';
 
 jest.mock('expo-router', () => ({
   useLocalSearchParams: jest.fn(),
+  useRouter: jest.fn(),
 }));
 
 jest.mock('@/components/NavigationBar', () => ({
@@ -47,9 +48,12 @@ const renderScreen = () =>
   );
 
 describe('<ExperiencesScreen />', () => {
+  const mockPush = jest.fn();
+
   beforeEach(() => {
     jest.clearAllMocks();
     (useLocalSearchParams as jest.Mock).mockReturnValue({ id: 'group-1' });
+    (useRouter as jest.Mock).mockReturnValue({ push: mockPush });
     (Location.requestForegroundPermissionsAsync as jest.Mock).mockResolvedValue({ granted: true });
     (Location.getCurrentPositionAsync as jest.Mock).mockResolvedValue({
       coords: { latitude: -30, longitude: -51 },
@@ -74,6 +78,15 @@ describe('<ExperiencesScreen />', () => {
         }
         return Promise.resolve(results);
       });
+  });
+
+  test('opens the selected place details', async () => {
+    const { findByText, getByTestId } = await renderScreen();
+
+    await findByText('Bloom Café');
+    await fireEvent.press(getByTestId('experiences-places-item-bloom'));
+
+    expect(mockPush).toHaveBeenCalledWith('/group/group-1/experiences/bloom');
   });
 
   test('filters places by search text', async () => {

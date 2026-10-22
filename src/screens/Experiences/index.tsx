@@ -5,7 +5,7 @@ import { PlaceList } from '@/components/PlaceList';
 import { SearchBar } from '@/components/SearchBar';
 import { usePlaces } from '@/hooks/usePlaces';
 import { theme } from '@/theme';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 
@@ -13,6 +13,7 @@ import { CATEGORY_TAGS, FILTER_GROUPS } from './filters';
 
 export function ExperiencesScreen() {
   const { id: groupId } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const [query, setQuery] = useState('');
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [filters, setFilters] = useState(EMPTY_FILTER_VALUE);
@@ -40,6 +41,9 @@ export function ExperiencesScreen() {
           error={error}
           onRetry={() => {
             void refetch();
+          }}
+          onPlacePress={(placeId) => {
+            router.push(`/group/${groupId}/experiences/${encodeURIComponent(placeId)}`);
           }}
           contentContainerClassName="gap-4 px-6 pb-32 pt-6"
           header={

@@ -26,6 +26,19 @@ interface LocationListResponse {
   items: LocationListItem[];
 }
 
+export interface PlaceDetails {
+  externalId: string;
+  name: string;
+  imageUrl: string | null;
+  description: string | null;
+  address: string | null;
+  rating: number | null;
+  priceRange: { start: number | null; end: number | null; currencyCode: string } | null;
+  phoneNumber: string | null;
+  website: string | null;
+  openingHours: string[];
+}
+
 const CATEGORY_TYPES: Record<string, string[]> = {
   restaurant: ['restaurant'],
   bar: ['bar', 'night_club'],
@@ -112,4 +125,24 @@ export async function searchPlaces(input: PlacesSearchInput): Promise<Place[]> {
   const result = (await response.json()) as LocationListResponse;
   const photoHeaders = await getAuthenticationHeaders();
   return result.items.map((item) => toPlace(item, photoHeaders));
+}
+
+export async function getPlaceDetails(placeId: string): Promise<PlaceDetails> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/api/locations/google-places/${encodeURIComponent(placeId)}`
+  );
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new ApiError(
+      message || response.statusText || 'Não foi possível carregar o local',
+      response.status
+    );
+  }
+
+  const details = (await response.json()) as PlaceDetails;
+  return {
+    ...details,
+    imageUrl: details.imageUrl ? new URL(details.imageUrl, API_BASE_URL).toString() : null,
+  };
 }

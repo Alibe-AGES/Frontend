@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '@/constants';
 import { authenticatedFetch, getAuthenticationHeaders } from './authenticated-fetch';
-import { searchPlaces } from './places';
+import { getPlaceDetails, searchPlaces } from './places';
 
 jest.mock('./authenticated-fetch', () => ({
   authenticatedFetch: jest.fn(),
@@ -89,5 +89,25 @@ describe('searchPlaces', () => {
     const requestInput = (authenticatedFetch as jest.MockedFunction<typeof authenticatedFetch>).mock
       .calls[0]?.[0];
     expect(requestInput).toEqual(expect.stringContaining('/api/locations?'));
+  });
+});
+
+describe('getPlaceDetails', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (authenticatedFetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({ externalId: 'google-place-1', imageUrl: '/api/locations/photos' }),
+    });
+  });
+
+  test('loads the Google Place details and resolves its image URL', async () => {
+    const result = await getPlaceDetails('google/place-1');
+
+    expect(authenticatedFetch).toHaveBeenCalledWith(
+      `${API_BASE_URL}/api/locations/google-places/google%2Fplace-1`
+    );
+    expect(result.imageUrl).toBe(new URL('/api/locations/photos', API_BASE_URL).toString());
   });
 });
