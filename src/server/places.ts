@@ -92,7 +92,7 @@ function buildSearchParams(input: PlacesSearchInput): URLSearchParams {
 function toPlace(item: LocationListItem, photoHeaders: Record<string, string>): Place {
   const start = item.priceRange?.start;
   const end = item.priceRange?.end;
-  const prices = [start, end].filter((price): price is number => price !== null);
+  const prices = [start, end].filter((price): price is number => typeof price === 'number');
 
   return {
     id: item.externalId,

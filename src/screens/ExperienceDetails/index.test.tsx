@@ -57,4 +57,76 @@ describe('<ExperienceDetailsScreen />', () => {
     await fireEvent.press(getByTestId('experience-details-back'));
     expect(back).toHaveBeenCalled();
   });
+
+  test('renders populated details, rating, price range and a missing-photo placeholder', async () => {
+    jest.mocked(getPlaceDetails).mockResolvedValueOnce({
+      ...details,
+      imageUrl: null,
+      address: 'Rua das Flores, 10',
+      rating: 4.6,
+      priceRange: { start: null, end: 80, currencyCode: 'BRL' },
+      phoneNumber: '(51) 3333-4444',
+      website: 'https://bloom.example',
+      openingHours: ['segunda-feira: 09:00–18:00'],
+    });
+
+    const { findByText, getByTestId, queryByTestId } = await render(
+      <ExperienceDetailsScreen placeId="cafe-1" />
+    );
+
+    expect(await findByText('Rua das Flores, 10')).toBeTruthy();
+    expect(await findByText('(51) 3333-4444')).toBeTruthy();
+    expect(await findByText('segunda-feira: 09:00–18:00')).toBeTruthy();
+    expect(await findByText('https://bloom.example')).toBeTruthy();
+    expect(await findByText('-- - R$ 80')).toBeTruthy();
+    expect(getByTestId('experience-details-rating')).toBeTruthy();
+    expect(getByTestId('experience-details-website')).toBeTruthy();
+    expect(getByTestId('experience-details-screen')).toBeTruthy();
+    expect(queryByTestId('experience-details-image')).toBeNull();
+  });
+
+  test('shows a loading state while details are pending', async () => {
+    let resolveDetails!: (value: PlaceDetails) => void;
+    jest.mocked(getPlaceDetails).mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveDetails = resolve;
+      })
+    );
+
+    const { findByText, getByTestId } = await render(
+      <ExperienceDetailsScreen placeId="slow-place" />
+    );
+
+    expect(getByTestId('experience-details-loading')).toBeTruthy();
+    resolveDetails(details);
+    expect(await findByText('Bloom Café')).toBeTruthy();
+  });
+
+  test('shows the price placeholder when the API returns an empty range', async () => {
+    jest.mocked(getPlaceDetails).mockResolvedValueOnce({
+      ...details,
+      priceRange: { start: null, end: null, currencyCode: 'BRL' },
+    });
+
+    const { findByText, getAllByText } = await render(
+      <ExperienceDetailsScreen placeId="empty-price-place" />
+    );
+
+    expect(await findByText('Bloom Café')).toBeTruthy();
+    expect(getAllByText('--')).toHaveLength(3);
+  });
+
+  test('shows the failure state when place details cannot be loaded', async () => {
+    jest.mocked(getPlaceDetails).mockRejectedValueOnce(new Error('network error'));
+    const back = jest.fn();
+    (useRouter as jest.Mock).mockReturnValue({ back });
+
+    const { findByText, getByTestId } = await render(
+      <ExperienceDetailsScreen placeId="unavailable-place" />
+    );
+
+    expect(await findByText('Não foi possível carregar as informações deste local.')).toBeTruthy();
+    await fireEvent.press(getByTestId('experience-details-error-back'));
+    expect(back).toHaveBeenCalled();
+  });
 });

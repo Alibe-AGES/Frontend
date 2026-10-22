@@ -90,6 +90,104 @@ describe('searchPlaces', () => {
       .calls[0]?.[0];
     expect(requestInput).toEqual(expect.stringContaining('/api/locations?'));
   });
+
+  test('maps missing optional fields and skips unavailable filter values', async () => {
+    (authenticatedFetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          items: [
+            {
+              externalId: 'place-without-optionals',
+              name: 'Lugar',
+              imageUrl: null,
+              address: null,
+              distanceMeters: null,
+              primaryType: null,
+              priceRange: null,
+            },
+            {
+              externalId: 'place-with-one-price',
+              name: 'Lugar com preço parcial',
+              imageUrl: null,
+              address: 'Rua B',
+              distanceMeters: 0,
+              primaryType: 'cafe',
+              priceRange: { start: 10, end: null },
+            },
+          ],
+        }),
+    });
+
+    const places = await searchPlaces({
+      latitude: 0,
+      longitude: 0,
+      query: '',
+      tagIds: ['unknown'],
+      filters: {
+        minBudget: '',
+        maxBudget: '',
+        selections: { distance: ['any'] },
+      },
+    });
+
+    expect(places[0]).toMatchObject({
+      id: 'place-without-optionals',
+      address: '',
+      photoUri: undefined,
+      photoHeaders: undefined,
+      category: undefined,
+      distanceKm: undefined,
+      averagePrice: undefined,
+    });
+    expect(places[1]).toMatchObject({
+      distanceKm: 0,
+      averagePrice: 10,
+      photoUri: undefined,
+    });
+    expect(authenticatedFetch).toHaveBeenCalledWith(expect.not.stringContaining('maxDistanceKm'));
+  });
+
+  test('throws an API error when the places request fails', async () => {
+    (authenticatedFetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 503,
+      statusText: 'Unavailable',
+      text: () => Promise.resolve(''),
+    });
+
+    await expect(
+      searchPlaces({
+        latitude: 0,
+        longitude: 0,
+        query: '',
+        tagIds: [],
+        filters: { minBudget: '', maxBudget: '', selections: {} },
+      })
+    ).rejects.toMatchObject({ message: 'Unavailable', status: 503 });
+  });
+
+  test('uses the generic error message when search fails without server text', async () => {
+    (authenticatedFetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      statusText: '',
+      text: () => Promise.resolve(''),
+    });
+
+    await expect(
+      searchPlaces({
+        latitude: 0,
+        longitude: 0,
+        query: '',
+        tagIds: [],
+        filters: { minBudget: '', maxBudget: '', selections: {} },
+      })
+    ).rejects.toMatchObject({
+      message: 'Não foi possível carregar os locais',
+      status: 500,
+    });
+  });
 });
 
 describe('getPlaceDetails', () => {
@@ -109,5 +207,42 @@ describe('getPlaceDetails', () => {
       `${API_BASE_URL}/api/locations/google-places/google%2Fplace-1`
     );
     expect(result.imageUrl).toBe(new URL('/api/locations/photos', API_BASE_URL).toString());
+  });
+
+  test('keeps a missing photo null', async () => {
+    (authenticatedFetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ externalId: 'google-place-1', imageUrl: null }),
+    });
+
+    await expect(getPlaceDetails('google-place-1')).resolves.toMatchObject({ imageUrl: null });
+  });
+
+  test('throws an API error when details cannot be loaded', async () => {
+    (authenticatedFetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found',
+      text: () => Promise.resolve('Local não encontrado'),
+    });
+
+    await expect(getPlaceDetails('missing-place')).rejects.toMatchObject({
+      message: 'Local não encontrado',
+      status: 404,
+    });
+  });
+
+  test('uses the generic error message when the server sends no details error text', async () => {
+    (authenticatedFetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      statusText: '',
+      text: () => Promise.resolve(''),
+    });
+
+    await expect(getPlaceDetails('broken-place')).rejects.toMatchObject({
+      message: 'Não foi possível carregar o local',
+      status: 500,
+    });
   });
 });
