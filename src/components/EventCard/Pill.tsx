@@ -39,6 +39,7 @@ interface PillInputProps {
   onChangeText: (text: string) => void;
   keyboardType?: KeyboardTypeOptions;
   maxLength?: number;
+  multiline?: boolean;
   testID: string;
 }
 
@@ -49,6 +50,7 @@ export const PillInput: FC<PillInputProps> = ({
   onChangeText,
   keyboardType,
   maxLength,
+  multiline,
   testID,
 }) => (
   <View className={PILL_CLASS_NAME}>
@@ -62,6 +64,7 @@ export const PillInput: FC<PillInputProps> = ({
       className="flex-1 py-3 font-poppins-medium text-lg text-white outline-none"
       keyboardType={keyboardType}
       maxLength={maxLength}
+      multiline={multiline}
       onChangeText={onChangeText}
       placeholder={placeholder}
       placeholderTextColor={theme.colors.coralSoft}

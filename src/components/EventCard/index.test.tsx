@@ -47,6 +47,41 @@ describe('<EventCard />', () => {
     expect(getByTestId('alibe-event-card-image')).toBeTruthy();
   });
 
+  test('renders the proposal presentation with rating and venue address, without a favorite control', async () => {
+    const { getByTestId, getByText, queryByTestId } = await render(
+      <EventCard
+        variant="proposal"
+        event={{
+          ...fullEvent,
+          rating: 3.2,
+        }}
+      />
+    );
+
+    expect(getByTestId('alibe-event-card-rating')).toBeTruthy();
+    expect(queryByTestId('alibe-event-card-image-badge')).toBeNull();
+    expect(getByTestId('alibe-event-card-title').props.className).toContain('text-ink');
+    expect(getByText('Av. Carlos Gomes, 600')).toBeTruthy();
+    expect(queryByTestId('alibe-event-card-address')).toBeTruthy();
+  });
+
+  test('fills missing proposal location details with placeholders', async () => {
+    const { getByTestId, getAllByText, getByText } = await render(
+      <EventCard
+        variant="proposal"
+        event={{ id: 'proposal-empty-location' }}
+      />
+    );
+
+    expect(getByTestId('alibe-event-card-address').props.children).toBe('--');
+    expect(getByTestId('alibe-event-card-budget')).toBeTruthy();
+    expect(getByTestId('alibe-event-card-phone')).toBeTruthy();
+    expect(getByText('(00) 00000-0000')).toBeTruthy();
+    expect(getByTestId('alibe-event-card-hours')).toBeTruthy();
+    expect(getByTestId('alibe-event-card-website')).toBeTruthy();
+    expect(getAllByText('--')).toHaveLength(4);
+  });
+
   test('shows a location placeholder when there is no image', async () => {
     const { getByTestId, queryByTestId } = await render(
       <EventCard event={{ ...fullEvent, imageUrl: null }} />
@@ -136,7 +171,7 @@ describe('<EventCard mode="create" />', () => {
     expect(getByPlaceholderText('Definir nome do evento')).toBeTruthy();
     expect(getByPlaceholderText('Adicionar endereço')).toBeTruthy();
     expect(getByTestId('alibe-event-card-date-button')).toBeTruthy();
-    expect(getByText('00/00')).toBeTruthy();
+    expect(getByText('Escolher dia')).toBeTruthy();
     expect(getByPlaceholderText('Adicionar horário')).toBeTruthy();
     expect(getByText('Adicione uma imagem que representa seu evento')).toBeTruthy();
     expect(getByTestId('alibe-event-card-confirm')).toBeTruthy();
@@ -164,6 +199,25 @@ describe('<EventCard mode="create" />', () => {
     expect(onChangeDraft).toHaveBeenNthCalledWith(2, { ...draft, address: 'Av. João Wallig' });
     expect(onDatePress).toHaveBeenCalledTimes(1);
     expect(onChangeDraft).toHaveBeenNthCalledWith(3, { ...draft, time: '10:00' });
+  });
+
+  test('shows editable location details on the suggestion card and omits event schedule fields', async () => {
+    const { getByPlaceholderText, queryByTestId } = await render(
+      <EventCard
+        mode="create"
+        variant="suggestion"
+        draft={emptyDraft}
+        onChangeDraft={jest.fn()}
+      />
+    );
+
+    expect(getByPlaceholderText('Preço mínimo (R$)')).toBeTruthy();
+    expect(getByPlaceholderText('Preço máximo (R$)')).toBeTruthy();
+    expect(getByPlaceholderText('Telefone')).toBeTruthy();
+    expect(getByPlaceholderText('Horários de funcionamento')).toBeTruthy();
+    expect(getByPlaceholderText('Site')).toBeTruthy();
+    expect(queryByTestId('alibe-event-card-date-button')).toBeNull();
+    expect(queryByTestId('alibe-event-card-time-input')).toBeNull();
   });
 
   test('picks an image from the gallery and stores it in the draft', async () => {

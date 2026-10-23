@@ -1,7 +1,8 @@
 import { API_BASE_URL } from '@/constants';
 import { ApiError } from './api';
+import { authClient } from './auth-client';
 
-export { authClient } from './auth-client';
+export { authClient };
 export { authenticatedFetch } from './authenticated-fetch';
 
 export interface AuthUser {
@@ -25,6 +26,10 @@ export interface SignUpWithEmailResponse {
   user: AuthUser;
 }
 
+export interface SignOutResponse {
+  success: boolean;
+}
+
 export async function signUpWithEmail(
   input: SignUpWithEmailInput
 ): Promise<SignUpWithEmailResponse> {
@@ -43,4 +48,14 @@ export async function signUpWithEmail(
   }
 
   return (await response.json()) as SignUpWithEmailResponse;
+}
+
+export async function signOut(): Promise<SignOutResponse> {
+  const { data, error } = await authClient.signOut();
+
+  if (error) {
+    throw new ApiError(error.message ?? 'Não foi possível encerrar a sessão', error.status);
+  }
+
+  return data;
 }

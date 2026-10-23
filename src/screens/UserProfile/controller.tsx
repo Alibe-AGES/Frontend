@@ -1,6 +1,8 @@
+import { API_BASE_URL } from '@/constants';
+import { signOut } from '@/server/auth';
 import { useAuth } from '@/server/mock/useAuth';
 import { getUserProfile as getMockUserProfile } from '@/server/mock/userProfile';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import Toast from 'react-native-toast-message';
 import { UserProfileScreen } from '.';
@@ -15,6 +17,7 @@ export interface ProfileData {
 }
 
 export default function UserProfileController() {
+  const router = useRouter();
   const { userId, groupId } = useLocalSearchParams<{ userId: string; groupId: string }>();
   const { userId: currentUserId } = useAuth();
 
@@ -36,7 +39,7 @@ export default function UserProfileController() {
 
         setProfile({
           name: apiData.name,
-          photoUri: apiData.image,
+          photoUri: apiData.profilePic ? `${API_BASE_URL}${apiData.profilePic}` : null,
           created_at: new Date(apiData.createdAt).toLocaleDateString('pt-BR', {
             month: 'long',
             year: 'numeric',
@@ -66,6 +69,11 @@ export default function UserProfileController() {
     void fetchProfile();
   }, [fetchProfile]);
 
+  const handleLogout = async () => {
+    await signOut();
+    router.replace('/auth');
+  };
+
   return (
     <UserProfileScreen
       userId={userId}
@@ -77,6 +85,7 @@ export default function UserProfileController() {
       refetch={() => {
         void fetchProfile();
       }}
+      onLogout={handleLogout}
     />
   );
 }

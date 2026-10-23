@@ -1,3 +1,1 @@
-import { GroupsScreen } from '.';
-
-export default GroupsScreen;
+export { GroupsScreen as default } from '.';

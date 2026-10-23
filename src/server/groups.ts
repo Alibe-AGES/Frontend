@@ -1,6 +1,7 @@
 import { API_BASE_URL } from '@/constants';
 import { ApiError } from './api';
 import { authenticatedFetch } from './auth';
+import type { EventStatus } from './events';
 import { appendImage, UploadImage } from './images';
 
 export interface Group {
@@ -98,12 +99,20 @@ export interface GroupMember {
   profilePic: string | null;
 }
 
+export interface GroupNextEvent {
+  id: string;
+  name: string;
+  timeslot: string;
+  status: EventStatus;
+}
+
 export interface GroupDetails {
   id: string;
   name: string;
   profilePic: string | null;
   createdAt: string;
   participants: GroupMember[];
+  nextEvent?: GroupNextEvent | null;
 }
 
 export async function getGroup(groupId: string): Promise<GroupDetails> {

@@ -3,7 +3,14 @@ import { Calendar } from '@/components/Calendar';
 import { DayMark } from '@/components/Calendar/Calendar.types';
 import { DatePickerSheet } from '@/components/DatePickerSheet';
 import { EventCard, EventCardDraft } from '@/components/EventCard';
+import { FilterCarousel } from '@/components/FilterCarousel';
+import { EMPTY_FILTER_VALUE, FilterSheet } from '@/components/FilterSheet';
+import { PlaceCard } from '@/components/PlaceCard';
+import { PlaceList } from '@/components/PlaceList';
 import { ProfileCard } from '@/components/ProfileCard';
+import { SearchBar } from '@/components/SearchBar';
+import { MOCK_PLACES } from '@/server/mock/places';
+import { CATEGORY_TAGS, FILTER_GROUPS } from '@/screens/Experiences/filters';
 import { isValidApiDate } from '@/utils/date';
 import { isValidTime } from '@/utils/time';
 import { useState } from 'react';
@@ -53,6 +60,10 @@ export function ComponentGalleryScreen() {
   });
   const [isSubmittingEvent, setIsSubmittingEvent] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [filters, setFilters] = useState(EMPTY_FILTER_VALUE);
+  const [isFilterSheetVisible, setIsFilterSheetVisible] = useState(false);
   const isEventDraftValid =
     eventDraft.name.trim() !== '' &&
     eventDraft.address.trim() !== '' &&
@@ -156,6 +167,77 @@ export function ComponentGalleryScreen() {
           }}
         />
       ) : null}
+
+      <SearchBar
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        placeholder="Pesquisar..."
+        testID="gallery-search-bar"
+      />
+      <View className="flex-row gap-4 rounded-3xl bg-surface p-5">
+        <View className="flex-1">
+          <PlaceCard
+            name="Bloom Café"
+            address="Endereço"
+            color="coral"
+          />
+        </View>
+        <View className="flex-1">
+          <PlaceCard
+            name="Cinepolis Shopping Central"
+            address="Endereço"
+            color="lime"
+          />
+        </View>
+      </View>
+
+      <View className="gap-4 rounded-3xl bg-surface p-5">
+        <Text className="text-xl font-black text-ink">FilterCarousel + FilterSheet</Text>
+        <FilterCarousel
+          tags={CATEGORY_TAGS}
+          selectedTagIds={selectedTagIds}
+          onToggleTag={(id) => {
+            setSelectedTagIds((current) =>
+              current.includes(id) ? current.filter((tagId) => tagId !== id) : [...current, id]
+            );
+          }}
+          onOpenFilters={() => {
+            setIsFilterSheetVisible(true);
+          }}
+          hasActiveFilters={JSON.stringify(filters) !== JSON.stringify(EMPTY_FILTER_VALUE)}
+          testID="gallery-filter-carousel"
+        />
+        <Text
+          className="font-poppins text-xs text-ink"
+          testID="gallery-filter-state"
+        >
+          {`Tags: ${selectedTagIds.join(', ') || '-'}\nFiltros: ${JSON.stringify(filters)}`}
+        </Text>
+      </View>
+
+      <FilterSheet
+        visible={isFilterSheetVisible}
+        value={filters}
+        groups={FILTER_GROUPS}
+        budgetTitle="Orçamento"
+        onConfirm={(value) => {
+          setFilters(value);
+          setIsFilterSheetVisible(false);
+        }}
+        onClose={() => {
+          setIsFilterSheetVisible(false);
+        }}
+        testID="gallery-filter-sheet"
+      />
+
+      <View className="gap-4 rounded-3xl bg-surface p-5">
+        <Text className="text-xl font-black text-ink">PlaceList</Text>
+        <PlaceList
+          places={MOCK_PLACES}
+          pageSize={4}
+          testID="gallery-place-list"
+        />
+      </View>
     </ScrollView>
   );
 }

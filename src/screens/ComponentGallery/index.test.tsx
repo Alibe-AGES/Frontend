@@ -2,6 +2,10 @@ import { fireEvent, render } from '@testing-library/react-native';
 
 import { ComponentGalleryScreen } from '.';
 
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}));
+
 jest.mock('@/components/DatePickerSheet', () => ({
   DatePickerSheet: ({ onSelectDate }: { onSelectDate: (dateString: string) => void }) => {
     const { Pressable, Text } = jest.requireActual<typeof import('react-native')>('react-native');
@@ -54,5 +58,26 @@ describe('<ComponentGalleryScreen /> event card', () => {
       expect.objectContaining({ disabled: false })
     );
     expect(confirm().props.className).toContain('bg-ink active:bg-ink-soft');
+  });
+});
+
+describe('<ComponentGalleryScreen /> filters', () => {
+  test('toggles carousel tags and applies sheet filters only on confirm', async () => {
+    const { getByLabelText, getByTestId } = await render(<ComponentGalleryScreen />);
+
+    await fireEvent.press(getByLabelText('Aulas'));
+    expect(getByTestId('gallery-filter-state')).toHaveTextContent(/Tags: class/);
+    await fireEvent.press(getByLabelText('Aulas'));
+    expect(getByTestId('gallery-filter-state')).toHaveTextContent(/Tags: -/);
+
+    await fireEvent.press(getByLabelText('Abrir filtros'));
+    await fireEvent.press(getByTestId('gallery-filter-sheet-environment-outdoor'));
+    await fireEvent.press(getByTestId('gallery-filter-sheet-close'));
+    expect(getByTestId('gallery-filter-state')).not.toHaveTextContent(/outdoor/);
+
+    await fireEvent.press(getByLabelText('Abrir filtros'));
+    await fireEvent.press(getByTestId('gallery-filter-sheet-environment-outdoor'));
+    await fireEvent.press(getByTestId('gallery-filter-sheet-confirm'));
+    expect(getByTestId('gallery-filter-state')).toHaveTextContent(/outdoor/);
   });
 });

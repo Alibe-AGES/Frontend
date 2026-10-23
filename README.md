@@ -27,13 +27,14 @@ cp .env.template .env
 docker compose up --build
 ```
 
-Find the computer's private IPv4 address on that network (on Linux, run `hostname -I` and use the Wi-Fi address). In `Frontend/.env`, set the API URL to that address:
+Find the computer's private IPv4 address on that network (on Linux, run `hostname -I` and use the Wi-Fi address). Configure both targets in `Frontend/.env`:
 
 ```dotenv
-EXPO_PUBLIC_API_URL=http://<COMPUTER_LAN_IP>:3000
+EXPO_PUBLIC_API_URL=http://localhost:3000
+EXPO_PUBLIC_API_URL_MOBILE=http://<COMPUTER_LAN_IP>:3000
 ```
 
-Replace `<COMPUTER_LAN_IP>` with the computer's address; do not use `localhost`, which would refer to the phone itself. `.env` is ignored by Git, so keep this machine-specific setting local.
+Replace `<COMPUTER_LAN_IP>` with the computer's address; the web app uses the localhost URL, while Expo Go uses the mobile URL because `localhost` on a phone refers to the phone itself. `.env` is ignored by Git, so keep this machine-specific setting local.
 
 Then start Expo in LAN mode from the `Frontend` directory and scan its QR code with Expo Go:
 
@@ -65,6 +66,23 @@ npm run lint
 npm run format:check
 npm run test:unit
 ```
+
+## Splash Animation
+
+The native splash (configured in `app.config.ts`) only shows the canvas color. As soon as the root layout mounts, `src/components/AnimatedSplash` covers the app and plays three `lottie-react-native` animations: the two ribbons and the logo, whose symbol and "Alibe" letters draw themselves in.
+
+The splash stays up while the app loads. The root layout passes `isReady` (today, the fonts being loaded; add any other startup work to `isAppReady` in `src/app/_layout.tsx`):
+
+- If the animation ends before the app is ready, the drawing fades away and plays again from the start.
+- If the app is ready before the animation ends, the animation still plays to the end, then the splash fades out.
+
+With the system "reduce motion" setting on, or if an animation fails to load, it shows the still ribbons and logo until the app is ready.
+
+The files in `assets/animations/` are final Lottie exports, imported directly by the component. The still versions, `assets/images/splash-detail-top.svg`, `assets/images/splash-detail-bottom.svg`, and `assets/images/splash-logo.svg`, match the last frame of each animation; when an animation is replaced, update its still SVG too.
+
+`lottie-react-native` is a native module, so development builds made before it was added must be rebuilt (`npm run android` / `npm run ios`), and so must builds made before the native splash image changed. Expo Go already includes it. On web it renders through `@lottiefiles/dotlottie-react`.
+
+`svgr.config.js` adds SVGO's `prefixIds` to the SVG transformer, so gradient ids stay unique when several SVGs share a web page. Restart Metro with `npx expo start -c` after changing it.
 
 ## Notificações push no Android
 
@@ -680,7 +698,7 @@ component      -> props/state -> visual output
 
 `src/server/api.ts` uses `fetch`, typed models, and `ApiError` as an example client targeting JSONPlaceholder; replace or configure it before production use. `src/server/groups.ts` is a real client, connected to the Backend's `GET /groups` endpoint and consumed by `src/hooks/useGroups.ts`.
 
-The Backend base URL is the `API_BASE_URL` constant in `src/constants.ts` (`http://localhost:3000` by default). On the Android emulator, change it to `http://10.0.2.2:3000` instead of `localhost`.
+The Backend base URLs are configured with `EXPO_PUBLIC_API_URL` for web/local testing and `EXPO_PUBLIC_API_URL_MOBILE` for Expo Go in the ignored `.env` file. Set the mobile URL to the computer's LAN address and backend port.
 
 ## Testing
 

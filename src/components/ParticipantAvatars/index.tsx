@@ -6,7 +6,11 @@ import { Text, View } from 'react-native';
 import tw from 'twrnc';
 import { Participant, ParticipantAvatarsProps } from './ParticipantAvatars.types';
 
-export type { Participant, ParticipantAvatarsProps } from './ParticipantAvatars.types';
+export type {
+  Participant,
+  ParticipantAnswer,
+  ParticipantAvatarsProps,
+} from './ParticipantAvatars.types';
 
 const CURRENT_USER_LABEL = 'Eu';
 
@@ -44,6 +48,41 @@ export const ParticipantAvatars: FC<ParticipantAvatarsProps> = ({
       {ordered.map((participant) => {
         const label =
           participant.id === currentUserId ? CURRENT_USER_LABEL : firstName(participant.name);
+        let answerBadge = null;
+
+        if (participant.answer === 'yes') {
+          answerBadge = (
+            <View
+              accessibilityLabel="Presença confirmada"
+              className="absolute -bottom-1 left-0 right-0 items-center"
+              testID={`${testID}-${participant.id}-badge-yes`}
+            >
+              <View className="h-5 w-5 items-center justify-center rounded-full bg-ink">
+                <Ionicons
+                  name="checkmark"
+                  size={12}
+                  color={theme.colors.white}
+                />
+              </View>
+            </View>
+          );
+        } else if (participant.answer === 'no') {
+          answerBadge = (
+            <View
+              accessibilityLabel="Não vai participar"
+              className="absolute -bottom-1 left-0 right-0 items-center"
+              testID={`${testID}-${participant.id}-badge-no`}
+            >
+              <View className="h-5 w-5 items-center justify-center rounded-full bg-coral">
+                <Ionicons
+                  name="close"
+                  size={12}
+                  color={theme.colors.white}
+                />
+              </View>
+            </View>
+          );
+        }
 
         return (
           <View
@@ -51,24 +90,27 @@ export const ParticipantAvatars: FC<ParticipantAvatarsProps> = ({
             className="w-14 items-center gap-1"
             testID={`${testID}-${participant.id}`}
           >
-            <View className="h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-pink">
-              {participant.profilePic ? (
-                <Image
-                  source={{ uri: participant.profilePic }}
-                  accessible
-                  accessibilityLabel={`Foto de ${participant.name}`}
-                  contentFit="cover"
-                  style={tw`h-full w-full`}
-                  testID={`${testID}-${participant.id}-photo`}
-                />
-              ) : (
-                <Ionicons
-                  name="person-outline"
-                  size={22}
-                  color={theme.colors.wine}
-                  testID={`${testID}-${participant.id}-placeholder`}
-                />
-              )}
+            <View className="relative h-12 w-12 items-center justify-center">
+              <View className="h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-pink">
+                {participant.profilePic ? (
+                  <Image
+                    source={{ uri: participant.profilePic }}
+                    accessible
+                    accessibilityLabel={`Foto de ${participant.name}`}
+                    contentFit="cover"
+                    style={tw`h-full w-full`}
+                    testID={`${testID}-${participant.id}-photo`}
+                  />
+                ) : (
+                  <Ionicons
+                    name="person-outline"
+                    size={22}
+                    color={theme.colors.wine}
+                    testID={`${testID}-${participant.id}-placeholder`}
+                  />
+                )}
+              </View>
+              {answerBadge}
             </View>
             <Text
               className="font-poppins text-sm text-wine"

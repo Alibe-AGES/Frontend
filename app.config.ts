@@ -10,6 +10,7 @@ const config: ExpoConfig = {
   userInterfaceStyle: 'automatic',
   extra: {
     apiBaseUrl: process.env.EXPO_PUBLIC_API_URL ?? process.env.ENV_API_BASE_URL,
+    mobileApiBaseUrl: process.env.EXPO_PUBLIC_API_URL_MOBILE,
     eas: {
       projectId: '0fe4c9c6-8bca-4a1e-8506-7dca9c7901e7',
     },
@@ -21,7 +22,7 @@ const config: ExpoConfig = {
     package: 'com.alibe.app',
     googleServicesFile: './google-services.json',
     adaptiveIcon: {
-      backgroundColor: '#E6F4FE',
+      backgroundColor: '#F7F2E9',
       foregroundImage: './assets/images/android-icon-foreground.png',
       backgroundImage: './assets/images/android-icon-background.png',
       monochromeImage: './assets/images/android-icon-monochrome.png',
@@ -38,11 +39,18 @@ const config: ExpoConfig = {
     'expo-secure-store',
     'expo-notifications',
     [
+      'expo-location',
+      {
+        locationWhenInUsePermission: 'Permita que o Alibe encontre experiências perto de você.',
+      },
+    ],
+    [
       'expo-splash-screen',
       {
         backgroundColor: '#F7F2E9',
-        image: './assets/images/splash-logo.png',
-        imageWidth: 168,
+        // Blank on purpose: AnimatedSplash draws the logo in as soon as JavaScript loads.
+        image: './assets/images/splash-blank.png',
+        imageWidth: 276,
       },
     ],
   ],
