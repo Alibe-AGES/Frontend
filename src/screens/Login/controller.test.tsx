@@ -2,6 +2,7 @@ import { authClient } from '@/server/auth';
 import { fireEvent, render } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
 import LoginController from './controller';
+import { synchronizePushToken } from '@/notifications/synchronize-push-token';
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
@@ -11,8 +12,15 @@ jest.mock('@/server/auth', () => ({
   authClient: { signIn: { email: jest.fn() } },
 }));
 
+jest.mock('@/notifications/synchronize-push-token', () => ({
+  synchronizePushToken: jest.fn(),
+}));
+
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
 const mockSignInEmail = authClient.signIn.email as jest.Mock;
+const mockSynchronizePushToken = synchronizePushToken as jest.MockedFunction<
+  typeof synchronizePushToken
+>;
 
 describe('LoginController', () => {
   const replace = jest.fn();
@@ -21,6 +29,7 @@ describe('LoginController', () => {
 
   beforeEach(() => {
     mockSignInEmail.mockResolvedValue({ error: null });
+    mockSynchronizePushToken.mockResolvedValue('registered');
     mockUseRouter.mockReturnValue({ replace, back, canGoBack } as unknown as ReturnType<
       typeof useRouter
     >);
@@ -42,6 +51,7 @@ describe('LoginController', () => {
       password: 'senha-segura',
       rememberMe: true,
     });
+    expect(mockSynchronizePushToken).toHaveBeenCalledTimes(1);
     expect(replace).toHaveBeenCalledWith('/groups');
   });
 
@@ -54,6 +64,7 @@ describe('LoginController', () => {
     await fireEvent.press(getByTestId('login-continue'));
 
     expect(await findByRole('alert')).toHaveTextContent(/Não foi possível entrar/);
+    expect(mockSynchronizePushToken).not.toHaveBeenCalled();
     expect(replace).not.toHaveBeenCalled();
   });
 

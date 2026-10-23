@@ -84,6 +84,276 @@ The files in `assets/animations/` are final Lottie exports, imported directly by
 
 `svgr.config.js` adds SVGO's `prefixIds` to the SVG transformer, so gradient ids stay unique when several SVGs share a web page. Restart Metro with `npx expo start -c` after changing it.
 
+## Notificações push no Android
+
+Esta seção descreve todo o processo para testar localmente o fluxo:
+
+```text
+Aplicativo Android -> Backend -> SQS no MiniStack -> Lambda Go no MiniStack
+                    -> Expo Push Service -> Firebase/FCM -> aplicativo
+```
+
+O MiniStack simula somente a infraestrutura AWS. O Expo Push Service e o Firebase/FCM continuam
+sendo serviços reais, pois são eles que entregam a notificação ao aparelho Android.
+
+### O que é necessário
+
+- aparelho Android físico;
+- conta Expo com acesso ao projeto Alibe;
+- projeto no Firebase;
+- aplicativo Android do Firebase registrado como `com.alibe.app`;
+- Node.js 22 instalado no WSL;
+- Docker funcionando para executar o Backend, PostgreSQL, MiniStack, SQS e Lambda local;
+- computador e celular conectados à mesma rede para o celular alcançar a API local.
+
+O Expo Go não suporta notificações push remotas neste projeto. É obrigatório instalar um
+development build do Alibe. O APK precisa ser gerado novamente quando uma configuração nativa,
+como `google-services.json` ou um plugin Expo, for adicionada ou modificada.
+
+### Resumo da ordem de execução
+
+Faça apenas uma vez:
+
+1. registre `com.alibe.app` no Firebase;
+2. adicione `google-services.json` ao Frontend e configure `app.config.ts`;
+3. envie a chave secreta FCM V1 ao EAS;
+4. gere e instale o APK de desenvolvimento no celular.
+
+A cada sessão de teste:
+
+1. inicie o Backend e o ambiente AWS local com Docker Compose;
+2. inicie o Metro com Expo Dev Client;
+3. abra o aplicativo instalado, faça login e permita notificações;
+4. dispare a notificação pelo Swagger;
+5. encerre o ambiente local com `docker compose down` ao terminar.
+
+### 1. Ativar o Node.js correto no WSL
+
+O `node`, o `npm` e o `npx` devem vir do Linux, e não de `/mnt/c/Program Files/nodejs`.
+
+```bash
+source ~/.nvm/nvm.sh
+nvm use 22.23.2
+nvm alias default 22.23.2
+hash -r
+which node
+which npx
+```
+
+Os dois últimos comandos devem mostrar caminhos iniciados por
+`/home/pedro/.nvm/versions/node/`.
+
+### 2. Registrar o aplicativo no Firebase
+
+Esta configuração é feita uma única vez:
+
+1. Acesse <https://console.firebase.google.com/>.
+2. Crie ou abra o projeto Alibe.
+3. Adicione um aplicativo Android.
+4. Informe `com.alibe.app` como Android package name.
+5. Baixe o arquivo `google-services.json`.
+6. Salve o arquivo como `Frontend/google-services.json`.
+
+Adicione a referência ao arquivo no bloco `android` de `app.config.ts`:
+
+```ts
+android: {
+  package: 'com.alibe.app',
+  googleServicesFile: './google-services.json',
+  // restante da configuracao Android
+},
+```
+
+O `google-services.json` identifica publicamente o aplicativo Firebase e não contém a chave
+privada da conta de serviço.
+
+### 3. Configurar a credencial FCM V1 no Expo
+
+No Firebase Console, abra **Configurações do projeto > Contas de serviço**, gere uma chave privada
+para a conta de serviço e baixe o JSON. Esse segundo JSON é secreto:
+
+- não renomeie esse arquivo para `google-services.json`;
+- não o coloque dentro do repositório;
+- não o envie por mensagem nem o inclua em commit;
+- depois de enviá-lo ao EAS, mantenha-o em local seguro ou remova a cópia local.
+
+No terminal do Frontend, faça login e abra o gerenciador de credenciais:
+
+```bash
+cd /home/pedro/Documents/PUCRS/2026-2/ages/Frontend
+npx eas-cli@latest login
+npx eas-cli@latest credentials -p android
+```
+
+No menu, selecione o aplicativo `com.alibe.app` e siga esta opção:
+
+```text
+Google Service Account
+-> Manage your Google Service Account Key for Push Notifications (FCM V1)
+-> Set up a Google Service Account Key for Push Notifications (FCM V1)
+-> Upload a new service account key
+```
+
+Escolha o JSON secreto da conta de serviço quando solicitado. A credencial fica guardada no EAS e
+não deve ser transformada em variável `EXPO_PUBLIC_*`.
+
+### 4. Configurar o endereço do Backend local
+
+Crie ou atualize `Frontend/.env.local`:
+
+```dotenv
+EXPO_PUBLIC_API_URL=http://<IP_DO_COMPUTADOR>:3000
+```
+
+Exemplo para um computador cujo IPv4 do Wi-Fi seja `192.168.0.6`:
+
+```dotenv
+EXPO_PUBLIC_API_URL=http://192.168.0.6:3000
+```
+
+Não use `localhost`: dentro do celular, `localhost` significa o próprio celular. Se o endereço IP
+do computador mudar, atualize `.env.local` e reinicie o Expo. No Windows, consulte o IPv4 atual
+com `ipconfig` e use o endereço do adaptador Wi-Fi conectado à mesma rede do celular.
+
+### 5. Gerar o APK de desenvolvimento
+
+O perfil `development` do `eas.json` já está configurado para gerar um APK com Expo Dev Client:
+
+```bash
+cd /home/pedro/Documents/PUCRS/2026-2/ages/Frontend
+npx eas-cli@latest build -p android --profile development
+```
+
+Na primeira execução:
+
+- escolha **Generate new keystore** caso o EAS solicite um Android Keystore;
+- permita que o EAS use as credenciais remotas;
+- confirme que o package é `com.alibe.app`.
+
+Quando o build terminar, abra no celular a URL apresentada pelo EAS e instale o APK. Se a URL não
+estiver mais visível, consulte o build mais recente:
+
+```bash
+npx eas-cli@latest build:list -p android --limit 1
+```
+
+Um erro `spawn adb ENOENT` depois de `Successfully downloaded app` significa somente que o EAS não
+conseguiu instalar automaticamente no aparelho. O APK foi criado com sucesso; abra a página do
+build no celular, baixe o arquivo e instale-o manualmente.
+
+O APK não precisa ser reconstruído a cada alteração TypeScript. Gere outro somente quando mudar
+dependências ou configurações nativas.
+
+### 6. Iniciar o ambiente local do Backend
+
+Em um terminal separado:
+
+```bash
+cd /home/pedro/Documents/PUCRS/2026-2/ages/Backend
+docker compose up --build backend
+```
+
+As dependências do Compose iniciam automaticamente:
+
+- PostgreSQL;
+- MiniStack;
+- fila SQS local;
+- empacotamento da Lambda Go;
+- CloudFormation local que conecta SQS e Lambda.
+
+Esse ambiente não acessa nem cria recursos na conta AWS. Para acompanhar o consumidor local:
+
+```bash
+docker compose logs -f ministack
+```
+
+Para desligar preservando os dados locais:
+
+```bash
+docker compose down
+```
+
+Não use `docker compose down -v`, pois `-v` apaga os volumes e o banco local.
+
+### 7. Iniciar o Frontend
+
+Em outro terminal:
+
+```bash
+cd /home/pedro/Documents/PUCRS/2026-2/ages/Frontend
+source ~/.nvm/nvm.sh
+nvm use 22.23.2
+npx expo start --dev-client --tunnel --clear
+```
+
+Abra o aplicativo **Alibe** que foi instalado pelo APK. O QR Code desse comando apenas conecta o
+aplicativo já instalado ao servidor de desenvolvimento; ele não instala o APK.
+
+O túnel conecta o aplicativo ao Metro, mas não encaminha a API. Antes de testar pelo aplicativo,
+abra no navegador do celular:
+
+```text
+http://<IP_DO_COMPUTADOR>:3000/docs
+```
+
+Se essa página não abrir, corrija o IP, confirme que celular e computador estão na mesma rede e
+libere a porta `3000` no firewall.
+
+### 8. Registrar o Expo Push Token
+
+No aplicativo instalado:
+
+1. faça um cadastro ou login;
+2. aceite a permissão de notificações do Android;
+3. aguarde a navegação para a tela de grupos.
+
+Depois de um login bem-sucedido, o aplicativo obtém o Expo Push Token e chama
+`PUT /api/users/me/push-token`. O Backend associa o token ao usuário. Esse processo é repetido em
+todo login para atualizar o token quando necessário. Falhas de notificação não bloqueiam o login.
+
+### 9. Disparar uma notificação de teste
+
+Mantenha o aplicativo minimizado para que o Android exiba a notificação. No computador, abra:
+
+```text
+http://localhost:3000/docs
+```
+
+No Swagger:
+
+1. execute `POST /api/auth/sign-in/email` com o mesmo e-mail e senha usados no celular;
+2. copie o campo `token` retornado pelo login;
+3. clique em **Authorize** e cole o token no campo Bearer;
+4. execute `POST /api/users/me/test-notification`.
+
+O resultado esperado é HTTP `202 Accepted`. O caminho executado será:
+
+```text
+Swagger -> Backend -> SQS local -> Lambda Go local -> Expo -> FCM -> celular
+```
+
+No terminal dos logs do MiniStack deve aparecer uma mensagem semelhante a:
+
+```text
+ESM: Lambda alibe-local-notification processed 1 SQS messages
+```
+
+### 10. Diagnóstico rápido
+
+| Sintoma                              | Causa provável                                    | Verificação                                                 |
+| ------------------------------------ | ------------------------------------------------- | ----------------------------------------------------------- |
+| QR Code não instala o aplicativo     | O QR do Metro não contém o APK                    | Instale o APK pela página do build EAS                      |
+| Aplicativo fica esperando conexão    | Metro não está em execução                        | Rode `npx expo start --dev-client --tunnel --clear`         |
+| Login não alcança o Backend          | IP ou firewall incorreto                          | Abra `http://<IP>:3000/docs` no celular                     |
+| Login funciona, mas não existe token | Permissão negada ou FCM incompleto                | Confira `google-services.json` e a credencial FCM V1 no EAS |
+| Teste retorna `401`                  | Swagger não está autenticado                      | Faça login e use **Authorize** com o token retornado        |
+| Teste retorna `409`                  | Usuário ainda não possui Expo Push Token          | Entre novamente no aplicativo e aceite a permissão          |
+| Teste retorna `404`                  | Endpoint de teste desabilitado                    | Localmente use `ENABLE_NOTIFICATION_TEST_ENDPOINT=true`     |
+| Retorna `202`, mas nada chega        | Aplicativo aberto, credencial FCM ou entrega Expo | Minimize o app e acompanhe os logs do MiniStack             |
+
+O endpoint de teste deve permanecer desabilitado em produção. Nunca coloque senha, chave privada
+do Firebase, token de sessão ou credenciais AWS no Git ou em variáveis `EXPO_PUBLIC_*`.
+
 ## Contributor Guide
 
 ### 1. Clone and install
