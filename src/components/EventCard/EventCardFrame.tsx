@@ -28,9 +28,7 @@ export const EventCardFrame: FC<EventCardFrameProps> = ({
       <View
         className={`mt-28 w-full gap-3 rounded-[2.5rem] ${
           variant === 'proposal' ? 'bg-surface px-4 pt-24' : 'bg-lime-soft px-6 pt-24'
-        } ${
-          footer ? 'pb-12' : 'pb-6'
-        }`}
+        } ${footer ? 'pb-12' : 'pb-6'}`}
       >
         {children}
       </View>
