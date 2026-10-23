@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "354654254501",
+    "project_id": "alibe-ages",
+    "storage_bucket": "alibe-ages.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:354654254501:android:58654ba2efe29b9dc8644c",
+        "android_client_info": {
+          "package_name": "com.alibe.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAXpeR3OksbCyqQqpa4cdTF1btIWg4Je-c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

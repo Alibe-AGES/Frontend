@@ -74,6 +74,8 @@ describe('<CreateEventScreen />', () => {
       <CreateEventScreen {...buildProps()} />
     );
 
+    expect(getByTestId('create-event-tabs-header')).toBeTruthy();
+    expect(getByTestId('create-event-form-scroll')).toBeTruthy();
     expect(getByText('Evento')).toBeTruthy();
     expect(getByText('Sugestão')).toBeTruthy();
     expect(getByPlaceholderText('Definir nome do evento')).toBeTruthy();
@@ -94,6 +96,16 @@ describe('<CreateEventScreen />', () => {
     await fireEvent.press(getByTestId('mock-date-picker-sheet'));
 
     expect(onSelectDate).toHaveBeenCalledWith('2026-10-15');
+  });
+
+  test('does not show a date picker for location suggestions', async () => {
+    const { queryByTestId } = await render(
+      <CreateEventScreen
+        {...buildProps({ activeTab: 'suggestion', openDatePickerOnMount: true })}
+      />
+    );
+
+    expect(queryByTestId('mock-date-picker-sheet')).toBeNull();
   });
 
   test('forwards draft edits to the controller', async () => {
@@ -141,5 +153,38 @@ describe('<CreateEventScreen />', () => {
     );
 
     expect(queryByTestId('mock-navigation-bar')).toBeNull();
+  });
+
+  test('switches between the event and suggestion tabs when pressed', async () => {
+    const onSelectTab = jest.fn();
+    const { getByTestId, getByPlaceholderText, getByText, rerender } = await render(
+      <CreateEventScreen {...buildProps({ activeTab: 'event', onSelectTab })} />
+    );
+
+    expect(getByTestId('create-event-tab-event').props.accessibilityState).toEqual({
+      selected: true,
+    });
+    expect(getByTestId('create-event-tab-suggestion').props.accessibilityState).toEqual({
+      selected: false,
+    });
+    expect(getByPlaceholderText('Definir nome do evento')).toBeTruthy();
+    expect(getByText('Adicione uma imagem que representa seu evento')).toBeTruthy();
+
+    await fireEvent.press(getByTestId('create-event-tab-suggestion'));
+    expect(onSelectTab).toHaveBeenCalledWith('suggestion');
+
+    await rerender(<CreateEventScreen {...buildProps({ activeTab: 'suggestion', onSelectTab })} />);
+
+    expect(getByTestId('create-event-tab-event').props.accessibilityState).toEqual({
+      selected: false,
+    });
+    expect(getByTestId('create-event-tab-suggestion').props.accessibilityState).toEqual({
+      selected: true,
+    });
+    expect(getByPlaceholderText('Definir nome da sugestão')).toBeTruthy();
+    expect(getByText('Adicione uma imagem que representa sua sugestão')).toBeTruthy();
+
+    await fireEvent.press(getByTestId('create-event-tab-event'));
+    expect(onSelectTab).toHaveBeenCalledWith('event');
   });
 });

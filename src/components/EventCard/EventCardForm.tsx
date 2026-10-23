@@ -11,6 +11,7 @@ import { EventCardFrame } from './EventCardFrame';
 import { PillInput } from './Pill';
 
 export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: string }> = ({
+  variant = 'event',
   draft,
   onChangeDraft,
   onDatePress,
@@ -20,6 +21,8 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
   isSubmitting = false,
   testID,
 }) => {
+  const isSuggestion = variant === 'suggestion';
+
   const updateDraft = (changes: Partial<EventCardDraft>) => {
     onChangeDraft({ ...draft, ...changes });
   };
@@ -56,7 +59,9 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
           />
         </View>
         <Text className="text-center font-poppins text-sm text-white">
-          Adicione uma imagem que representa seu evento
+          {isSuggestion
+            ? 'Adicione uma imagem que representa sua sugestão'
+            : 'Adicione uma imagem que representa seu evento'}
         </Text>
       </View>
     );
@@ -76,7 +81,7 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
     </Pressable>
   );
 
-  const header = (
+  const header = isSuggestion ? null : (
     <View className="flex-row items-center justify-center gap-4">
       <View className="h-14 w-14 items-center justify-center rounded-full bg-pink">
         <Ionicons
@@ -93,7 +98,7 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
         testID={`${testID}-date-button`}
       >
         <Text className="text-center font-poppins text-3xl text-ink">
-          {draft.date ? `${draft.date.slice(8, 10)}/${draft.date.slice(5, 7)}` : '00/00'}
+          {draft.date ? `${draft.date.slice(8, 10)}/${draft.date.slice(5, 7)}` : 'Escolher dia'}
         </Text>
       </Pressable>
     </View>
@@ -131,12 +136,12 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
       testID={testID}
     >
       <TextInput
-        accessibilityLabel="Nome do evento"
+        accessibilityLabel={isSuggestion ? 'Nome da sugestão' : 'Nome do evento'}
         className="py-1 text-center font-poppins-medium text-3xl text-wine outline-none"
         onChangeText={(name) => {
           updateDraft({ name });
         }}
-        placeholder="Definir nome do evento"
+        placeholder={isSuggestion ? 'Definir nome da sugestão' : 'Definir nome do evento'}
         placeholderTextColor={theme.colors.wineSoft}
         testID={`${testID}-name-input`}
         value={draft.name}
@@ -152,17 +157,78 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
         testID={`${testID}-address-input`}
       />
 
-      <PillInput
-        icon="time-outline"
-        value={draft.time}
-        placeholder="Adicionar horário"
-        onChangeText={(time) => {
-          updateDraft({ time: maskTime(time) });
-        }}
-        keyboardType="number-pad"
-        maxLength={TIME_LENGTH}
-        testID={`${testID}-time-input`}
-      />
+      {isSuggestion ? (
+        <>
+          <View className="flex-row gap-3">
+            <View className="flex-1">
+              <PillInput
+                icon="cash-outline"
+                value={draft.priceStart ?? ''}
+                placeholder="Preço mínimo (R$)"
+                onChangeText={(priceStart) => {
+                  updateDraft({ priceStart });
+                }}
+                keyboardType="decimal-pad"
+                testID={`${testID}-price-start-input`}
+              />
+            </View>
+            <View className="flex-1">
+              <PillInput
+                icon="cash-outline"
+                value={draft.priceEnd ?? ''}
+                placeholder="Preço máximo (R$)"
+                onChangeText={(priceEnd) => {
+                  updateDraft({ priceEnd });
+                }}
+                keyboardType="decimal-pad"
+                testID={`${testID}-price-end-input`}
+              />
+            </View>
+          </View>
+          <PillInput
+            icon="call-outline"
+            value={draft.phoneNumber ?? ''}
+            placeholder="Telefone"
+            onChangeText={(phoneNumber) => {
+              updateDraft({ phoneNumber });
+            }}
+            keyboardType="phone-pad"
+            testID={`${testID}-phone-input`}
+          />
+          <PillInput
+            icon="time-outline"
+            value={draft.openingHours ?? ''}
+            placeholder="Horários de funcionamento"
+            onChangeText={(openingHours) => {
+              updateDraft({ openingHours });
+            }}
+            multiline
+            testID={`${testID}-opening-hours-input`}
+          />
+          <PillInput
+            icon="globe-outline"
+            value={draft.website ?? ''}
+            placeholder="Site"
+            onChangeText={(website) => {
+              updateDraft({ website });
+            }}
+            keyboardType="url"
+            testID={`${testID}-website-input`}
+          />
+        </>
+      ) : (
+        <PillInput
+          icon="time-outline"
+          value={draft.time}
+          placeholder="Adicionar horário"
+          onChangeText={(time) => {
+            updateDraft({ time: maskTime(time) });
+          }}
+          keyboardType="number-pad"
+          maxLength={TIME_LENGTH}
+          testID={`${testID}-time-input`}
+        />
+      )}
     </EventCardFrame>
   );
 };

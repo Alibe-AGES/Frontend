@@ -12,6 +12,7 @@ import { formatBudget, formatTime } from './formatters';
 import { InfoPill } from './Pill';
 
 export const EventCardDetails: FC<Omit<EventCardReadProps, 'mode'> & { testID: string }> = ({
+  variant = 'default',
   event,
   onEditPress,
   testID,
@@ -23,6 +24,7 @@ export const EventCardDetails: FC<Omit<EventCardReadProps, 'mode'> & { testID: s
   const budget = formatBudget(event.budgetStart, event.budgetEnd);
   const openingHours = event.openingHours?.filter(Boolean).join('\n');
   const imageSource = useAuthenticatedImageSource(event.imageUrl);
+  const isProposal = variant === 'proposal';
 
   const image = event.imageUrl ? (
     <Image
@@ -49,17 +51,61 @@ export const EventCardDetails: FC<Omit<EventCardReadProps, 'mode'> & { testID: s
   return (
     <EventCardFrame
       image={image}
+      variant={variant}
       testID={testID}
     >
-      <Text
-        className="text-center font-poppins-medium text-3xl text-wine"
-        numberOfLines={2}
-        testID={`${testID}-title`}
-      >
-        {title}
-      </Text>
+      {isProposal && event.rating !== null && event.rating !== undefined ? (
+        <View
+          className="flex-row items-center gap-0.5"
+          testID={`${testID}-rating`}
+        >
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Ionicons
+              key={star}
+              name={star <= Math.round(event.rating ?? 0) ? 'star' : 'star-outline'}
+              size={16}
+              color={theme.colors.coral}
+            />
+          ))}
+        </View>
+      ) : null}
 
-      {address ? (
+      {isProposal ? (
+        <View className="gap-0.5">
+          <Text
+            className="font-poppins-semibold text-lg text-ink"
+            numberOfLines={2}
+            testID={`${testID}-title`}
+          >
+            {title}
+          </Text>
+          <Text
+            className="font-poppins-semibold text-xs text-ink"
+            numberOfLines={2}
+            testID={`${testID}-address`}
+          >
+            {address ?? '--'}
+          </Text>
+          {event.location?.description ? (
+            <Text
+              className="font-poppins text-xs text-wine"
+              testID={`${testID}-description`}
+            >
+              {event.location.description}
+            </Text>
+          ) : null}
+        </View>
+      ) : (
+        <Text
+          className="text-center font-poppins-medium text-3xl text-wine"
+          numberOfLines={2}
+          testID={`${testID}-title`}
+        >
+          {title}
+        </Text>
+      )}
+
+      {address && !isProposal ? (
         <InfoPill
           icon="location-outline"
           label={address}
@@ -76,10 +122,10 @@ export const EventCardDetails: FC<Omit<EventCardReadProps, 'mode'> & { testID: s
       ) : null}
 
       <EventCardAdditionalDetails
-        budget={budget}
-        phone={event.phone}
-        openingHours={openingHours}
-        website={event.website}
+        budget={budget ?? (isProposal ? '--' : null)}
+        phone={event.phone ?? (isProposal ? '(00) 00000-0000' : null)}
+        openingHours={openingHours ?? (isProposal ? '--' : undefined)}
+        website={event.website ?? (isProposal ? '--' : null)}
         testID={testID}
       />
 

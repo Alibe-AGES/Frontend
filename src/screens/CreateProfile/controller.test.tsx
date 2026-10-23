@@ -1,12 +1,13 @@
 import { useSignUpDraft } from '@/hooks/useSignUpDraft';
 import { ApiError } from '@/server/api';
-import { authClient } from '@/server/auth-client';
 import { signUpWithEmail } from '@/server/auth';
+import { authClient } from '@/server/auth-client';
 import { updateUserProfilePicture } from '@/server/users';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import CreateProfileController from './controller';
+import { synchronizePushToken } from '@/notifications/synchronize-push-token';
 
 interface PermissionResult {
   granted: boolean;
@@ -44,6 +45,10 @@ jest.mock('@/server/users', () => ({
   updateUserProfilePicture: jest.fn(),
 }));
 
+jest.mock('@/notifications/synchronize-push-token', () => ({
+  synchronizePushToken: jest.fn(),
+}));
+
 jest.mock('expo-image-picker', () => ({
   requestMediaLibraryPermissionsAsync: (): Promise<PermissionResult> =>
     mockRequestPermissions() as Promise<PermissionResult>,
@@ -62,6 +67,9 @@ const mockSignUp = signUpWithEmail as jest.MockedFunction<typeof signUpWithEmail
 const mockSignIn = authClient.signIn.email as jest.Mock;
 const mockUpdateProfilePicture = updateUserProfilePicture as jest.MockedFunction<
   typeof updateUserProfilePicture
+>;
+const mockSynchronizePushToken = synchronizePushToken as jest.MockedFunction<
+  typeof synchronizePushToken
 >;
 const ACCOUNT = { email: 'rica@alibe.com', password: 'segredo123' };
 const PHOTO = {
@@ -82,6 +90,7 @@ describe('CreateProfileController', () => {
     mockUpdateProfilePicture.mockResolvedValue({
       profilePic: '/users/user-1/profile-picture',
     });
+    mockSynchronizePushToken.mockResolvedValue('registered');
     mockRequestPermissions.mockResolvedValue({ granted: true });
     mockLaunchImageLibrary.mockResolvedValue({
       canceled: false,
@@ -121,7 +130,32 @@ describe('CreateProfileController', () => {
       rememberMe: true,
     });
     expect(mockUpdateProfilePicture).not.toHaveBeenCalled();
+    expect(mockSynchronizePushToken).toHaveBeenCalledTimes(1);
     expect(setDraft).toHaveBeenCalledWith(null);
+  });
+
+  test('waits for account creation to finish before signing in', async () => {
+    let finishSignUp!: () => void;
+    mockSignUp.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finishSignUp = () => {
+            resolve({ token: null, user: {} as never });
+          };
+        })
+    );
+
+    await renderAndFill();
+
+    expect(mockSignUp).toHaveBeenCalled();
+    expect(mockSignIn).not.toHaveBeenCalled();
+
+    finishSignUp();
+
+    await waitFor(() => {
+      expect(mockSignIn).toHaveBeenCalledWith({ ...ACCOUNT, rememberMe: true });
+      expect(replace).toHaveBeenCalledWith('/groups');
+    });
   });
 
   test('uploads the selected profile picture after signing in', async () => {
@@ -168,6 +202,7 @@ describe('CreateProfileController', () => {
       );
     });
     expect(mockUpdateProfilePicture).not.toHaveBeenCalled();
+    expect(mockSynchronizePushToken).not.toHaveBeenCalled();
     expect(replace).not.toHaveBeenCalledWith('/groups');
   });
 

@@ -1,3 +1,1 @@
-import { NewMemoryScreen } from '.';
-
-export default NewMemoryScreen;
+export { NewMemoryScreen as default } from '.';

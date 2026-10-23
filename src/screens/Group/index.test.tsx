@@ -198,13 +198,21 @@ describe('GroupScreen', () => {
         completedEventIds: ['shared-event'],
         allUsersAvailable: false,
       },
+      {
+        date: '2026-10-06',
+        scheduledEventIds: [],
+        proposalIds: [],
+        availableUserIds: [],
+        completedEventIds: [],
+        allUsersAvailable: false,
+      },
     ]);
 
     await render(<GroupScreen />);
 
     await waitFor(() => {
       expect(mockDayMarks?.['2026-09-30']).toMatchObject({
-        status: 'suggested',
+        status: 'matched',
         eventIds: ['event-1', 'event-2'],
         proposalIds: ['proposal-1'],
         dot: 'pink',

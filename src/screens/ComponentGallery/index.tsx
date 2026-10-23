@@ -59,6 +59,9 @@ export function ComponentGalleryScreen() {
   const [notifications, setNotifications] = useState<AppNotification[]>(mockNotifications);
   const [lastNotificationAction, setLastNotificationAction] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [filters, setFilters] = useState(EMPTY_FILTER_VALUE);
+  const [isFilterSheetVisible, setIsFilterSheetVisible] = useState(false);
   const isEventDraftValid =
     eventDraft.name.trim() !== '' &&
     eventDraft.address.trim() !== '' &&
@@ -207,6 +210,70 @@ export function ComponentGalleryScreen() {
         placeholder="Pesquisar..."
         testID="gallery-search-bar"
       />
+      <View className="flex-row gap-4 rounded-3xl bg-surface p-5">
+        <View className="flex-1">
+          <PlaceCard
+            name="Bloom Café"
+            address="Endereço"
+            color="coral"
+          />
+        </View>
+        <View className="flex-1">
+          <PlaceCard
+            name="Cinepolis Shopping Central"
+            address="Endereço"
+            color="lime"
+          />
+        </View>
+      </View>
+
+      <View className="gap-4 rounded-3xl bg-surface p-5">
+        <Text className="text-xl font-black text-ink">FilterCarousel + FilterSheet</Text>
+        <FilterCarousel
+          tags={CATEGORY_TAGS}
+          selectedTagIds={selectedTagIds}
+          onToggleTag={(id) => {
+            setSelectedTagIds((current) =>
+              current.includes(id) ? current.filter((tagId) => tagId !== id) : [...current, id]
+            );
+          }}
+          onOpenFilters={() => {
+            setIsFilterSheetVisible(true);
+          }}
+          hasActiveFilters={JSON.stringify(filters) !== JSON.stringify(EMPTY_FILTER_VALUE)}
+          testID="gallery-filter-carousel"
+        />
+        <Text
+          className="font-poppins text-xs text-ink"
+          testID="gallery-filter-state"
+        >
+          {`Tags: ${selectedTagIds.join(', ') || '-'}\nFiltros: ${JSON.stringify(filters)}`}
+        </Text>
+      </View>
+
+      <FilterSheet
+        visible={isFilterSheetVisible}
+        value={filters}
+        groups={FILTER_GROUPS}
+        budgetTitle="Orçamento"
+        onConfirm={(value) => {
+          setFilters(value);
+          setIsFilterSheetVisible(false);
+        }}
+        onClose={() => {
+          setIsFilterSheetVisible(false);
+        }}
+        testID="gallery-filter-sheet"
+      />
+
+      <View className="gap-4 rounded-3xl bg-surface p-5">
+        <Text className="text-xl font-black text-ink">PlaceList</Text>
+        <PlaceList
+          places={MOCK_PLACES}
+          pageSize={4}
+          testID="gallery-place-list"
+        />
+      </View>
     </ScrollView>
   );
 }

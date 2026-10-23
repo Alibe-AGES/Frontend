@@ -1,5 +1,4 @@
 import { BackButton } from '@/components/BackButton';
-import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
 import { NavigationBar } from '@/components/NavigationBar';
 import { PasswordInput } from '@/components/PasswordInput';
 import { PhotoPicker } from '@/components/PhotoPicker';
@@ -58,6 +57,46 @@ const ProfileMenuButton = ({
   </TouchableOpacity>
 );
 
+function ProfileHeading({
+  isLoading,
+  error,
+  name,
+}: {
+  isLoading: boolean;
+  error: Error | null;
+  name?: string;
+}) {
+  if (isLoading) {
+    return (
+      <ActivityIndicator
+        color={theme.colors.wine}
+        testID="user-profile-screen-loading"
+      />
+    );
+  }
+
+  if (error) {
+    return (
+      <Text
+        className="text-center font-poppins text-sm"
+        style={{ color: theme.colors.wine }}
+      >
+        Não foi possível carregar o perfil.
+      </Text>
+    );
+  }
+
+  return (
+    <Text
+      className="text-center font-poppins-semibold text-2xl"
+      style={{ color: theme.colors.wine }}
+      testID="user-profile-screen-name"
+    >
+      {name}
+    </Text>
+  );
+}
+
 export interface ProfileData {
   name: string;
   photoUri: string | null;
@@ -91,7 +130,7 @@ export const UserProfileScreen = ({
   const networkAvatarSource = useUserAvatarSource(userId);
 
   const [localAvatarOverride, setLocalAvatarOverride] = useState<string | null>(null);
-  const avatarSource = localAvatarOverride ?? networkAvatarSource;
+  const avatarSource = localAvatarOverride ?? profile?.photoUri ?? networkAvatarSource;
 
   const [isPasswordModalVisible, setPasswordModalVisible] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -221,27 +260,11 @@ export const UserProfileScreen = ({
         </View>
 
         <View className="m-6">
-          {isLoading ? (
-            <ActivityIndicator
-              color={theme.colors.wine}
-              testID="user-profile-screen-loading"
-            />
-          ) : error ? (
-            <Text
-              className="text-center font-poppins text-sm"
-              style={{ color: theme.colors.wine }}
-            >
-              Não foi possível carregar o perfil.
-            </Text>
-          ) : (
-            <Text
-              className="text-center font-poppins-semibold text-2xl"
-              style={{ color: theme.colors.wine }}
-              testID="user-profile-screen-name"
-            >
-              {profile?.name}
-            </Text>
-          )}
+          <ProfileHeading
+            isLoading={isLoading}
+            error={error}
+            name={profile?.name}
+          />
           <Text
             className="text-center font-poppins text-sm"
             style={{ color: theme.colors.wine }}
@@ -282,13 +305,25 @@ export const UserProfileScreen = ({
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           className="flex-1"
+          testID="user-profile-edit-modal-keyboard-container"
         >
-          <KeyboardAvoidingScrollView
+          <ScrollView
             className="flex-1 bg-black/50"
-            contentContainerClassName="flex-grow items-center justify-center px-6"
             keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{
+              flexGrow: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingHorizontal: 24,
+              paddingVertical: 24,
+            }}
+            testID="user-profile-edit-modal-scroll"
           >
-            <View className="w-full gap-5 rounded-3xl bg-canvas p-6 shadow-lg">
+            <View
+              className="w-full max-w-lg gap-5 rounded-3xl bg-canvas p-6 shadow-lg"
+              style={{ maxWidth: 448 }}
+              testID="user-profile-edit-modal-panel"
+            >
               <Text className="text-center font-poppins-semibold text-xl text-wine">
                 Editar Perfil
               </Text>
@@ -334,7 +369,7 @@ export const UserProfileScreen = ({
                 </TouchableOpacity>
               </View>
             </View>
-          </KeyboardAvoidingScrollView>
+          </ScrollView>
         </KeyboardAvoidingView>
         <Toast />
       </Modal>
@@ -348,13 +383,25 @@ export const UserProfileScreen = ({
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           className="flex-1"
+          testID="user-profile-password-modal-keyboard-container"
         >
-          <KeyboardAvoidingScrollView
+          <ScrollView
             className="flex-1 bg-black/50"
-            contentContainerClassName="flex-grow items-center justify-center px-6"
             keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{
+              flexGrow: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingHorizontal: 24,
+              paddingVertical: 24,
+            }}
+            testID="user-profile-password-modal-scroll"
           >
-            <View className="w-full gap-5 rounded-3xl bg-canvas p-6 shadow-lg">
+            <View
+              className="w-full max-w-lg gap-5 rounded-3xl bg-canvas p-6 shadow-lg"
+              style={{ maxWidth: 448 }}
+              testID="user-profile-password-modal-panel"
+            >
               <Text className="text-center font-poppins-semibold text-xl text-wine">
                 Alterar Senha
               </Text>
@@ -396,7 +443,7 @@ export const UserProfileScreen = ({
                 </TouchableOpacity>
               </View>
             </View>
-          </KeyboardAvoidingScrollView>
+          </ScrollView>
         </KeyboardAvoidingView>
         <Toast />
       </Modal>

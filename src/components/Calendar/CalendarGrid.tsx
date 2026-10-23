@@ -31,6 +31,7 @@ const dayContainerClasses: Record<DayStatus, string> = {
   available: 'bg-lime',
   realized: 'bg-ink',
   suggested: 'bg-pink',
+  matched: 'bg-ink',
   allAvailable: 'bg-coral',
   past: 'bg-gray-200',
   pastEvent: 'bg-gray-200',
@@ -41,6 +42,7 @@ const dayTextClasses: Record<DayStatus, string> = {
   available: 'text-ink',
   realized: 'text-canvas',
   suggested: 'text-canvas',
+  matched: 'text-lime',
   allAvailable: 'text-canvas',
   past: 'text-inkSoft/20',
   pastEvent: 'text-ink',
@@ -61,7 +63,7 @@ function getDisplayStatus(dateString: string, eventCount: number, status: DaySta
     return status;
   }
 
-  if (eventCount > 0 || status === 'realized' || status === 'suggested') {
+  if (eventCount > 0 || status === 'realized' || status === 'suggested' || status === 'matched') {
     return status === 'normal' ? 'pastEvent' : status;
   }
 
@@ -112,6 +114,9 @@ function getAccessibilityLabel(
 function DayContent({ status, day }: DayContentProps) {
   if (status === 'suggested') {
     return <Text className="text-xl text-canvas">☆</Text>;
+  }
+  if (status === 'matched') {
+    return <Text className="text-xl text-lime">★</Text>;
   }
 
   return <Text className={`text-sm font-medium ${dayTextClasses[status]}`}>{String(day)}</Text>;

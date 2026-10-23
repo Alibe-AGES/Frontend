@@ -2,6 +2,10 @@ import { fireEvent, render } from '@testing-library/react-native';
 
 import { ComponentGalleryScreen } from '.';
 
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}));
+
 jest.mock('@/components/DatePickerSheet', () => ({
   DatePickerSheet: ({ onSelectDate }: { onSelectDate: (dateString: string) => void }) => {
     const { Pressable, Text } = jest.requireActual<typeof import('react-native')>('react-native');

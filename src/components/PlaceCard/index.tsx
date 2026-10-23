@@ -14,6 +14,7 @@ export function PlaceCard({
   name,
   address,
   imageUri,
+  imageHeaders,
   color = 'coral',
   onClickCard,
   // TODO: Re-enable favorite props after the backend API is available.
@@ -33,7 +34,7 @@ export function PlaceCard({
         <View className={`aspect-square w-full ${COLOR_CLASS[color]}`}>
           {imageUri ? (
             <Image
-              source={{ uri: imageUri }}
+              source={{ uri: imageUri, headers: imageHeaders }}
               accessibilityLabel={`Foto de ${name}`}
               className="h-full w-full"
               resizeMode="cover"
