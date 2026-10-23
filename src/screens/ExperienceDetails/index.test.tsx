@@ -1,7 +1,7 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
 
-import { getPlaceDetails, PlaceDetails } from '@/server/places';
+import { getPlaceDetails, getStoredLocationDetails, PlaceDetails } from '@/server/places';
 import { ExperienceDetailsScreen } from '.';
 
 jest.mock('expo-router', () => ({
@@ -10,6 +10,7 @@ jest.mock('expo-router', () => ({
 
 jest.mock('@/server/places', () => ({
   getPlaceDetails: jest.fn(),
+  getStoredLocationDetails: jest.fn(),
 }));
 
 const details: PlaceDetails = {
@@ -30,6 +31,7 @@ describe('<ExperienceDetailsScreen />', () => {
     jest.clearAllMocks();
     (useRouter as jest.Mock).mockReturnValue({ back: jest.fn(), push: jest.fn() });
     jest.mocked(getPlaceDetails).mockResolvedValue(details);
+    jest.mocked(getStoredLocationDetails).mockResolvedValue(details);
   });
 
   test('shows the Google photo and defaults for missing location data', async () => {
@@ -118,6 +120,39 @@ describe('<ExperienceDetailsScreen />', () => {
         tab: 'suggestion',
         externalId: 'cafe-1',
         address: 'Rua Padre Chagas, 320',
+        name: 'Bloom Café',
+      },
+    });
+  });
+
+  test('loads a matched saved location by locationId and preserves it when suggesting', async () => {
+    const push = jest.fn();
+    (useRouter as jest.Mock).mockReturnValue({ back: jest.fn(), push });
+    jest.mocked(getStoredLocationDetails).mockResolvedValueOnce({
+      ...details,
+      externalId: null,
+      address: 'Rua das Flores, 10',
+    });
+
+    const { findByTestId } = await render(
+      <ExperienceDetailsScreen
+        groupId="group-1"
+        placeId="location-1"
+        isStoredLocation
+      />
+    );
+
+    await fireEvent.press(await findByTestId('experience-suggest-location'));
+
+    expect(getStoredLocationDetails).toHaveBeenCalledWith('location-1');
+    expect(getPlaceDetails).not.toHaveBeenCalled();
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/group/[id]/create-event',
+      params: {
+        id: 'group-1',
+        tab: 'suggestion',
+        locationId: 'location-1',
+        address: 'Rua das Flores, 10',
         name: 'Bloom Café',
       },
     });

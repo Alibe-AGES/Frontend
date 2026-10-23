@@ -14,6 +14,10 @@ export default function GroupLayout() {
       />
       <Stack.Screen name="info" />
       <Stack.Screen
+        name="notifications"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
         name="leave"
         options={{ presentation: 'modal' }}
       />

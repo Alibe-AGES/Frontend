@@ -18,6 +18,7 @@ import Toast from 'react-native-toast-message';
 import { AuthenticatedRoute } from '@/components/AuthenticatedRoute';
 import { PendingInviteProvider } from '@/hooks/usePendingInvite';
 import { SignUpDraftProvider } from '@/hooks/useSignUpDraft';
+import { PushNotifications } from '@/notifications/PushNotifications';
 import { AnimatedSplash } from '@/screens/AnimatedSplash';
 import { theme } from '@/theme';
 import { StatusBar } from 'react-native';
@@ -71,6 +72,7 @@ export default function RootLayout() {
             }}
           />
         ) : null}
+        <PushNotifications />
         <StatusBar
           barStyle="dark-content"
           backgroundColor={theme.colors.canvas}

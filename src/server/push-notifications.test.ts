@@ -1,6 +1,7 @@
+import { API_BASE_URL } from '@/constants';
+import { ApiError } from './api';
 import { authenticatedFetch } from './authenticated-fetch';
 import { updateCurrentDevicePushToken } from './push-notifications';
-import { ApiError } from './api';
 
 jest.mock('./authenticated-fetch', () => ({
   authenticatedFetch: jest.fn(),
@@ -8,27 +9,24 @@ jest.mock('./authenticated-fetch', () => ({
 
 const mockAuthenticatedFetch = authenticatedFetch as jest.MockedFunction<typeof authenticatedFetch>;
 
-describe('updateCurrentDevicePushToken', () => {
+describe('push notifications client', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  test('sends the token to the authenticated user endpoint', async () => {
+  test('registers the current device token with the existing endpoint', async () => {
     mockAuthenticatedFetch.mockResolvedValue(new Response(null, { status: 204 }));
 
     await updateCurrentDevicePushToken('ExpoPushToken[test-token]');
 
-    expect(mockAuthenticatedFetch).toHaveBeenCalledWith(
-      expect.stringMatching(/\/api\/users\/me\/push-token$/),
-      {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: 'ExpoPushToken[test-token]' }),
-      }
-    );
+    expect(mockAuthenticatedFetch).toHaveBeenCalledWith(`${API_BASE_URL}/api/users/me/push-token`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: 'ExpoPushToken[test-token]' }),
+    });
   });
 
-  test('throws ApiError when the backend rejects the token', async () => {
+  test('throws ApiError when token registration fails', async () => {
     mockAuthenticatedFetch.mockResolvedValue(
       new Response('Invalid token', { status: 400, statusText: 'Bad Request' })
     );

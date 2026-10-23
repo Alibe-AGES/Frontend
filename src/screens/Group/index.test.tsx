@@ -20,10 +20,6 @@ jest.mock('@/server/groups', () => ({
   getGroupMembers: jest.fn(),
 }));
 
-jest.mock('@/components/BackButton', () => ({
-  BackButton: () => null,
-}));
-
 jest.mock('@/components/NavigationBar', () => ({
   NavigationBar: () => null,
 }));
@@ -216,7 +212,7 @@ describe('GroupScreen', () => {
 
     await waitFor(() => {
       expect(mockDayMarks?.['2026-09-30']).toMatchObject({
-        status: 'matched',
+        status: 'suggested',
         eventIds: ['event-1', 'event-2'],
         proposalIds: ['proposal-1'],
         dot: 'pink',

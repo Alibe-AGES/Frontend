@@ -1,4 +1,3 @@
-import { BackButton } from '@/components/BackButton';
 import { Calendar } from '@/components/Calendar';
 import { DayMark } from '@/components/Calendar/Calendar.types';
 import { NavigationBar } from '@/components/NavigationBar';
@@ -25,7 +24,7 @@ function formatDate(date: Date): string {
 
 function getDayStatus(day: CalendarDay): DayMark['status'] | undefined {
   if (day.completedEventIds.length > 0) return 'realized';
-  if (day.scheduledEventIds.length > 0) return 'matched';
+  if (day.scheduledEventIds.length > 0) return 'suggested';
   if (day.allUsersAvailable) return 'allAvailable';
   if (day.availableUserIds.length > 0) return 'available';
   return undefined;
@@ -192,6 +191,14 @@ export function GroupScreen() {
     router.push({ pathname: '/group/[id]/info', params: { id: groupId } });
   };
 
+  const handleOpenNotifications = () => {
+    if (!groupId) {
+      return;
+    }
+
+    router.push({ pathname: '/group/[id]/notifications', params: { id: groupId } });
+  };
+
   const membersText = members.map((member) => member.name).join(', ');
 
   return (
@@ -202,10 +209,19 @@ export function GroupScreen() {
         testID="group-screen"
       >
         <View className="flex-row items-center justify-between">
-          <BackButton
-            fallbackHref="/groups"
-            accessibilityLabel="Voltar para meus grupos"
-          />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Ver notificações do grupo"
+            hitSlop={12}
+            onPress={handleOpenNotifications}
+            testID="group-screen-notifications"
+          >
+            <Ionicons
+              name="notifications-outline"
+              size={24}
+              color={theme.colors.ink}
+            />
+          </Pressable>
 
           <ProfileButton
             groupId={groupId}
