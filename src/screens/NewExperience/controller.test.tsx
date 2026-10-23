@@ -44,6 +44,7 @@ const proposal = {
   groupId: 'group-1',
   name: 'Bloom Café',
   createdAt: '2026-10-22T12:00:00.000Z',
+  myAnswer: null,
   owner: { id: 'user-1', name: 'Ana', image: null },
   location: {
     id: 'location-1',
@@ -87,6 +88,21 @@ describe('NewExperienceController', () => {
       expect(mockScreenProps.isLoading).toBe(false);
     });
     expect(mockGetActiveProposals).toHaveBeenCalledWith('group-1');
+  });
+
+  test('shows the creator proposal but does not record a duplicate answer', async () => {
+    mockGetActiveProposals.mockResolvedValue([{ ...proposal, myAnswer: 'yes' }]);
+    await render(<NewExperienceController />);
+    await waitFor(() => {
+      expect(mockScreenProps.proposal?.myAnswer).toBe('yes');
+    });
+
+    await act(() => {
+      mockScreenProps.onAnswer('yes');
+    });
+
+    expect(mockRespondToSuggestion).not.toHaveBeenCalled();
+    expect(mockScreenProps.proposal?.id).toBe('proposal-1');
   });
 
   test('records a no response and advances to the next proposal', async () => {

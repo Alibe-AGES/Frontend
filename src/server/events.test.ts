@@ -78,11 +78,13 @@ const PROPOSAL_INPUT = {
   locationId: '44444444-4444-4444-8444-444444444444',
   name: '  Café de sábado  ',
   address: ' Rua Padre Chagas, 320 ',
-  phoneNumber: ' (51) 3333-3333 ',
-  website: ' https://cafe.example ',
-  openingHours: ['Sexta: 18:00-00:00'],
-  priceStart: 30,
-  priceEnd: 60,
+  description: JSON.stringify({
+    phoneNumber: '(51) 3333-3333',
+    website: 'https://cafe.example',
+    openingHours: ['Sexta: 18:00-00:00'],
+    priceStart: 30,
+    priceEnd: 60,
+  }),
 };
 
 describe('getEventDetails', () => {
@@ -291,11 +293,13 @@ describe('createProposal', () => {
           locationId: '44444444-4444-4444-8444-444444444444',
           name: 'Café de sábado',
           address: 'Rua Padre Chagas, 320',
-          phoneNumber: '(51) 3333-3333',
-          website: 'https://cafe.example',
-          openingHours: ['Sexta: 18:00-00:00'],
-          priceStart: 30,
-          priceEnd: 60,
+          description: JSON.stringify({
+            phoneNumber: '(51) 3333-3333',
+            website: 'https://cafe.example',
+            openingHours: ['Sexta: 18:00-00:00'],
+            priceStart: 30,
+            priceEnd: 60,
+          }),
         }),
       }
     );

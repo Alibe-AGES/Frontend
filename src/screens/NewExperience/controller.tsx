@@ -40,6 +40,7 @@ export default function NewExperienceController() {
   const handleAnswer = async (answer: EventPresenceAnswer) => {
     if (proposals.length === 0 || isSubmitting) return;
     const proposal = proposals[0];
+    if (proposal.myAnswer !== null) return;
 
     setIsSubmitting(true);
     try {

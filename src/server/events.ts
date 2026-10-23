@@ -170,18 +170,15 @@ export async function getEventDetails(eventId: string): Promise<EventDetailsResp
   return (await response.json()) as EventDetailsResponse;
 }
 
-export interface CreateProposalInput {
+export interface CreateProposalFields {
   locationId?: string;
   externalId?: string;
   name: string;
-  address?: string;
+  address: string;
   description?: string;
-  phoneNumber?: string;
-  website?: string;
-  openingHours?: string[];
-  priceStart?: number;
-  priceEnd?: number;
 }
+
+export type CreateProposalInput = CreateProposalFields;
 
 export interface CreatedProposal {
   id: string;
@@ -218,6 +215,7 @@ export interface ActiveProposal {
   groupId: string;
   name: string | null;
   createdAt: string;
+  myAnswer: ProposalAnswer | null;
   owner: CreatedProposal['owner'];
   location: CreatedProposal['location'] | null;
   responses: { yes: number; no: number; pending: number };
@@ -270,17 +268,12 @@ export async function createProposal(
   groupId: string,
   input: CreateProposalInput
 ): Promise<CreatedProposal> {
-  const payload: CreateProposalInput = {
+  const payload: CreateProposalFields = {
     ...(input.locationId ? { locationId: input.locationId } : {}),
     ...(input.externalId ? { externalId: input.externalId } : {}),
     name: input.name.trim(),
-    ...(input.address?.trim() ? { address: input.address.trim() } : {}),
+    address: input.address.trim(),
     ...(input.description?.trim() ? { description: input.description.trim() } : {}),
-    ...(input.phoneNumber?.trim() ? { phoneNumber: input.phoneNumber.trim() } : {}),
-    ...(input.website?.trim() ? { website: input.website.trim() } : {}),
-    ...(input.openingHours?.length ? { openingHours: input.openingHours } : {}),
-    ...(input.priceStart !== undefined ? { priceStart: input.priceStart } : {}),
-    ...(input.priceEnd !== undefined ? { priceEnd: input.priceEnd } : {}),
   };
 
   const response = await authenticatedFetch(`${API_BASE_URL}/api/groups/${groupId}/proposals`, {

@@ -108,23 +108,26 @@ export function CreateEventScreen({
 
   return (
     <View className="flex-1 bg-canvas">
+      <View
+        className="flex-row items-center gap-4 px-6 pb-3 pt-16"
+        testID="create-event-tabs-header"
+      >
+        <BackButton
+          fallbackHref={groupId ? `/group/${groupId}` : '/groups'}
+          accessibilityLabel="Voltar para o grupo"
+        />
+        <EventTypeTabs
+          activeTab={activeTab}
+          onSelectTab={onSelectTab}
+        />
+      </View>
+
       <KeyboardAvoidingScrollView
         className="flex-1"
-        contentContainerClassName="gap-4 px-6 pb-36 pt-16"
+        contentContainerClassName="gap-4 px-6 pb-36 pt-2"
         keyboardShouldPersistTaps="handled"
-        testID="create-event-screen"
+        testID="create-event-form-scroll"
       >
-        <View className="flex-row items-center gap-4">
-          <BackButton
-            fallbackHref={groupId ? `/group/${groupId}` : '/groups'}
-            accessibilityLabel="Voltar para o grupo"
-          />
-          <EventTypeTabs
-            activeTab={activeTab}
-            onSelectTab={onSelectTab}
-          />
-        </View>
-
         <EventCard
           mode="create"
           variant={activeTab}

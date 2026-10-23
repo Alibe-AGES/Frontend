@@ -250,15 +250,45 @@ describe('CreateEventController', () => {
     });
 
     expect(mockCreateProposal).toHaveBeenCalledWith('group-1', {
-      name: ' Bloom Café ',
+      name: 'Bloom Café',
       address: 'Av. João Wallig, 1800',
-      phoneNumber: undefined,
-      website: undefined,
-      openingHours: undefined,
-      priceStart: undefined,
-      priceEnd: undefined,
     });
     expect(mockCreateEvent).not.toHaveBeenCalled();
+    expect(replace).toHaveBeenCalledWith({
+      pathname: '/group/[id]/experiences/new',
+      params: { id: 'group-1' },
+    });
+  });
+
+  test('requires manual proposal name and address, then submits a description-only card', async () => {
+    mockUseLocalSearchParams.mockReturnValue({ id: 'group-1', tab: 'suggestion' });
+    await render(<CreateEventController />);
+    await fillDraft({
+      ...mockScreenProps.draft,
+      name: '',
+      address: 'Rua das Flores, 123',
+    });
+
+    expect(mockScreenProps.isConfirmDisabled).toBe(true);
+    await fillDraft({
+      ...mockScreenProps.draft,
+      name: 'Um café tranquilo para conversar',
+      address: '',
+    });
+    expect(mockScreenProps.isConfirmDisabled).toBe(true);
+    await fillDraft({
+      ...mockScreenProps.draft,
+      address: 'Rua das Flores, 123',
+    });
+    expect(mockScreenProps.isConfirmDisabled).toBe(false);
+    await act(() => {
+      mockScreenProps.onConfirm();
+    });
+
+    expect(mockCreateProposal).toHaveBeenCalledWith('group-1', {
+      name: 'Um café tranquilo para conversar',
+      address: 'Rua das Flores, 123',
+    });
     expect(replace).toHaveBeenCalledWith({
       pathname: '/group/[id]/experiences/new',
       params: { id: 'group-1' },
@@ -295,11 +325,6 @@ describe('CreateEventController', () => {
       locationId: customLocationId,
       name: 'Bloom Café',
       address: 'Rua Padre Chagas, 320 - Moinhos de Vento, Porto Alegre - RS',
-      phoneNumber: undefined,
-      website: undefined,
-      openingHours: undefined,
-      priceStart: undefined,
-      priceEnd: undefined,
     });
   });
 
@@ -322,13 +347,15 @@ describe('CreateEventController', () => {
     });
 
     expect(mockCreateProposal).toHaveBeenCalledWith('group-1', {
-      name: ' Bloom Café ',
+      name: 'Bloom Café',
       address: 'Av. João Wallig, 1800',
-      phoneNumber: '(51) 3333-3333',
-      website: 'www.coolturebr.net',
-      openingHours: ['Terça a quinta: 18:00-23:45', 'Sexta e sábado: 18:00-00:00'],
-      priceStart: 100,
-      priceEnd: 150,
+      description: JSON.stringify({
+        phoneNumber: '(51) 3333-3333',
+        website: 'www.coolturebr.net',
+        openingHours: ['Terça a quinta: 18:00-23:45', 'Sexta e sábado: 18:00-00:00'],
+        priceStart: 100,
+        priceEnd: 150,
+      }),
     });
   });
 

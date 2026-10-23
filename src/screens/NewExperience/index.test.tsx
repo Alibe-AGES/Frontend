@@ -3,9 +3,27 @@ import { NewExperienceScreen } from './index';
 
 jest.mock('@/components/NavigationBar', () => ({ NavigationBar: () => null }));
 jest.mock('@/components/EventCard', () => ({
-  EventCard: ({ event, testID }: { event: { name?: string }; testID: string }) => {
+  EventCard: ({
+    event,
+    testID,
+    variant,
+  }: {
+    event: Record<string, unknown> & { name?: string };
+    testID: string;
+    variant?: string;
+  }) => {
     const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
-    return <Text testID={testID}>{event.name}</Text>;
+    return (
+      <>
+        <Text
+          testID={testID}
+          accessibilityLabel={variant}
+        >
+          {event.name}
+        </Text>
+        <Text testID={`${testID}-event-data`}>{JSON.stringify(event)}</Text>
+      </>
+    );
   },
 }));
 
@@ -15,6 +33,7 @@ const proposal = {
   groupId: 'group-1',
   name: 'Bloom Café',
   createdAt: '2026-10-22T12:00:00.000Z',
+  myAnswer: null,
   owner: { id: 'user-1', name: 'Ana', image: null },
   location: {
     id: 'location-1',
@@ -46,11 +65,17 @@ const buildProps = (overrides: Partial<React.ComponentProps<typeof NewExperience
 
 describe('<NewExperienceScreen />', () => {
   test('shows the current location proposal and yes/no decisions', async () => {
-    const { getByText, getByTestId } = await render(<NewExperienceScreen {...buildProps()} />);
+    const { getByText, getByTestId, queryByTestId } = await render(
+      <NewExperienceScreen {...buildProps()} />
+    );
 
     expect(getByText('Match de rolês')).toBeTruthy();
+    expect(queryByTestId('new-experience-back')).toBeNull();
     expect(getByText('1 curtiram este local')).toBeTruthy();
     expect(getByTestId('new-experience-proposal-proposal-1').props.children).toBe('Bloom Café');
+    expect(getByTestId('new-experience-proposal-proposal-1').props.accessibilityLabel).toBe(
+      'proposal'
+    );
     expect(getByTestId('new-experience-like').props.accessibilityLabel).toBe('Quero este local');
     expect(getByTestId('new-experience-dislike').props.accessibilityLabel).toBe(
       'Não quero este local'
@@ -66,6 +91,48 @@ describe('<NewExperienceScreen />', () => {
 
     expect(onAnswer).toHaveBeenNthCalledWith(1, 'no');
     expect(onAnswer).toHaveBeenNthCalledWith(2, 'yes');
+  });
+
+  test('shows the creator vote and disables duplicate decisions', async () => {
+    const onAnswer = jest.fn();
+    const { getByText, getByTestId } = await render(
+      <NewExperienceScreen
+        {...buildProps({ proposal: { ...proposal, myAnswer: 'yes' }, onAnswer })}
+      />
+    );
+
+    expect(getByText('Você já sugeriu este local')).toBeTruthy();
+    await fireEvent.press(getByTestId('new-experience-like'));
+    await fireEvent.press(getByTestId('new-experience-dislike'));
+    expect(onAnswer).not.toHaveBeenCalled();
+  });
+
+  test('parses JSON description details returned by the Backend for the proposal card', async () => {
+    const proposalWithDetails = {
+      ...proposal,
+      location: {
+        ...proposal.location,
+        description: JSON.stringify({
+          phoneNumber: '(51) 3333-3333',
+          website: 'https://cafe.example',
+          openingHours: ['Sexta: 18:00-00:00'],
+          priceStart: 30,
+          priceEnd: 60,
+        }),
+      },
+    };
+    const { getByTestId } = await render(
+      <NewExperienceScreen {...buildProps({ proposal: proposalWithDetails })} />
+    );
+
+    const cardEvent = JSON.parse(
+      getByTestId('new-experience-proposal-proposal-1-event-data').props.children as string
+    ) as Record<string, unknown>;
+    expect(cardEvent.phone).toBe('(51) 3333-3333');
+    expect(cardEvent.website).toBe('https://cafe.example');
+    expect(cardEvent.openingHours).toEqual(['Sexta: 18:00-00:00']);
+    expect(cardEvent.budgetStart).toBe(30);
+    expect(cardEvent.budgetEnd).toBe(60);
   });
 
   test('renders loading state', async () => {

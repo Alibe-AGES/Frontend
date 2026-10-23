@@ -94,6 +94,52 @@ describe('UserProfileScreen', () => {
     expect(getByText('Sair')).toBeTruthy();
   });
 
+  test('keeps edit-profile modal content visible and scrollable', async () => {
+    const { getByText, getByTestId, getByPlaceholderText } = await render(
+      <UserProfileScreen
+        {...defaultProps}
+        profile={{
+          name: 'Ellen Miranda',
+          created_at: '21 de Setembro de 2026',
+          completedEventsCount: 0,
+          pendingEventsCount: 0,
+          photoUri: null,
+        }}
+      />
+    );
+
+    await fireEvent.press(getByText('Editar perfil'));
+
+    const editModalScroll = getByTestId('user-profile-edit-modal-scroll');
+    expect(editModalScroll.props.contentContainerStyle).toMatchObject({
+      flexGrow: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    });
+    expect(getByTestId('user-profile-edit-modal-keyboard-container')).toBeTruthy();
+    expect(getByTestId('user-profile-edit-modal-panel')).toBeTruthy();
+    expect(getByPlaceholderText('Seu nome')).toBeTruthy();
+    expect(getByText('Cancelar')).toBeTruthy();
+    expect(getByText('Salvar')).toBeTruthy();
+  });
+
+  test('keeps the change-password modal centered in a bounded scroll panel', async () => {
+    const { getByText, getByTestId } = await render(<UserProfileScreen {...defaultProps} />);
+
+    await fireEvent.press(getByText('Alterar Senha'));
+
+    const passwordModalScroll = getByTestId('user-profile-password-modal-scroll');
+    expect(passwordModalScroll.props.contentContainerStyle).toMatchObject({
+      flexGrow: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    });
+    expect(getByTestId('user-profile-password-modal-keyboard-container')).toBeTruthy();
+    expect(getByTestId('user-profile-password-modal-panel')).toBeTruthy();
+    expect(getByText('Senha Atual')).toBeTruthy();
+    expect(getByText('Confirmar Nova Senha')).toBeTruthy();
+  });
+
   test('uses the loaded profile photo for the avatar', async () => {
     const profilePhotoUrl = 'https://api.alibe.test/users/user-123/profile-picture';
     const { getByTestId } = await render(

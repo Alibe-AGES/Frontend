@@ -17,6 +17,21 @@ jest.mock('@/components/NavigationBar', () => ({
   NavigationBar: () => null,
 }));
 
+jest.mock('@/components/BackButton', () => ({
+  BackButton: ({ accessibilityLabel }: { accessibilityLabel: string }) => {
+    const { Pressable, Text } = jest.requireActual<typeof import('react-native')>('react-native');
+    return (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        testID="experiences-back"
+      >
+        <Text>{accessibilityLabel}</Text>
+      </Pressable>
+    );
+  },
+}));
+
 jest.mock('@/server/places', () => ({
   searchPlaces: jest.fn(),
 }));
@@ -83,6 +98,7 @@ describe('<ExperiencesScreen />', () => {
   test('opens the selected place details', async () => {
     const { findByText, getByTestId } = await renderScreen();
 
+    expect(getByTestId('experiences-back').props.accessibilityLabel).toBe('Voltar para o grupo');
     await findByText('Bloom Café');
     await fireEvent.press(getByTestId('experiences-places-item-bloom'));
 

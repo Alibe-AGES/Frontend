@@ -28,19 +28,30 @@ function buildProposalInput(
   locationId?: string,
   externalId?: string
 ): CreateProposalInput {
+  const details = {
+    ...(draft.phoneNumber?.trim() ? { phoneNumber: draft.phoneNumber.trim() } : {}),
+    ...(draft.website?.trim() ? { website: draft.website.trim() } : {}),
+    ...(draft.openingHours?.trim()
+      ? {
+          openingHours: draft.openingHours
+            .split('\n')
+            .map((line) => line.trim())
+            .filter(Boolean),
+        }
+      : {}),
+    ...(parsePrice(draft.priceStart) !== undefined
+      ? { priceStart: parsePrice(draft.priceStart) }
+      : {}),
+    ...(parsePrice(draft.priceEnd) !== undefined ? { priceEnd: parsePrice(draft.priceEnd) } : {}),
+  };
+  const description = Object.keys(details).length > 0 ? JSON.stringify(details) : undefined;
+
   return {
     ...(locationId ? { locationId } : {}),
     ...(externalId ? { externalId } : {}),
-    name: draft.name,
-    address: draft.address,
-    phoneNumber: draft.phoneNumber,
-    website: draft.website,
-    openingHours: draft.openingHours
-      ?.split('\n')
-      .map((line) => line.trim())
-      .filter(Boolean),
-    priceStart: parsePrice(draft.priceStart),
-    priceEnd: parsePrice(draft.priceEnd),
+    name: draft.name.trim(),
+    address: draft.address.trim(),
+    ...(description ? { description } : {}),
   };
 }
 
@@ -137,8 +148,9 @@ export default function CreateEventController() {
   );
   const isDraftComplete =
     draft.name.trim().length > 0 &&
-    hasLocation &&
-    (activeTab === 'suggestion' || (isValidApiDate(draft.date) && isValidTime(draft.time)));
+    (activeTab === 'suggestion'
+      ? draft.address.trim().length > 0
+      : hasLocation && isValidApiDate(draft.date) && isValidTime(draft.time));
 
   const handleConfirm = async () => {
     if (!groupId || !isDraftComplete || isSubmitting) {

@@ -20,7 +20,6 @@ export const FILTER_GROUPS: FilterGroup[] = [
   {
     key: 'period',
     title: 'Horário',
-    multiple: true,
     options: [
       { value: 'morning', label: 'Manhã' },
       { value: 'afternoon', label: 'Tarde' },
@@ -30,7 +29,6 @@ export const FILTER_GROUPS: FilterGroup[] = [
   {
     key: 'environment',
     title: 'Ambiente',
-    multiple: true,
     options: [
       { value: 'outdoor', label: 'Ao ar livre' },
       { value: 'indoor', label: 'Ambiente fechado' },
@@ -39,7 +37,6 @@ export const FILTER_GROUPS: FilterGroup[] = [
   {
     key: 'idealFor',
     title: 'Ideal para',
-    multiple: true,
     options: [
       { value: 'pair', label: 'Dupla' },
       { value: 'small', label: 'Grupo pequeno' },

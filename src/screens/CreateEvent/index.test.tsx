@@ -74,6 +74,8 @@ describe('<CreateEventScreen />', () => {
       <CreateEventScreen {...buildProps()} />
     );
 
+    expect(getByTestId('create-event-tabs-header')).toBeTruthy();
+    expect(getByTestId('create-event-form-scroll')).toBeTruthy();
     expect(getByText('Evento')).toBeTruthy();
     expect(getByText('Sugestão')).toBeTruthy();
     expect(getByPlaceholderText('Definir nome do evento')).toBeTruthy();

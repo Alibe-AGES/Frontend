@@ -47,6 +47,41 @@ describe('<EventCard />', () => {
     expect(getByTestId('alibe-event-card-image')).toBeTruthy();
   });
 
+  test('renders the proposal presentation with rating and venue address, without a favorite control', async () => {
+    const { getByTestId, getByText, queryByTestId } = await render(
+      <EventCard
+        variant="proposal"
+        event={{
+          ...fullEvent,
+          rating: 3.2,
+        }}
+      />
+    );
+
+    expect(getByTestId('alibe-event-card-rating')).toBeTruthy();
+    expect(queryByTestId('alibe-event-card-image-badge')).toBeNull();
+    expect(getByTestId('alibe-event-card-title').props.className).toContain('text-ink');
+    expect(getByText('Av. Carlos Gomes, 600')).toBeTruthy();
+    expect(queryByTestId('alibe-event-card-address')).toBeTruthy();
+  });
+
+  test('fills missing proposal location details with placeholders', async () => {
+    const { getByTestId, getAllByText, getByText } = await render(
+      <EventCard
+        variant="proposal"
+        event={{ id: 'proposal-empty-location' }}
+      />
+    );
+
+    expect(getByTestId('alibe-event-card-address').props.children).toBe('--');
+    expect(getByTestId('alibe-event-card-budget')).toBeTruthy();
+    expect(getByTestId('alibe-event-card-phone')).toBeTruthy();
+    expect(getByText('(00) 00000-0000')).toBeTruthy();
+    expect(getByTestId('alibe-event-card-hours')).toBeTruthy();
+    expect(getByTestId('alibe-event-card-website')).toBeTruthy();
+    expect(getAllByText('--')).toHaveLength(4);
+  });
+
   test('shows a location placeholder when there is no image', async () => {
     const { getByTestId, queryByTestId } = await render(
       <EventCard event={{ ...fullEvent, imageUrl: null }} />

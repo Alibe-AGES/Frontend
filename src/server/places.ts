@@ -45,7 +45,12 @@ const CATEGORY_TYPES: Record<string, string[]> = {
   class: ['art_gallery', 'museum', 'performing_arts_theater'],
 };
 
-function buildSearchParams(input: PlacesSearchInput): URLSearchParams {
+function selectedValue(input: PlacesSearchInput, key: string): string | undefined {
+  if (!Object.hasOwn(input.filters.selections, key)) return undefined;
+  return input.filters.selections[key][0];
+}
+
+function buildSearchParams(input: PlacesSearchInput, type?: string): URLSearchParams {
   const params = new URLSearchParams({
     latitude: String(input.latitude),
     longitude: String(input.longitude),
@@ -56,35 +61,19 @@ function buildSearchParams(input: PlacesSearchInput): URLSearchParams {
 
   if (query) params.set('q', query);
 
-  const selectedCategories = input.tagIds.filter((tagId) => tagId !== 'recommended');
-  const categoryTypes = [
-    ...new Set(selectedCategories.flatMap((tagId) => CATEGORY_TYPES[tagId] ?? [])),
-  ];
-  if (input.tagIds.length > 0 && !input.tagIds.includes('recommended')) {
-    categoryTypes.forEach((type) => {
-      params.append('type', type);
-    });
-  }
+  if (type) params.set('type', type);
 
-  const distanceValues = Object.hasOwn(input.filters.selections, 'distance')
-    ? input.filters.selections.distance
-    : [];
-  const [distance] = distanceValues;
+  const distance = selectedValue(input, 'distance');
   if (distance && distance !== 'any') params.set('maxDistanceKm', distance);
   if (input.filters.minBudget) params.set('budgetMin', input.filters.minBudget);
   if (input.filters.maxBudget) params.set('budgetMax', input.filters.maxBudget);
 
-  const selected = (key: string): string[] =>
-    Object.hasOwn(input.filters.selections, key) ? input.filters.selections[key] : [];
-  selected('period').forEach((period) => {
-    params.append('period', period);
-  });
-  selected('environment').forEach((environment) => {
-    params.append('environment', environment);
-  });
-  selected('idealFor').forEach((groupSize) => {
-    params.append('groupSize', groupSize === 'pair' ? 'couple' : groupSize);
-  });
+  const period = selectedValue(input, 'period');
+  const environment = selectedValue(input, 'environment');
+  const groupSize = selectedValue(input, 'idealFor');
+  if (period) params.set('period', period);
+  if (environment) params.set('environment', environment);
+  if (groupSize) params.set('groupSize', groupSize === 'pair' ? 'couple' : groupSize);
 
   return params;
 }
@@ -110,21 +99,34 @@ function toPlace(item: LocationListItem, photoHeaders: Record<string, string>): 
 }
 
 export async function searchPlaces(input: PlacesSearchInput): Promise<Place[]> {
-  const params = buildSearchParams(input);
+  const selectedTypes = input.tagIds
+    .filter((tagId) => tagId !== 'recommended')
+    .flatMap((tagId) => CATEGORY_TYPES[tagId] ?? []);
+  const types = [...new Set(selectedTypes)];
+  const requestTypes: (string | undefined)[] = types.length > 0 ? types : [undefined];
   const path = input.query.trim() ? '/api/locations/search' : '/api/locations';
-  const response = await authenticatedFetch(`${API_BASE_URL}${path}?${params.toString()}`);
-
-  if (!response.ok) {
-    const message = await response.text();
-    throw new ApiError(
-      message || response.statusText || 'Não foi possível carregar os locais',
-      response.status
-    );
-  }
-
-  const result = (await response.json()) as LocationListResponse;
+  const results = await Promise.all(
+    requestTypes.map(async (type) => {
+      const params = buildSearchParams(input, type);
+      const response = await authenticatedFetch(`${API_BASE_URL}${path}?${params.toString()}`);
+      if (!response.ok) {
+        const message = await response.text();
+        throw new ApiError(
+          message || response.statusText || 'Não foi possível carregar os locais',
+          response.status
+        );
+      }
+      return (await response.json()) as LocationListResponse;
+    })
+  );
   const photoHeaders = await getAuthenticationHeaders();
-  return result.items.map((item) => toPlace(item, photoHeaders));
+  const uniqueItems = new Map<string, LocationListItem>();
+  results
+    .flatMap((result) => result.items)
+    .forEach((item) => {
+      if (!uniqueItems.has(item.externalId)) uniqueItems.set(item.externalId, item);
+    });
+  return [...uniqueItems.values()].map((item) => toPlace(item, photoHeaders));
 }
 
 export async function getPlaceDetails(placeId: string): Promise<PlaceDetails> {

@@ -1,5 +1,6 @@
 import { FilterCarousel } from '@/components/FilterCarousel';
 import { EMPTY_FILTER_VALUE, FilterSheet } from '@/components/FilterSheet';
+import { BackButton } from '@/components/BackButton';
 import { NavigationBar } from '@/components/NavigationBar';
 import { PlaceList } from '@/components/PlaceList';
 import { SearchBar } from '@/components/SearchBar';
@@ -48,6 +49,10 @@ export function ExperiencesScreen() {
           contentContainerClassName="gap-4 px-6 pb-32 pt-6"
           header={
             <View className="gap-4">
+              <BackButton
+                fallbackHref={groupId ? `/group/${groupId}` : '/groups'}
+                accessibilityLabel="Voltar para o grupo"
+              />
               <SearchBar
                 value={query}
                 onChangeText={setQuery}

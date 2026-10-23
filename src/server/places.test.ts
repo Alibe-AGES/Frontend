@@ -29,20 +29,20 @@ describe('searchPlaces', () => {
     });
   });
 
-  test('uses text search and serializes all active criteria for the backend', async () => {
+  test('uses text search and serializes supported scalar criteria for the backend', async () => {
     const result = await searchPlaces({
       latitude: -30,
       longitude: -51,
       query: '  museu  ',
-      tagIds: ['class'],
+      tagIds: ['restaurant'],
       filters: {
         minBudget: '20',
         maxBudget: '80',
         selections: {
           distance: ['10'],
-          period: ['morning', 'night'],
-          environment: ['indoor', 'outdoor'],
-          idealFor: ['pair', 'large'],
+          period: ['morning'],
+          environment: ['outdoor'],
+          idealFor: ['pair'],
         },
       },
     });
@@ -54,14 +54,11 @@ describe('searchPlaces', () => {
     expect(requestUrl.origin).toBe(new URL(API_BASE_URL).origin);
     expect(requestUrl.pathname).toBe('/api/locations/search');
     expect(requestUrl.searchParams.get('q')).toBe('museu');
-    expect(requestUrl.searchParams.getAll('type')).toEqual([
-      'art_gallery',
-      'museum',
-      'performing_arts_theater',
-    ]);
-    expect(requestUrl.searchParams.getAll('period')).toEqual(['morning', 'night']);
-    expect(requestUrl.searchParams.getAll('environment')).toEqual(['indoor', 'outdoor']);
-    expect(requestUrl.searchParams.getAll('groupSize')).toEqual(['couple', 'large']);
+    expect(requestUrl.searchParams.get('type')).toBe('restaurant');
+    expect(requestUrl.searchParams.getAll('type')).toEqual(['restaurant']);
+    expect(requestUrl.searchParams.get('period')).toBe('morning');
+    expect(requestUrl.searchParams.get('environment')).toBe('outdoor');
+    expect(requestUrl.searchParams.get('groupSize')).toBe('couple');
     expect(result[0]).toMatchObject({
       id: 'google-place-1',
       name: 'Museu',
@@ -75,6 +72,41 @@ describe('searchPlaces', () => {
       ).toString(),
     });
     expect(getAuthenticationHeaders).toHaveBeenCalled();
+  });
+
+  test('unions multiple selected categories using separate Backend type requests', async () => {
+    (authenticatedFetch as jest.Mock)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ items: [{ externalId: 'restaurant-place', name: 'Food' }] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ items: [{ externalId: 'bar-place', name: 'Drink' }] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ items: [{ externalId: 'restaurant-place', name: 'Food' }] }),
+      });
+
+    const places = await searchPlaces({
+      latitude: -30,
+      longitude: -51,
+      query: '',
+      tagIds: ['restaurant', 'bar'],
+      filters: { minBudget: '', maxBudget: '', selections: {} },
+    });
+
+    expect(authenticatedFetch).toHaveBeenCalledTimes(3);
+    const urls = (
+      authenticatedFetch as jest.MockedFunction<typeof authenticatedFetch>
+    ).mock.calls.map(([url]) => new URL(url as string));
+    expect(urls.map((url) => url.searchParams.get('type'))).toEqual([
+      'restaurant',
+      'bar',
+      'night_club',
+    ]);
+    expect(places.map((place) => place.id)).toEqual(['restaurant-place', 'bar-place']);
   });
 
   test('uses the nearby feed when no text search is entered', async () => {

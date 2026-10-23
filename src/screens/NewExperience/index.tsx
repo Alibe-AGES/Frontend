@@ -7,6 +7,47 @@ import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { NavigationBar } from '@/components/NavigationBar';
 
+interface ProposalDescriptionDetails {
+  phoneNumber?: string;
+  website?: string;
+  openingHours?: string[];
+  priceStart?: number | string;
+  priceEnd?: number | string;
+  summary?: string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function parseProposalDescription(description: string | null): ProposalDescriptionDetails {
+  if (!description?.trim()) return {};
+
+  try {
+    const parsed: unknown = JSON.parse(description);
+    if (!isRecord(parsed)) return { summary: description };
+
+    const details: ProposalDescriptionDetails = {
+      ...(typeof parsed.phoneNumber === 'string' ? { phoneNumber: parsed.phoneNumber } : {}),
+      ...(typeof parsed.website === 'string' ? { website: parsed.website } : {}),
+      ...(Array.isArray(parsed.openingHours) &&
+      parsed.openingHours.every((hour): hour is string => typeof hour === 'string')
+        ? { openingHours: parsed.openingHours }
+        : {}),
+      ...(typeof parsed.priceStart === 'number' || typeof parsed.priceStart === 'string'
+        ? { priceStart: parsed.priceStart }
+        : {}),
+      ...(typeof parsed.priceEnd === 'number' || typeof parsed.priceEnd === 'string'
+        ? { priceEnd: parsed.priceEnd }
+        : {}),
+    };
+
+    return Object.keys(details).length > 0 ? details : { summary: description };
+  } catch {
+    return { summary: description };
+  }
+}
+
 export interface NewExperienceScreenProps {
   groupId: string;
   proposal: ActiveProposal | null;
@@ -28,24 +69,34 @@ function renderProposalCard(
   isSubmitting: boolean,
   onAnswer: NewExperienceScreenProps['onAnswer']
 ): ReactNode {
+  const hasAlreadyAnswered = proposal.myAnswer !== null;
+  const isDecisionDisabled = isSubmitting || hasAlreadyAnswered;
   const location = proposal.location;
   const budget = location?.priceRange;
+  const descriptionDetails = parseProposalDescription(location?.description ?? null);
   const event = {
     id: proposal.id,
     name: proposal.name ?? location?.name,
     status: 'pending' as const,
-    location: { address: location?.address ?? location?.description },
+    location: {
+      address: location?.address,
+      description: descriptionDetails.summary,
+    },
     imageUrl: resolveImageUrl(location?.imageUrl),
-    budgetStart: budget?.start,
-    budgetEnd: budget?.end,
-    phone: location?.phoneNumber,
-    openingHours: location?.openingHours,
-    website: location?.website,
+    rating: location?.rating,
+    budgetStart: budget?.start ?? descriptionDetails.priceStart,
+    budgetEnd: budget?.end ?? descriptionDetails.priceEnd,
+    phone: location?.phoneNumber ?? descriptionDetails.phoneNumber,
+    openingHours: location?.openingHours.length
+      ? location.openingHours
+      : descriptionDetails.openingHours,
+    website: location?.website ?? descriptionDetails.website,
   };
 
   return (
     <View className="w-full max-w-md gap-5">
       <EventCard
+        variant="proposal"
         event={event}
         testID={`new-experience-proposal-${proposal.id}`}
       />
@@ -53,11 +104,11 @@ function renderProposalCard(
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Não quero este local"
-          accessibilityState={{ disabled: isSubmitting }}
+          accessibilityState={{ disabled: isDecisionDisabled }}
           className={`h-16 w-16 items-center justify-center rounded-full bg-coral ${
-            isSubmitting ? 'opacity-50' : 'opacity-100'
+            isDecisionDisabled ? 'opacity-50' : 'opacity-100'
           }`}
-          disabled={isSubmitting}
+          disabled={isDecisionDisabled}
           onPress={() => {
             onAnswer('no');
           }}
@@ -72,11 +123,11 @@ function renderProposalCard(
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Quero este local"
-          accessibilityState={{ disabled: isSubmitting }}
-          className={`h-16 w-16 items-center justify-center rounded-full bg-lime ${
-            isSubmitting ? 'opacity-50' : 'opacity-100'
+          accessibilityState={{ disabled: isDecisionDisabled }}
+          className={`h-16 w-16 items-center justify-center rounded-full bg-coral ${
+            isDecisionDisabled ? 'opacity-50' : 'opacity-100'
           }`}
-          disabled={isSubmitting}
+          disabled={isDecisionDisabled}
           onPress={() => {
             onAnswer('yes');
           }}
@@ -85,7 +136,7 @@ function renderProposalCard(
           <Ionicons
             name="checkmark"
             size={34}
-            color={theme.colors.ink}
+            color={theme.colors.white}
           />
         </Pressable>
       </View>
@@ -168,7 +219,9 @@ export function NewExperienceScreen({
           </Text>
           {proposal ? (
             <Text className="font-poppins text-sm text-ink-soft">
-              {proposal.responses.yes} curtiram este local
+              {proposal.myAnswer === 'yes'
+                ? 'Você já sugeriu este local'
+                : `${String(proposal.responses.yes)} curtiram este local`}
             </Text>
           ) : null}
         </View>

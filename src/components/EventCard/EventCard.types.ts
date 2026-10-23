@@ -19,6 +19,7 @@ export interface EventCardEvent {
   phone?: string | null;
   openingHours?: string[] | null;
   website?: string | null;
+  rating?: number | null;
 }
 
 export interface EventCardDraft {
@@ -38,6 +39,7 @@ export type EventCardMode = 'read' | 'create';
 
 export interface EventCardReadProps {
   mode?: 'read';
+  variant?: 'default' | 'proposal';
   event: EventCardEvent;
   onEditPress?: () => void;
   testID?: string;

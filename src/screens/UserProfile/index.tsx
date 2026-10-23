@@ -1,5 +1,4 @@
 import { BackButton } from '@/components/BackButton';
-import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
 import { NavigationBar } from '@/components/NavigationBar';
 import { PasswordInput } from '@/components/PasswordInput';
 import { PhotoPicker } from '@/components/PhotoPicker';
@@ -306,13 +305,25 @@ export const UserProfileScreen = ({
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           className="flex-1"
+          testID="user-profile-edit-modal-keyboard-container"
         >
-          <KeyboardAvoidingScrollView
+          <ScrollView
             className="flex-1 bg-black/50"
-            contentContainerClassName="flex-grow items-center justify-center px-6"
             keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{
+              flexGrow: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingHorizontal: 24,
+              paddingVertical: 24,
+            }}
+            testID="user-profile-edit-modal-scroll"
           >
-            <View className="w-full gap-5 rounded-3xl bg-canvas p-6 shadow-lg">
+            <View
+              className="w-full max-w-lg gap-5 rounded-3xl bg-canvas p-6 shadow-lg"
+              style={{ maxWidth: 448 }}
+              testID="user-profile-edit-modal-panel"
+            >
               <Text className="text-center font-poppins-semibold text-xl text-wine">
                 Editar Perfil
               </Text>
@@ -358,7 +369,7 @@ export const UserProfileScreen = ({
                 </TouchableOpacity>
               </View>
             </View>
-          </KeyboardAvoidingScrollView>
+          </ScrollView>
         </KeyboardAvoidingView>
         <Toast />
       </Modal>
@@ -372,13 +383,25 @@ export const UserProfileScreen = ({
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           className="flex-1"
+          testID="user-profile-password-modal-keyboard-container"
         >
-          <KeyboardAvoidingScrollView
+          <ScrollView
             className="flex-1 bg-black/50"
-            contentContainerClassName="flex-grow items-center justify-center px-6"
             keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{
+              flexGrow: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingHorizontal: 24,
+              paddingVertical: 24,
+            }}
+            testID="user-profile-password-modal-scroll"
           >
-            <View className="w-full gap-5 rounded-3xl bg-canvas p-6 shadow-lg">
+            <View
+              className="w-full max-w-lg gap-5 rounded-3xl bg-canvas p-6 shadow-lg"
+              style={{ maxWidth: 448 }}
+              testID="user-profile-password-modal-panel"
+            >
               <Text className="text-center font-poppins-semibold text-xl text-wine">
                 Alterar Senha
               </Text>
@@ -420,7 +443,7 @@ export const UserProfileScreen = ({
                 </TouchableOpacity>
               </View>
             </View>
-          </KeyboardAvoidingScrollView>
+          </ScrollView>
         </KeyboardAvoidingView>
         <Toast />
       </Modal>
