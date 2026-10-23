@@ -27,13 +27,26 @@ interface LocationListResponse {
 }
 
 export interface PlaceDetails {
-  externalId: string;
+  externalId: string | null;
   name: string;
   imageUrl: string | null;
   description: string | null;
   address: string | null;
   rating: number | null;
   priceRange: { start: number | null; end: number | null; currencyCode: string } | null;
+  phoneNumber: string | null;
+  website: string | null;
+  openingHours: string[];
+}
+
+interface StoredLocationDetailsResponse {
+  externalId: string | null;
+  name: string | null;
+  imageUrl: string | null;
+  description: string | null;
+  address: string | null;
+  rating: number | null;
+  priceRange: { start: string | null; end: string | null; currencyCode: string | null };
   phoneNumber: string | null;
   website: string | null;
   openingHours: string[];
@@ -146,5 +159,38 @@ export async function getPlaceDetails(placeId: string): Promise<PlaceDetails> {
   return {
     ...details,
     imageUrl: details.imageUrl ? new URL(details.imageUrl, API_BASE_URL).toString() : null,
+  };
+}
+
+export async function getStoredLocationDetails(locationId: string): Promise<PlaceDetails> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/api/locations/${encodeURIComponent(locationId)}`
+  );
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new ApiError(
+      message || response.statusText || 'Não foi possível carregar o local',
+      response.status
+    );
+  }
+
+  const details = (await response.json()) as StoredLocationDetailsResponse;
+  const parsePrice = (amount: string | null) => {
+    if (amount === null) return null;
+    const parsed = Number(amount);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+
+  return {
+    ...details,
+    externalId: details.externalId,
+    name: details.name ?? details.description ?? details.address ?? 'Local',
+    imageUrl: details.imageUrl ? new URL(details.imageUrl, API_BASE_URL).toString() : null,
+    priceRange: {
+      start: parsePrice(details.priceRange.start),
+      end: parsePrice(details.priceRange.end),
+      currencyCode: details.priceRange.currencyCode ?? 'BRL',
+    },
   };
 }

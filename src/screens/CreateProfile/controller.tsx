@@ -1,4 +1,5 @@
 import { useSignUpDraft } from '@/hooks/useSignUpDraft';
+import { synchronizePushToken } from '@/notifications/synchronize-push-token';
 import { CreateProfileScreen, type CreateProfileData } from '@/screens/CreateProfile';
 import { authClient } from '@/server/auth-client';
 import { signUpWithEmail } from '@/server/auth';
@@ -45,6 +46,7 @@ export default function CreateProfileController() {
         await updateUserProfilePicture(photo);
       }
 
+      await synchronizePushToken();
       setDraft(null);
       router.replace('/groups');
     } catch {

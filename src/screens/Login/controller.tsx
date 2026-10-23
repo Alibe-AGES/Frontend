@@ -1,4 +1,5 @@
 import { LoginScreen, type LoginData } from '@/screens/Login';
+import { synchronizePushToken } from '@/notifications/synchronize-push-token';
 import { authClient } from '@/server/auth';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -23,6 +24,7 @@ export default function LoginController() {
         return;
       }
 
+      await synchronizePushToken();
       router.replace('/groups');
     } catch {
       setErrorMessage('Não foi possível conectar. Tente novamente.');

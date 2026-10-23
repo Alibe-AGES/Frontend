@@ -15,6 +15,10 @@ jest.mock('@/components/AuthenticatedRoute', () => ({
   AuthenticatedRoute: jest.fn(() => null),
 }));
 
+jest.mock('@/notifications/PushNotifications', () => ({
+  PushNotifications: () => null,
+}));
+
 jest.mock('expo-router', () => ({
   usePathname: jest.fn(),
 }));

@@ -10,7 +10,6 @@ const config: ExpoConfig = {
   userInterfaceStyle: 'automatic',
   extra: {
     apiBaseUrl: process.env.EXPO_PUBLIC_API_URL ?? process.env.ENV_API_BASE_URL,
-    mobileApiBaseUrl: process.env.EXPO_PUBLIC_API_URL_MOBILE,
     eas: {
       projectId: '0fe4c9c6-8bca-4a1e-8506-7dca9c7901e7',
     },
@@ -36,12 +35,6 @@ const config: ExpoConfig = {
   plugins: [
     'expo-router',
     'expo-secure-store',
-    [
-      'expo-location',
-      {
-        locationWhenInUsePermission: 'Permita que o Alibe encontre experiências perto de você.',
-      },
-    ],
     [
       'expo-splash-screen',
       {
