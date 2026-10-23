@@ -8,12 +8,13 @@ export const STORAGE_KEYS = {
 
 const extraApiBaseUrl: unknown = Constants.expoConfig?.extra?.apiBaseUrl;
 const extraMobileApiBaseUrl: unknown = Constants.expoConfig?.extra?.mobileApiBaseUrl;
-const processApiBaseUrl = process.env.EXPO_PUBLIC_API_URL;
-const processMobileApiBaseUrl = process.env.EXPO_PUBLIC_API_URL_MOBILE;
+const processApiBaseUrl: unknown = process.env.EXPO_PUBLIC_API_URL;
+const processFallbackApiBaseUrl: unknown = process.env.ENV_API_BASE_URL;
+const processMobileApiBaseUrl: unknown = process.env.EXPO_PUBLIC_API_URL_MOBILE;
 const configuredApiBaseUrl =
   typeof extraApiBaseUrl === 'string' && extraApiBaseUrl.length > 0
     ? extraApiBaseUrl
-    : (processApiBaseUrl ?? process.env.ENV_API_BASE_URL);
+    : (processApiBaseUrl ?? processFallbackApiBaseUrl);
 const configuredMobileApiBaseUrl =
   typeof extraMobileApiBaseUrl === 'string' && extraMobileApiBaseUrl.length > 0
     ? extraMobileApiBaseUrl
