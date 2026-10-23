@@ -14,9 +14,10 @@ import {
 } from 'react-native';
 
 export interface GroupDayCarouselItem {
-  kind: 'event' | 'proposal';
+  kind: 'event' | 'proposal' | 'locationSuggestion';
   event: EventCardEvent;
   proposal?: {
+    proposalId?: string;
     ownerName: string;
     responses: {
       userId: string;
@@ -35,9 +36,193 @@ interface GroupDayCarouselProps {
   error: string | null;
   onAvailabilityPress: () => void;
   onPresenceResponse: (eventId: string, answer: EventPresenceAnswer) => Promise<void>;
+  onSuggestionResponse?: (proposalId: string, answer: EventPresenceAnswer) => Promise<void>;
   pendingEventId?: string | null;
   currentUserId?: string | null;
   testID?: string;
+}
+
+type GroupDayCarouselProposal = NonNullable<GroupDayCarouselItem['proposal']>;
+
+interface GroupDayCarouselPageProps {
+  item: GroupDayCarouselItem;
+  index: number;
+  pageWidth: number;
+  testID: string;
+  currentUserId: string | null;
+  pendingEventId: string | null;
+  onPresenceResponse: GroupDayCarouselProps['onPresenceResponse'];
+  onSuggestionResponse: GroupDayCarouselProps['onSuggestionResponse'];
+}
+
+function getItemTitle(kind: GroupDayCarouselItem['kind']): string {
+  switch (kind) {
+    case 'locationSuggestion':
+      return 'Sugestão de local';
+    case 'proposal':
+      return 'Proposta';
+    case 'event':
+      return 'Encontro';
+  }
+}
+
+function getResponseTargetId(item: GroupDayCarouselItem): string {
+  if (item.kind === 'locationSuggestion') {
+    return `suggestion-${item.proposal?.proposalId ?? item.event.id}`;
+  }
+  return item.event.id;
+}
+
+function getYesResponseLabel(kind: GroupDayCarouselItem['kind'], isPending: boolean): string {
+  if (isPending) return 'Salvando...';
+  return kind === 'locationSuggestion' ? 'Concordo' : 'Confirmar!';
+}
+
+function getYesAccessibilityLabel(kind: GroupDayCarouselItem['kind']): string {
+  return kind === 'locationSuggestion'
+    ? 'Aceitar sugestão de local'
+    : 'Confirmar presença no evento';
+}
+
+function getNoResponseLabel(kind: GroupDayCarouselItem['kind']): string {
+  return kind === 'locationSuggestion' ? 'Discordo' : 'Não estarei disponível neste dia';
+}
+
+function getNoAccessibilityLabel(kind: GroupDayCarouselItem['kind']): string {
+  return kind === 'locationSuggestion' ? 'Recusar sugestão de local' : 'Não participar do evento';
+}
+
+function respondToItem(
+  item: GroupDayCarouselItem,
+  answer: EventPresenceAnswer,
+  onPresenceResponse: GroupDayCarouselProps['onPresenceResponse'],
+  onSuggestionResponse: GroupDayCarouselProps['onSuggestionResponse']
+): void {
+  if (item.kind === 'locationSuggestion') {
+    void onSuggestionResponse?.(item.proposal?.proposalId ?? item.event.id, answer);
+    return;
+  }
+  void onPresenceResponse(item.event.id, answer);
+}
+
+function GroupDayCarouselPage({
+  item,
+  index,
+  pageWidth,
+  testID,
+  currentUserId,
+  pendingEventId,
+  onPresenceResponse,
+  onSuggestionResponse,
+}: GroupDayCarouselPageProps) {
+  return (
+    <View
+      key={`${item.kind}-${item.event.id}-${String(index)}`}
+      className="gap-3 px-1"
+      style={{ width: pageWidth }}
+    >
+      <Text className="text-center font-poppins-semibold text-sm text-wine">
+        {getItemTitle(item.kind)}
+      </Text>
+      <EventCard
+        event={item.event}
+        testID={`${testID}-${item.kind}-${item.event.id}`}
+      />
+      {item.proposal ? (
+        <ParticipantResponseSection
+          item={item}
+          proposal={item.proposal}
+          currentUserId={currentUserId}
+          pendingEventId={pendingEventId}
+          onPresenceResponse={onPresenceResponse}
+          onSuggestionResponse={onSuggestionResponse}
+          testID={testID}
+        />
+      ) : null}
+    </View>
+  );
+}
+
+interface ParticipantResponseSectionProps {
+  item: GroupDayCarouselItem;
+  proposal: GroupDayCarouselProposal;
+  currentUserId: string | null;
+  pendingEventId: string | null;
+  onPresenceResponse: GroupDayCarouselProps['onPresenceResponse'];
+  onSuggestionResponse: GroupDayCarouselProps['onSuggestionResponse'];
+  testID: string;
+}
+
+function ParticipantResponseSection({
+  item,
+  proposal,
+  currentUserId,
+  pendingEventId,
+  onPresenceResponse,
+  onSuggestionResponse,
+  testID,
+}: ParticipantResponseSectionProps) {
+  const responseTargetId = getResponseTargetId(item);
+  const isPending = pendingEventId === responseTargetId;
+  const buttonClassName = `w-full items-center justify-center rounded-full bg-ink py-4 ${
+    isPending ? 'opacity-60' : 'opacity-100'
+  }`;
+
+  return (
+    <View className="gap-4 pt-2">
+      <Text className="text-center font-poppins-semibold text-lg text-wine">
+        Status dos participantes
+      </Text>
+      <ParticipantAvatars
+        participants={proposal.responses.map((response) => ({
+          id: response.userId,
+          name: response.name,
+          profilePic: response.profilePic ?? null,
+          answer: response.answer,
+        }))}
+        currentUserId={currentUserId ?? undefined}
+        testID={`${testID}-participants-${item.event.id}`}
+      />
+      <View className="gap-3 pt-2">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={getYesAccessibilityLabel(item.kind)}
+          accessibilityState={{
+            selected: proposal.currentUserAnswer === 'yes',
+            disabled: isPending,
+          }}
+          className={buttonClassName}
+          disabled={isPending}
+          onPress={() => {
+            respondToItem(item, 'yes', onPresenceResponse, onSuggestionResponse);
+          }}
+          testID={`${testID}-presence-yes-${responseTargetId}`}
+        >
+          <Text className="font-poppins text-base text-canvas">
+            {getYesResponseLabel(item.kind, isPending)}
+          </Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={getNoAccessibilityLabel(item.kind)}
+          accessibilityState={{
+            selected: proposal.currentUserAnswer === 'no',
+            disabled: isPending,
+          }}
+          className={buttonClassName}
+          disabled={isPending}
+          onPress={() => {
+            respondToItem(item, 'no', onPresenceResponse, onSuggestionResponse);
+          }}
+          testID={`${testID}-presence-no-${responseTargetId}`}
+        >
+          <Text className="font-poppins text-base text-canvas">
+            {getNoResponseLabel(item.kind)}
+          </Text>
+        </Pressable>
+      </View>
+    </View>
+  );
 }
 
 export function GroupDayCarousel({
@@ -47,6 +232,7 @@ export function GroupDayCarousel({
   error,
   onAvailabilityPress,
   onPresenceResponse,
+  onSuggestionResponse,
   pendingEventId = null,
   currentUserId = null,
   testID = 'group-day-carousel',
@@ -158,78 +344,17 @@ export function GroupDayCarousel({
             testID={`${testID}-pages`}
           >
             {items.map((item, index) => (
-              <View
+              <GroupDayCarouselPage
                 key={`${item.kind}-${item.event.id}-${String(index)}`}
-                className="gap-3 px-1"
-                style={{ width: pageWidth }}
-              >
-                <Text className="text-center font-poppins-semibold text-sm text-wine">
-                  {item.kind === 'proposal' ? 'Proposta' : 'Encontro'}
-                </Text>
-                <EventCard
-                  event={item.event}
-                  testID={`${testID}-${item.kind}-${item.event.id}`}
-                />
-                {item.proposal ? (
-                  <View className="gap-4 pt-2">
-                    <Text className="text-center font-poppins-semibold text-lg text-wine">
-                      Status dos participantes
-                    </Text>
-                    <ParticipantAvatars
-                      participants={item.proposal.responses.map((response) => ({
-                        id: response.userId,
-                        name: response.name,
-                        profilePic: response.profilePic ?? null,
-                        answer: response.answer,
-                      }))}
-                      currentUserId={currentUserId ?? undefined}
-                      testID={`${testID}-participants-${item.event.id}`}
-                    />
-                    <View className="gap-3 pt-2">
-                      <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel="Confirmar presença no evento"
-                        accessibilityState={{
-                          selected: item.proposal.currentUserAnswer === 'yes',
-                          disabled: pendingEventId === item.event.id,
-                        }}
-                        className={`w-full items-center justify-center rounded-full bg-ink py-4 ${
-                          pendingEventId === item.event.id ? 'opacity-60' : 'opacity-100'
-                        }`}
-                        disabled={pendingEventId === item.event.id}
-                        onPress={() => {
-                          void onPresenceResponse(item.event.id, 'yes');
-                        }}
-                        testID={`${testID}-presence-yes-${item.event.id}`}
-                      >
-                        <Text className="font-poppins text-base text-canvas">
-                          {pendingEventId === item.event.id ? 'Salvando...' : 'Confirmar!'}
-                        </Text>
-                      </Pressable>
-                      <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel="Não participar do evento"
-                        accessibilityState={{
-                          selected: item.proposal.currentUserAnswer === 'no',
-                          disabled: pendingEventId === item.event.id,
-                        }}
-                        className={`w-full items-center justify-center rounded-full bg-ink py-4 ${
-                          pendingEventId === item.event.id ? 'opacity-60' : 'opacity-100'
-                        }`}
-                        disabled={pendingEventId === item.event.id}
-                        onPress={() => {
-                          void onPresenceResponse(item.event.id, 'no');
-                        }}
-                        testID={`${testID}-presence-no-${item.event.id}`}
-                      >
-                        <Text className="font-poppins text-base text-canvas">
-                          Não estarei disponível neste dia
-                        </Text>
-                      </Pressable>
-                    </View>
-                  </View>
-                ) : null}
-              </View>
+                item={item}
+                index={index}
+                pageWidth={pageWidth}
+                testID={testID}
+                currentUserId={currentUserId}
+                pendingEventId={pendingEventId}
+                onPresenceResponse={onPresenceResponse}
+                onSuggestionResponse={onSuggestionResponse}
+              />
             ))}
           </ScrollView>
         </View>

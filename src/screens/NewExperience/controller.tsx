@@ -1,3 +1,1 @@
-import { NewExperienceScreen } from '.';
-
-export default NewExperienceScreen;
+export { NewExperienceScreen as default } from '.';

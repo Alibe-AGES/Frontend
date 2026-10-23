@@ -166,6 +166,25 @@ describe('<EventCard mode="create" />', () => {
     expect(onChangeDraft).toHaveBeenNthCalledWith(3, { ...draft, time: '10:00' });
   });
 
+  test('shows editable location details on the suggestion card and omits event schedule fields', async () => {
+    const { getByPlaceholderText, queryByTestId } = await render(
+      <EventCard
+        mode="create"
+        variant="suggestion"
+        draft={emptyDraft}
+        onChangeDraft={jest.fn()}
+      />
+    );
+
+    expect(getByPlaceholderText('Preço mínimo (R$)')).toBeTruthy();
+    expect(getByPlaceholderText('Preço máximo (R$)')).toBeTruthy();
+    expect(getByPlaceholderText('Telefone')).toBeTruthy();
+    expect(getByPlaceholderText('Horários de funcionamento')).toBeTruthy();
+    expect(getByPlaceholderText('Site')).toBeTruthy();
+    expect(queryByTestId('alibe-event-card-date-button')).toBeTruthy();
+    expect(queryByTestId('alibe-event-card-time-input')).toBeNull();
+  });
+
   test('picks an image from the gallery and stores it in the draft', async () => {
     const photo = { uri: 'file:///bloom.jpg', fileName: 'bloom.jpg', mimeType: 'image/jpeg' };
     mockRequestPermissions.mockResolvedValue({ granted: true });

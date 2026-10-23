@@ -27,6 +27,11 @@ export interface EventCardDraft {
   address: string;
   date: string;
   time: string;
+  priceStart?: string;
+  priceEnd?: string;
+  phoneNumber?: string;
+  openingHours?: string;
+  website?: string;
 }
 
 export type EventCardMode = 'read' | 'create';

@@ -1,5 +1,12 @@
 export type DayStatus =
-  'available' | 'realized' | 'suggested' | 'allAvailable' | 'past' | 'pastEvent' | 'normal';
+  | 'available'
+  | 'realized'
+  | 'suggested'
+  | 'matched'
+  | 'allAvailable'
+  | 'past'
+  | 'pastEvent'
+  | 'normal';
 
 export type DayDot = 'pink' | 'coral';
 
@@ -18,6 +25,7 @@ export interface DayMark {
   dot?: DayDot;
   eventIds?: string[];
   proposalIds?: string[];
+  suggestionIds?: string[];
   availableUserCount?: number;
   allUsersAvailable?: boolean;
 }

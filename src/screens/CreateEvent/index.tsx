@@ -4,7 +4,7 @@ import { EventCard, EventCardDraft } from '@/components/EventCard';
 import { NavigationBar } from '@/components/NavigationBar';
 import { Participant, ParticipantAvatars } from '@/components/ParticipantAvatars';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
 
@@ -12,6 +12,7 @@ export type CreateEventTab = 'event' | 'suggestion';
 
 export interface CreateEventScreenProps {
   groupId?: string;
+  openDatePickerOnMount?: boolean;
   activeTab?: CreateEventTab;
   onSelectTab?: (tab: CreateEventTab) => void;
   draft: EventCardDraft;
@@ -84,6 +85,7 @@ function EventTypeTabs({
 
 export function CreateEventScreen({
   groupId,
+  openDatePickerOnMount = false,
   activeTab = 'event',
   onSelectTab,
   draft,
@@ -98,6 +100,10 @@ export function CreateEventScreen({
   onConfirm,
 }: CreateEventScreenProps) {
   const [isDateSheetVisible, setIsDateSheetVisible] = useState(false);
+
+  useEffect(() => {
+    if (openDatePickerOnMount) setIsDateSheetVisible(true);
+  }, [openDatePickerOnMount]);
 
   return (
     <View className="flex-1 bg-canvas">

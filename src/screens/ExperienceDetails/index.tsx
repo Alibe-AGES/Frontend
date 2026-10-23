@@ -9,6 +9,7 @@ import { getPlaceDetails, type PlaceDetails } from '@/server/places';
 import { theme } from '@/theme';
 
 interface ExperienceDetailsScreenProps {
+  groupId: string;
   placeId: string;
 }
 
@@ -29,13 +30,28 @@ function displayPrice(details: PlaceDetails): string {
   return `${format(start)} - ${format(end)}`;
 }
 
-export function ExperienceDetailsScreen({ placeId }: ExperienceDetailsScreenProps) {
+export function ExperienceDetailsScreen({ groupId, placeId }: ExperienceDetailsScreenProps) {
   const router = useRouter();
   const [details, setDetails] = useState<PlaceDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const imageSource = useAuthenticatedImageSource(details?.imageUrl);
   const rating = details?.rating;
+
+  const handleSuggestLocation = () => {
+    if (!details) return;
+    router.push({
+      pathname: '/group/[id]/create-event',
+      params: {
+        id: groupId,
+        tab: 'suggestion',
+        externalId: details.externalId,
+        address: details.address ?? '',
+        name: details.name,
+        openDatePicker: 'true',
+      },
+    });
+  };
 
   useEffect(() => {
     let isActive = true;
@@ -189,6 +205,14 @@ export function ExperienceDetailsScreen({ placeId }: ExperienceDetailsScreenProp
               >
                 {details.website ?? ''}
               </Text>
+              <Pressable
+                accessibilityRole="button"
+                onPress={handleSuggestLocation}
+                className="mt-6 items-center rounded-full bg-coral px-6 py-3"
+                testID="experience-suggest-location"
+              >
+                <Text className="font-poppins-semibold text-white">Sugerir este local</Text>
+              </Pressable>
             </>
           ) : null}
         </View>

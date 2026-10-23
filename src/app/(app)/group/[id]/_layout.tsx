@@ -12,6 +12,10 @@ export default function GroupLayout() {
         name="event-created"
         options={{ headerShown: false, gestureEnabled: false }}
       />
+      <Stack.Screen
+        name="match/[proposalId]"
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
       <Stack.Screen name="info" />
       <Stack.Screen
         name="leave"

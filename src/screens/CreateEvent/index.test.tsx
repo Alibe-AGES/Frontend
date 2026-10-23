@@ -96,6 +96,16 @@ describe('<CreateEventScreen />', () => {
     expect(onSelectDate).toHaveBeenCalledWith('2026-10-15');
   });
 
+  test('opens the date sheet automatically when launched from Experiences', async () => {
+    const { getByTestId } = await render(
+      <CreateEventScreen
+        {...buildProps({ activeTab: 'suggestion', openDatePickerOnMount: true })}
+      />
+    );
+
+    expect(getByTestId('mock-date-picker-sheet')).toBeTruthy();
+  });
+
   test('forwards draft edits to the controller', async () => {
     const onChangeDraft = jest.fn();
     const { getByTestId } = await render(<CreateEventScreen {...buildProps({ onChangeDraft })} />);

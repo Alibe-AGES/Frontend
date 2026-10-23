@@ -5,6 +5,9 @@ import {
   EventDetailsResponse,
   EventPresenceAnswer,
   getEventDetails,
+  getProposalDetails,
+  ProposalDetailsResponse,
+  respondToSuggestion,
   respondToEventProposal,
 } from '@/server/events';
 import { getGroupMembers, getMe, type GroupMember } from '@/server/groups';
@@ -62,12 +65,61 @@ function mapEventToCarouselItem(
   };
 }
 
+function mapSuggestionToCarouselItem(
+  suggestion: ProposalDetailsResponse,
+  currentUserId: string | null,
+  groupMembers: GroupMember[]
+): GroupDayCarouselItem {
+  const location = suggestion.location;
+  return {
+    kind: 'locationSuggestion',
+    event: {
+      id: `suggestion-${suggestion.id}`,
+      name: suggestion.name ?? location?.name,
+      timeslot: suggestion.date ? `${suggestion.date}T00:00:00` : null,
+      budgetStart: location?.priceRange.start,
+      budgetEnd: location?.priceRange.end,
+      status: 'pending',
+      location: { address: location?.address ?? location?.description },
+      imageUrl: location?.imageUrl ? `${API_BASE_URL}${location.imageUrl}` : null,
+      phone: location?.phoneNumber,
+      openingHours: location?.openingHours,
+      website: location?.website,
+    },
+    proposal: {
+      proposalId: suggestion.id,
+      ownerName: suggestion.owner.name,
+      currentUserAnswer: suggestion.myAnswer ?? undefined,
+      responses: groupMembers.map((member) => ({
+        userId: member.id,
+        name: member.name,
+        profilePic: member.profilePic,
+        answer: getSuggestionMemberAnswer(member.id, suggestion, currentUserId),
+      })),
+    },
+  };
+}
+
+function getSuggestionMemberAnswer(
+  memberId: string,
+  suggestion: ProposalDetailsResponse,
+  currentUserId: string | null
+): 'yes' | 'no' | 'pending' {
+  if (memberId === suggestion.owner.id) return 'yes';
+  if (memberId !== currentUserId) return 'pending';
+  if (suggestion.myAnswer === 'yes' || suggestion.myAnswer === 'no') {
+    return suggestion.myAnswer;
+  }
+  return 'pending';
+}
+
 export default function DayController() {
   const router = useRouter();
   const { id: groupId, date } = useLocalSearchParams<{ id: string; date: string }>();
   const requestIdRef = useRef(0);
   const [calendarDay, setCalendarDay] = useState<CalendarDay | null>(null);
   const [eventDetails, setEventDetails] = useState<EventDetailsResponse[]>([]);
+  const [suggestionDetails, setSuggestionDetails] = useState<ProposalDetailsResponse[]>([]);
   const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -83,6 +135,7 @@ export default function DayController() {
       if (!groupId || !year || !month || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         setCalendarDay(null);
         setEventDetails([]);
+        setSuggestionDetails([]);
         setError('Data inválida para carregar os detalhes do dia.');
         setIsLoading(false);
         return;
@@ -107,16 +160,19 @@ export default function DayController() {
         setGroupMembers(members);
         if (!selectedDay) {
           setEventDetails([]);
+          setSuggestionDetails([]);
           return;
         }
 
-        const details = await Promise.all(
-          getEventIds(selectedDay).map((eventId) => getEventDetails(eventId))
-        );
+        const [details, suggestions] = await Promise.all([
+          Promise.all(getEventIds(selectedDay).map((eventId) => getEventDetails(eventId))),
+          Promise.all((selectedDay.suggestionIds ?? []).map((id) => getProposalDetails(id))),
+        ]);
         if (requestIdRef.current !== requestId) {
           return;
         }
         setEventDetails(details);
+        setSuggestionDetails(suggestions);
       } catch (loadError: unknown) {
         if (requestIdRef.current !== requestId) {
           return;
@@ -167,6 +223,41 @@ export default function DayController() {
     }
   };
 
+  const handleSuggestionResponse = async (
+    proposalId: string,
+    answer: EventPresenceAnswer
+  ): Promise<void> => {
+    const suggestion = suggestionDetails.find((item) => item.id === proposalId);
+    if (!suggestion || !currentUserId) return;
+
+    const pendingKey = `suggestion-${proposalId}`;
+    setPendingEventId(pendingKey);
+    try {
+      const response = await respondToSuggestion(proposalId, answer, suggestion.myAnswer !== null);
+      if (response.matched) {
+        router.push({
+          pathname: '/group/[id]/match/[proposalId]',
+          params: { id: groupId, proposalId },
+        });
+        return;
+      }
+
+      const updatedSuggestion = await getProposalDetails(proposalId);
+      setSuggestionDetails((current) =>
+        current.map((item) => (item.id === proposalId ? updatedSuggestion : item))
+      );
+    } catch (responseError: unknown) {
+      console.error('Erro ao responder à sugestão', responseError);
+      Toast.show({
+        type: 'error',
+        text1: 'Erro',
+        text2: 'Não foi possível responder à sugestão. Tente novamente.',
+      });
+    } finally {
+      setPendingEventId(null);
+    }
+  };
+
   const items: GroupDayCarouselItem[] = calendarDay
     ? [
         ...calendarDay.scheduledEventIds.flatMap((eventId) => {
@@ -185,6 +276,11 @@ export default function DayController() {
             ? [mapEventToCarouselItem(event, 'proposal', currentUserId, groupMembers)]
             : [];
         }),
+        ...suggestionDetails
+          .filter((suggestion) => !suggestion.matched)
+          .map((suggestion) =>
+            mapSuggestionToCarouselItem(suggestion, currentUserId, groupMembers)
+          ),
       ]
     : [];
 
@@ -198,6 +294,7 @@ export default function DayController() {
       pendingEventId={pendingEventId}
       currentUserId={currentUserId}
       onPresenceResponse={handlePresenceResponse}
+      onSuggestionResponse={handleSuggestionResponse}
       onAvailabilityPress={() => {
         if (groupId) {
           router.push({

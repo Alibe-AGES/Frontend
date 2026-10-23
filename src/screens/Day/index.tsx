@@ -12,6 +12,7 @@ interface DayScreenProps {
   error: string | null;
   onAvailabilityPress: () => void;
   onPresenceResponse: (eventId: string, answer: EventPresenceAnswer) => Promise<void>;
+  onSuggestionResponse: (proposalId: string, answer: EventPresenceAnswer) => Promise<void>;
   pendingEventId: string | null;
   currentUserId?: string | null;
 }
@@ -24,6 +25,7 @@ export function DayScreen({
   error,
   onAvailabilityPress,
   onPresenceResponse,
+  onSuggestionResponse,
   pendingEventId,
   currentUserId,
 }: DayScreenProps) {
@@ -50,6 +52,7 @@ export function DayScreen({
           error={error}
           onAvailabilityPress={onAvailabilityPress}
           onPresenceResponse={onPresenceResponse}
+          onSuggestionResponse={onSuggestionResponse}
           pendingEventId={pendingEventId}
           currentUserId={currentUserId}
         />

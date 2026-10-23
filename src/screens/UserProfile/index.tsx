@@ -58,6 +58,46 @@ const ProfileMenuButton = ({
   </TouchableOpacity>
 );
 
+function ProfileHeading({
+  isLoading,
+  error,
+  name,
+}: {
+  isLoading: boolean;
+  error: Error | null;
+  name?: string;
+}) {
+  if (isLoading) {
+    return (
+      <ActivityIndicator
+        color={theme.colors.wine}
+        testID="user-profile-screen-loading"
+      />
+    );
+  }
+
+  if (error) {
+    return (
+      <Text
+        className="text-center font-poppins text-sm"
+        style={{ color: theme.colors.wine }}
+      >
+        Não foi possível carregar o perfil.
+      </Text>
+    );
+  }
+
+  return (
+    <Text
+      className="text-center font-poppins-semibold text-2xl"
+      style={{ color: theme.colors.wine }}
+      testID="user-profile-screen-name"
+    >
+      {name}
+    </Text>
+  );
+}
+
 export interface ProfileData {
   name: string;
   photoUri: string | null;
@@ -221,27 +261,11 @@ export const UserProfileScreen = ({
         </View>
 
         <View className="m-6">
-          {isLoading ? (
-            <ActivityIndicator
-              color={theme.colors.wine}
-              testID="user-profile-screen-loading"
-            />
-          ) : error ? (
-            <Text
-              className="text-center font-poppins text-sm"
-              style={{ color: theme.colors.wine }}
-            >
-              Não foi possível carregar o perfil.
-            </Text>
-          ) : (
-            <Text
-              className="text-center font-poppins-semibold text-2xl"
-              style={{ color: theme.colors.wine }}
-              testID="user-profile-screen-name"
-            >
-              {profile?.name}
-            </Text>
-          )}
+          <ProfileHeading
+            isLoading={isLoading}
+            error={error}
+            name={profile?.name}
+          />
           <Text
             className="text-center font-poppins text-sm"
             style={{ color: theme.colors.wine }}
