@@ -212,7 +212,7 @@ describe('GroupScreen', () => {
 
     await waitFor(() => {
       expect(mockDayMarks?.['2026-09-30']).toMatchObject({
-        status: 'matched',
+        status: 'suggested',
         eventIds: ['event-1', 'event-2'],
         proposalIds: ['proposal-1'],
         dot: 'pink',

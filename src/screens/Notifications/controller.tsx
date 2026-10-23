@@ -2,7 +2,7 @@ import type { AppNotification } from '@/components/NotificationCard';
 import { NotificationsScreen } from '@/screens/Notifications';
 import { getEventDetails } from '@/server/events';
 import { getGroup, type GroupDetails } from '@/server/groups';
-import { useRouter, type Href, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import {
   getGroupNotifications,
   markAllNotificationsAsRead,
@@ -135,7 +135,7 @@ export default function NotificationsController() {
           placeId: notification.locationId,
           isStoredLocation: 'true',
         },
-      } as unknown as Href);
+      });
       return;
     }
 

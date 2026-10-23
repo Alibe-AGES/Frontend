@@ -9,7 +9,7 @@ import { getGroup, getGroupMembers, GroupMember, GroupNextEvent } from '@/server
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import tw from 'twrnc';
@@ -196,9 +196,7 @@ export function GroupScreen() {
       return;
     }
 
-    router.push(
-      { pathname: '/group/[id]/notifications', params: { id: groupId } } as unknown as Href
-    );
+    router.push({ pathname: '/group/[id]/notifications', params: { id: groupId } });
   };
 
   const membersText = members.map((member) => member.name).join(', ');

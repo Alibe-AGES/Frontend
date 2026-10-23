@@ -1,4 +1,4 @@
-import { useRouter, type Href } from 'expo-router';
+import { useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import { useEffect, useRef } from 'react';
 
@@ -27,7 +27,7 @@ export function PushNotifications() {
       router.push({
         pathname: '/group/[id]/notifications',
         params: { id: groupId },
-      } as unknown as Href);
+      });
       Notifications.clearLastNotificationResponse();
     };
 
