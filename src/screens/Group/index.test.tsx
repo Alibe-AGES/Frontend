@@ -206,7 +206,6 @@ describe('GroupScreen', () => {
         date: '2026-10-06',
         scheduledEventIds: [],
         proposalIds: [],
-        suggestionIds: ['suggestion-1'],
         availableUserIds: [],
         completedEventIds: [],
         allUsersAvailable: false,
@@ -233,11 +232,6 @@ describe('GroupScreen', () => {
         dot: 'pink',
         availableUserCount: 1,
         allUsersAvailable: false,
-      });
-      expect(mockDayMarks?.['2026-10-06']).toMatchObject({
-        status: 'suggested',
-        suggestionIds: ['suggestion-1'],
-        dot: 'pink',
       });
       expect(mockDayMarks?.['2026-10-02']).toMatchObject({
         availableUserCount: 0,
@@ -268,34 +262,6 @@ describe('GroupScreen', () => {
     expect(push).toHaveBeenCalledWith({
       pathname: '/group/[id]/day/[date]',
       params: { id: 'group-1', date: '2026-10-12' },
-    });
-  });
-
-  test('opens day details for a suggestion-only calendar day', async () => {
-    mockGetGroupCalendar.mockResolvedValue([
-      {
-        date: '2026-10-23',
-        scheduledEventIds: [],
-        proposalIds: [],
-        suggestionIds: ['suggestion-1'],
-        availableUserIds: [],
-        completedEventIds: [],
-        allUsersAvailable: false,
-      },
-    ]);
-
-    await render(<GroupScreen />);
-    await waitFor(() => {
-      expect(mockDayMarks?.['2026-10-23']).toMatchObject({
-        status: 'suggested',
-        suggestionIds: ['suggestion-1'],
-      });
-    });
-    mockDayPress?.('2026-10-23');
-
-    expect(push).toHaveBeenCalledWith({
-      pathname: '/group/[id]/day/[date]',
-      params: { id: 'group-1', date: '2026-10-23' },
     });
   });
 

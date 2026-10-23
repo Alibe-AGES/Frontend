@@ -14,10 +14,9 @@ import {
 } from 'react-native';
 
 export interface GroupDayCarouselItem {
-  kind: 'event' | 'proposal' | 'locationSuggestion';
+  kind: 'event' | 'proposal';
   event: EventCardEvent;
   proposal?: {
-    proposalId?: string;
     ownerName: string;
     responses: {
       userId: string;
@@ -36,7 +35,6 @@ interface GroupDayCarouselProps {
   error: string | null;
   onAvailabilityPress: () => void;
   onPresenceResponse: (eventId: string, answer: EventPresenceAnswer) => Promise<void>;
-  onSuggestionResponse?: (proposalId: string, answer: EventPresenceAnswer) => Promise<void>;
   pendingEventId?: string | null;
   currentUserId?: string | null;
   testID?: string;
@@ -52,56 +50,38 @@ interface GroupDayCarouselPageProps {
   currentUserId: string | null;
   pendingEventId: string | null;
   onPresenceResponse: GroupDayCarouselProps['onPresenceResponse'];
-  onSuggestionResponse: GroupDayCarouselProps['onSuggestionResponse'];
 }
 
 function getItemTitle(kind: GroupDayCarouselItem['kind']): string {
-  switch (kind) {
-    case 'locationSuggestion':
-      return 'Sugestão de local';
-    case 'proposal':
-      return 'Proposta';
-    case 'event':
-      return 'Encontro';
-  }
+  return kind === 'proposal' ? 'Proposta' : 'Encontro';
 }
 
 function getResponseTargetId(item: GroupDayCarouselItem): string {
-  if (item.kind === 'locationSuggestion') {
-    return `suggestion-${item.proposal?.proposalId ?? item.event.id}`;
-  }
   return item.event.id;
 }
 
-function getYesResponseLabel(kind: GroupDayCarouselItem['kind'], isPending: boolean): string {
+function getYesResponseLabel(isPending: boolean): string {
   if (isPending) return 'Salvando...';
-  return kind === 'locationSuggestion' ? 'Concordo' : 'Confirmar!';
+  return 'Confirmar!';
 }
 
 function getYesAccessibilityLabel(kind: GroupDayCarouselItem['kind']): string {
-  return kind === 'locationSuggestion'
-    ? 'Aceitar sugestão de local'
-    : 'Confirmar presença no evento';
+  return kind === 'proposal' ? 'Confirmar presença na proposta' : 'Confirmar presença no evento';
 }
 
-function getNoResponseLabel(kind: GroupDayCarouselItem['kind']): string {
-  return kind === 'locationSuggestion' ? 'Discordo' : 'Não estarei disponível neste dia';
+function getNoResponseLabel(): string {
+  return 'Não estarei disponível neste dia';
 }
 
 function getNoAccessibilityLabel(kind: GroupDayCarouselItem['kind']): string {
-  return kind === 'locationSuggestion' ? 'Recusar sugestão de local' : 'Não participar do evento';
+  return kind === 'proposal' ? 'Não participar da proposta' : 'Não participar do evento';
 }
 
 function respondToItem(
   item: GroupDayCarouselItem,
   answer: EventPresenceAnswer,
-  onPresenceResponse: GroupDayCarouselProps['onPresenceResponse'],
-  onSuggestionResponse: GroupDayCarouselProps['onSuggestionResponse']
+  onPresenceResponse: GroupDayCarouselProps['onPresenceResponse']
 ): void {
-  if (item.kind === 'locationSuggestion') {
-    void onSuggestionResponse?.(item.proposal?.proposalId ?? item.event.id, answer);
-    return;
-  }
   void onPresenceResponse(item.event.id, answer);
 }
 
@@ -113,7 +93,6 @@ function GroupDayCarouselPage({
   currentUserId,
   pendingEventId,
   onPresenceResponse,
-  onSuggestionResponse,
 }: GroupDayCarouselPageProps) {
   return (
     <View
@@ -135,7 +114,6 @@ function GroupDayCarouselPage({
           currentUserId={currentUserId}
           pendingEventId={pendingEventId}
           onPresenceResponse={onPresenceResponse}
-          onSuggestionResponse={onSuggestionResponse}
           testID={testID}
         />
       ) : null}
@@ -149,7 +127,6 @@ interface ParticipantResponseSectionProps {
   currentUserId: string | null;
   pendingEventId: string | null;
   onPresenceResponse: GroupDayCarouselProps['onPresenceResponse'];
-  onSuggestionResponse: GroupDayCarouselProps['onSuggestionResponse'];
   testID: string;
 }
 
@@ -159,7 +136,6 @@ function ParticipantResponseSection({
   currentUserId,
   pendingEventId,
   onPresenceResponse,
-  onSuggestionResponse,
   testID,
 }: ParticipantResponseSectionProps) {
   const responseTargetId = getResponseTargetId(item);
@@ -194,12 +170,12 @@ function ParticipantResponseSection({
           className={buttonClassName}
           disabled={isPending}
           onPress={() => {
-            respondToItem(item, 'yes', onPresenceResponse, onSuggestionResponse);
+            respondToItem(item, 'yes', onPresenceResponse);
           }}
           testID={`${testID}-presence-yes-${responseTargetId}`}
         >
           <Text className="font-poppins text-base text-canvas">
-            {getYesResponseLabel(item.kind, isPending)}
+            {getYesResponseLabel(isPending)}
           </Text>
         </Pressable>
         <Pressable
@@ -212,13 +188,11 @@ function ParticipantResponseSection({
           className={buttonClassName}
           disabled={isPending}
           onPress={() => {
-            respondToItem(item, 'no', onPresenceResponse, onSuggestionResponse);
+            respondToItem(item, 'no', onPresenceResponse);
           }}
           testID={`${testID}-presence-no-${responseTargetId}`}
         >
-          <Text className="font-poppins text-base text-canvas">
-            {getNoResponseLabel(item.kind)}
-          </Text>
+          <Text className="font-poppins text-base text-canvas">{getNoResponseLabel()}</Text>
         </Pressable>
       </View>
     </View>
@@ -232,7 +206,6 @@ export function GroupDayCarousel({
   error,
   onAvailabilityPress,
   onPresenceResponse,
-  onSuggestionResponse,
   pendingEventId = null,
   currentUserId = null,
   testID = 'group-day-carousel',
@@ -353,7 +326,6 @@ export function GroupDayCarousel({
                 currentUserId={currentUserId}
                 pendingEventId={pendingEventId}
                 onPresenceResponse={onPresenceResponse}
-                onSuggestionResponse={onSuggestionResponse}
               />
             ))}
           </ScrollView>

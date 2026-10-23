@@ -96,14 +96,14 @@ describe('<CreateEventScreen />', () => {
     expect(onSelectDate).toHaveBeenCalledWith('2026-10-15');
   });
 
-  test('opens the date sheet automatically when launched from Experiences', async () => {
-    const { getByTestId } = await render(
+  test('does not show a date picker for location suggestions', async () => {
+    const { queryByTestId } = await render(
       <CreateEventScreen
         {...buildProps({ activeTab: 'suggestion', openDatePickerOnMount: true })}
       />
     );
 
-    expect(getByTestId('mock-date-picker-sheet')).toBeTruthy();
+    expect(queryByTestId('mock-date-picker-sheet')).toBeNull();
   });
 
   test('forwards draft edits to the controller', async () => {

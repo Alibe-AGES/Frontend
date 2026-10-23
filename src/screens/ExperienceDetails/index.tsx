@@ -48,7 +48,6 @@ export function ExperienceDetailsScreen({ groupId, placeId }: ExperienceDetailsS
         externalId: details.externalId,
         address: details.address ?? '',
         name: details.name,
-        openDatePicker: 'true',
       },
     });
   };

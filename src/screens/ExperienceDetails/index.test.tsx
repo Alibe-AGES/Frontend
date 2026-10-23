@@ -119,7 +119,6 @@ describe('<ExperienceDetailsScreen />', () => {
         externalId: 'cafe-1',
         address: 'Rua Padre Chagas, 320',
         name: 'Bloom Café',
-        openDatePicker: 'true',
       },
     });
   });

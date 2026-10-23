@@ -100,6 +100,7 @@ export function CreateEventScreen({
   onConfirm,
 }: CreateEventScreenProps) {
   const [isDateSheetVisible, setIsDateSheetVisible] = useState(false);
+  const shouldShowDateSheet = isDateSheetVisible && activeTab === 'event';
 
   useEffect(() => {
     if (openDatePickerOnMount) setIsDateSheetVisible(true);
@@ -156,7 +157,7 @@ export function CreateEventScreen({
         </View>
       ) : null}
 
-      {isDateSheetVisible ? (
+      {shouldShowDateSheet ? (
         <DatePickerSheet
           visible
           initialDate={draft.date || undefined}

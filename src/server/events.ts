@@ -111,7 +111,6 @@ export interface ProposalDetailsResponse {
   groupId: string;
   eventId: string | null;
   name: string | null;
-  date: string | null;
   createdAt: string;
   matchedAt: string | null;
   matched: boolean;
@@ -175,7 +174,6 @@ export interface CreateProposalInput {
   locationId?: string;
   externalId?: string;
   name: string;
-  date: string;
   address?: string;
   description?: string;
   phoneNumber?: string;
@@ -190,7 +188,6 @@ export interface CreatedProposal {
   type: 'suggestion';
   groupId: string;
   name: string | null;
-  date: string;
   createdAt: string;
   owner: {
     id: string;
@@ -213,6 +210,29 @@ export interface CreatedProposal {
   };
   myAnswer: 'yes';
   matched: boolean;
+}
+
+export interface ActiveProposal {
+  id: string;
+  type: 'suggestion';
+  groupId: string;
+  name: string | null;
+  createdAt: string;
+  owner: CreatedProposal['owner'];
+  location: CreatedProposal['location'] | null;
+  responses: { yes: number; no: number; pending: number };
+}
+
+export async function getActiveProposals(groupId: string): Promise<ActiveProposal[]> {
+  const response = await authenticatedFetch(`${API_BASE_URL}/api/groups/${groupId}/proposals`);
+  if (!response.ok) {
+    const text = await response.text();
+    throw new ApiError(
+      text || response.statusText || 'Não foi possível carregar as propostas',
+      response.status
+    );
+  }
+  return (await response.json()) as ActiveProposal[];
 }
 
 export async function createEvent(groupId: string, input: CreateEventInput): Promise<CreatedEvent> {
@@ -254,7 +274,6 @@ export async function createProposal(
     ...(input.locationId ? { locationId: input.locationId } : {}),
     ...(input.externalId ? { externalId: input.externalId } : {}),
     name: input.name.trim(),
-    date: input.date,
     ...(input.address?.trim() ? { address: input.address.trim() } : {}),
     ...(input.description?.trim() ? { description: input.description.trim() } : {}),
     ...(input.phoneNumber?.trim() ? { phoneNumber: input.phoneNumber.trim() } : {}),

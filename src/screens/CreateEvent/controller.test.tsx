@@ -251,7 +251,6 @@ describe('CreateEventController', () => {
 
     expect(mockCreateProposal).toHaveBeenCalledWith('group-1', {
       name: ' Bloom Café ',
-      date: '2026-10-15',
       address: 'Av. João Wallig, 1800',
       phoneNumber: undefined,
       website: undefined,
@@ -261,7 +260,7 @@ describe('CreateEventController', () => {
     });
     expect(mockCreateEvent).not.toHaveBeenCalled();
     expect(replace).toHaveBeenCalledWith({
-      pathname: '/group/[id]',
+      pathname: '/group/[id]/experiences/new',
       params: { id: 'group-1' },
     });
   });
@@ -295,7 +294,6 @@ describe('CreateEventController', () => {
     expect(mockCreateProposal).toHaveBeenCalledWith('group-1', {
       locationId: customLocationId,
       name: 'Bloom Café',
-      date: '2026-10-15',
       address: 'Rua Padre Chagas, 320 - Moinhos de Vento, Porto Alegre - RS',
       phoneNumber: undefined,
       website: undefined,
@@ -325,7 +323,6 @@ describe('CreateEventController', () => {
 
     expect(mockCreateProposal).toHaveBeenCalledWith('group-1', {
       name: ' Bloom Café ',
-      date: '2026-10-15',
       address: 'Av. João Wallig, 1800',
       phoneNumber: '(51) 3333-3333',
       website: 'www.coolturebr.net',
@@ -342,18 +339,12 @@ describe('CreateEventController', () => {
       externalId: 'google-place-1',
       address: 'Rua Padre Chagas, 320',
       name: 'Bloom Café',
-      openDatePicker: 'true',
     });
     await render(<CreateEventController />);
-    expect(mockScreenProps.openDatePickerOnMount).toBe(true);
-    await act(() => {
-      mockScreenProps.onSelectDate('2026-10-23');
-    });
     await fillDraft({
       ...mockScreenProps.draft,
       ...COMPLETE_DRAFT,
       name: 'Bloom Café',
-      date: '2026-10-23',
     });
 
     await act(() => {
@@ -365,16 +356,21 @@ describe('CreateEventController', () => {
       expect.objectContaining({
         externalId: 'google-place-1',
         name: 'Bloom Café',
-        date: '2026-10-23',
       })
     );
     expect(mockCreateEvent).not.toHaveBeenCalled();
   });
 
-  test('routes an immediately matched suggestion to its match schedule screen', async () => {
+  test('routes an immediately matched suggestion to event creation with its location prefilled', async () => {
     mockCreateProposal.mockResolvedValueOnce({
       id: 'proposal-match',
       matched: true,
+      location: {
+        id: 'location-1',
+        name: 'Bloom Café',
+        address: 'Rua Padre Chagas, 320',
+        description: null,
+      },
     } as Awaited<ReturnType<typeof createProposal>>);
     await render(<CreateEventController />);
     await act(() => {
@@ -387,8 +383,14 @@ describe('CreateEventController', () => {
     });
 
     expect(replace).toHaveBeenCalledWith({
-      pathname: '/group/[id]/match/[proposalId]',
-      params: { id: 'group-1', proposalId: 'proposal-match' },
+      pathname: '/group/[id]/create-event',
+      params: {
+        id: 'group-1',
+        matchedSuggestionId: 'proposal-match',
+        locationId: 'location-1',
+        name: 'Bloom Café',
+        address: 'Rua Padre Chagas, 320',
+      },
     });
     expect(mockCreateEvent).not.toHaveBeenCalled();
   });

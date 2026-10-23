@@ -25,7 +25,6 @@ function formatDate(date: Date): string {
 
 function getDayStatus(day: CalendarDay): DayMark['status'] | undefined {
   if (day.completedEventIds.length > 0) return 'realized';
-  if ((day.suggestionIds?.length ?? 0) > 0) return 'suggested';
   if (day.scheduledEventIds.length > 0) return 'matched';
   if (day.allUsersAvailable) return 'allAvailable';
   if (day.availableUserIds.length > 0) return 'available';
@@ -39,19 +38,12 @@ function buildDayMarks(days: CalendarDay[], today: string): Record<string, DayMa
     const status = getDayStatus(day);
 
     const eventIds = [...new Set([...day.scheduledEventIds, ...day.completedEventIds])];
-    if (
-      status !== undefined ||
-      eventIds.length > 0 ||
-      day.proposalIds.length > 0 ||
-      (day.suggestionIds?.length ?? 0) > 0
-    ) {
+    if (status !== undefined || eventIds.length > 0 || day.proposalIds.length > 0) {
       marks[day.date] = {
         status: status ?? 'normal',
-        dot:
-          day.proposalIds.length > 0 || (day.suggestionIds?.length ?? 0) > 0 ? 'pink' : undefined,
+        dot: day.proposalIds.length > 0 ? 'pink' : undefined,
         eventIds,
         proposalIds: day.proposalIds,
-        suggestionIds: day.suggestionIds ?? [],
         availableUserCount: day.availableUserIds.length,
         allUsersAvailable: day.allUsersAvailable,
       };
@@ -156,8 +148,7 @@ export function GroupScreen() {
       day &&
       (day.scheduledEventIds.length > 0 ||
         day.completedEventIds.length > 0 ||
-        day.proposalIds.length > 0 ||
-        (day.suggestionIds?.length ?? 0) > 0)
+        day.proposalIds.length > 0)
     ) {
       router.push({
         pathname: '/group/[id]/day/[date]',

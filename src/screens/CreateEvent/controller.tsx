@@ -33,7 +33,6 @@ function buildProposalInput(
     ...(externalId ? { externalId } : {}),
     name: draft.name,
     address: draft.address,
-    date: draft.date,
     phoneNumber: draft.phoneNumber,
     website: draft.website,
     openingHours: draft.openingHours
@@ -48,6 +47,7 @@ function buildProposalInput(
 function buildEventInput(
   draft: EventCardDraft,
   locationId: string | undefined,
+  matchedSuggestionId: string | undefined,
   image: SelectedPhoto | null
 ): CreateEventInput {
   let locationInput: Pick<CreateEventInput, 'location' | 'locationId'>;
@@ -61,6 +61,7 @@ function buildEventInput(
     date: draft.date,
     time: draft.time,
     ...locationInput,
+    ...(matchedSuggestionId ? { matchedSuggestionId } : {}),
     ...(!locationId && image ? { image } : {}),
   };
 }
@@ -75,7 +76,7 @@ export default function CreateEventController() {
     address: initialAddress,
     name: initialName,
     tab: initialTab,
-    openDatePicker: shouldOpenDatePicker,
+    matchedSuggestionId: initialMatchedSuggestionId,
   } = useLocalSearchParams<{
     id: string;
     date?: string;
@@ -84,7 +85,7 @@ export default function CreateEventController() {
     address?: string;
     name?: string;
     tab?: CreateEventTab;
-    openDatePicker?: string;
+    matchedSuggestionId?: string;
   }>();
 
   const validInitialDate = initialDate && isValidApiDate(initialDate) ? initialDate : '';
@@ -137,8 +138,7 @@ export default function CreateEventController() {
   const isDraftComplete =
     draft.name.trim().length > 0 &&
     hasLocation &&
-    isValidApiDate(draft.date) &&
-    (activeTab === 'suggestion' || isValidTime(draft.time));
+    (activeTab === 'suggestion' || (isValidApiDate(draft.date) && isValidTime(draft.time)));
 
   const handleConfirm = async () => {
     if (!groupId || !isDraftComplete || isSubmitting) {
@@ -156,20 +156,29 @@ export default function CreateEventController() {
 
         if (proposal.matched) {
           router.replace({
-            pathname: '/group/[id]/match/[proposalId]',
-            params: { id: groupId, proposalId: proposal.id },
+            pathname: '/group/[id]/create-event',
+            params: {
+              id: groupId,
+              matchedSuggestionId: proposal.id,
+              locationId: proposal.location.id,
+              name: proposal.name ?? proposal.location.name ?? '',
+              address: proposal.location.address ?? proposal.location.description ?? '',
+            },
           });
           return;
         }
 
         router.replace({
-          pathname: '/group/[id]',
+          pathname: '/group/[id]/experiences/new',
           params: { id: groupId },
         });
         return;
       }
 
-      const event = await createEvent(groupId, buildEventInput(draft, initialLocationId, photo));
+      const event = await createEvent(
+        groupId,
+        buildEventInput(draft, initialLocationId, initialMatchedSuggestionId, photo)
+      );
 
       router.replace({
         pathname: '/group/[id]/event-created',
@@ -196,7 +205,7 @@ export default function CreateEventController() {
   return (
     <CreateEventScreen
       groupId={groupId}
-      openDatePickerOnMount={shouldOpenDatePicker === 'true'}
+      openDatePickerOnMount={false}
       activeTab={activeTab}
       onSelectTab={setActiveTab}
       draft={draft}

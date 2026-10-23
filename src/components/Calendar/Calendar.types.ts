@@ -25,7 +25,6 @@ export interface DayMark {
   dot?: DayDot;
   eventIds?: string[];
   proposalIds?: string[];
-  suggestionIds?: string[];
   availableUserCount?: number;
   allUsersAvailable?: boolean;
 }

@@ -81,8 +81,7 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
     </Pressable>
   );
 
-  const dateContextLabel = isSuggestion ? 'da sugestão' : 'do evento';
-  const header = (
+  const header = isSuggestion ? null : (
     <View className="flex-row items-center justify-center gap-4">
       <View className="h-14 w-14 items-center justify-center rounded-full bg-pink">
         <Ionicons
@@ -93,17 +92,13 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
       </View>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={
-          draft.date
-            ? `Data ${dateContextLabel} ${draft.date}`
-            : `Escolher data ${dateContextLabel}`
-        }
+        accessibilityLabel={draft.date ? `Data do evento ${draft.date}` : 'Escolher data do evento'}
         className="min-w-28 items-center"
         onPress={onDatePress}
         testID={`${testID}-date-button`}
       >
         <Text className="text-center font-poppins text-3xl text-ink">
-          {draft.date ? `${draft.date.slice(8, 10)}/${draft.date.slice(5, 7)}` : '00/00'}
+          {draft.date ? `${draft.date.slice(8, 10)}/${draft.date.slice(5, 7)}` : 'Escolher dia'}
         </Text>
       </Pressable>
     </View>

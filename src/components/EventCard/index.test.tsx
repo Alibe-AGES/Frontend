@@ -136,7 +136,7 @@ describe('<EventCard mode="create" />', () => {
     expect(getByPlaceholderText('Definir nome do evento')).toBeTruthy();
     expect(getByPlaceholderText('Adicionar endereço')).toBeTruthy();
     expect(getByTestId('alibe-event-card-date-button')).toBeTruthy();
-    expect(getByText('00/00')).toBeTruthy();
+    expect(getByText('Escolher dia')).toBeTruthy();
     expect(getByPlaceholderText('Adicionar horário')).toBeTruthy();
     expect(getByText('Adicione uma imagem que representa seu evento')).toBeTruthy();
     expect(getByTestId('alibe-event-card-confirm')).toBeTruthy();
@@ -181,7 +181,7 @@ describe('<EventCard mode="create" />', () => {
     expect(getByPlaceholderText('Telefone')).toBeTruthy();
     expect(getByPlaceholderText('Horários de funcionamento')).toBeTruthy();
     expect(getByPlaceholderText('Site')).toBeTruthy();
-    expect(queryByTestId('alibe-event-card-date-button')).toBeTruthy();
+    expect(queryByTestId('alibe-event-card-date-button')).toBeNull();
     expect(queryByTestId('alibe-event-card-time-input')).toBeNull();
   });
 
