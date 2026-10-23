@@ -135,7 +135,7 @@ describe('NewExperienceController', () => {
     expect(replace).not.toHaveBeenCalled();
   });
 
-  test('routes the final yes directly to event creation with proposal location details', async () => {
+  test('routes the final yes to match confirmation with proposal location details', async () => {
     mockRespondToSuggestion.mockResolvedValueOnce({
       id: 'response-1',
       proposalId: 'proposal-1',
@@ -154,7 +154,7 @@ describe('NewExperienceController', () => {
     });
 
     expect(replace).toHaveBeenCalledWith({
-      pathname: '/group/[id]/create-event',
+      pathname: '/group/[id]/match',
       params: {
         id: 'group-1',
         matchedSuggestionId: 'proposal-1',

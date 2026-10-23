@@ -421,7 +421,7 @@ describe('CreateEventController', () => {
     expect(mockCreateEvent).not.toHaveBeenCalled();
   });
 
-  test('routes an immediately matched suggestion to event creation with its location prefilled', async () => {
+  test('routes an immediately matched suggestion to the match confirmation with location details', async () => {
     mockCreateProposal.mockResolvedValueOnce({
       id: 'proposal-match',
       matched: true,
@@ -443,7 +443,7 @@ describe('CreateEventController', () => {
     });
 
     expect(replace).toHaveBeenCalledWith({
-      pathname: '/group/[id]/create-event',
+      pathname: '/group/[id]/match',
       params: {
         id: 'group-1',
         matchedSuggestionId: 'proposal-match',

@@ -168,7 +168,7 @@ export default function CreateEventController() {
 
         if (proposal.matched) {
           router.replace({
-            pathname: '/group/[id]/create-event',
+            pathname: '/group/[id]/match',
             params: {
               id: groupId,
               matchedSuggestionId: proposal.id,

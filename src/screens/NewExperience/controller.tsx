@@ -47,7 +47,7 @@ export default function NewExperienceController() {
       const result = await respondToSuggestion(proposal.id, answer, false);
       if (result.matched && answer === 'yes' && proposal.location) {
         router.replace({
-          pathname: '/group/[id]/create-event',
+          pathname: '/group/[id]/match',
           params: {
             id: groupId,
             matchedSuggestionId: proposal.id,
