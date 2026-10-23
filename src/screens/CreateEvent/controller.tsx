@@ -2,7 +2,12 @@ import type { EventCardDraft } from '@/components/EventCard';
 import type { Participant } from '@/components/ParticipantAvatars';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
 import { CreateEventScreen, CreateEventTab } from '@/screens/CreateEvent';
-import { createEvent, createProposal } from '@/server/events';
+import {
+  createEvent,
+  createProposal,
+  type CreateEventInput,
+  type CreateProposalInput,
+} from '@/server/events';
 import { getGroup, getMe } from '@/server/groups';
 import { isValidApiDate } from '@/utils/date';
 import { isValidTime } from '@/utils/time';
@@ -12,37 +17,64 @@ import Toast from 'react-native-toast-message';
 
 const EMPTY_DRAFT: EventCardDraft = { name: '', imageUri: null, address: '', date: '', time: '' };
 
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+function parsePrice(value?: string): number | undefined {
+  if (!value?.trim()) return undefined;
+  const price = Number(value.replace(',', '.'));
+  return Number.isFinite(price) ? price : undefined;
+}
 
-export const DEFAULT_SUGGESTION_LOCATION_ID = '8f41f052-8ea3-426d-92b9-2789cf82eb70';
+function buildProposalInput(
+  draft: EventCardDraft,
+  locationId?: string,
+  externalId?: string
+): CreateProposalInput {
+  const details = {
+    ...(draft.phoneNumber?.trim() ? { phoneNumber: draft.phoneNumber.trim() } : {}),
+    ...(draft.website?.trim() ? { website: draft.website.trim() } : {}),
+    ...(draft.openingHours?.trim()
+      ? {
+          openingHours: draft.openingHours
+            .split('\n')
+            .map((line) => line.trim())
+            .filter(Boolean),
+        }
+      : {}),
+    ...(parsePrice(draft.priceStart) !== undefined
+      ? { priceStart: parsePrice(draft.priceStart) }
+      : {}),
+    ...(parsePrice(draft.priceEnd) !== undefined ? { priceEnd: parsePrice(draft.priceEnd) } : {}),
+  };
+  const description = Object.keys(details).length > 0 ? JSON.stringify(details) : undefined;
 
-const SEEDED_LOCATION_BY_ADDRESS: Record<string, string | undefined> = {
-  'rua padre chagas, 320 - moinhos de vento, porto alegre - rs':
-    'cc33027e-cfb6-4611-b104-158ba673d98d',
-  'avenida diário de notícias, 300 - cristal, porto alegre - rs':
-    '12839493-d165-4e3d-b666-c891ec5f15ff',
-  'avenida borges de medeiros, 2035 - praia de belas, porto alegre - rs':
-    'ddc997a7-876c-4b52-bdf8-02880d46111f',
-  'rua fictícia, 100 - porto alegre - rs': 'ca36e694-510f-446a-887d-fdbe586f79e9',
-  'rua dinarte ribeiro, 150 - moinhos de vento, porto alegre - rs':
-    'b7093d0c-fb50-40d0-925a-fd8533bafdfc',
-  'avenida ipiranga, 5200 - jardim botânico, porto alegre - rs':
-    '27ebd8d1-d4b6-4eee-b679-1101e2d59b19',
-  'endereço definido posteriormente': DEFAULT_SUGGESTION_LOCATION_ID,
-};
+  return {
+    ...(locationId ? { locationId } : {}),
+    ...(externalId ? { externalId } : {}),
+    name: draft.name.trim(),
+    address: draft.address.trim(),
+    ...(description ? { description } : {}),
+  };
+}
 
-function resolveSuggestionLocationId(address: string, locationIdParam?: string): string {
-  if (locationIdParam && UUID_REGEX.test(locationIdParam.trim())) {
-    return locationIdParam.trim();
+function buildEventInput(
+  draft: EventCardDraft,
+  locationId: string | undefined,
+  matchedSuggestionId: string | undefined,
+  image: SelectedPhoto | null
+): CreateEventInput {
+  let locationInput: Pick<CreateEventInput, 'location' | 'locationId'>;
+  if (locationId) {
+    locationInput = { locationId };
+  } else {
+    locationInput = { location: draft.address };
   }
-
-  const trimmedAddress = address.trim();
-  if (UUID_REGEX.test(trimmedAddress)) {
-    return trimmedAddress;
-  }
-
-  const matchedLocationId = SEEDED_LOCATION_BY_ADDRESS[trimmedAddress.toLowerCase()];
-  return matchedLocationId ?? DEFAULT_SUGGESTION_LOCATION_ID;
+  return {
+    name: draft.name,
+    date: draft.date,
+    time: draft.time,
+    ...locationInput,
+    ...(matchedSuggestionId ? { matchedSuggestionId } : {}),
+    ...(!locationId && image ? { image } : {}),
+  };
 }
 
 export default function CreateEventController() {
@@ -51,23 +83,29 @@ export default function CreateEventController() {
     id: groupId,
     date: initialDate,
     locationId: initialLocationId,
+    externalId: initialExternalId,
     address: initialAddress,
+    name: initialName,
     tab: initialTab,
+    matchedSuggestionId: initialMatchedSuggestionId,
   } = useLocalSearchParams<{
     id: string;
     date?: string;
     locationId?: string;
+    externalId?: string;
     address?: string;
+    name?: string;
     tab?: CreateEventTab;
+    matchedSuggestionId?: string;
   }>();
 
   const validInitialDate = initialDate && isValidApiDate(initialDate) ? initialDate : '';
-  const initialActiveTab: CreateEventTab =
-    initialTab === 'suggestion' || Boolean(initialLocationId) ? 'suggestion' : 'event';
+  const initialActiveTab: CreateEventTab = initialTab === 'suggestion' ? 'suggestion' : 'event';
 
   const [activeTab, setActiveTab] = useState<CreateEventTab>(initialActiveTab);
   const [draft, setDraft] = useState<EventCardDraft>({
     ...EMPTY_DRAFT,
+    name: initialName?.trim() ?? '',
     address: initialAddress?.trim() ?? '',
     date: validInitialDate,
   });
@@ -103,11 +141,16 @@ export default function CreateEventController() {
       });
   }, [groupId]);
 
+  const hasLocation = Boolean(
+    initialLocationId ??
+    initialExternalId ??
+    (draft.address.trim().length > 0 ? 'manual' : undefined)
+  );
   const isDraftComplete =
     draft.name.trim().length > 0 &&
-    draft.address.trim().length > 0 &&
-    isValidApiDate(draft.date) &&
-    isValidTime(draft.time);
+    (activeTab === 'suggestion'
+      ? draft.address.trim().length > 0
+      : hasLocation && isValidApiDate(draft.date) && isValidTime(draft.time));
 
   const handleConfirm = async () => {
     if (!groupId || !isDraftComplete || isSubmitting) {
@@ -118,27 +161,36 @@ export default function CreateEventController() {
 
     try {
       if (activeTab === 'suggestion') {
-        const proposal = await createProposal(groupId, {
-          locationId: resolveSuggestionLocationId(draft.address, initialLocationId),
-          name: draft.name,
-          date: draft.date,
-          time: draft.time,
-        });
+        const proposal = await createProposal(
+          groupId,
+          buildProposalInput(draft, initialLocationId, initialExternalId)
+        );
+
+        if (proposal.matched) {
+          router.replace({
+            pathname: '/group/[id]/create-event',
+            params: {
+              id: groupId,
+              matchedSuggestionId: proposal.id,
+              locationId: proposal.location.id,
+              name: proposal.name ?? proposal.location.name ?? '',
+              address: proposal.location.address ?? proposal.location.description ?? '',
+            },
+          });
+          return;
+        }
 
         router.replace({
-          pathname: '/group/[id]/event-created',
-          params: { id: groupId, eventId: proposal.event.id },
+          pathname: '/group/[id]/experiences/new',
+          params: { id: groupId },
         });
         return;
       }
 
-      const event = await createEvent(groupId, {
-        name: draft.name,
-        date: draft.date,
-        time: draft.time,
-        location: draft.address,
-        image: photo,
-      });
+      const event = await createEvent(
+        groupId,
+        buildEventInput(draft, initialLocationId, initialMatchedSuggestionId, photo)
+      );
 
       router.replace({
         pathname: '/group/[id]/event-created',
@@ -165,6 +217,7 @@ export default function CreateEventController() {
   return (
     <CreateEventScreen
       groupId={groupId}
+      openDatePickerOnMount={false}
       activeTab={activeTab}
       onSelectTab={setActiveTab}
       draft={draft}

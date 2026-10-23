@@ -28,13 +28,16 @@ const details: PlaceDetails = {
 describe('<ExperienceDetailsScreen />', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (useRouter as jest.Mock).mockReturnValue({ back: jest.fn() });
+    (useRouter as jest.Mock).mockReturnValue({ back: jest.fn(), push: jest.fn() });
     jest.mocked(getPlaceDetails).mockResolvedValue(details);
   });
 
   test('shows the Google photo and defaults for missing location data', async () => {
     const { findByText, getAllByText, getByTestId } = await render(
-      <ExperienceDetailsScreen placeId="cafe-1" />
+      <ExperienceDetailsScreen
+        groupId="group-1"
+        placeId="cafe-1"
+      />
     );
 
     expect(await findByText('Bloom Café')).toBeTruthy();
@@ -51,8 +54,13 @@ describe('<ExperienceDetailsScreen />', () => {
 
   test('returns to the previous screen', async () => {
     const back = jest.fn();
-    (useRouter as jest.Mock).mockReturnValue({ back });
-    const { getByTestId } = await render(<ExperienceDetailsScreen placeId="cafe-1" />);
+    (useRouter as jest.Mock).mockReturnValue({ back, push: jest.fn() });
+    const { getByTestId } = await render(
+      <ExperienceDetailsScreen
+        groupId="group-1"
+        placeId="cafe-1"
+      />
+    );
 
     await fireEvent.press(getByTestId('experience-details-back'));
     expect(back).toHaveBeenCalled();
@@ -71,7 +79,10 @@ describe('<ExperienceDetailsScreen />', () => {
     });
 
     const { findByText, getByTestId, queryByTestId } = await render(
-      <ExperienceDetailsScreen placeId="cafe-1" />
+      <ExperienceDetailsScreen
+        groupId="group-1"
+        placeId="cafe-1"
+      />
     );
 
     expect(await findByText('Rua das Flores, 10')).toBeTruthy();
@@ -85,6 +96,33 @@ describe('<ExperienceDetailsScreen />', () => {
     expect(queryByTestId('experience-details-image')).toBeNull();
   });
 
+  test('starts a location suggestion with the selected Google place', async () => {
+    const push = jest.fn();
+    (useRouter as jest.Mock).mockReturnValue({ back: jest.fn(), push });
+    jest.mocked(getPlaceDetails).mockResolvedValueOnce({
+      ...details,
+      address: 'Rua Padre Chagas, 320',
+    });
+    const { findByTestId } = await render(
+      <ExperienceDetailsScreen
+        groupId="group-1"
+        placeId="cafe-1"
+      />
+    );
+
+    await fireEvent.press(await findByTestId('experience-suggest-location'));
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/group/[id]/create-event',
+      params: {
+        id: 'group-1',
+        tab: 'suggestion',
+        externalId: 'cafe-1',
+        address: 'Rua Padre Chagas, 320',
+        name: 'Bloom Café',
+      },
+    });
+  });
+
   test('shows a loading state while details are pending', async () => {
     let resolveDetails!: (value: PlaceDetails) => void;
     jest.mocked(getPlaceDetails).mockReturnValueOnce(
@@ -94,7 +132,10 @@ describe('<ExperienceDetailsScreen />', () => {
     );
 
     const { findByText, getByTestId } = await render(
-      <ExperienceDetailsScreen placeId="slow-place" />
+      <ExperienceDetailsScreen
+        groupId="group-1"
+        placeId="slow-place"
+      />
     );
 
     expect(getByTestId('experience-details-loading')).toBeTruthy();
@@ -109,7 +150,10 @@ describe('<ExperienceDetailsScreen />', () => {
     });
 
     const { findByText, getAllByText } = await render(
-      <ExperienceDetailsScreen placeId="empty-price-place" />
+      <ExperienceDetailsScreen
+        groupId="group-1"
+        placeId="empty-price-place"
+      />
     );
 
     expect(await findByText('Bloom Café')).toBeTruthy();
@@ -119,10 +163,13 @@ describe('<ExperienceDetailsScreen />', () => {
   test('shows the failure state when place details cannot be loaded', async () => {
     jest.mocked(getPlaceDetails).mockRejectedValueOnce(new Error('network error'));
     const back = jest.fn();
-    (useRouter as jest.Mock).mockReturnValue({ back });
+    (useRouter as jest.Mock).mockReturnValue({ back, push: jest.fn() });
 
     const { findByText, getByTestId } = await render(
-      <ExperienceDetailsScreen placeId="unavailable-place" />
+      <ExperienceDetailsScreen
+        groupId="group-1"
+        placeId="unavailable-place"
+      />
     );
 
     expect(await findByText('Não foi possível carregar as informações deste local.')).toBeTruthy();

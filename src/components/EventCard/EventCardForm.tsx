@@ -81,7 +81,7 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
     </Pressable>
   );
 
-  const header = (
+  const header = isSuggestion ? null : (
     <View className="flex-row items-center justify-center gap-4">
       <View className="h-14 w-14 items-center justify-center rounded-full bg-pink">
         <Ionicons
@@ -98,7 +98,7 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
         testID={`${testID}-date-button`}
       >
         <Text className="text-center font-poppins text-3xl text-ink">
-          {draft.date ? `${draft.date.slice(8, 10)}/${draft.date.slice(5, 7)}` : '00/00'}
+          {draft.date ? `${draft.date.slice(8, 10)}/${draft.date.slice(5, 7)}` : 'Escolher dia'}
         </Text>
       </Pressable>
     </View>
@@ -157,17 +157,78 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
         testID={`${testID}-address-input`}
       />
 
-      <PillInput
-        icon="time-outline"
-        value={draft.time}
-        placeholder="Adicionar horário"
-        onChangeText={(time) => {
-          updateDraft({ time: maskTime(time) });
-        }}
-        keyboardType="number-pad"
-        maxLength={TIME_LENGTH}
-        testID={`${testID}-time-input`}
-      />
+      {isSuggestion ? (
+        <>
+          <View className="flex-row gap-3">
+            <View className="flex-1">
+              <PillInput
+                icon="cash-outline"
+                value={draft.priceStart ?? ''}
+                placeholder="Preço mínimo (R$)"
+                onChangeText={(priceStart) => {
+                  updateDraft({ priceStart });
+                }}
+                keyboardType="decimal-pad"
+                testID={`${testID}-price-start-input`}
+              />
+            </View>
+            <View className="flex-1">
+              <PillInput
+                icon="cash-outline"
+                value={draft.priceEnd ?? ''}
+                placeholder="Preço máximo (R$)"
+                onChangeText={(priceEnd) => {
+                  updateDraft({ priceEnd });
+                }}
+                keyboardType="decimal-pad"
+                testID={`${testID}-price-end-input`}
+              />
+            </View>
+          </View>
+          <PillInput
+            icon="call-outline"
+            value={draft.phoneNumber ?? ''}
+            placeholder="Telefone"
+            onChangeText={(phoneNumber) => {
+              updateDraft({ phoneNumber });
+            }}
+            keyboardType="phone-pad"
+            testID={`${testID}-phone-input`}
+          />
+          <PillInput
+            icon="time-outline"
+            value={draft.openingHours ?? ''}
+            placeholder="Horários de funcionamento"
+            onChangeText={(openingHours) => {
+              updateDraft({ openingHours });
+            }}
+            multiline
+            testID={`${testID}-opening-hours-input`}
+          />
+          <PillInput
+            icon="globe-outline"
+            value={draft.website ?? ''}
+            placeholder="Site"
+            onChangeText={(website) => {
+              updateDraft({ website });
+            }}
+            keyboardType="url"
+            testID={`${testID}-website-input`}
+          />
+        </>
+      ) : (
+        <PillInput
+          icon="time-outline"
+          value={draft.time}
+          placeholder="Adicionar horário"
+          onChangeText={(time) => {
+            updateDraft({ time: maskTime(time) });
+          }}
+          keyboardType="number-pad"
+          maxLength={TIME_LENGTH}
+          testID={`${testID}-time-input`}
+        />
+      )}
     </EventCardFrame>
   );
 };

@@ -74,6 +74,8 @@ describe('<CreateEventScreen />', () => {
       <CreateEventScreen {...buildProps()} />
     );
 
+    expect(getByTestId('create-event-tabs-header')).toBeTruthy();
+    expect(getByTestId('create-event-form-scroll')).toBeTruthy();
     expect(getByText('Evento')).toBeTruthy();
     expect(getByText('Sugestão')).toBeTruthy();
     expect(getByPlaceholderText('Definir nome do evento')).toBeTruthy();
@@ -94,6 +96,16 @@ describe('<CreateEventScreen />', () => {
     await fireEvent.press(getByTestId('mock-date-picker-sheet'));
 
     expect(onSelectDate).toHaveBeenCalledWith('2026-10-15');
+  });
+
+  test('does not show a date picker for location suggestions', async () => {
+    const { queryByTestId } = await render(
+      <CreateEventScreen
+        {...buildProps({ activeTab: 'suggestion', openDatePickerOnMount: true })}
+      />
+    );
+
+    expect(queryByTestId('mock-date-picker-sheet')).toBeNull();
   });
 
   test('forwards draft edits to the controller', async () => {

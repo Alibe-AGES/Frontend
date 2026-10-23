@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '@/constants';
 import { signOut } from '@/server/auth';
 import { useAuth } from '@/server/mock/useAuth';
 import { getUserProfile as getMockUserProfile } from '@/server/mock/userProfile';
@@ -38,7 +39,7 @@ export default function UserProfileController() {
 
         setProfile({
           name: apiData.name,
-          photoUri: apiData.image,
+          photoUri: apiData.profilePic ? `${API_BASE_URL}${apiData.profilePic}` : null,
           created_at: new Date(apiData.createdAt).toLocaleDateString('pt-BR', {
             month: 'long',
             year: 'numeric',

@@ -2,7 +2,13 @@ import { API_BASE_URL } from '@/constants';
 import { File } from 'expo-file-system';
 import { ApiError } from './api';
 import { authenticatedFetch } from './auth';
-import { createEvent, createProposal, getEventDetails, respondToEventProposal } from './events';
+import {
+  createEvent,
+  createProposal,
+  getActiveProposals,
+  getEventDetails,
+  respondToEventProposal,
+} from './events';
 
 jest.mock('./auth', () => ({
   authenticatedFetch: jest.fn((url: string, options?: RequestInit) => fetch(url, options)),
@@ -34,28 +40,31 @@ const CREATED_EVENT = {
 
 const CREATED_PROPOSAL = {
   id: 'proposal-1',
+  type: 'suggestion' as const,
+  groupId: 'group-1',
+  name: 'Café de sábado',
   createdAt: '2026-10-09T17:00:00.000Z',
   owner: {
     id: 'user-1',
     name: 'Ana Beatriz Silva',
     image: '/users/user-1/profile-picture',
   },
-  event: {
-    id: 'event-1',
-    name: 'Café de sábado',
-    date: '2026-10-17',
-    time: '15:00',
-    budgetStart: '30.00',
-    budgetEnd: '60.00',
-    status: 'pending' as const,
-    groupId: 'group-1',
-  },
   location: {
     id: '44444444-4444-4444-8444-444444444444',
+    externalId: null,
+    name: 'Café de sábado',
     description: 'Café tranquilo',
     address: 'Rua Padre Chagas, 320',
+    openingHours: ['Sexta: 18:00-00:00'],
+    rating: null,
+    phoneNumber: '(51) 3333-3333',
+    website: 'https://cafe.example',
+    priceRange: { start: '30.00', end: '60.00', currencyCode: 'BRL' },
+    imageUrl: null,
+    manuallyCreated: true,
   },
   myAnswer: 'yes' as const,
+  matched: false,
 };
 
 const INPUT = {
@@ -68,8 +77,14 @@ const INPUT = {
 const PROPOSAL_INPUT = {
   locationId: '44444444-4444-4444-8444-444444444444',
   name: '  Café de sábado  ',
-  date: '2026-10-17',
-  time: '15:00',
+  address: ' Rua Padre Chagas, 320 ',
+  description: JSON.stringify({
+    phoneNumber: '(51) 3333-3333',
+    website: 'https://cafe.example',
+    openingHours: ['Sexta: 18:00-00:00'],
+    priceStart: 30,
+    priceEnd: 60,
+  }),
 };
 
 describe('getEventDetails', () => {
@@ -199,6 +214,25 @@ describe('createEvent', () => {
     expect(append).toHaveBeenCalledWith('image', expect.any(File));
   });
 
+  test('includes the matched suggestion id when converting a match into an event', async () => {
+    const append = jest.spyOn(FormData.prototype, 'append');
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(CREATED_EVENT),
+    });
+
+    await createEvent('group-1', {
+      name: 'Bloom Café',
+      date: '2026-10-25',
+      time: '19:30',
+      locationId: 'location-1',
+      matchedSuggestionId: 'proposal-1',
+    });
+
+    expect(append).toHaveBeenCalledWith('locationId', 'location-1');
+    expect(append).toHaveBeenCalledWith('matchedSuggestionId', 'proposal-1');
+  });
+
   test('throws an ApiError with the backend message when creation fails', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: false,
@@ -247,8 +281,6 @@ describe('createProposal', () => {
     await expect(
       createProposal('group-1', {
         ...PROPOSAL_INPUT,
-        budgetStart: '30.00',
-        budgetEnd: '60.00',
       })
     ).resolves.toEqual(CREATED_PROPOSAL);
 
@@ -260,10 +292,14 @@ describe('createProposal', () => {
         body: JSON.stringify({
           locationId: '44444444-4444-4444-8444-444444444444',
           name: 'Café de sábado',
-          date: '2026-10-17',
-          time: '15:00',
-          budgetStart: '30.00',
-          budgetEnd: '60.00',
+          address: 'Rua Padre Chagas, 320',
+          description: JSON.stringify({
+            phoneNumber: '(51) 3333-3333',
+            website: 'https://cafe.example',
+            openingHours: ['Sexta: 18:00-00:00'],
+            priceStart: 30,
+            priceEnd: 60,
+          }),
         }),
       }
     );
@@ -297,6 +333,39 @@ describe('createProposal', () => {
     await expect(createProposal('group-1', PROPOSAL_INPUT)).rejects.toMatchObject({
       message: 'Não foi possível criar a sugestão',
       status: 500,
+    });
+  });
+});
+
+describe('getActiveProposals', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.clearAllMocks();
+  });
+
+  test('loads active location proposals for the group', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve([CREATED_PROPOSAL]),
+    });
+
+    await expect(getActiveProposals('group-1')).resolves.toEqual([CREATED_PROPOSAL]);
+    expect(mockAuthenticatedFetch).toHaveBeenCalledWith(
+      `${API_BASE_URL}/api/groups/group-1/proposals`
+    );
+  });
+
+  test('surfaces active proposal loading failures', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 403,
+      statusText: 'Forbidden',
+      text: () => Promise.resolve('O usuário não pertence ao grupo'),
+    });
+
+    await expect(getActiveProposals('group-1')).rejects.toMatchObject({
+      status: 403,
+      message: 'O usuário não pertence ao grupo',
     });
   });
 });

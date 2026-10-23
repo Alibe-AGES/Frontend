@@ -4,7 +4,7 @@ import { EventCard, EventCardDraft } from '@/components/EventCard';
 import { NavigationBar } from '@/components/NavigationBar';
 import { Participant, ParticipantAvatars } from '@/components/ParticipantAvatars';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
 
@@ -12,6 +12,7 @@ export type CreateEventTab = 'event' | 'suggestion';
 
 export interface CreateEventScreenProps {
   groupId?: string;
+  openDatePickerOnMount?: boolean;
   activeTab?: CreateEventTab;
   onSelectTab?: (tab: CreateEventTab) => void;
   draft: EventCardDraft;
@@ -84,6 +85,7 @@ function EventTypeTabs({
 
 export function CreateEventScreen({
   groupId,
+  openDatePickerOnMount = false,
   activeTab = 'event',
   onSelectTab,
   draft,
@@ -98,26 +100,34 @@ export function CreateEventScreen({
   onConfirm,
 }: CreateEventScreenProps) {
   const [isDateSheetVisible, setIsDateSheetVisible] = useState(false);
+  const shouldShowDateSheet = isDateSheetVisible && activeTab === 'event';
+
+  useEffect(() => {
+    if (openDatePickerOnMount) setIsDateSheetVisible(true);
+  }, [openDatePickerOnMount]);
 
   return (
     <View className="flex-1 bg-canvas">
+      <View
+        className="flex-row items-center gap-4 px-6 pb-3 pt-16"
+        testID="create-event-tabs-header"
+      >
+        <BackButton
+          fallbackHref={groupId ? `/group/${groupId}` : '/groups'}
+          accessibilityLabel="Voltar para o grupo"
+        />
+        <EventTypeTabs
+          activeTab={activeTab}
+          onSelectTab={onSelectTab}
+        />
+      </View>
+
       <KeyboardAvoidingScrollView
         className="flex-1"
-        contentContainerClassName="gap-4 px-6 pb-36 pt-16"
+        contentContainerClassName="gap-4 px-6 pb-36 pt-2"
         keyboardShouldPersistTaps="handled"
-        testID="create-event-screen"
+        testID="create-event-form-scroll"
       >
-        <View className="flex-row items-center gap-4">
-          <BackButton
-            fallbackHref={groupId ? `/group/${groupId}` : '/groups'}
-            accessibilityLabel="Voltar para o grupo"
-          />
-          <EventTypeTabs
-            activeTab={activeTab}
-            onSelectTab={onSelectTab}
-          />
-        </View>
-
         <EventCard
           mode="create"
           variant={activeTab}
@@ -150,7 +160,7 @@ export function CreateEventScreen({
         </View>
       ) : null}
 
-      {isDateSheetVisible ? (
+      {shouldShowDateSheet ? (
         <DatePickerSheet
           visible
           initialDate={draft.date || undefined}

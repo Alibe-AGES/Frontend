@@ -4,7 +4,7 @@ import { NextEventBanner } from './index';
 
 describe('NextEventBanner', () => {
   test('renders the next event date and name', async () => {
-    const timeslot = new Date(2026, 4, 22, 16, 0).toISOString();
+    const timeslot = '2026-05-22T16:00:00.000Z';
     const { getByText } = await render(<NextEventBanner event={{ name: 'Cinema', timeslot }} />);
 
     expect(getByText('• Sexta-feira, 22 de maio, às 16h')).toBeTruthy();
@@ -19,7 +19,7 @@ describe('NextEventBanner', () => {
   });
 
   test('includes minutes when the event is not on the hour', () => {
-    expect(formatNextEventDate(new Date(2026, 4, 22, 16, 30).toISOString())).toBe(
+    expect(formatNextEventDate('2026-05-22T16:30:00.000Z')).toBe(
       'Sexta-feira, 22 de maio, às 16h30'
     );
   });

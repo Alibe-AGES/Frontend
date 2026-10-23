@@ -3,7 +3,12 @@ import { useLocalSearchParams } from 'expo-router';
 import { ExperienceDetailsScreen } from '.';
 
 export default function ExperienceDetailsController() {
-  const { placeId } = useLocalSearchParams<{ placeId: string }>();
+  const { id: groupId, placeId } = useLocalSearchParams<{ id: string; placeId: string }>();
 
-  return <ExperienceDetailsScreen placeId={placeId} />;
+  return (
+    <ExperienceDetailsScreen
+      groupId={groupId}
+      placeId={placeId}
+    />
+  );
 }
