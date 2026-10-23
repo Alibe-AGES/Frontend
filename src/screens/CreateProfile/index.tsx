@@ -73,7 +73,6 @@ export function CreateProfileScreen({
       <View className="mt-20 flex-1 rounded-t-3xl bg-pink/70 px-6 pb-28 pt-10">
         <PhotoPicker
           placeholder="camera"
-          imageClassName="h-44 w-44"
           onUploadSuccess={setPhoto}
           disabled={isSubmitting}
           testID="create-profile-photo"

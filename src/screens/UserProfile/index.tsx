@@ -246,7 +246,7 @@ export const UserProfileScreen = ({
     <View className="flex-1 bg-canvas">
       <ScrollView
         className="flex-1"
-        contentContainerClassName="gap-6 px-6 pb-32 pt-16"
+        contentContainerClassName={`gap-6 px-6 pt-16 ${groupId ? 'pb-32' : 'pb-12'}`}
         testID="user-profile-screen"
       >
         <BackButton color={theme.colors.black} />
@@ -494,12 +494,14 @@ export const UserProfileScreen = ({
         <Toast />
       </Modal>
 
-      <View
-        className="absolute inset-x-0 bottom-0"
-        style={{ paddingBottom: insets.bottom }}
-      >
-        <NavigationBar groupId={groupId ?? ''} />
-      </View>
+      {groupId ? (
+        <View
+          className="absolute inset-x-0 bottom-0"
+          style={{ paddingBottom: insets.bottom }}
+        >
+          <NavigationBar groupId={groupId} />
+        </View>
+      ) : null}
     </View>
   );
 };

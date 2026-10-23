@@ -69,7 +69,7 @@ export const PhotoPicker: FC<PhotoPickerProps> = ({
           <Avatar
             photoUri={photoUri}
             accessibilityLabel="Foto selecionada"
-            imageClassName={`h-36 w-36 rounded-full ${imageClassName}`}
+            imageClassName={`h-full w-full rounded-full ${imageClassName}`}
             iconSize={80}
             fallbackIconName={currentPlaceholder.name}
             fallbackIconColor={currentPlaceholder.color}

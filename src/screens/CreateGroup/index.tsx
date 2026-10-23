@@ -83,7 +83,6 @@ export function CreateGroupScreen() {
 
       <View className="mt-20 flex-1 rounded-t-3xl bg-lime-soft px-6 pb-28 pt-16">
         <PhotoPicker
-          imageClassName="h-44 w-44"
           onUploadSuccess={(photo) => {
             setGroupPhoto(photo);
           }}

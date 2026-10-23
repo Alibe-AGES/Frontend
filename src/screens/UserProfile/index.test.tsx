@@ -61,6 +61,23 @@ describe('UserProfileScreen', () => {
     jest.clearAllMocks();
   });
 
+  test('renders the navigation bar when opened from inside a group', async () => {
+    const { getByTestId } = await render(<UserProfileScreen {...defaultProps} />);
+
+    expect(getByTestId('mock-navigation-bar')).toBeTruthy();
+  });
+
+  test('hides the navigation bar when there is no group context', async () => {
+    const { queryByTestId } = await render(
+      <UserProfileScreen
+        {...defaultProps}
+        groupId={undefined}
+      />
+    );
+
+    expect(queryByTestId('mock-navigation-bar')).toBeNull();
+  });
+
   test('renders error state', async () => {
     const errorProps: UserProfileScreenProps = {
       ...defaultProps,
