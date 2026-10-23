@@ -8,6 +8,7 @@ import {
   getActiveProposals,
   getEventDetails,
   respondToEventProposal,
+  respondToSuggestion,
 } from './events';
 
 jest.mock('./auth', () => ({
@@ -118,6 +119,38 @@ describe('getEventDetails', () => {
       message: 'Evento não encontrado',
       status: 404,
     });
+  });
+});
+
+describe('respondToSuggestion', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.clearAllMocks();
+  });
+
+  test('returns the backend matched signal for the final confirming response', async () => {
+    const response = {
+      id: 'response-3',
+      proposalId: 'proposal-1',
+      userId: 'user-3',
+      answer: 'yes',
+      createdAt: '2026-10-23T12:00:00.000Z',
+      matched: true,
+    };
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(response),
+    });
+
+    await expect(respondToSuggestion('proposal-1', 'yes', false)).resolves.toEqual(response);
+
+    expect(mockAuthenticatedFetch).toHaveBeenCalledWith(
+      `${API_BASE_URL}/api/proposals/proposal-1/responses`,
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ answer: 'yes' }),
+      })
+    );
   });
 });
 

@@ -199,6 +199,39 @@ describe('CreateEventController', () => {
     expect(mockScreenProps.isSubmitting).toBe(false);
   });
 
+  test('creates an event using the location and proposal from a completed match', async () => {
+    mockUseLocalSearchParams.mockReturnValue({
+      id: 'group-1',
+      matchedSuggestionId: 'proposal-1',
+      locationId: 'location-1',
+      name: 'Bloom Café',
+      address: 'Rua Padre Chagas, 320',
+    });
+    await render(<CreateEventController />);
+
+    expect(mockScreenProps.draft).toMatchObject({
+      name: 'Bloom Café',
+      address: 'Rua Padre Chagas, 320',
+    });
+
+    await fillDraft({
+      ...mockScreenProps.draft,
+      date: '2026-10-15',
+      time: '20:00',
+    });
+    await act(() => {
+      mockScreenProps.onConfirm();
+    });
+
+    expect(mockCreateEvent).toHaveBeenCalledWith('group-1', {
+      name: 'Bloom Café',
+      date: '2026-10-15',
+      time: '20:00',
+      locationId: 'location-1',
+      matchedSuggestionId: 'proposal-1',
+    });
+  });
+
   test('shows an error toast and stays on the screen when creation fails', async () => {
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
     mockCreateEvent.mockRejectedValue(new Error('Bad Request'));

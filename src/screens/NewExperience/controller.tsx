@@ -1,5 +1,5 @@
-import { getActiveProposals, respondToSuggestion } from '@/server/events';
 import type { ActiveProposal, EventPresenceAnswer } from '@/server/events';
+import { getActiveProposals, respondToSuggestion } from '@/server/events';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import Toast from 'react-native-toast-message';
@@ -40,7 +40,7 @@ export default function NewExperienceController() {
   const handleAnswer = async (answer: EventPresenceAnswer) => {
     if (proposals.length === 0 || isSubmitting) return;
     const proposal = proposals[0];
-    if (proposal.myAnswer !== null) return;
+    if (proposal.myAnswer === 'yes' || proposal.myAnswer === 'no') return;
 
     setIsSubmitting(true);
     try {

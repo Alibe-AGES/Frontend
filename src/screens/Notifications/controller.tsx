@@ -2,12 +2,12 @@ import type { AppNotification } from '@/components/NotificationCard';
 import { NotificationsScreen } from '@/screens/Notifications';
 import { getEventDetails } from '@/server/events';
 import { getGroup, type GroupDetails } from '@/server/groups';
-import { useRouter, useLocalSearchParams } from 'expo-router';
 import {
   getGroupNotifications,
   markAllNotificationsAsRead,
   markNotificationAsRead,
 } from '@/server/notifications';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 
 const LOAD_ERROR = 'Não foi possível carregar as notificações.';

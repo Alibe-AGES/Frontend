@@ -1,11 +1,11 @@
 import { EventCard } from '@/components/EventCard';
+import { NavigationBar } from '@/components/NavigationBar';
 import { API_BASE_URL } from '@/constants';
 import type { ActiveProposal, EventPresenceAnswer } from '@/server/events';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { NavigationBar } from '@/components/NavigationBar';
 
 interface ProposalDescriptionDetails {
   phoneNumber?: string;
@@ -69,7 +69,7 @@ function renderProposalCard(
   isSubmitting: boolean,
   onAnswer: NewExperienceScreenProps['onAnswer']
 ): ReactNode {
-  const hasAlreadyAnswered = proposal.myAnswer !== null;
+  const hasAlreadyAnswered = proposal.myAnswer === 'yes' || proposal.myAnswer === 'no';
   const isDecisionDisabled = isSubmitting || hasAlreadyAnswered;
   const location = proposal.location;
   const budget = location?.priceRange;

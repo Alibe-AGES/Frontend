@@ -107,6 +107,19 @@ describe('<NewExperienceScreen />', () => {
     expect(onAnswer).not.toHaveBeenCalled();
   });
 
+  test('keeps decisions enabled when myAnswer is pending', async () => {
+    const onAnswer = jest.fn();
+    const { getByTestId } = await render(
+      <NewExperienceScreen
+        {...buildProps({ proposal: { ...proposal, myAnswer: 'pending' }, onAnswer })}
+      />
+    );
+
+    await fireEvent.press(getByTestId('new-experience-like'));
+
+    expect(onAnswer).toHaveBeenCalledWith('yes');
+  });
+
   test('parses JSON description details returned by the Backend for the proposal card', async () => {
     const proposalWithDetails = {
       ...proposal,

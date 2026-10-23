@@ -105,6 +105,20 @@ describe('NewExperienceController', () => {
     expect(mockScreenProps.proposal?.id).toBe('proposal-1');
   });
 
+  test('allows voting when the API marks an unanswered proposal as pending', async () => {
+    mockGetActiveProposals.mockResolvedValue([{ ...proposal, myAnswer: 'pending' }]);
+    await render(<NewExperienceController />);
+    await waitFor(() => {
+      expect(mockScreenProps.proposal?.myAnswer).toBe('pending');
+    });
+
+    await act(() => {
+      mockScreenProps.onAnswer('yes');
+    });
+
+    expect(mockRespondToSuggestion).toHaveBeenCalledWith('proposal-1', 'yes', false);
+  });
+
   test('records a no response and advances to the next proposal', async () => {
     mockGetActiveProposals.mockResolvedValue([proposal, { ...proposal, id: 'proposal-2' }]);
     await render(<NewExperienceController />);

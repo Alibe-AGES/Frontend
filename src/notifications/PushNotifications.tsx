@@ -1,12 +1,17 @@
-import { useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
+import { useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
+import { Platform } from 'react-native';
 
 export function PushNotifications() {
   const router = useRouter();
   const handledResponses = useRef(new Set<string>());
 
   useEffect(() => {
+    if (Platform.OS === 'web') {
+      return;
+    }
+
     let isActive = true;
 
     const handleResponse = (response: Notifications.NotificationResponse) => {
