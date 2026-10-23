@@ -65,7 +65,7 @@ describe('UserProfileController', () => {
     jest.clearAllMocks();
     mockGetMyProfile.mockResolvedValue({
       name: 'Ana Beatriz Silva',
-      image: null,
+      profilePic: '/users/user-1/profile-picture',
       createdAt: '2026-09-30T01:52:41.223Z',
       completedEvents: 3,
       eventsInDecision: 1,

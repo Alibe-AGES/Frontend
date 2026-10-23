@@ -91,7 +91,7 @@ export const UserProfileScreen = ({
   const networkAvatarSource = useUserAvatarSource(userId);
 
   const [localAvatarOverride, setLocalAvatarOverride] = useState<string | null>(null);
-  const avatarSource = localAvatarOverride ?? networkAvatarSource;
+  const avatarSource = localAvatarOverride ?? profile?.photoUri ?? networkAvatarSource;
 
   const [isPasswordModalVisible, setPasswordModalVisible] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');

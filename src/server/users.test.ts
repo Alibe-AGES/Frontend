@@ -17,7 +17,7 @@ afterEach(() => {
 test('loads the authenticated current-user profile', async () => {
   const profile = {
     name: 'Ana',
-    image: '/users/user-1/profile-picture',
+    profilePic: '/users/user-1/profile-picture',
     createdAt: '2026-01-01T00:00:00.000Z',
     completedEvents: 4,
     eventsInDecision: 2,
@@ -53,7 +53,7 @@ test('uploads the selected profile picture using the authenticated endpoint', as
   });
 
   expect(global.fetch).toHaveBeenCalledWith(
-    API_BASE_URL + '/api/users/me/profile-picture',
+    API_BASE_URL + '/users/me/profile-picture',
     expect.objectContaining({
       method: 'PUT',
       body: expect.any(FormData) as FormData,
