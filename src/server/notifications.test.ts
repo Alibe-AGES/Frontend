@@ -22,6 +22,7 @@ const RAW_NOTIFICATION = {
   message: 'Kata criou um novo encontro',
   createdAt: '2026-10-18T12:00:00.000Z',
   eventID: 'event-1',
+  locationId: 'location-1',
 };
 
 function mockResponse(body: unknown, ok = true, status = 200) {
@@ -63,6 +64,7 @@ describe('notifications client', () => {
         message: 'Kata criou um novo encontro',
         createdAt: '2026-10-18T12:00:00.000Z',
         eventId: 'event-1',
+        locationId: 'location-1',
       },
     ]);
     expect(page.hasMore).toBe(false);
@@ -83,6 +85,27 @@ describe('notifications client', () => {
 
     expect(page.notifications).toHaveLength(1);
     expect(page.hasMore).toBe(true);
+  });
+
+  test('reads the group notifications pagination envelope', async () => {
+    mockResponse({
+      items: [RAW_NOTIFICATION],
+      pagination: { page: 1, limit: 7, total: 15, totalPages: 3 },
+    });
+
+    const firstPage = await getGroupNotifications('group-1', 1);
+
+    expect(firstPage.notifications).toHaveLength(1);
+    expect(firstPage.hasMore).toBe(true);
+
+    mockResponse({
+      items: [RAW_NOTIFICATION],
+      pagination: { page: 3, limit: 7, total: 15, totalPages: 3 },
+    });
+
+    const lastPage = await getGroupNotifications('group-1', 3);
+
+    expect(lastPage.hasMore).toBe(false);
   });
 
   test('ignores notifications with unknown types', async () => {

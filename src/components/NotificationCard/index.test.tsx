@@ -6,7 +6,7 @@ const [match, createdEvent] = mockNotifications;
 
 describe('<NotificationCard />', () => {
   test.each([
-    ['match', 'people-outline', 'Confira mais detalhes no calendário!'],
+    ['match', 'people-outline', 'Ver local'],
     ['createdEvent', 'calendar-outline', 'Ver encontro'],
   ] as const)('maps the %s type to its icon and action', (type, icon, actionLabel) => {
     expect(getNotificationContent(type)).toEqual({ icon, actionLabel });
@@ -32,7 +32,7 @@ describe('<NotificationCard />', () => {
       />
     );
 
-    expect(getByText('Confira mais detalhes no calendário!')).toBeTruthy();
+    expect(getByText('Ver local')).toBeTruthy();
   });
 
   test('calls onPress with the notification when the card is tapped', async () => {

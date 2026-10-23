@@ -7,7 +7,8 @@ export const mockNotifications: AppNotification[] = [
     type: 'match',
     message: 'Deu match! Todo mundo curtiu o Piquenique no Parque.',
     createdAt: '2026-10-14T12:00:00.000Z',
-    eventId: 'event-1',
+    eventId: null,
+    locationId: 'location-1',
   },
   {
     id: 'notification-2',
@@ -15,6 +16,7 @@ export const mockNotifications: AppNotification[] = [
     message: 'Kata criou um novo encontro: Café na Padre Chagas.',
     createdAt: '2026-10-14T11:00:00.000Z',
     eventId: 'event-2',
+    locationId: null,
   },
   {
     id: 'notification-3',
@@ -22,5 +24,6 @@ export const mockNotifications: AppNotification[] = [
     message: 'Manu criou um novo encontro: Cinema no sábado.',
     createdAt: '2026-10-14T10:00:00.000Z',
     eventId: 'event-3',
+    locationId: null,
   },
 ];

@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '@/constants';
 import { authenticatedFetch, getAuthenticationHeaders } from './authenticated-fetch';
-import { getPlaceDetails, searchPlaces } from './places';
+import { getPlaceDetails, getStoredLocationDetails, searchPlaces } from './places';
 
 jest.mock('./authenticated-fetch', () => ({
   authenticatedFetch: jest.fn(),
@@ -275,6 +275,42 @@ describe('getPlaceDetails', () => {
     await expect(getPlaceDetails('broken-place')).rejects.toMatchObject({
       message: 'Não foi possível carregar o local',
       status: 500,
+    });
+  });
+});
+
+describe('getStoredLocationDetails', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('loads a saved location by its internal id and normalizes the response', async () => {
+    (authenticatedFetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          id: 'location-1',
+          externalId: null,
+          name: 'Piquenique no Parque',
+          imageUrl: '/api/locations/location-1/image',
+          description: 'Parque aberto',
+          address: 'Rua das Flores, 10',
+          rating: 4.5,
+          priceRange: { start: '10.00', end: '25.50', currencyCode: 'BRL' },
+          phoneNumber: null,
+          website: null,
+          openingHours: [],
+        }),
+    });
+
+    const result = await getStoredLocationDetails('location-1');
+
+    expect(authenticatedFetch).toHaveBeenCalledWith(`${API_BASE_URL}/api/locations/location-1`);
+    expect(result).toMatchObject({
+      externalId: null,
+      name: 'Piquenique no Parque',
+      imageUrl: new URL('/api/locations/location-1/image', API_BASE_URL).toString(),
+      priceRange: { start: 10, end: 25.5, currencyCode: 'BRL' },
     });
   });
 });

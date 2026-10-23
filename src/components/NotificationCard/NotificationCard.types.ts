@@ -7,6 +7,7 @@ export interface AppNotification {
   message: string;
   createdAt: string;
   eventId: string | null;
+  locationId: string | null;
 }
 
 export interface NotificationCardProps {

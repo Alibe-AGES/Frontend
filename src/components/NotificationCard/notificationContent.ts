@@ -12,7 +12,7 @@ export interface NotificationContent {
 const CONTENT_BY_TYPE: Record<NotificationType, NotificationContent> = {
   match: {
     icon: 'people-outline',
-    actionLabel: 'Confira mais detalhes no calendário!',
+    actionLabel: 'Ver local',
   },
   createdEvent: {
     icon: 'calendar-outline',

@@ -2,12 +2,12 @@ import type { AppNotification } from '@/components/NotificationCard';
 import { NotificationsScreen } from '@/screens/Notifications';
 import { getEventDetails } from '@/server/events';
 import { getGroup, type GroupDetails } from '@/server/groups';
+import { useRouter, type Href, useLocalSearchParams } from 'expo-router';
 import {
   getGroupNotifications,
   markAllNotificationsAsRead,
   markNotificationAsRead,
 } from '@/server/notifications';
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 
 const LOAD_ERROR = 'Não foi possível carregar as notificações.';
@@ -127,6 +127,18 @@ export default function NotificationsController() {
       return;
     }
 
+    if (notification.type === 'match' && notification.locationId && groupId) {
+      router.push({
+        pathname: '/group/[id]/experiences/[placeId]',
+        params: {
+          id: groupId,
+          placeId: notification.locationId,
+          isStoredLocation: 'true',
+        },
+      } as unknown as Href);
+      return;
+    }
+
     openGroupCalendar();
   };
 
@@ -182,7 +194,7 @@ export default function NotificationsController() {
       isLoadingMore={isLoadingMore}
       isClearing={isClearing}
       errorMessage={errorMessage}
-      onPressNotification={openGroupCalendar}
+      onPressNotification={handleActionPress}
       onActionPressNotification={handleActionPress}
       onDismissNotification={(id) => void handleDismissNotification(id)}
       onClearNotifications={() => void handleClearNotifications()}

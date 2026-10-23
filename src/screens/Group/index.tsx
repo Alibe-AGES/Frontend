@@ -9,7 +9,7 @@ import { getGroup, getGroupMembers, GroupMember, GroupNextEvent } from '@/server
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import tw from 'twrnc';
@@ -24,7 +24,7 @@ function formatDate(date: Date): string {
 
 function getDayStatus(day: CalendarDay): DayMark['status'] | undefined {
   if (day.completedEventIds.length > 0) return 'realized';
-  if (day.scheduledEventIds.length > 0) return 'matched';
+  if (day.scheduledEventIds.length > 0) return 'suggested';
   if (day.allUsersAvailable) return 'allAvailable';
   if (day.availableUserIds.length > 0) return 'available';
   return undefined;
@@ -196,7 +196,9 @@ export function GroupScreen() {
       return;
     }
 
-    router.push({ pathname: '/group/[id]/notifications', params: { id: groupId } });
+    router.push(
+      { pathname: '/group/[id]/notifications', params: { id: groupId } } as unknown as Href
+    );
   };
 
   const membersText = members.map((member) => member.name).join(', ');

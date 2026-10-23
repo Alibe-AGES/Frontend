@@ -17,6 +17,7 @@ interface RawNotification {
   createdAt?: unknown;
   eventId?: unknown;
   eventID?: unknown;
+  locationId?: unknown;
 }
 
 interface RawPageMeta {
@@ -44,6 +45,7 @@ function parseNotification(raw: RawNotification): AppNotification | null {
     message: typeof raw.message === 'string' ? raw.message : '',
     createdAt: typeof raw.createdAt === 'string' ? raw.createdAt : '',
     eventId: typeof eventId === 'string' ? eventId : null,
+    locationId: typeof raw.locationId === 'string' ? raw.locationId : null,
   };
 }
 
@@ -60,16 +62,23 @@ function getHasMore(meta: RawPageMeta | undefined, page: number, filledPage: boo
   return filledPage;
 }
 
-// The pagination envelope is not final yet: accept a bare array or { data, meta }.
 function parsePage(body: unknown, page: number, limit: number): NotificationsPage {
-  const envelope = (body ?? {}) as { data?: unknown; items?: unknown; meta?: RawPageMeta };
+  const envelope = (body ?? {}) as {
+    data?: unknown;
+    items?: unknown;
+    meta?: RawPageMeta;
+    pagination?: RawPageMeta;
+  };
   const rawList = Array.isArray(body) ? body : (envelope.data ?? envelope.items);
   const list = Array.isArray(rawList) ? (rawList as RawNotification[]) : [];
   const notifications = list
     .map(parseNotification)
     .filter((notification): notification is AppNotification => notification !== null);
 
-  return { notifications, hasMore: getHasMore(envelope.meta, page, list.length >= limit) };
+  return {
+    notifications,
+    hasMore: getHasMore(envelope.pagination ?? envelope.meta, page, list.length >= limit),
+  };
 }
 
 async function throwIfFailed(response: Response, fallback: string) {

@@ -5,12 +5,13 @@ import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-nati
 import { useRouter } from 'expo-router';
 
 import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
-import { getPlaceDetails, type PlaceDetails } from '@/server/places';
+import { getPlaceDetails, getStoredLocationDetails, type PlaceDetails } from '@/server/places';
 import { theme } from '@/theme';
 
 interface ExperienceDetailsScreenProps {
   groupId: string;
   placeId: string;
+  isStoredLocation?: boolean;
 }
 
 function displayPrice(details: PlaceDetails): string {
@@ -30,7 +31,11 @@ function displayPrice(details: PlaceDetails): string {
   return `${format(start)} - ${format(end)}`;
 }
 
-export function ExperienceDetailsScreen({ groupId, placeId }: ExperienceDetailsScreenProps) {
+export function ExperienceDetailsScreen({
+  groupId,
+  placeId,
+  isStoredLocation = false,
+}: ExperienceDetailsScreenProps) {
   const router = useRouter();
   const [details, setDetails] = useState<PlaceDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,7 +50,11 @@ export function ExperienceDetailsScreen({ groupId, placeId }: ExperienceDetailsS
       params: {
         id: groupId,
         tab: 'suggestion',
-        externalId: details.externalId,
+        ...(isStoredLocation
+          ? { locationId: placeId }
+          : details.externalId
+            ? { externalId: details.externalId }
+            : {}),
         address: details.address ?? '',
         name: details.name,
       },
@@ -59,7 +68,9 @@ export function ExperienceDetailsScreen({ groupId, placeId }: ExperienceDetailsS
       setIsLoading(true);
       setError(false);
       try {
-        const result = await getPlaceDetails(placeId);
+        const result = isStoredLocation
+          ? await getStoredLocationDetails(placeId)
+          : await getPlaceDetails(placeId);
         if (isActive) setDetails(result);
       } catch {
         if (isActive) setError(true);
@@ -72,7 +83,7 @@ export function ExperienceDetailsScreen({ groupId, placeId }: ExperienceDetailsS
     return () => {
       isActive = false;
     };
-  }, [placeId]);
+  }, [isStoredLocation, placeId]);
 
   return (
     <View className="flex-1 bg-canvas">

@@ -161,16 +161,55 @@ describe('NotificationsController', () => {
     expect(screenProps().hasMore).toBe(false);
   });
 
-  test('opens the group calendar when a card or a match action is pressed', async () => {
+  test('opens the created event when its notification card is pressed', async () => {
+    mockGetEventDetails.mockResolvedValue({
+      groupId: 'group-hermanas',
+      date: '2026-10-20',
+    } as EventDetailsResponse);
+
     await renderLoaded();
 
     await act(async () => {
       screenProps().onPressNotification(createdEventNotification);
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(push).toHaveBeenCalledWith({
+        pathname: '/group/[id]/day/[date]',
+        params: { id: 'group-hermanas', date: '2026-10-20' },
+      });
+    });
+    expect(mockGetEventDetails).toHaveBeenCalledWith('event-2');
+  });
+
+  test('opens location details using locationId for a match notification', async () => {
+    await renderLoaded();
+
+    await act(async () => {
       screenProps().onActionPressNotification(matchNotification);
       await Promise.resolve();
     });
 
-    expect(navigate).toHaveBeenCalledTimes(2);
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/group/[id]/experiences/[placeId]',
+      params: {
+        id: 'group-hermanas',
+        placeId: 'location-1',
+        isStoredLocation: 'true',
+      },
+    });
+    expect(mockGetEventDetails).not.toHaveBeenCalled();
+  });
+
+  test('falls back to the group calendar when a notification has no matching detail id', async () => {
+    await renderLoaded();
+
+    await act(async () => {
+      screenProps().onActionPressNotification({ ...matchNotification, locationId: null });
+      await Promise.resolve();
+    });
+
     expect(navigate).toHaveBeenCalledWith({
       pathname: '/group/[id]',
       params: { id: 'group-hermanas' },
