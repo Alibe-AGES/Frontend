@@ -1,13 +1,13 @@
 import { render } from '@testing-library/react-native';
-
 import { ComponentGalleryScreen } from '.';
 
 describe('<ComponentGalleryScreen />', () => {
-  test('renders the available button states', async () => {
-    const { getByText } = await render(<ComponentGalleryScreen />);
+  test('renders only a simple button', async () => {
+    const { getByRole, queryByTestId } = await render(<ComponentGalleryScreen />);
 
-    expect(getByText('Primary button')).toBeTruthy();
-    expect(getByText('Secondary button')).toBeTruthy();
-    expect(getByText('Disabled button')).toBeTruthy();
+    expect(getByRole('button', { name: 'Simple button' })).toBeTruthy();
+    expect(queryByTestId('gallery-event-card-create')).toBeNull();
+    expect(queryByTestId('gallery-filter-sheet')).toBeNull();
+    expect(queryByTestId('gallery-place-list')).toBeNull();
   });
 });

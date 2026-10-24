@@ -1,5 +1,8 @@
 import { CreateGroupButton } from '@/components/CreateGroupButton';
 import { GroupsList } from '@/components/GroupsList';
+import { ProfileButton } from '@/components/ProfileButton';
+import { usePendingInvite } from '@/hooks/usePendingInvite';
+import { ApiError } from '@/server/api';
 import { joinGroupByInvite, listGroups } from '@/server/groups';
 import { theme } from '@/theme';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -8,21 +11,25 @@ import { Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 import GreenSpin from '@/assets/images/green-spin.svg';
-import GroupSpin from '@/assets/images/group-spin.svg';
+import GroupSpin from '@/assets/images/group-spin-dark-green.svg';
 import PinkSpin from '@/assets/images/pink-spin.svg';
 
 export function GroupsScreen() {
   const router = useRouter();
   const { invite } = useLocalSearchParams<{ invite?: string }>();
+  const { getPendingInvite, setPendingInvite } = usePendingInvite();
   const handledToken = useRef<string | null>(null);
   const [groupsListVersion, setGroupsListVersion] = useState(0);
 
   useEffect(() => {
-    if (!invite || handledToken.current === invite) {
+    // Convite da URL ou guardado antes do login/cadastro.
+    const token = invite ?? getPendingInvite();
+
+    if (!token || handledToken.current === token) {
       return;
     }
 
-    handledToken.current = invite;
+    handledToken.current = token;
 
     const joinGroup = async () => {
       try {
@@ -37,7 +44,8 @@ export function GroupsScreen() {
           // A entrada no grupo continua mesmo se a listagem inicial falhar.
         }
 
-        await joinGroupByInvite(invite);
+        await joinGroupByInvite(token);
+        setPendingInvite(null);
         let joinedGroupName: string | undefined;
 
         try {
@@ -57,22 +65,38 @@ export function GroupsScreen() {
             ? `Você entrou no grupo ${joinedGroupName} por um link de convite.`
             : 'Você entrou em um grupo por um link de convite.',
         });
-      } catch {
+      } catch (error) {
+        // Sem sessão: guarda o convite para usar depois do login ou cadastro.
+        if (error instanceof ApiError && error.status === 401) {
+          setPendingInvite(token);
+          router.replace('/auth');
+          return;
+        }
+
+        setPendingInvite(null);
         Toast.show({
           type: 'error',
           text1: 'Não foi possível aceitar o convite',
           text2: 'O link pode ser inválido ou ter expirado.',
         });
-      } finally {
-        router.replace('/groups');
       }
+
+      router.replace('/groups');
     };
 
     void joinGroup();
-  }, [invite, router]);
+  }, [invite, router, getPendingInvite, setPendingInvite]);
 
   const handleCreateGroup = () => {
     router.push('/create-group');
+    // router.push({
+    //   pathname: '/(profile)/profile/[userId]',
+    //   params: { userId: 'user-1' },
+    // });
+    // router.push({
+    //   pathname: '/(profile)/profile/[userId]',
+    //   params: { userId: '33333333-3333-4333-8333-333333333333' },
+    // });
   };
 
   const handleGroupPress = (id: string) => {
@@ -81,6 +105,11 @@ export function GroupsScreen() {
 
   return (
     <View className="relative flex-1 overflow-hidden bg-canvas px-12">
+      <ProfileButton
+        size={34}
+        className="absolute right-6 top-16 z-10 h-12 w-12 items-center justify-center"
+        testID="groups-user-profile"
+      />
       <View
         accessible={false}
         className="absolute -left-3 -top-2 h-32 w-32 sm:h-40 sm:w-40"
@@ -124,7 +153,7 @@ export function GroupsScreen() {
           <Text className={`text-center text-3xl text-ink ${theme.typography.display}`}>
             Meus grupos
           </Text>
-          <Text className={`text-wine text-center ${theme.typography.body}`}>
+          <Text className={`text-center text-wine ${theme.typography.body}`}>
             Clique no + para criar um novo grupo.
           </Text>
           <CreateGroupButton onPress={handleCreateGroup} />

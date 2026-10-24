@@ -2,22 +2,25 @@ import { Stack } from 'expo-router/stack';
 
 export default function GroupLayout() {
   return (
-    <Stack>
-      <Stack.Screen
-        name="index"
-        options={{ title: 'Group' }}
-      />
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="match" />
       <Stack.Screen
         name="create-event"
-        options={{ presentation: 'modal', title: 'Create event' }}
+        options={{ presentation: 'modal' }}
       />
       <Stack.Screen
-        name="info"
-        options={{ title: 'Group info' }}
+        name="event-created"
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
+      <Stack.Screen name="info" />
+      <Stack.Screen
+        name="notifications"
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="leave"
-        options={{ presentation: 'modal', title: 'Leave group' }}
+        options={{ presentation: 'modal' }}
       />
       <Stack.Screen
         name="day/[date]"

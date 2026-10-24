@@ -1,9 +1,11 @@
-import { BackButton } from '@/components/BackButton';
 import { Calendar } from '@/components/Calendar';
 import { DayMark } from '@/components/Calendar/Calendar.types';
 import { NavigationBar } from '@/components/NavigationBar';
+import { NextEventBanner } from '@/components/NextEventBanner';
+import { ProfileButton } from '@/components/ProfileButton';
+import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
 import { CalendarDay, getGroupCalendar } from '@/server/calendar';
-import { getGroup, getGroupMembers, GroupMember } from '@/server/groups';
+import { getGroup, getGroupMembers, GroupMember, GroupNextEvent } from '@/server/groups';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -21,11 +23,10 @@ function formatDate(date: Date): string {
 }
 
 function getDayStatus(day: CalendarDay): DayMark['status'] | undefined {
-  if (day.scheduledEventIds.length > 0) return 'suggested';
   if (day.completedEventIds.length > 0) return 'realized';
+  if (day.scheduledEventIds.length > 0) return 'suggested';
   if (day.allUsersAvailable) return 'allAvailable';
   if (day.availableUserIds.length > 0) return 'available';
-  if (day.proposalIds.length > 0) return 'normal';
   return undefined;
 }
 
@@ -35,10 +36,15 @@ function buildDayMarks(days: CalendarDay[], today: string): Record<string, DayMa
   for (const day of days) {
     const status = getDayStatus(day);
 
-    if (status !== undefined) {
+    const eventIds = [...new Set([...day.scheduledEventIds, ...day.completedEventIds])];
+    if (status !== undefined || eventIds.length > 0 || day.proposalIds.length > 0) {
       marks[day.date] = {
-        status,
+        status: status ?? 'normal',
         dot: day.proposalIds.length > 0 ? 'pink' : undefined,
+        eventIds,
+        proposalIds: day.proposalIds,
+        availableUserCount: day.availableUserIds.length,
+        allUsersAvailable: day.allUsersAvailable,
       };
     }
   }
@@ -62,6 +68,8 @@ export function GroupScreen() {
   const [groupName, setGroupName] = useState('');
   const [groupPhoto, setGroupPhoto] = useState<string | null>(null);
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
+  const [nextEvent, setNextEvent] = useState<GroupNextEvent | null | undefined>(undefined);
+  const groupPhotoSource = useAuthenticatedImageSource(groupPhoto);
   const [visibleMonth, setVisibleMonth] = useState(() => {
     const now = new Date();
     return { month: now.getMonth() + 1, year: now.getFullYear() };
@@ -93,6 +101,7 @@ export function GroupScreen() {
       const data = await getGroup(groupId);
       setGroupName(data.name);
       setGroupPhoto(data.profilePic);
+      setNextEvent(data.nextEvent ?? null);
     } catch (error) {
       console.error('Erro ao buscar o grupo', error);
     }
@@ -133,8 +142,33 @@ export function GroupScreen() {
       return;
     }
 
+    const day = calendarDays.find((calendarDay) => calendarDay.date === dateString);
+    if (
+      day &&
+      (day.scheduledEventIds.length > 0 ||
+        day.completedEventIds.length > 0 ||
+        day.proposalIds.length > 0)
+    ) {
+      router.push({
+        pathname: '/group/[id]/day/[date]',
+        params: { id: groupId, date: dateString },
+      });
+      return;
+    }
+
     router.push({
       pathname: '/group/[id]/day/[date]/availability',
+      params: { id: groupId, date: dateString },
+    });
+  };
+
+  const handleDayCreatePress = (dateString: string) => {
+    if (!groupId) {
+      return;
+    }
+
+    router.push({
+      pathname: '/group/[id]/create-event',
       params: { id: groupId, date: dateString },
     });
   };
@@ -157,6 +191,14 @@ export function GroupScreen() {
     router.push({ pathname: '/group/[id]/info', params: { id: groupId } });
   };
 
+  const handleOpenNotifications = () => {
+    if (!groupId) {
+      return;
+    }
+
+    router.push({ pathname: '/group/[id]/notifications', params: { id: groupId } });
+  };
+
   const membersText = members.map((member) => member.name).join(', ');
 
   return (
@@ -166,31 +208,41 @@ export function GroupScreen() {
         contentContainerClassName="gap-6 px-6 pb-32 pt-16"
         testID="group-screen"
       >
-        <View className="flex-row items-center">
-          <BackButton
-            fallbackHref="/groups"
-            accessibilityLabel="Voltar para meus grupos"
-          />
+        <View className="flex-row items-center justify-between">
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Ver notificações do grupo"
+            hitSlop={12}
+            onPress={handleOpenNotifications}
+            testID="group-screen-notifications"
+          >
+            <Ionicons
+              name="notifications-outline"
+              size={24}
+              color={theme.colors.ink}
+            />
+          </Pressable>
 
-          <Text className="flex-1 pr-10 text-center text-3xl font-black text-ink">
-            Calendário do grupo
-          </Text>
+          <ProfileButton
+            groupId={groupId}
+            testID="group-screen-profile"
+          />
         </View>
 
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Ver informações do grupo"
           onPress={handleOpenInfo}
-          className="flex-row items-center gap-3 rounded-2xl bg-surface p-3"
+          className="flex-row items-center gap-3"
           testID="group-screen-members"
         >
-          <View className="h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-coral">
-            {groupPhoto ? (
+          <View className="h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-coral">
+            {groupPhotoSource ? (
               <Image
-                source={{ uri: groupPhoto }}
+                source={groupPhotoSource}
                 accessibilityLabel={`Foto do grupo ${groupName}`}
                 contentFit="cover"
-                style={tw`h-14 w-14 rounded-full`}
+                style={tw`h-16 w-16 rounded-full`}
                 testID="group-screen-photo"
               />
             ) : (
@@ -205,7 +257,7 @@ export function GroupScreen() {
 
           <View className="flex-1">
             <Text
-              className="text-wine font-poppins-semibold text-lg"
+              className="font-poppins-light text-xl text-wine"
               numberOfLines={1}
             >
               {groupName}
@@ -213,7 +265,7 @@ export function GroupScreen() {
 
             {members.length > 0 ? (
               <Text
-                className="text-wine font-poppins text-sm"
+                className="font-poppins-semibold text-base text-wine"
                 numberOfLines={1}
                 testID="group-screen-members-names"
               >
@@ -227,15 +279,16 @@ export function GroupScreen() {
           </View>
         </Pressable>
 
-        <View className="rounded-3xl bg-surface p-4">
-          <Calendar
-            initialDate={today}
-            dayMarks={dayMarks}
-            onDayPress={handleDayPress}
-            onMonthChange={handleMonthChange}
-            showLegend
-          />
-        </View>
+        {nextEvent !== undefined ? <NextEventBanner event={nextEvent} /> : null}
+
+        <Calendar
+          initialDate={today}
+          dayMarks={dayMarks}
+          onDayPress={handleDayPress}
+          onDayCreatePress={handleDayCreatePress}
+          onMonthChange={handleMonthChange}
+          showLegend
+        />
       </ScrollView>
 
       {groupId ? (
