@@ -16,6 +16,8 @@
       "icon": "./assets/expo.icon"
     },
     "android": {
+      "package": "com.alibe.app",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#F7F2E9",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

@@ -19,7 +19,7 @@ const config: ExpoConfig = {
   },
   android: {
     package: 'com.alibe.app',
-    googleServicesFile: './google-service.json',
+    googleServicesFile: './google-services.json',
     adaptiveIcon: {
       backgroundColor: '#F7F2E9',
       foregroundImage: './assets/images/android-icon-foreground.png',
