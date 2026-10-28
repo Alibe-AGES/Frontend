@@ -3,6 +3,10 @@ import { useState } from 'react';
 
 import { Dropdown } from './index';
 
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}));
+
 const OPTIONS = [
   { label: 'Jantar de sexta', value: 'dinner' },
   { label: 'Churrasco', value: 'barbecue' },
@@ -89,6 +93,26 @@ describe('<Dropdown />', () => {
 
     expect(queryByTestId('alibe-dropdown-menu')).toBeNull();
     expect(onChange).not.toHaveBeenCalled();
+  });
+
+  test('renders long option lists inside a scrollable list', async () => {
+    const manyOptions = Array.from({ length: 20 }, (_, index) => ({
+      label: `Evento ${String(index + 1)}`,
+      value: `event-${String(index + 1)}`,
+    }));
+    const { getByTestId, getByText } = await render(
+      <Dropdown
+        options={manyOptions}
+        value={null}
+        onChange={jest.fn()}
+      />
+    );
+
+    await fireEvent.press(getByTestId('alibe-dropdown'));
+
+    expect(getByTestId('alibe-dropdown-options').props.onContentSizeChange).toBeDefined();
+    expect(getByText('Evento 1')).toBeTruthy();
+    expect(getByText('Evento 20')).toBeTruthy();
   });
 
   test('does not open while disabled', async () => {
