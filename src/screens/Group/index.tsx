@@ -3,6 +3,7 @@ import { DayMark } from '@/components/Calendar/Calendar.types';
 import { NavigationBar } from '@/components/NavigationBar';
 import { NextEventBanner } from '@/components/NextEventBanner';
 import { ProfileButton } from '@/components/ProfileButton';
+import { ScreenFrame } from '@/components/ScreenFrame';
 import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
 import { CalendarDay, getGroupCalendar } from '@/server/calendar';
 import { getGroup, getGroupMembers, GroupMember, GroupNextEvent } from '@/server/groups';
@@ -11,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import tw from 'twrnc';
 
 function formatDate(date: Date): string {
@@ -202,100 +203,92 @@ export function GroupScreen() {
   const membersText = members.map((member) => member.name).join(', ');
 
   return (
-    <View className="flex-1 bg-canvas">
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="gap-6 px-6 pb-32 pt-16"
-        testID="group-screen"
-      >
-        <View className="flex-row items-center justify-between">
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Ver notificações do grupo"
-            hitSlop={12}
-            onPress={handleOpenNotifications}
-            testID="group-screen-notifications"
-          >
-            <Ionicons
-              name="notifications-outline"
-              size={24}
-              color={theme.colors.ink}
-            />
-          </Pressable>
-
-          <ProfileButton
-            groupId={groupId}
-            testID="group-screen-profile"
-          />
-        </View>
-
+    <ScreenFrame
+      gap="lg"
+      footer={groupId ? <NavigationBar groupId={groupId} /> : undefined}
+      testID="group-screen"
+    >
+      <View className="flex-row items-center justify-between">
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Ver informações do grupo"
-          onPress={handleOpenInfo}
-          className="flex-row items-center gap-3"
-          testID="group-screen-members"
+          accessibilityLabel="Ver notificações do grupo"
+          hitSlop={12}
+          onPress={handleOpenNotifications}
+          testID="group-screen-notifications"
         >
-          <View className="h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-coral">
-            {groupPhotoSource ? (
-              <Image
-                source={groupPhotoSource}
-                accessibilityLabel={`Foto do grupo ${groupName}`}
-                contentFit="cover"
-                style={tw`h-16 w-16 rounded-full`}
-                testID="group-screen-photo"
-              />
-            ) : (
-              <Ionicons
-                name="people-outline"
-                size={26}
-                color={theme.colors.coral}
-                testID="group-screen-photo-placeholder"
-              />
-            )}
-          </View>
-
-          <View className="flex-1">
-            <Text
-              className="font-poppins-light text-xl text-wine"
-              numberOfLines={1}
-            >
-              {groupName}
-            </Text>
-
-            {members.length > 0 ? (
-              <Text
-                className="font-poppins-semibold text-base text-wine"
-                numberOfLines={1}
-                testID="group-screen-members-names"
-              >
-                {membersText}
-              </Text>
-            ) : (
-              <Text className="text-inkSoft text-sm font-medium">
-                Nenhum membro encontrado neste grupo.
-              </Text>
-            )}
-          </View>
+          <Ionicons
+            name="notifications-outline"
+            size={24}
+            color={theme.colors.ink}
+          />
         </Pressable>
 
-        {nextEvent !== undefined ? <NextEventBanner event={nextEvent} /> : null}
-
-        <Calendar
-          initialDate={today}
-          dayMarks={dayMarks}
-          onDayPress={handleDayPress}
-          onDayCreatePress={handleDayCreatePress}
-          onMonthChange={handleMonthChange}
-          showLegend
+        <ProfileButton
+          groupId={groupId}
+          testID="group-screen-profile"
         />
-      </ScrollView>
+      </View>
 
-      {groupId ? (
-        <View className="absolute inset-x-0 bottom-0">
-          <NavigationBar groupId={groupId} />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Ver informações do grupo"
+        onPress={handleOpenInfo}
+        className="flex-row items-center gap-3"
+        testID="group-screen-members"
+      >
+        <View className="h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-coral">
+          {groupPhotoSource ? (
+            <Image
+              source={groupPhotoSource}
+              accessibilityLabel={`Foto do grupo ${groupName}`}
+              contentFit="cover"
+              style={tw`h-16 w-16 rounded-full`}
+              testID="group-screen-photo"
+            />
+          ) : (
+            <Ionicons
+              name="people-outline"
+              size={26}
+              color={theme.colors.coral}
+              testID="group-screen-photo-placeholder"
+            />
+          )}
         </View>
-      ) : null}
-    </View>
+
+        <View className="flex-1">
+          <Text
+            className="font-poppins-light text-xl text-wine"
+            numberOfLines={1}
+          >
+            {groupName}
+          </Text>
+
+          {members.length > 0 ? (
+            <Text
+              className="font-poppins-semibold text-base text-wine"
+              numberOfLines={1}
+              testID="group-screen-members-names"
+            >
+              {membersText}
+            </Text>
+          ) : (
+            <Text className="text-inkSoft text-sm font-medium">
+              Nenhum membro encontrado neste grupo.
+            </Text>
+          )}
+        </View>
+      </Pressable>
+
+      {nextEvent !== undefined ? <NextEventBanner event={nextEvent} /> : null}
+
+      <Calendar
+        initialDate={today}
+        dayMarks={dayMarks}
+        onDayPress={handleDayPress}
+        onDayCreatePress={handleDayCreatePress}
+        onMonthChange={handleMonthChange}
+        showLegend
+      />
+    </ScreenFrame>
   );
 }

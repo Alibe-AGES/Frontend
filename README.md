@@ -557,6 +557,24 @@ For UI-only work, use local state and fixture data. Do not add API calls merely 
 5. Add route and component tests for important states.
 6. Connect `src/server/api.ts` only when real data is required.
 
+### Screen frame
+
+Every page wraps its content in `ScreenFrame` (`src/components/ScreenFrame`). It owns the defaults shared by all screens: background, horizontal gutter, top spacing, an optional fixed `header`, and an optional `footer` pinned to the bottom (usually `NavigationBar`), whose height is reserved below the content automatically.
+
+By default the content is rendered in a `KeyboardAwareScrollView` from `react-native-keyboard-controller`, which scrolls the focused input above the keyboard on iOS and Android. This only works because `KeyboardProvider` wraps the app in `src/app/_layout.tsx`; do not remove it. Inputs do not need any extra wiring.
+
+```tsx
+<ScreenFrame
+  gap="lg"
+  header={<BackButton fallbackHref="/groups" />}
+  footer={<NavigationBar groupId={groupId} />}
+>
+  {/* screen content */}
+</ScreenFrame>
+```
+
+Use `scrollable={false}` for screens that render their own `FlatList`, and `padding="horizontal"` or `padding="none"` for full-bleed artwork. Render `Modal`-based sheets as siblings of the frame, not inside it.
+
 ### NativeWind and twrnc
 
 Use `className` for styles that do not change and `twrnc` when a class string depends on state or props. Keep the visual vocabulary in `src/theme.ts` and mirror its colors in `tailwind.config.js` so components use semantic names such as `bg-coral` and `text-ink`.

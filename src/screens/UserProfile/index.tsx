@@ -4,6 +4,7 @@ import { PasswordInput } from '@/components/PasswordInput';
 import { PhotoPicker } from '@/components/PhotoPicker';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
 import { ProfileCard } from '@/components/ProfileCard';
+import { ScreenFrame } from '@/components/ScreenFrame';
 import { TextInput } from '@/components/TextInput';
 import { updateUserProfile } from '@/server/mock/userProfile';
 import { theme } from '@/theme';
@@ -19,7 +20,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { useUserAvatarSource } from '../../../src/hooks/useUserAvatarSource';
 
@@ -126,7 +126,6 @@ export const UserProfileScreen = ({
   refetch,
   onLogout,
 }: UserProfileScreenProps) => {
-  const insets = useSafeAreaInsets();
   const networkAvatarSource = useUserAvatarSource(userId);
 
   const [localAvatarOverride, setLocalAvatarOverride] = useState<string | null>(null);
@@ -243,10 +242,10 @@ export const UserProfileScreen = ({
   }
 
   return (
-    <View className="flex-1 bg-canvas">
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="gap-6 px-6 pb-32 pt-16"
+    <>
+      <ScreenFrame
+        gap="lg"
+        footer={<NavigationBar groupId={groupId ?? ''} />}
         testID="user-profile-screen"
       >
         <BackButton color={theme.colors.black} />
@@ -294,7 +293,7 @@ export const UserProfileScreen = ({
             />
           </View>
         )}
-      </ScrollView>
+      </ScreenFrame>
 
       <Modal
         visible={isEditModalVisible}
@@ -493,13 +492,6 @@ export const UserProfileScreen = ({
         </View>
         <Toast />
       </Modal>
-
-      <View
-        className="absolute inset-x-0 bottom-0"
-        style={{ paddingBottom: insets.bottom }}
-      >
-        <NavigationBar groupId={groupId ?? ''} />
-      </View>
-    </View>
+    </>
   );
 };

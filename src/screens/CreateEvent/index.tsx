@@ -4,9 +4,9 @@ import { EventCard, EventCardDraft } from '@/components/EventCard';
 import { NavigationBar } from '@/components/NavigationBar';
 import { Participant, ParticipantAvatars } from '@/components/ParticipantAvatars';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
+import { ScreenFrame } from '@/components/ScreenFrame';
 import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
 
 export type CreateEventTab = 'event' | 'suggestion';
 
@@ -107,25 +107,25 @@ export function CreateEventScreen({
   }, [openDatePickerOnMount]);
 
   return (
-    <View className="flex-1 bg-canvas">
-      <View
-        className="flex-row items-center gap-4 px-6 pb-3 pt-16"
-        testID="create-event-tabs-header"
-      >
-        <BackButton
-          fallbackHref={groupId ? `/group/${groupId}` : '/groups'}
-          accessibilityLabel="Voltar para o grupo"
-        />
-        <EventTypeTabs
-          activeTab={activeTab}
-          onSelectTab={onSelectTab}
-        />
-      </View>
-
-      <KeyboardAvoidingScrollView
-        className="flex-1"
-        contentContainerClassName="gap-4 px-6 pb-36 pt-2"
-        keyboardShouldPersistTaps="handled"
+    <>
+      <ScreenFrame
+        gap="md"
+        header={
+          <View
+            className="flex-row items-center gap-4"
+            testID="create-event-tabs-header"
+          >
+            <BackButton
+              fallbackHref={groupId ? `/group/${groupId}` : '/groups'}
+              accessibilityLabel="Voltar para o grupo"
+            />
+            <EventTypeTabs
+              activeTab={activeTab}
+              onSelectTab={onSelectTab}
+            />
+          </View>
+        }
+        footer={groupId ? <NavigationBar groupId={groupId} /> : undefined}
         testID="create-event-form-scroll"
       >
         <EventCard
@@ -152,13 +152,7 @@ export function CreateEventScreen({
             testID="create-event-participants"
           />
         </View>
-      </KeyboardAvoidingScrollView>
-
-      {groupId ? (
-        <View className="absolute inset-x-0 bottom-0">
-          <NavigationBar groupId={groupId} />
-        </View>
-      ) : null}
+      </ScreenFrame>
 
       {shouldShowDateSheet ? (
         <DatePickerSheet
@@ -173,6 +167,6 @@ export function CreateEventScreen({
           }}
         />
       ) : null}
-    </View>
+    </>
   );
 }

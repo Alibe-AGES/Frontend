@@ -2,7 +2,6 @@ import { fireEvent, render } from '@testing-library/react-native';
 import { useState } from 'react';
 import { Text } from 'react-native';
 
-import { KeyboardScrollContext } from '@/components/KeyboardAvoidingScrollView';
 import { theme } from '@/theme';
 import { TextInput } from './index';
 
@@ -334,24 +333,20 @@ describe('<TextInput />', () => {
     expect(field.props.autoCorrect).toBe(false);
   });
 
-  test('notifies keyboard scroll context on focus when provided', async () => {
-    const handleScrollFocus = jest.fn();
+  test('calls onFocus when the field is focused', async () => {
     const handleFocus = jest.fn();
 
     const { getByTestId } = await render(
-      <KeyboardScrollContext.Provider value={handleScrollFocus}>
-        <TextInput
-          value=""
-          onChangeText={jest.fn()}
-          onFocus={handleFocus}
-          testID="focused-input"
-        />
-      </KeyboardScrollContext.Provider>
+      <TextInput
+        value=""
+        onChangeText={jest.fn()}
+        onFocus={handleFocus}
+        testID="focused-input"
+      />
     );
 
     await fireEvent(getByTestId('focused-input'), 'focus');
 
     expect(handleFocus).toHaveBeenCalled();
-    expect(handleScrollFocus).toHaveBeenCalled();
   });
 });
