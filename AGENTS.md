@@ -117,6 +117,7 @@ The `/component-gallery` route is a development aid for visually checking reusab
 ## UI Implementation Rules
 
 - Wrap every screen in `ScreenFrame` from `@/components/ScreenFrame` instead of a hand-rolled `View`/`ScrollView` root; it owns the default padding, header, footer, and keyboard handling. Do not add per-screen keyboard workarounds.
+- Build modals that contain inputs with `ModalFrame` from `@/components/ModalFrame` instead of using `Modal` directly; a `Modal` is a separate window that `ScreenFrame`'s keyboard handling cannot reach.
 - Build screens from reusable components rather than duplicating markup.
 - Keep UI-only work independent from the API client; use typed fixture data or local state first.
 - Represent meaningful loading, empty, disabled, validation, and error states.

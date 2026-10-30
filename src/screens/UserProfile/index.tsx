@@ -1,4 +1,5 @@
 import { BackButton } from '@/components/BackButton';
+import { ModalFrame } from '@/components/ModalFrame';
 import { NavigationBar } from '@/components/NavigationBar';
 import { PasswordInput } from '@/components/PasswordInput';
 import { PhotoPicker } from '@/components/PhotoPicker';
@@ -10,16 +11,7 @@ import { updateUserProfile } from '@/server/mock/userProfile';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useUserAvatarSource } from '../../../src/hooks/useUserAvatarSource';
 
@@ -295,203 +287,134 @@ export const UserProfileScreen = ({
         )}
       </ScreenFrame>
 
-      <Modal
+      <ModalFrame
         visible={isEditModalVisible}
-        transparent
-        animationType="fade"
         onRequestClose={handleCloseEditModal}
+        title="Editar Perfil"
+        testID="user-profile-edit-modal"
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          className="flex-1"
-          testID="user-profile-edit-modal-keyboard-container"
-        >
-          <ScrollView
-            className="flex-1 bg-black/50"
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{
-              flexGrow: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingHorizontal: 24,
-              paddingVertical: 24,
-            }}
-            testID="user-profile-edit-modal-scroll"
-          >
-            <View
-              className="w-full max-w-lg gap-5 rounded-3xl bg-canvas p-6 shadow-lg"
-              style={{ maxWidth: 448 }}
-              testID="user-profile-edit-modal-panel"
-            >
-              <Text className="text-center font-poppins-semibold text-xl text-wine">
-                Editar Perfil
-              </Text>
+        <PhotoPicker
+          key={editModalKey}
+          label=""
+          initialPhotoUri={profile?.photoUri ?? null}
+          onUploadSuccess={setEditPhoto}
+          disabled={isSubmittingProfile}
+        />
 
-              <PhotoPicker
-                key={editModalKey}
-                label=""
-                initialPhotoUri={profile?.photoUri ?? null}
-                onUploadSuccess={setEditPhoto}
-                disabled={isSubmittingProfile}
-              />
-
-              <View className="mt-4 gap-3">
-                <TextInput
-                  value={editName}
-                  onChangeText={setEditName}
-                  placeholder="Seu nome"
-                  disabled={isSubmittingProfile}
-                />
-              </View>
-
-              <View className="mt-4 flex-row gap-4">
-                <TouchableOpacity
-                  onPress={handleCloseEditModal}
-                  disabled={isSubmittingProfile}
-                  className="flex-1 items-center justify-center rounded-full border-2 border-coral py-3"
-                >
-                  <Text className="font-poppins-semibold text-coral">Cancelar</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() => {
-                    void handleSaveProfile();
-                  }}
-                  disabled={isSubmittingProfile}
-                  className={`flex-1 items-center justify-center rounded-full bg-coral py-3 ${
-                    isSubmittingProfile ? 'opacity-60' : ''
-                  }`}
-                >
-                  <Text className="font-poppins-semibold text-surface">
-                    {isSubmittingProfile ? 'Salvando...' : 'Salvar'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-        <Toast />
-      </Modal>
-
-      <Modal
-        visible={isPasswordModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={handleClosePasswordModal}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          className="flex-1"
-          testID="user-profile-password-modal-keyboard-container"
-        >
-          <ScrollView
-            className="flex-1 bg-black/50"
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{
-              flexGrow: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingHorizontal: 24,
-              paddingVertical: 24,
-            }}
-            testID="user-profile-password-modal-scroll"
-          >
-            <View
-              className="w-full max-w-lg gap-5 rounded-3xl bg-canvas p-6 shadow-lg"
-              style={{ maxWidth: 448 }}
-              testID="user-profile-password-modal-panel"
-            >
-              <Text className="text-center font-poppins-semibold text-xl text-wine">
-                Alterar Senha
-              </Text>
-
-              <View className="gap-3">
-                <PasswordInput
-                  label="Senha Atual"
-                  variant="password"
-                  value={currentPassword}
-                  onChangeText={setCurrentPassword}
-                />
-                <PasswordInput
-                  label="Nova Senha"
-                  variant="password"
-                  value={newPassword}
-                  onChangeText={setNewPassword}
-                />
-                <PasswordInput
-                  label="Confirmar Nova Senha"
-                  variant="confirm"
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                />
-              </View>
-
-              <View className="mt-2 flex-row gap-4">
-                <TouchableOpacity
-                  onPress={handleClosePasswordModal}
-                  className="flex-1 items-center justify-center rounded-full border-2 border-coral py-3"
-                >
-                  <Text className="font-poppins-semibold text-coral">Cancelar</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={handleSavePassword}
-                  className="flex-1 items-center justify-center rounded-full bg-coral py-3"
-                >
-                  <Text className="font-poppins-semibold text-surface">Salvar</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-        <Toast />
-      </Modal>
-
-      <Modal
-        visible={isLogoutModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={handleCloseLogoutModal}
-      >
-        <View className="flex-1 items-center justify-center bg-black/50 px-6">
-          <View className="w-full gap-5 rounded-3xl bg-canvas p-6 shadow-lg">
-            <Text className="text-center font-poppins-semibold text-xl text-wine">
-              Sair da conta
-            </Text>
-
-            <Text className="text-center font-poppins text-base text-wine">
-              Tem certeza de que deseja sair da sua conta?
-            </Text>
-
-            <View className="mt-2 flex-row gap-4">
-              <TouchableOpacity
-                onPress={handleCloseLogoutModal}
-                disabled={isLoggingOut}
-                className="flex-1 items-center justify-center rounded-full border-2 border-coral py-3"
-                testID="user-profile-logout-cancel"
-              >
-                <Text className="font-poppins-semibold text-coral">Cancelar</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => {
-                  void handleConfirmLogout();
-                }}
-                disabled={isLoggingOut}
-                className={`flex-1 items-center justify-center rounded-full bg-coral py-3 ${
-                  isLoggingOut ? 'opacity-60' : ''
-                }`}
-                testID="user-profile-logout-confirm"
-              >
-                <Text className="font-poppins-semibold text-surface">
-                  {isLoggingOut ? 'Saindo...' : 'Sair'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+        <View className="mt-4 gap-3">
+          <TextInput
+            value={editName}
+            onChangeText={setEditName}
+            placeholder="Seu nome"
+            disabled={isSubmittingProfile}
+          />
         </View>
-        <Toast />
-      </Modal>
+
+        <View className="mt-4 flex-row gap-4">
+          <TouchableOpacity
+            onPress={handleCloseEditModal}
+            disabled={isSubmittingProfile}
+            className="flex-1 items-center justify-center rounded-full border-2 border-coral py-3"
+          >
+            <Text className="font-poppins-semibold text-coral">Cancelar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              void handleSaveProfile();
+            }}
+            disabled={isSubmittingProfile}
+            className={`flex-1 items-center justify-center rounded-full bg-coral py-3 ${
+              isSubmittingProfile ? 'opacity-60' : ''
+            }`}
+          >
+            <Text className="font-poppins-semibold text-surface">
+              {isSubmittingProfile ? 'Salvando...' : 'Salvar'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ModalFrame>
+
+      <ModalFrame
+        visible={isPasswordModalVisible}
+        onRequestClose={handleClosePasswordModal}
+        title="Alterar Senha"
+        testID="user-profile-password-modal"
+      >
+        <View className="gap-3">
+          <PasswordInput
+            label="Senha Atual"
+            variant="password"
+            value={currentPassword}
+            onChangeText={setCurrentPassword}
+          />
+          <PasswordInput
+            label="Nova Senha"
+            variant="password"
+            value={newPassword}
+            onChangeText={setNewPassword}
+          />
+          <PasswordInput
+            label="Confirmar Nova Senha"
+            variant="confirm"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
+        </View>
+
+        <View className="mt-2 flex-row gap-4">
+          <TouchableOpacity
+            onPress={handleClosePasswordModal}
+            className="flex-1 items-center justify-center rounded-full border-2 border-coral py-3"
+          >
+            <Text className="font-poppins-semibold text-coral">Cancelar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleSavePassword}
+            className="flex-1 items-center justify-center rounded-full bg-coral py-3"
+          >
+            <Text className="font-poppins-semibold text-surface">Salvar</Text>
+          </TouchableOpacity>
+        </View>
+      </ModalFrame>
+
+      <ModalFrame
+        visible={isLogoutModalVisible}
+        onRequestClose={handleCloseLogoutModal}
+        title="Sair da conta"
+        testID="user-profile-logout-modal"
+      >
+        <Text className="text-center font-poppins text-base text-wine">
+          Tem certeza de que deseja sair da sua conta?
+        </Text>
+
+        <View className="mt-2 flex-row gap-4">
+          <TouchableOpacity
+            onPress={handleCloseLogoutModal}
+            disabled={isLoggingOut}
+            className="flex-1 items-center justify-center rounded-full border-2 border-coral py-3"
+            testID="user-profile-logout-cancel"
+          >
+            <Text className="font-poppins-semibold text-coral">Cancelar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              void handleConfirmLogout();
+            }}
+            disabled={isLoggingOut}
+            className={`flex-1 items-center justify-center rounded-full bg-coral py-3 ${
+              isLoggingOut ? 'opacity-60' : ''
+            }`}
+            testID="user-profile-logout-confirm"
+          >
+            <Text className="font-poppins-semibold text-surface">
+              {isLoggingOut ? 'Saindo...' : 'Sair'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ModalFrame>
     </>
   );
 };

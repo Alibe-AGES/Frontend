@@ -573,7 +573,24 @@ By default the content is rendered in a `KeyboardAwareScrollView` from `react-na
 </ScreenFrame>
 ```
 
-Use `scrollable={false}` for screens that render their own `FlatList`, and `padding="horizontal"` or `padding="none"` for full-bleed artwork. Render `Modal`-based sheets as siblings of the frame, not inside it.
+Use `scrollable={false}` for screens that render their own `FlatList`, and `padding="horizontal"` or `padding="none"` for full-bleed artwork. Render modals as siblings of the frame, not inside it.
+
+### Modal frame
+
+A React Native `Modal` is a separate native window, so `ScreenFrame` cannot keep its inputs visible. Any modal with inputs uses `ModalFrame` (`src/components/ModalFrame`) instead of `Modal` directly. It renders the backdrop and lifts its content above the keyboard with the library's `KeyboardAvoidingView` (`automaticOffset` measures the real position inside the modal window).
+
+```tsx
+<ModalFrame
+  visible={isVisible}
+  onRequestClose={close}
+  title="Alterar Senha"
+  testID="change-password-modal"
+>
+  {/* inputs and buttons; placed in the standard dialog panel */}
+</ModalFrame>
+```
+
+`placement="center"` (default) wraps the children in the standard dialog panel inside a scroll view. `placement="bottom"` anchors the children as a sheet that provides its own surface; add `closeOnBackdropPress` to dismiss it from the backdrop.
 
 ### NativeWind and twrnc
 
