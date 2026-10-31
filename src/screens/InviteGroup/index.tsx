@@ -1,13 +1,14 @@
 import * as Linking from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import tw from 'twrnc';
 
 import InviteDecoration from '@/assets/images/invite-decoration.svg';
 import { Button } from '@/components/Button';
 import { ContinueButton } from '@/components/ContinueButton';
 import { InviteLink } from '@/components/InviteLink';
+import { ScreenFrame } from '@/components/ScreenFrame';
 import { getGroupInviteLink, type GroupInviteLink } from '@/server/groups';
 import { theme } from '@/theme';
 
@@ -54,11 +55,11 @@ export function InviteGroupScreen() {
   );
 
   return (
-    <ScrollView
-      className="flex-1 bg-surface"
-      contentContainerClassName="flex-grow"
+    <ScreenFrame
+      background="surface"
+      padding="none"
     >
-      <View className="flex-1 bg-surface px-6 pb-28 pt-40">
+      <View className="flex-1 px-6 pb-28 pt-40">
         <Text className="text-center font-poppins-black text-4xl leading-tight text-ink">
           Tudo{'\n'}pronto!
         </Text>
@@ -121,6 +122,6 @@ export function InviteGroupScreen() {
           />
         </View>
       </View>
-    </ScrollView>
+    </ScreenFrame>
   );
 }

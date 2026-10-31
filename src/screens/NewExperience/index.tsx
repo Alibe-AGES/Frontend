@@ -1,5 +1,6 @@
 import { EventCard } from '@/components/EventCard';
 import { NavigationBar } from '@/components/NavigationBar';
+import { ScreenFrame } from '@/components/ScreenFrame';
 import { API_BASE_URL } from '@/constants';
 import type { ActiveProposal, EventPresenceAnswer } from '@/server/events';
 import { theme } from '@/theme';
@@ -211,8 +212,12 @@ export function NewExperienceScreen({
   onAnswer,
 }: NewExperienceScreenProps) {
   return (
-    <View className="flex-1 bg-canvas">
-      <View className="flex-1 items-center justify-center px-6 pb-28 pt-12">
+    <ScreenFrame
+      scrollable={false}
+      padding="none"
+      footer={<NavigationBar groupId={groupId} />}
+    >
+      <View className="flex-1 items-center justify-center px-6 pt-12">
         <View className="mb-6 items-center gap-2">
           <Text className={`text-center text-3xl text-ink ${theme.typography.display}`}>
             Match de rolês
@@ -236,9 +241,6 @@ export function NewExperienceScreen({
           onAnswer,
         })}
       </View>
-      <View className="absolute inset-x-0 bottom-0">
-        <NavigationBar groupId={groupId} />
-      </View>
-    </View>
+    </ScreenFrame>
   );
 }

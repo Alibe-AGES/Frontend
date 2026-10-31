@@ -2,6 +2,7 @@ import { BackButton } from '@/components/BackButton';
 import { ContinueButton } from '@/components/ContinueButton';
 import { PhotoPicker } from '@/components/PhotoPicker';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
+import { ScreenFrame } from '@/components/ScreenFrame';
 import { TextInput } from '@/components/TextInput';
 import { createGroup } from '@/server/groups';
 import { theme } from '@/theme';
@@ -13,7 +14,6 @@ import tw from 'twrnc';
 
 import CreateGroupDecoration from '@/assets/images/create-group-decoration.svg';
 import PencilIcon from '@/assets/images/pencil.svg';
-import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
 
 export function CreateGroupScreen() {
   const [groupName, setGroupName] = useState('');
@@ -51,11 +51,7 @@ export function CreateGroupScreen() {
   };
 
   return (
-    <KeyboardAvoidingScrollView
-      className="flex-1 bg-canvas"
-      contentContainerClassName="flex-grow px-6 pt-16"
-      keyboardShouldPersistTaps="handled"
-    >
+    <ScreenFrame>
       <View
         accessible={false}
         style={tw`absolute -right-2 top-0 h-40 w-40`}
@@ -118,6 +114,6 @@ export function CreateGroupScreen() {
           />
         </View>
       </View>
-    </KeyboardAvoidingScrollView>
+    </ScreenFrame>
   );
 }
