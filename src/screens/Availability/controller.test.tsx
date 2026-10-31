@@ -1,4 +1,4 @@
-import { createAvailability, getAvailabilitiesByDate } from '@/server/availabilities';
+import { createAvailability, getAvailabilityStatusesByDate } from '@/server/availabilities';
 import { render, waitFor } from '@testing-library/react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import AvailabilityController from './controller';
@@ -12,7 +12,7 @@ jest.mock('expo-router', () => ({
 
 jest.mock('@/server/availabilities', () => ({
   createAvailability: jest.fn(),
-  getAvailabilitiesByDate: jest.fn(),
+  getAvailabilityStatusesByDate: jest.fn(),
 }));
 
 jest.mock('@/screens/Availability', () => ({
@@ -26,8 +26,8 @@ const mockUseLocalSearchParams = useLocalSearchParams as jest.MockedFunction<
   typeof useLocalSearchParams
 >;
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
-const mockGetAvailabilitiesByDate = getAvailabilitiesByDate as jest.MockedFunction<
-  typeof getAvailabilitiesByDate
+const mockGetAvailabilityStatusesByDate = getAvailabilityStatusesByDate as jest.MockedFunction<
+  typeof getAvailabilityStatusesByDate
 >;
 const mockCreateAvailability = createAvailability as jest.MockedFunction<typeof createAvailability>;
 
@@ -41,9 +41,14 @@ describe('AvailabilityController', () => {
     mockUseRouter.mockReturnValue({ back, replace, canGoBack } as unknown as ReturnType<
       typeof useRouter
     >);
-    mockGetAvailabilitiesByDate.mockResolvedValue([
-      { id: 'user-1', name: 'Ana', profilePic: null },
-      { id: 'user-2', name: 'Bia', profilePic: 'https://example.com/bia.png' },
+    mockGetAvailabilityStatusesByDate.mockResolvedValue([
+      { id: 'user-1', name: 'Ana', profilePic: null, hasAvailability: true },
+      {
+        id: 'user-2',
+        name: 'Bia',
+        profilePic: 'https://example.com/bia.png',
+        hasAvailability: false,
+      },
     ]);
     mockCreateAvailability.mockResolvedValue([]);
     canGoBack.mockReturnValue(true);
@@ -58,14 +63,20 @@ describe('AvailabilityController', () => {
     await render(<AvailabilityController />);
 
     await waitFor(() => {
-      expect(mockGetAvailabilitiesByDate).toHaveBeenCalledWith('group-1', '2026-09-14');
+      expect(mockGetAvailabilityStatusesByDate).toHaveBeenCalledWith('group-1', '2026-09-14');
       expect(mockAvailabilityProps.participants).toEqual([
         {
           id: 'user-1',
           name: 'Ana',
+          status: 'available',
           avatarUrl: 'https://ui-avatars.com/api/?name=Ana&background=random',
         },
-        { id: 'user-2', name: 'Bia', avatarUrl: 'https://example.com/bia.png' },
+        {
+          id: 'user-2',
+          name: 'Bia',
+          status: 'no-response',
+          avatarUrl: 'https://example.com/bia.png',
+        },
       ]);
     });
     expect(mockAvailabilityProps.date).toBe('2026-09-14');

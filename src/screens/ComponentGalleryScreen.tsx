@@ -26,6 +26,7 @@ export function ComponentGalleryScreen() {
           disabled
         />
       </View>
+
     </ScrollView>
   );
 }

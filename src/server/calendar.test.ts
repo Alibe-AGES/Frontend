@@ -1,6 +1,12 @@
 import { API_BASE_URL } from '@/constants';
 import { getGroupCalendar } from './calendar';
 
+jest.mock('./auth', () => ({
+  authenticatedFetch: jest.fn((url: string, options?: RequestInit) =>
+    globalThis.fetch(url, { ...options, credentials: 'include' })
+  ),
+}));
+
 declare const global: { fetch: jest.Mock };
 
 const originalFetch = global.fetch;
@@ -22,14 +28,18 @@ describe('getGroupCalendar', () => {
         allUsersAvailable: false,
       },
     ];
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(calendar),
-    });
+    const fetchMock = jest
+      .fn<Promise<Response>, [RequestInfo | URL, RequestInit?]>()
+      .mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(calendar),
+      } as Response);
+    global.fetch = fetchMock;
 
     await expect(getGroupCalendar('group-1', 9, 2026)).resolves.toEqual(calendar);
     expect(global.fetch).toHaveBeenCalledWith(
-      `${API_BASE_URL}/groups/group-1/calendar?month=9&year=2026`
+      `${API_BASE_URL}/groups/group-1/calendar?month=9&year=2026`,
+      { credentials: 'include' }
     );
   });
 

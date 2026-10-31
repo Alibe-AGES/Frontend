@@ -1,3 +1,1 @@
-import { ExperiencesScreen } from '.';
-
-export default ExperiencesScreen;
+export { ExperiencesScreen as default } from '.';
