@@ -1,6 +1,7 @@
 import { BackButton } from '@/components/BackButton';
 import { ContinueButton } from '@/components/ContinueButton';
 import { EmailInput } from '@/components/EmailInput';
+import { GoogleButton } from '@/components/GoogleButton';
 import { PasswordInput } from '@/components/PasswordInput';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +20,7 @@ export interface LoginData {
 export interface LoginScreenProps {
   onContinue: (credentials: LoginData) => void | Promise<void>;
   onForgotPassword?: () => void;
+  onGoogleSignIn?: () => void;
   errorMessage?: string;
   isLoading?: boolean;
 }
@@ -26,6 +28,7 @@ export interface LoginScreenProps {
 export function LoginScreen({
   onContinue,
   onForgotPassword,
+  onGoogleSignIn,
   errorMessage,
   isLoading = false,
 }: LoginScreenProps) {
@@ -43,7 +46,7 @@ export function LoginScreen({
     >
       <View
         accessible={false}
-        className="-mx-6 aspect-[390/280]"
+        className="-mx-8 aspect-[390/280]"
       >
         <LoginHandsDecoration
           width="100%"
@@ -52,15 +55,17 @@ export function LoginScreen({
       </View>
 
       <BackButton
-        className="absolute left-10 top-24"
+        className="absolute top-20"
         fallbackHref="/auth"
       />
 
-      <Text className="mt-4 text-center font-poppins-black text-5xl leading-tight tracking-[0.3rem] text-ink">
+      <Text
+        className={`text-center text-5xl leading-tight tracking-[0.4rem] text-ink ${theme.typography.display}`}
+      >
         Login
       </Text>
 
-      <View className="mt-20 flex-1 rounded-t-3xl bg-lime-soft px-6 pb-28 pt-16">
+      <View className="mt-10 flex-grow rounded-t-3xl bg-lime-soft px-6 pb-12 pt-8">
         <View className="gap-4">
           <EmailInput
             value={email}
@@ -110,7 +115,21 @@ export function LoginScreen({
           </Pressable>
         </View>
 
-        <View className="mt-auto pt-6">
+        <View className="mt-12 items-center gap-6 pb-12">
+          <View className="w-full flex-row items-center gap-4">
+            <View className="h-0.5 flex-1 bg-wine" />
+            <Text className="text-center font-poppins-light text-lg text-wine">Ou continue com</Text>
+            <View className="h-0.5 flex-1 bg-wine" />
+          </View>
+
+          <GoogleButton
+            onPress={onGoogleSignIn}
+            disabled={isLoading}
+            testID="login-google"
+          />
+        </View>
+
+        <View className="mt-auto">
           {errorMessage ? (
             <Text
               accessibilityRole="alert"

@@ -29,10 +29,11 @@ describe('<SignUpScreen />', () => {
     expect(getByText(text)).toBeTruthy();
   });
 
-  test('does not render the Google sign up option', async () => {
-    const { queryByText } = await render(<SignUpScreen onContinue={onContinue} />);
+  test('renders the Google sign up option', async () => {
+    const { getByText, getByLabelText } = await render(<SignUpScreen onContinue={onContinue} />);
 
-    expect(queryByText('Ou continue com')).toBeNull();
+    expect(getByText('Ou continue com')).toBeTruthy();
+    expect(getByLabelText('Continuar com Google')).toBeTruthy();
   });
 
   test.each(['Email', 'Senha', 'Confirmar senha'])('renders the %s input', async (placeholder) => {
