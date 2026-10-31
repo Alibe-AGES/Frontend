@@ -27,7 +27,7 @@ export const theme = {
     card: '1.5rem',
   },
   typography: {
-    display: 'font-poppins-black tracking-tight',
+    display: 'font-poppins-bold tracking-tight',
     body: 'font-poppins leading-6',
     label: 'font-poppins-semibold text-xs uppercase tracking-wide',
   },

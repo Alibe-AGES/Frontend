@@ -46,10 +46,11 @@ describe('<LoginScreen />', () => {
     });
   });
 
-  test('does not offer Google sign in', async () => {
-    const { queryByText } = await renderScreen();
+  test('offers Google sign in', async () => {
+    const { getByText, getByLabelText } = await renderScreen();
 
-    expect(queryByText('Ou continue com')).toBeNull();
+    expect(getByText('Ou continue com')).toBeTruthy();
+    expect(getByLabelText('Continuar com Google')).toBeTruthy();
   });
 
   test('toggles the password visibility', async () => {
