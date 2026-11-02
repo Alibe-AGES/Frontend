@@ -3,6 +3,7 @@ import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { FC } from 'react';
+import { View } from 'react-native';
 import tw from 'twrnc';
 import { AvatarProps } from './Avatar.types';
 
@@ -36,11 +37,15 @@ export const Avatar: FC<AvatarProps> = ({
   }
 
   return (
-    <Ionicons
-      name={fallbackIconName}
-      size={iconSize}
-      color={fallbackIconColor}
+    <View
+      className="items-center justify-center"
       testID={`${testID}-placeholder`}
-    />
+    >
+      <Ionicons
+        name={fallbackIconName}
+        size={iconSize}
+        color={fallbackIconColor}
+      />
+    </View>
   );
 };

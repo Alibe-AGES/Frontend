@@ -9,13 +9,13 @@ function wrapper({ children }: { children: ReactNode }) {
 
 describe('useSignUpDraft', () => {
   test('starts without account data', async () => {
-    const { result } = await renderHook(() => useSignUpDraft(), { wrapper });
+    const { result } = await Promise.resolve(renderHook(() => useSignUpDraft(), { wrapper }));
 
     expect(result.current.getDraft()).toBeNull();
   });
 
   test('keeps and clears the account data', async () => {
-    const { result } = await renderHook(() => useSignUpDraft(), { wrapper });
+    const { result } = await Promise.resolve(renderHook(() => useSignUpDraft(), { wrapper }));
 
     result.current.setDraft({ email: 'rica@alibe.com', password: 'segredo123' });
 
@@ -29,10 +29,10 @@ describe('useSignUpDraft', () => {
     expect(result.current.getDraft()).toBeNull();
   });
 
-  test('throws when used outside the provider', async () => {
+  test('throws when used outside the provider', () => {
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
 
-    await expect(renderHook(() => useSignUpDraft())).rejects.toThrow(
+    expect(() => renderHook(() => useSignUpDraft())).toThrow(
       'useSignUpDraft must be used within SignUpDraftProvider'
     );
   });

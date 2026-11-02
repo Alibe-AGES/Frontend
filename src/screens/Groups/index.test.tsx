@@ -72,7 +72,7 @@ describe('<GroupsScreen />', () => {
       refetch: jest.fn(),
     });
 
-    const { getByText, getByLabelText } = await render(<GroupsScreen />);
+    const { getByText, getByLabelText } = await Promise.resolve(render(<GroupsScreen />));
 
     expect(getByText('Meus grupos')).toBeTruthy();
     expect(getByText('Clique no + para criar um novo grupo.')).toBeTruthy();
@@ -89,9 +89,10 @@ describe('<GroupsScreen />', () => {
       refetch: jest.fn(),
     });
 
-    const { getByTestId } = await render(<GroupsScreen />);
+    const { getByTestId } = await Promise.resolve(render(<GroupsScreen />));
 
-    await fireEvent.press(getByTestId('groups-user-profile'));
+    fireEvent.press(getByTestId('groups-user-profile'));
+    await Promise.resolve();
 
     expect(push).toHaveBeenCalledWith({
       pathname: '/(profile)/profile/[userId]',
@@ -108,7 +109,7 @@ describe('<GroupsScreen />', () => {
       refetch: jest.fn(),
     });
 
-    const { getByTestId } = await render(<GroupsScreen />);
+    const { getByTestId } = await Promise.resolve(render(<GroupsScreen />));
 
     expect(getByTestId('alibe-groups-list-loading')).toBeTruthy();
   });
@@ -123,11 +124,12 @@ describe('<GroupsScreen />', () => {
       refetch,
     });
 
-    const { getByText, getByLabelText } = await render(<GroupsScreen />);
+    const { getByText, getByLabelText } = await Promise.resolve(render(<GroupsScreen />));
 
     expect(getByText('Não foi possível carregar os grupos.')).toBeTruthy();
 
-    await fireEvent.press(getByLabelText('Tentar novamente'));
+    fireEvent.press(getByLabelText('Tentar novamente'));
+    await Promise.resolve();
 
     expect(refetch).toHaveBeenCalledTimes(1);
   });
@@ -141,7 +143,7 @@ describe('<GroupsScreen />', () => {
       refetch: jest.fn(),
     });
 
-    const { getByTestId } = await render(<GroupsScreen />);
+    const { getByTestId } = await Promise.resolve(render(<GroupsScreen />));
 
     expect(getByTestId('alibe-groups-list-empty')).toBeTruthy();
   });
@@ -155,7 +157,7 @@ describe('<GroupsScreen />', () => {
       refetch: jest.fn(),
     });
 
-    const { getByText } = await render(<GroupsScreen />);
+    const { getByText } = await Promise.resolve(render(<GroupsScreen />));
 
     await waitFor(() => {
       expect(getByText('Hermanas')).toBeTruthy();
@@ -172,13 +174,14 @@ describe('<GroupsScreen />', () => {
       refetch: jest.fn(),
     });
 
-    const { getByTestId } = await render(<GroupsScreen />);
+    const { getByTestId } = await Promise.resolve(render(<GroupsScreen />));
 
     await waitFor(() => {
       expect(getByTestId('alibe-groups-list-item-1')).toBeTruthy();
     });
 
-    await fireEvent.press(getByTestId('alibe-groups-list-item-1'));
+    fireEvent.press(getByTestId('alibe-groups-list-item-1'));
+    await Promise.resolve();
 
     expect(push).toHaveBeenCalledWith({ pathname: '/group/[id]', params: { id: '1' } });
   });
@@ -192,9 +195,10 @@ describe('<GroupsScreen />', () => {
       refetch: jest.fn(),
     });
 
-    const { getByTestId } = await render(<GroupsScreen />);
+    const { getByTestId } = await Promise.resolve(render(<GroupsScreen />));
 
-    await fireEvent.press(getByTestId('create-group-button'));
+    fireEvent.press(getByTestId('create-group-button'));
+    await Promise.resolve();
 
     expect(push).toHaveBeenCalledWith('/create-group');
   });
@@ -219,7 +223,7 @@ describe('<GroupsScreen />', () => {
       refetch: jest.fn(),
     });
 
-    await render(<GroupsScreen />);
+    await Promise.resolve(render(<GroupsScreen />));
 
     await waitFor(() => {
       expect(mockJoinGroupByInvite).toHaveBeenCalledWith('invite-token');
@@ -246,7 +250,7 @@ describe('<GroupsScreen />', () => {
       refetch: jest.fn(),
     });
 
-    await render(<GroupsScreen />);
+    await Promise.resolve(render(<GroupsScreen />));
 
     await waitFor(() => {
       expect(setPendingInvite).toHaveBeenCalledWith('invite-token');
@@ -266,7 +270,7 @@ describe('<GroupsScreen />', () => {
       refetch: jest.fn(),
     });
 
-    await render(<GroupsScreen />);
+    await Promise.resolve(render(<GroupsScreen />));
 
     await waitFor(() => {
       expect(mockJoinGroupByInvite).toHaveBeenCalledWith('pending-token');
@@ -288,7 +292,7 @@ describe('<GroupsScreen />', () => {
       refetch: jest.fn(),
     });
 
-    await render(<GroupsScreen />);
+    await Promise.resolve(render(<GroupsScreen />));
 
     await waitFor(() => {
       expect(replace).toHaveBeenCalledWith('/groups');

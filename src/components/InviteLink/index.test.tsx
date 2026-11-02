@@ -20,19 +20,19 @@ describe('<InviteLink />', () => {
   });
 
   test('shows the link it receives', async () => {
-    const { getByTestId } = await render(<InviteLink link={INVITE_LINK} />);
+    const { getByTestId } = await Promise.resolve(render(<InviteLink link={INVITE_LINK} />));
 
     expect(getByTestId('alibe-invite-link-url')).toHaveTextContent(INVITE_LINK);
   });
 
   test('shows a placeholder while no link has arrived', async () => {
-    const { getByTestId } = await render(<InviteLink />);
+    const { getByTestId } = await Promise.resolve(render(<InviteLink />));
 
     expect(getByTestId('alibe-invite-link-url')).toHaveTextContent('Gerando link de convite...');
   });
 
   test('shows the link on a single line truncated at the end', async () => {
-    const { getByTestId } = await render(<InviteLink link={INVITE_LINK} />);
+    const { getByTestId } = await Promise.resolve(render(<InviteLink link={INVITE_LINK} />));
     const label = getByTestId('alibe-invite-link-url');
 
     expect(label.props.numberOfLines).toBe(1);
@@ -41,15 +41,18 @@ describe('<InviteLink />', () => {
 
   test('copies the whole link and reports it', async () => {
     const onCopy = jest.fn();
-    const { getByTestId, getByText } = await render(
-      <InviteLink
-        link={INVITE_LINK}
-        expiresAt={IN_ONE_HOUR}
-        onCopy={onCopy}
-      />
+    const { getByTestId, getByText } = await Promise.resolve(
+      render(
+        <InviteLink
+          link={INVITE_LINK}
+          expiresAt={IN_ONE_HOUR}
+          onCopy={onCopy}
+        />
+      )
     );
 
-    await fireEvent.press(getByTestId('alibe-invite-link'));
+    fireEvent.press(getByTestId('alibe-invite-link'));
+    await Promise.resolve();
 
     await waitFor(() => {
       expect(mockSetStringAsync).toHaveBeenCalledWith(INVITE_LINK);
@@ -60,9 +63,10 @@ describe('<InviteLink />', () => {
 
   test('is disabled while there is no link', async () => {
     const onCopy = jest.fn();
-    const { getByTestId } = await render(<InviteLink onCopy={onCopy} />);
+    const { getByTestId } = await Promise.resolve(render(<InviteLink onCopy={onCopy} />));
 
-    await fireEvent.press(getByTestId('alibe-invite-link'));
+    fireEvent.press(getByTestId('alibe-invite-link'));
+    await Promise.resolve();
 
     expect(mockSetStringAsync).not.toHaveBeenCalled();
     expect(onCopy).not.toHaveBeenCalled();
@@ -73,15 +77,18 @@ describe('<InviteLink />', () => {
 
   test('respects the disabled prop even with a valid link', async () => {
     const onCopy = jest.fn();
-    const { getByTestId } = await render(
-      <InviteLink
-        link={INVITE_LINK}
-        onCopy={onCopy}
-        disabled
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <InviteLink
+          link={INVITE_LINK}
+          onCopy={onCopy}
+          disabled
+        />
+      )
     );
 
-    await fireEvent.press(getByTestId('alibe-invite-link'));
+    fireEvent.press(getByTestId('alibe-invite-link'));
+    await Promise.resolve();
 
     expect(mockSetStringAsync).not.toHaveBeenCalled();
     expect(onCopy).not.toHaveBeenCalled();
@@ -90,16 +97,19 @@ describe('<InviteLink />', () => {
   test('asks for a new link instead of copying an expired one', async () => {
     const onExpired = jest.fn();
     const onCopy = jest.fn();
-    const { getByTestId } = await render(
-      <InviteLink
-        link={INVITE_LINK}
-        expiresAt={ONE_HOUR_AGO}
-        onCopy={onCopy}
-        onExpired={onExpired}
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <InviteLink
+          link={INVITE_LINK}
+          expiresAt={ONE_HOUR_AGO}
+          onCopy={onCopy}
+          onExpired={onExpired}
+        />
+      )
     );
 
-    await fireEvent.press(getByTestId('alibe-invite-link'));
+    fireEvent.press(getByTestId('alibe-invite-link'));
+    await Promise.resolve();
 
     expect(onExpired).toHaveBeenCalledTimes(1);
     expect(mockSetStringAsync).not.toHaveBeenCalled();
@@ -112,15 +122,18 @@ describe('<InviteLink />', () => {
     const failure = new Error('Write permission denied');
     mockSetStringAsync.mockRejectedValueOnce(failure);
 
-    const { getByTestId, getByText } = await render(
-      <InviteLink
-        link={INVITE_LINK}
-        onCopy={onCopy}
-        onCopyError={onCopyError}
-      />
+    const { getByTestId, getByText } = await Promise.resolve(
+      render(
+        <InviteLink
+          link={INVITE_LINK}
+          onCopy={onCopy}
+          onCopyError={onCopyError}
+        />
+      )
     );
 
-    await fireEvent.press(getByTestId('alibe-invite-link'));
+    fireEvent.press(getByTestId('alibe-invite-link'));
+    await Promise.resolve();
 
     await waitFor(() => {
       expect(onCopyError).toHaveBeenCalledWith(failure);
@@ -130,24 +143,30 @@ describe('<InviteLink />', () => {
   });
 
   test('goes back to the copy label when a new link arrives', async () => {
-    const { getByTestId, getByText, rerender } = await render(<InviteLink link={INVITE_LINK} />);
+    const { getByTestId, getByText, rerender } = await Promise.resolve(
+      render(<InviteLink link={INVITE_LINK} />)
+    );
 
-    await fireEvent.press(getByTestId('alibe-invite-link'));
+    fireEvent.press(getByTestId('alibe-invite-link'));
+    await Promise.resolve();
     await waitFor(() => {
       expect(getByText('Copiado')).toBeTruthy();
     });
 
-    await rerender(<InviteLink link="https://alibe.app/invite/outro-link" />);
+    rerender(<InviteLink link="https://alibe.app/invite/outro-link" />);
+    await Promise.resolve();
 
     expect(getByText('Copiar')).toBeTruthy();
   });
 
   test('has an accessible label and accepts a custom testID', async () => {
-    const { getByLabelText, getByTestId } = await render(
-      <InviteLink
-        link={INVITE_LINK}
-        testID="group-invite-link"
-      />
+    const { getByLabelText, getByTestId } = await Promise.resolve(
+      render(
+        <InviteLink
+          link={INVITE_LINK}
+          testID="group-invite-link"
+        />
+      )
     );
 
     expect(getByLabelText('Copiar link de convite')).toBeTruthy();

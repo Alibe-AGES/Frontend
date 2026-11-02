@@ -181,6 +181,7 @@ function CalendarDayCell({ dateString, day, mark, onPress, onCreatePress }: Cale
       >
         <View
           className={`h-9 w-9 items-center justify-center rounded-lg ${dayContainerClasses[displayStatus]}`}
+          testID={`calendar-day-${dateString}`}
         >
           <DayContent
             status={displayStatus}

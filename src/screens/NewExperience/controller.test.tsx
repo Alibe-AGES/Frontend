@@ -63,6 +63,16 @@ const proposal = {
   responses: { yes: 1, no: 0, pending: 2 },
 };
 
+async function renderController() {
+  render(<NewExperienceController />);
+  await act(async () => {
+    await Promise.resolve();
+  });
+  await waitFor(() => {
+    expect(mockScreenProps.isLoading).toBe(false);
+  });
+}
+
 describe('NewExperienceController', () => {
   const replace = jest.fn();
 
@@ -82,7 +92,7 @@ describe('NewExperienceController', () => {
   });
 
   test('loads active proposals for the current group', async () => {
-    await render(<NewExperienceController />);
+    await renderController();
     await waitFor(() => {
       expect(mockScreenProps.proposal?.id).toBe('proposal-1');
       expect(mockScreenProps.isLoading).toBe(false);
@@ -92,14 +102,15 @@ describe('NewExperienceController', () => {
 
   test('shows the creator proposal but does not record a duplicate answer', async () => {
     mockGetActiveProposals.mockResolvedValue([{ ...proposal, myAnswer: 'yes' }]);
-    await render(<NewExperienceController />);
+    await renderController();
     await waitFor(() => {
       expect(mockScreenProps.proposal?.myAnswer).toBe('yes');
     });
 
-    await act(() => {
+    act(() => {
       mockScreenProps.onAnswer('yes');
     });
+    await Promise.resolve();
 
     expect(mockRespondToSuggestion).not.toHaveBeenCalled();
     expect(mockScreenProps.proposal?.id).toBe('proposal-1');
@@ -107,13 +118,14 @@ describe('NewExperienceController', () => {
 
   test('allows voting when the API marks an unanswered proposal as pending', async () => {
     mockGetActiveProposals.mockResolvedValue([{ ...proposal, myAnswer: 'pending' }]);
-    await render(<NewExperienceController />);
+    await renderController();
     await waitFor(() => {
       expect(mockScreenProps.proposal?.myAnswer).toBe('pending');
     });
 
-    await act(() => {
+    await act(async () => {
       mockScreenProps.onAnswer('yes');
+      await Promise.resolve();
     });
 
     expect(mockRespondToSuggestion).toHaveBeenCalledWith('proposal-1', 'yes', false);
@@ -121,13 +133,14 @@ describe('NewExperienceController', () => {
 
   test('records a no response and advances to the next proposal', async () => {
     mockGetActiveProposals.mockResolvedValue([proposal, { ...proposal, id: 'proposal-2' }]);
-    await render(<NewExperienceController />);
+    await renderController();
     await waitFor(() => {
       expect(mockScreenProps.proposal?.id).toBe('proposal-1');
     });
 
-    await act(() => {
+    await act(async () => {
       mockScreenProps.onAnswer('no');
+      await Promise.resolve();
     });
 
     expect(mockRespondToSuggestion).toHaveBeenCalledWith('proposal-1', 'no', false);
@@ -144,13 +157,14 @@ describe('NewExperienceController', () => {
       createdAt: '2026-10-23T12:00:00.000Z',
       matched: true,
     });
-    await render(<NewExperienceController />);
+    await renderController();
     await waitFor(() => {
       expect(mockScreenProps.proposal?.id).toBe('proposal-1');
     });
 
-    await act(() => {
+    await act(async () => {
       mockScreenProps.onAnswer('yes');
+      await Promise.resolve();
     });
 
     expect(replace).toHaveBeenCalledWith({
@@ -175,13 +189,14 @@ describe('NewExperienceController', () => {
       createdAt: '2026-10-23T12:00:00.000Z',
       matched: true,
     });
-    await render(<NewExperienceController />);
+    await renderController();
     await waitFor(() => {
       expect(mockScreenProps.proposal?.id).toBe('proposal-1');
     });
 
-    await act(() => {
+    await act(async () => {
       mockScreenProps.onAnswer('yes');
+      await Promise.resolve();
     });
 
     expect(replace).not.toHaveBeenCalled();
@@ -192,13 +207,14 @@ describe('NewExperienceController', () => {
     const show = jest.mocked(Toast.show);
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
     mockRespondToSuggestion.mockRejectedValueOnce(new Error('offline'));
-    await render(<NewExperienceController />);
+    await renderController();
     await waitFor(() => {
       expect(mockScreenProps.proposal?.id).toBe('proposal-1');
     });
 
-    await act(() => {
+    await act(async () => {
       mockScreenProps.onAnswer('yes');
+      await Promise.resolve();
     });
 
     expect(show).toHaveBeenCalledWith(

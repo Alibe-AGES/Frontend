@@ -58,7 +58,7 @@ describe('<RootLayout />', () => {
   test('shows only the splash while the fonts are loading', async () => {
     mockUseFonts.mockReturnValue([false]);
 
-    await render(<RootLayout />);
+    await Promise.resolve(render(<RootLayout />));
 
     expect(screen.getByTestId('splash-screen')).toBeTruthy();
     expect(SplashScreen.hideAsync).toHaveBeenCalled();
@@ -67,7 +67,7 @@ describe('<RootLayout />', () => {
 
   test.each(['/groups', '/profile/user-123'])('protects private route %s', async (pathname) => {
     mockUsePathname.mockReturnValue(pathname);
-    await render(<RootLayout />);
+    await Promise.resolve(render(<RootLayout />));
 
     expect(mockAuthenticatedRoute.mock.calls[0]?.[0].enabled).toBe(true);
   });
@@ -76,7 +76,7 @@ describe('<RootLayout />', () => {
     'does not protect the public route %s',
     async (pathname) => {
       mockUsePathname.mockReturnValue(pathname);
-      await render(<RootLayout />);
+      await Promise.resolve(render(<RootLayout />));
 
       expect(mockAuthenticatedRoute.mock.calls[0]?.[0].enabled).toBe(false);
     }

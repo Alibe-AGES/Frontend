@@ -41,16 +41,18 @@ describe('<GroupDayCarousel />', () => {
   });
 
   test('renders participant status section and buttons', async () => {
-    const { getByText, getByTestId } = await render(
-      <GroupDayCarousel
-        date="2026-10-12"
-        items={mockItems}
-        isLoading={false}
-        error={null}
-        onAvailabilityPress={onAvailabilityPress}
-        onPresenceResponse={onPresenceResponse}
-        currentUserId="user-1"
-      />
+    const { getByText, getByTestId } = await Promise.resolve(
+      render(
+        <GroupDayCarousel
+          date="2026-10-12"
+          items={mockItems}
+          isLoading={false}
+          error={null}
+          onAvailabilityPress={onAvailabilityPress}
+          onPresenceResponse={onPresenceResponse}
+          currentUserId="user-1"
+        />
+      )
     );
 
     expect(getByText('Status dos participantes')).toBeTruthy();
@@ -61,68 +63,79 @@ describe('<GroupDayCarousel />', () => {
   });
 
   test('calls onPresenceResponse with yes and no', async () => {
-    const { getByTestId } = await render(
-      <GroupDayCarousel
-        date="2026-10-12"
-        items={mockItems}
-        isLoading={false}
-        error={null}
-        onAvailabilityPress={onAvailabilityPress}
-        onPresenceResponse={onPresenceResponse}
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <GroupDayCarousel
+          date="2026-10-12"
+          items={mockItems}
+          isLoading={false}
+          error={null}
+          onAvailabilityPress={onAvailabilityPress}
+          onPresenceResponse={onPresenceResponse}
+        />
+      )
     );
 
-    await fireEvent.press(getByTestId('group-day-carousel-presence-yes-event-1'));
+    fireEvent.press(getByTestId('group-day-carousel-presence-yes-event-1'));
+    await Promise.resolve();
     await waitFor(() => {
       expect(onPresenceResponse).toHaveBeenCalledWith('event-1', 'yes');
     });
 
-    await fireEvent.press(getByTestId('group-day-carousel-presence-no-event-1'));
+    fireEvent.press(getByTestId('group-day-carousel-presence-no-event-1'));
+    await Promise.resolve();
     await waitFor(() => {
       expect(onPresenceResponse).toHaveBeenCalledWith('event-1', 'no');
     });
   });
 
   test('calls onAvailabilityPress when availability button is pressed', async () => {
-    const { getByTestId } = await render(
-      <GroupDayCarousel
-        date="2026-10-12"
-        items={mockItems}
-        isLoading={false}
-        error={null}
-        onAvailabilityPress={onAvailabilityPress}
-        onPresenceResponse={onPresenceResponse}
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <GroupDayCarousel
+          date="2026-10-12"
+          items={mockItems}
+          isLoading={false}
+          error={null}
+          onAvailabilityPress={onAvailabilityPress}
+          onPresenceResponse={onPresenceResponse}
+        />
+      )
     );
 
-    await fireEvent.press(getByTestId('group-day-carousel-availability'));
+    fireEvent.press(getByTestId('group-day-carousel-availability'));
+    await Promise.resolve();
     expect(onAvailabilityPress).toHaveBeenCalledTimes(1);
   });
 
   test('renders loading state', async () => {
-    const { getByTestId } = await render(
-      <GroupDayCarousel
-        date="2026-10-12"
-        items={[]}
-        isLoading={true}
-        error={null}
-        onAvailabilityPress={onAvailabilityPress}
-        onPresenceResponse={onPresenceResponse}
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <GroupDayCarousel
+          date="2026-10-12"
+          items={[]}
+          isLoading={true}
+          error={null}
+          onAvailabilityPress={onAvailabilityPress}
+          onPresenceResponse={onPresenceResponse}
+        />
+      )
     );
     expect(getByTestId('group-day-carousel-loading')).toBeTruthy();
   });
 
   test('renders error state', async () => {
-    const { getByTestId } = await render(
-      <GroupDayCarousel
-        date="2026-10-12"
-        items={[]}
-        isLoading={false}
-        error="Erro ao carregar detalhes"
-        onAvailabilityPress={onAvailabilityPress}
-        onPresenceResponse={onPresenceResponse}
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <GroupDayCarousel
+          date="2026-10-12"
+          items={[]}
+          isLoading={false}
+          error="Erro ao carregar detalhes"
+          onAvailabilityPress={onAvailabilityPress}
+          onPresenceResponse={onPresenceResponse}
+        />
+      )
     );
     expect(getByTestId('group-day-carousel-error')).toBeTruthy();
   });
