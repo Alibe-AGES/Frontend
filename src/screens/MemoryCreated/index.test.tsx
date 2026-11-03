@@ -17,23 +17,24 @@ describe('<MemoryCreatedScreen />', () => {
   });
 
   test('renders the confirmation headline and hint', async () => {
-    const { getByRole, getByText } = await render(<MemoryCreatedScreen />);
+    const { getByRole, getByText } = await Promise.resolve(render(<MemoryCreatedScreen />));
 
     expect(getByRole('header', { name: 'Memória adicionada!' })).toBeTruthy();
     expect(getByText('Volte a galeria de memórias para conferir!')).toBeTruthy();
   });
 
   test('renders a single back button', async () => {
-    const { getAllByRole, getByText } = await render(<MemoryCreatedScreen />);
+    const { getAllByRole, getByText } = await Promise.resolve(render(<MemoryCreatedScreen />));
 
     expect(getByText('Voltar')).toBeTruthy();
     expect(getAllByRole('button')).toHaveLength(1);
   });
 
   test('returns to the memories gallery when the back button is pressed', async () => {
-    const { getByTestId } = await render(<MemoryCreatedScreen />);
+    const { getByTestId } = await Promise.resolve(render(<MemoryCreatedScreen />));
 
-    await fireEvent.press(getByTestId('memory-created-back'));
+    fireEvent.press(getByTestId('memory-created-back'));
+    await Promise.resolve();
 
     expect(mockDismissTo).toHaveBeenCalledWith({
       pathname: '/group/[id]/memories',
