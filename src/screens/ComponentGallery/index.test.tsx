@@ -3,7 +3,7 @@ import { ComponentGalleryScreen } from '.';
 
 describe('<ComponentGalleryScreen />', () => {
   test('renders only a simple button', async () => {
-    const { getByRole, queryByTestId } = await render(<ComponentGalleryScreen />);
+    const { getByRole, queryByTestId } = await Promise.resolve(render(<ComponentGalleryScreen />));
 
     expect(getByRole('button', { name: 'Simple button' })).toBeTruthy();
     expect(queryByTestId('gallery-event-card-create')).toBeNull();

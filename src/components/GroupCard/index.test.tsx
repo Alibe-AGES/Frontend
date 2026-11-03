@@ -3,87 +3,101 @@ import { GroupCard } from './index';
 
 describe('<GroupCard />', () => {
   test('shows the group name', async () => {
-    const { getByText } = await render(
-      <GroupCard
-        id="1"
-        name="Hermanas"
-        color="bg-lime"
-      />
+    const { getByText } = await Promise.resolve(
+      render(
+        <GroupCard
+          id="1"
+          name="Hermanas"
+          color="bg-lime"
+        />
+      )
     );
 
     expect(getByText('Hermanas')).toBeTruthy();
   });
 
   test('truncates the name to a single line so it never overflows the pill', async () => {
-    const { getByTestId } = await render(
-      <GroupCard
-        id="1"
-        name="Um nome de grupo bem comprido para testar o corte de texto"
-        color="bg-lime"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <GroupCard
+          id="1"
+          name="Um nome de grupo bem comprido para testar o corte de texto"
+          color="bg-lime"
+        />
+      )
     );
 
     expect(getByTestId('alibe-group-card-name').props.numberOfLines).toBe(1);
   });
 
   test('shows a placeholder avatar when there is no photo', async () => {
-    const { getByTestId } = await render(
-      <GroupCard
-        id="1"
-        name="Hermanas"
-        color="bg-lime"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <GroupCard
+          id="1"
+          name="Hermanas"
+          color="bg-lime"
+        />
+      )
     );
 
     expect(getByTestId('alibe-group-card-avatar-placeholder')).toBeTruthy();
   });
 
   test('shows the group photo when provided (reusing the shared Avatar component)', async () => {
-    const { getByTestId } = await render(
-      <GroupCard
-        id="1"
-        name="Hermanas"
-        color="bg-lime"
-        photoUri="https://cdn.alibe.com/hermanas.jpg"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <GroupCard
+          id="1"
+          name="Hermanas"
+          color="bg-lime"
+          photoUri="https://cdn.alibe.com/hermanas.jpg"
+        />
+      )
     );
 
     expect(getByTestId('alibe-group-card-avatar-photo')).toBeTruthy();
   });
 
   test('shows the members preview when provided', async () => {
-    const { getByTestId } = await render(
-      <GroupCard
-        id="1"
-        name="Hermanas"
-        color="bg-lime"
-        membersPreview="Eu, Kata, Manu e May"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <GroupCard
+          id="1"
+          name="Hermanas"
+          color="bg-lime"
+          membersPreview="Eu, Kata, Manu e May"
+        />
+      )
     );
 
     expect(getByTestId('alibe-group-card-members').props.children).toBe('Eu, Kata, Manu e May');
   });
 
   test('hides the members preview when not provided', async () => {
-    const { queryByTestId } = await render(
-      <GroupCard
-        id="1"
-        name="Hermanas"
-        color="bg-lime"
-      />
+    const { queryByTestId } = await Promise.resolve(
+      render(
+        <GroupCard
+          id="1"
+          name="Hermanas"
+          color="bg-lime"
+        />
+      )
     );
 
     expect(queryByTestId('alibe-group-card-members')).toBeNull();
   });
 
   test('truncates the members preview to a single line', async () => {
-    const { getByTestId } = await render(
-      <GroupCard
-        id="1"
-        name="Hermanas"
-        color="bg-lime"
-        membersPreview="Eu, Kata, Manu e May"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <GroupCard
+          id="1"
+          name="Hermanas"
+          color="bg-lime"
+          membersPreview="Eu, Kata, Manu e May"
+        />
+      )
     );
 
     expect(getByTestId('alibe-group-card-members').props.numberOfLines).toBe(1);
@@ -91,64 +105,77 @@ describe('<GroupCard />', () => {
 
   test('calls onPress with the group id when tapped, so the screen can open it', async () => {
     const onPress = jest.fn();
-    const { getByTestId } = await render(
-      <GroupCard
-        id="group-42"
-        name="Hermanas"
-        color="bg-lime"
-        onPress={onPress}
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <GroupCard
+          id="group-42"
+          name="Hermanas"
+          color="bg-lime"
+          onPress={onPress}
+        />
+      )
     );
 
-    await fireEvent.press(getByTestId('alibe-group-card'));
+    fireEvent.press(getByTestId('alibe-group-card'));
+    await Promise.resolve();
 
     expect(onPress).toHaveBeenCalledWith('group-42');
   });
 
   test('does not throw when tapped without an onPress handler', async () => {
-    const { getByTestId } = await render(
-      <GroupCard
-        id="1"
-        name="Hermanas"
-        color="bg-lime"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <GroupCard
+          id="1"
+          name="Hermanas"
+          color="bg-lime"
+        />
+      )
     );
 
-    expect(() => fireEvent.press(getByTestId('alibe-group-card'))).not.toThrow();
+    expect(() => {
+      fireEvent.press(getByTestId('alibe-group-card'));
+    }).not.toThrow();
   });
 
   test('is exposed as an accessible button', async () => {
-    const { getByTestId } = await render(
-      <GroupCard
-        id="1"
-        name="Hermanas"
-        color="bg-lime"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <GroupCard
+          id="1"
+          name="Hermanas"
+          color="bg-lime"
+        />
+      )
     );
 
     expect(getByTestId('alibe-group-card').props.accessibilityRole).toBe('button');
   });
 
   test('exposes an accessible label with the group name', async () => {
-    const { getByLabelText } = await render(
-      <GroupCard
-        id="1"
-        name="Pela cidade"
-        color="bg-pink"
-      />
+    const { getByLabelText } = await Promise.resolve(
+      render(
+        <GroupCard
+          id="1"
+          name="Pela cidade"
+          color="bg-pink"
+        />
+      )
     );
 
     expect(getByLabelText('Abrir grupo Pela cidade')).toBeTruthy();
   });
 
   test('namespaces every inner testID under a custom prefix', async () => {
-    const { getByTestId } = await render(
-      <GroupCard
-        id="1"
-        name="Hermanas"
-        color="bg-lime"
-        testID="groups-list-item-1"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <GroupCard
+          id="1"
+          name="Hermanas"
+          color="bg-lime"
+          testID="groups-list-item-1"
+        />
+      )
     );
 
     expect(getByTestId('groups-list-item-1')).toBeTruthy();

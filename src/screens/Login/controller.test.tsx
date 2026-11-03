@@ -1,8 +1,8 @@
+import { synchronizePushToken } from '@/notifications/synchronize-push-token';
 import { authClient } from '@/server/auth';
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
 import LoginController from './controller';
-import { synchronizePushToken } from '@/notifications/synchronize-push-token';
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
@@ -40,11 +40,16 @@ describe('LoginController', () => {
   });
 
   test('authenticates with the entered credentials before routing to groups', async () => {
-    const { getByPlaceholderText, getByTestId } = await render(<LoginController />);
+    const { getByPlaceholderText, getByTestId } = await Promise.resolve(
+      render(<LoginController />)
+    );
 
-    await fireEvent.changeText(getByPlaceholderText('Email'), 'user@example.com');
-    await fireEvent.changeText(getByPlaceholderText('Senha'), 'senha-segura');
-    await fireEvent.press(getByTestId('login-continue'));
+    fireEvent.changeText(getByPlaceholderText('Email'), 'user@example.com');
+    await Promise.resolve();
+    fireEvent.changeText(getByPlaceholderText('Senha'), 'senha-segura');
+    await Promise.resolve();
+    fireEvent.press(getByTestId('login-continue'));
+    await Promise.resolve();
 
     expect(mockSignInEmail).toHaveBeenCalledWith({
       email: 'user@example.com',
@@ -52,16 +57,23 @@ describe('LoginController', () => {
       rememberMe: true,
     });
     expect(mockSynchronizePushToken).toHaveBeenCalledTimes(1);
-    expect(replace).toHaveBeenCalledWith('/groups');
+    await waitFor(() => {
+      expect(replace).toHaveBeenCalledWith('/groups');
+    });
   });
 
   test('shows an error and stays on login when authentication is rejected', async () => {
     mockSignInEmail.mockResolvedValueOnce({ error: { message: 'Invalid credentials' } });
-    const { getByPlaceholderText, getByTestId, findByRole } = await render(<LoginController />);
+    const { getByPlaceholderText, getByTestId, findByRole } = await Promise.resolve(
+      render(<LoginController />)
+    );
 
-    await fireEvent.changeText(getByPlaceholderText('Email'), 'user@example.com');
-    await fireEvent.changeText(getByPlaceholderText('Senha'), 'wrong-password');
-    await fireEvent.press(getByTestId('login-continue'));
+    fireEvent.changeText(getByPlaceholderText('Email'), 'user@example.com');
+    await Promise.resolve();
+    fireEvent.changeText(getByPlaceholderText('Senha'), 'wrong-password');
+    await Promise.resolve();
+    fireEvent.press(getByTestId('login-continue'));
+    await Promise.resolve();
 
     expect(await findByRole('alert')).toHaveTextContent(/Não foi possível entrar/);
     expect(mockSynchronizePushToken).not.toHaveBeenCalled();
@@ -69,9 +81,10 @@ describe('LoginController', () => {
   });
 
   test('pops back to the previous screen', async () => {
-    const { getByLabelText } = await render(<LoginController />);
+    const { getByLabelText } = await Promise.resolve(render(<LoginController />));
 
-    await fireEvent.press(getByLabelText('Voltar'));
+    fireEvent.press(getByLabelText('Voltar'));
+    await Promise.resolve();
 
     expect(back).toHaveBeenCalledTimes(1);
     expect(replace).not.toHaveBeenCalled();
@@ -79,18 +92,20 @@ describe('LoginController', () => {
 
   test('falls back to the auth screen when there is nothing to pop', async () => {
     canGoBack.mockReturnValueOnce(false);
-    const { getByLabelText } = await render(<LoginController />);
+    const { getByLabelText } = await Promise.resolve(render(<LoginController />));
 
-    await fireEvent.press(getByLabelText('Voltar'));
+    fireEvent.press(getByLabelText('Voltar'));
+    await Promise.resolve();
 
     expect(back).not.toHaveBeenCalled();
     expect(replace).toHaveBeenCalledWith('/auth');
   });
 
   test('does nothing on forgot password while recovery is not implemented', async () => {
-    const { getByText } = await render(<LoginController />);
+    const { getByText } = await Promise.resolve(render(<LoginController />));
 
-    await fireEvent.press(getByText('Esqueci minha senha'));
+    fireEvent.press(getByText('Esqueci minha senha'));
+    await Promise.resolve();
 
     expect(replace).not.toHaveBeenCalled();
     expect(back).not.toHaveBeenCalled();

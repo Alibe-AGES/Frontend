@@ -34,7 +34,7 @@ describe('usePlaces', () => {
 
   test('requests nearby backend places using the current device location', async () => {
     const input = { query: '', tagIds: [], filters: EMPTY_FILTER_VALUE };
-    const { result } = await renderHook(() => usePlaces(input));
+    const { result } = await Promise.resolve(renderHook(() => usePlaces(input)));
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -51,8 +51,8 @@ describe('usePlaces', () => {
 
   test('shows a useful error when location access is denied', async () => {
     (Location.requestForegroundPermissionsAsync as jest.Mock).mockResolvedValue({ granted: false });
-    const { result } = await renderHook(() =>
-      usePlaces({ query: '', tagIds: [], filters: EMPTY_FILTER_VALUE })
+    const { result } = await Promise.resolve(
+      renderHook(() => usePlaces({ query: '', tagIds: [], filters: EMPTY_FILTER_VALUE }))
     );
 
     await waitFor(() => {

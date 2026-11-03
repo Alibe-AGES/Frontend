@@ -70,9 +70,10 @@ const COMPLETE_DRAFT: EventCardDraft = {
 };
 
 async function fillDraft(draft: EventCardDraft): Promise<void> {
-  await act(() => {
+  act(() => {
     mockScreenProps.onChangeDraft(draft);
   });
+  await Promise.resolve();
 }
 
 describe('CreateEventController', () => {
@@ -103,7 +104,7 @@ describe('CreateEventController', () => {
   });
 
   test('loads the group participants and the current user', async () => {
-    await render(<CreateEventController />);
+    await Promise.resolve(render(<CreateEventController />));
 
     await waitFor(() => {
       expect(mockScreenProps.participants).toHaveLength(2);
@@ -117,7 +118,7 @@ describe('CreateEventController', () => {
   test('prefills the date passed from the group calendar', async () => {
     mockUseLocalSearchParams.mockReturnValue({ id: 'group-1', date: '2026-10-15' });
 
-    await render(<CreateEventController />);
+    await Promise.resolve(render(<CreateEventController />));
 
     expect(mockScreenProps.draft.date).toBe('2026-10-15');
     expect(mockScreenProps.isConfirmDisabled).toBe(true);
@@ -127,7 +128,7 @@ describe('CreateEventController', () => {
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
     mockGetGroup.mockRejectedValue(new Error('offline'));
 
-    await render(<CreateEventController />);
+    await Promise.resolve(render(<CreateEventController />));
 
     await waitFor(() => {
       expect(mockScreenProps.isLoadingParticipants).toBe(false);
@@ -138,7 +139,7 @@ describe('CreateEventController', () => {
   test('still lists participants when the current user cannot be loaded', async () => {
     mockGetMe.mockRejectedValue(new Error('offline'));
 
-    await render(<CreateEventController />);
+    await Promise.resolve(render(<CreateEventController />));
 
     await waitFor(() => {
       expect(mockScreenProps.participants).toHaveLength(2);
@@ -147,7 +148,7 @@ describe('CreateEventController', () => {
   });
 
   test('keeps confirm disabled until every required field is valid', async () => {
-    await render(<CreateEventController />);
+    await Promise.resolve(render(<CreateEventController />));
     expect(mockScreenProps.isConfirmDisabled).toBe(true);
 
     await fillDraft({ ...COMPLETE_DRAFT, date: '2026-02-31' });
@@ -164,25 +165,28 @@ describe('CreateEventController', () => {
   });
 
   test('does not submit an incomplete draft', async () => {
-    await render(<CreateEventController />);
+    await Promise.resolve(render(<CreateEventController />));
 
-    await act(() => {
+    act(() => {
       mockScreenProps.onConfirm();
     });
+    await Promise.resolve();
 
     expect(mockCreateEvent).not.toHaveBeenCalled();
   });
 
   test('creates the event with the API date and navigates to the confirmation', async () => {
     const photo = { uri: 'file:///bloom.jpg', fileName: 'bloom.jpg', mimeType: 'image/jpeg' };
-    await render(<CreateEventController />);
+    await Promise.resolve(render(<CreateEventController />));
 
-    await act(() => {
+    act(() => {
       mockScreenProps.onImageSelected(photo);
     });
+    await Promise.resolve();
     await fillDraft({ ...COMPLETE_DRAFT, imageUri: photo.uri });
-    await act(() => {
+    await act(async () => {
       mockScreenProps.onConfirm();
+      await Promise.resolve();
     });
 
     expect(mockCreateEvent).toHaveBeenCalledWith('group-1', {
@@ -207,7 +211,7 @@ describe('CreateEventController', () => {
       name: 'Bloom Café',
       address: 'Rua Padre Chagas, 320',
     });
-    await render(<CreateEventController />);
+    await Promise.resolve(render(<CreateEventController />));
 
     expect(mockScreenProps.draft).toMatchObject({
       name: 'Bloom Café',
@@ -219,9 +223,10 @@ describe('CreateEventController', () => {
       date: '2026-10-15',
       time: '20:00',
     });
-    await act(() => {
+    act(() => {
       mockScreenProps.onConfirm();
     });
+    await Promise.resolve();
 
     expect(mockCreateEvent).toHaveBeenCalledWith('group-1', {
       name: 'Bloom Café',
@@ -235,11 +240,12 @@ describe('CreateEventController', () => {
   test('shows an error toast and stays on the screen when creation fails', async () => {
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
     mockCreateEvent.mockRejectedValue(new Error('Bad Request'));
-    await render(<CreateEventController />);
+    await Promise.resolve(render(<CreateEventController />));
 
     await fillDraft(COMPLETE_DRAFT);
-    await act(() => {
+    await act(async () => {
       mockScreenProps.onConfirm();
+      await Promise.resolve();
     });
 
     expect(mockToastShow).toHaveBeenCalledWith(
@@ -254,12 +260,13 @@ describe('CreateEventController', () => {
 
   test('does not load or submit without a group id', async () => {
     mockUseLocalSearchParams.mockReturnValue({});
-    await render(<CreateEventController />);
+    await Promise.resolve(render(<CreateEventController />));
 
     await fillDraft(COMPLETE_DRAFT);
-    await act(() => {
+    act(() => {
       mockScreenProps.onConfirm();
     });
+    await Promise.resolve();
 
     expect(mockGetGroup).not.toHaveBeenCalled();
     expect(mockCreateEvent).not.toHaveBeenCalled();
@@ -267,20 +274,22 @@ describe('CreateEventController', () => {
   });
 
   test('switches to the suggestion tab and creates a location suggestion without event fields', async () => {
-    await render(<CreateEventController />);
+    await Promise.resolve(render(<CreateEventController />));
 
     expect(mockScreenProps.activeTab).toBe('event');
 
-    await act(() => {
+    act(() => {
       mockScreenProps.onSelectTab?.('suggestion');
     });
+    await Promise.resolve();
 
     expect(mockScreenProps.activeTab).toBe('suggestion');
 
     await fillDraft(COMPLETE_DRAFT);
-    await act(() => {
+    act(() => {
       mockScreenProps.onConfirm();
     });
+    await Promise.resolve();
 
     expect(mockCreateProposal).toHaveBeenCalledWith('group-1', {
       name: 'Bloom Café',
@@ -295,7 +304,7 @@ describe('CreateEventController', () => {
 
   test('requires manual proposal name and address, then submits a description-only card', async () => {
     mockUseLocalSearchParams.mockReturnValue({ id: 'group-1', tab: 'suggestion' });
-    await render(<CreateEventController />);
+    await Promise.resolve(render(<CreateEventController />));
     await fillDraft({
       ...mockScreenProps.draft,
       name: '',
@@ -314,9 +323,10 @@ describe('CreateEventController', () => {
       address: 'Rua das Flores, 123',
     });
     expect(mockScreenProps.isConfirmDisabled).toBe(false);
-    await act(() => {
+    act(() => {
       mockScreenProps.onConfirm();
     });
+    await Promise.resolve();
 
     expect(mockCreateProposal).toHaveBeenCalledWith('group-1', {
       name: 'Um café tranquilo para conversar',
@@ -337,7 +347,7 @@ describe('CreateEventController', () => {
       tab: 'suggestion',
     });
 
-    await render(<CreateEventController />);
+    await Promise.resolve(render(<CreateEventController />));
 
     expect(mockScreenProps.activeTab).toBe('suggestion');
     expect(mockScreenProps.draft.address).toBe(
@@ -350,9 +360,10 @@ describe('CreateEventController', () => {
       date: '2026-10-15',
       time: '20:00',
     });
-    await act(() => {
+    act(() => {
       mockScreenProps.onConfirm();
     });
+    await Promise.resolve();
 
     expect(mockCreateProposal).toHaveBeenCalledWith('group-1', {
       locationId: customLocationId,
@@ -362,10 +373,11 @@ describe('CreateEventController', () => {
   });
 
   test('includes user-entered location details when creating a suggestion', async () => {
-    await render(<CreateEventController />);
-    await act(() => {
+    await Promise.resolve(render(<CreateEventController />));
+    act(() => {
       mockScreenProps.onSelectTab?.('suggestion');
     });
+    await Promise.resolve();
     await fillDraft({
       ...COMPLETE_DRAFT,
       priceStart: '100',
@@ -375,9 +387,10 @@ describe('CreateEventController', () => {
       website: 'www.coolturebr.net',
     });
 
-    await act(() => {
+    act(() => {
       mockScreenProps.onConfirm();
     });
+    await Promise.resolve();
 
     expect(mockCreateProposal).toHaveBeenCalledWith('group-1', {
       name: 'Bloom Café',
@@ -400,16 +413,17 @@ describe('CreateEventController', () => {
       address: 'Rua Padre Chagas, 320',
       name: 'Bloom Café',
     });
-    await render(<CreateEventController />);
+    await Promise.resolve(render(<CreateEventController />));
     await fillDraft({
       ...mockScreenProps.draft,
       ...COMPLETE_DRAFT,
       name: 'Bloom Café',
     });
 
-    await act(() => {
+    act(() => {
       mockScreenProps.onConfirm();
     });
+    await Promise.resolve();
 
     expect(mockCreateProposal).toHaveBeenCalledWith(
       'group-1',
@@ -432,15 +446,17 @@ describe('CreateEventController', () => {
         description: null,
       },
     } as Awaited<ReturnType<typeof createProposal>>);
-    await render(<CreateEventController />);
-    await act(() => {
+    await Promise.resolve(render(<CreateEventController />));
+    act(() => {
       mockScreenProps.onSelectTab?.('suggestion');
     });
+    await Promise.resolve();
     await fillDraft(COMPLETE_DRAFT);
 
-    await act(() => {
+    act(() => {
       mockScreenProps.onConfirm();
     });
+    await Promise.resolve();
 
     expect(replace).toHaveBeenCalledWith({
       pathname: '/group/[id]/match',
@@ -458,14 +474,16 @@ describe('CreateEventController', () => {
   test('shows a suggestion-specific error toast when proposal creation fails', async () => {
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
     mockCreateProposal.mockRejectedValue(new Error('Location not found'));
-    await render(<CreateEventController />);
+    await Promise.resolve(render(<CreateEventController />));
 
-    await act(() => {
+    act(() => {
       mockScreenProps.onSelectTab?.('suggestion');
     });
+    await Promise.resolve();
     await fillDraft(COMPLETE_DRAFT);
-    await act(() => {
+    await act(async () => {
       mockScreenProps.onConfirm();
+      await Promise.resolve();
     });
 
     expect(mockToastShow).toHaveBeenCalledWith(

@@ -16,14 +16,14 @@ describe('<AuthScreen />', () => {
   });
 
   test('renders the screen with its illustration', async () => {
-    const { getByTestId } = await render(<AuthScreen />);
+    const { getByTestId } = await Promise.resolve(render(<AuthScreen />));
 
     expect(getByTestId('auth-screen')).toBeTruthy();
     expect(getByTestId('auth-illustration')).toBeTruthy();
   });
 
   test('renders the headline texts', async () => {
-    const { getByText, getByLabelText } = await render(<AuthScreen />);
+    const { getByText, getByLabelText } = await Promise.resolve(render(<AuthScreen />));
 
     expect(getByText('Encontrar')).toBeTruthy();
     expect(getByText('os')).toBeTruthy();
@@ -34,7 +34,7 @@ describe('<AuthScreen />', () => {
   });
 
   test('renders the Login and Criar conta buttons', async () => {
-    const { getAllByRole, getByText } = await render(<AuthScreen />);
+    const { getAllByRole, getByText } = await Promise.resolve(render(<AuthScreen />));
 
     expect(getByText('Login')).toBeTruthy();
     expect(getByText('Criar conta')).toBeTruthy();
@@ -42,18 +42,20 @@ describe('<AuthScreen />', () => {
   });
 
   test('navigates to the login screen when Login is pressed', async () => {
-    const { getByText } = await render(<AuthScreen />);
+    const { getByText } = await Promise.resolve(render(<AuthScreen />));
 
-    await fireEvent.press(getByText('Login'));
+    fireEvent.press(getByText('Login'));
+    await Promise.resolve();
 
     expect(mockPush).toHaveBeenCalledTimes(1);
     expect(mockPush).toHaveBeenCalledWith('/login');
   });
 
   test('navigates to the sign-up screen when Criar conta is pressed', async () => {
-    const { getByText } = await render(<AuthScreen />);
+    const { getByText } = await Promise.resolve(render(<AuthScreen />));
 
-    await fireEvent.press(getByText('Criar conta'));
+    fireEvent.press(getByText('Criar conta'));
+    await Promise.resolve();
 
     expect(mockPush).toHaveBeenCalledTimes(1);
     expect(mockPush).toHaveBeenCalledWith('/sign-up');

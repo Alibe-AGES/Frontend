@@ -8,13 +8,13 @@ describe('welcome-based screens', () => {
     ['Memories', MemoriesScreen],
     ['New memory', NewMemoryScreen],
   ])('renders the %s screen label', async (name, Screen) => {
-    const { getByText } = await render(<Screen />);
+    const { getByText } = await Promise.resolve(render(<Screen />));
 
     expect(getByText(`Welcome to screen ${name}`)).toBeTruthy();
   });
 
   test('renders a custom screen name', async () => {
-    const { getByText } = await render(<WelcomeScreen name="Custom" />);
+    const { getByText } = await Promise.resolve(render(<WelcomeScreen name="Custom" />));
 
     expect(getByText('Welcome to screen Custom')).toBeTruthy();
   });

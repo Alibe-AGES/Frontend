@@ -41,11 +41,12 @@ describe('<PushNotifications />', () => {
   });
 
   test('opens the notification screen for the group in the push payload', async () => {
-    await render(<PushNotifications />);
+    await Promise.resolve(render(<PushNotifications />));
 
-    await act(() => {
+    act(() => {
       mockResponseListener?.(pushResponse({ groupId: 'group-1' }));
     });
+    await Promise.resolve();
 
     expect(push).toHaveBeenCalledWith({
       pathname: '/group/[id]/notifications',
@@ -55,11 +56,12 @@ describe('<PushNotifications />', () => {
   });
 
   test('ignores pushes that do not identify a group', async () => {
-    await render(<PushNotifications />);
+    await Promise.resolve(render(<PushNotifications />));
 
-    await act(() => {
+    act(() => {
       mockResponseListener?.(pushResponse({ type: 'test' }));
     });
+    await Promise.resolve();
 
     expect(push).not.toHaveBeenCalled();
   });
@@ -69,7 +71,7 @@ describe('<PushNotifications />', () => {
       .mocked(Notifications.getLastNotificationResponse)
       .mockReturnValueOnce(pushResponse({ groupId: 'group-2' }));
 
-    await render(<PushNotifications />);
+    await Promise.resolve(render(<PushNotifications />));
 
     await waitFor(() => {
       expect(push).toHaveBeenCalledWith({
@@ -82,7 +84,7 @@ describe('<PushNotifications />', () => {
   test('does not access native notification APIs on web', async () => {
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'web' });
 
-    await render(<PushNotifications />);
+    await Promise.resolve(render(<PushNotifications />));
 
     expect(Notifications.addNotificationResponseReceivedListener).not.toHaveBeenCalled();
     expect(Notifications.getLastNotificationResponse).not.toHaveBeenCalled();
