@@ -18,9 +18,10 @@ describe('<ProfileButton />', () => {
   });
 
   test('opens the profile of the authenticated user', async () => {
-    const { getByTestId } = await render(<ProfileButton />);
+    const { getByTestId } = await Promise.resolve(render(<ProfileButton />));
 
-    await fireEvent.press(getByTestId('alibe-profile-button'));
+    fireEvent.press(getByTestId('alibe-profile-button'));
+    await Promise.resolve();
 
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/(profile)/profile/[userId]',
@@ -29,9 +30,10 @@ describe('<ProfileButton />', () => {
   });
 
   test('keeps the group context when a group is given', async () => {
-    const { getByTestId } = await render(<ProfileButton groupId="g1" />);
+    const { getByTestId } = await Promise.resolve(render(<ProfileButton groupId="g1" />));
 
-    await fireEvent.press(getByTestId('alibe-profile-button'));
+    fireEvent.press(getByTestId('alibe-profile-button'));
+    await Promise.resolve();
 
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/(profile)/profile/[userId]',
@@ -40,8 +42,8 @@ describe('<ProfileButton />', () => {
   });
 
   test('exposes an accessible label and honours a custom testID', async () => {
-    const { getByLabelText, getByTestId } = await render(
-      <ProfileButton testID="group-screen-profile" />
+    const { getByLabelText, getByTestId } = await Promise.resolve(
+      render(<ProfileButton testID="group-screen-profile" />)
     );
 
     expect(getByLabelText('Perfil do usuário')).toBeTruthy();

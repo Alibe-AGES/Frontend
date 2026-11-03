@@ -35,7 +35,9 @@ const fullEvent: EventCardEvent = {
 
 describe('<EventCard />', () => {
   test('renders every event detail when available', async () => {
-    const { getByText, getByTestId } = await render(<EventCard event={fullEvent} />);
+    const { getByText, getByTestId } = await Promise.resolve(
+      render(<EventCard event={fullEvent} />)
+    );
 
     expect(getByTestId('alibe-event-card-title').props.children).toBe('Bloom Café');
     expect(getByText('Av. Carlos Gomes, 600')).toBeTruthy();
@@ -48,14 +50,16 @@ describe('<EventCard />', () => {
   });
 
   test('renders the proposal presentation with rating and venue address, without a favorite control', async () => {
-    const { getByTestId, getByText, queryByTestId } = await render(
-      <EventCard
-        variant="proposal"
-        event={{
-          ...fullEvent,
-          rating: 3.2,
-        }}
-      />
+    const { getByTestId, getByText, queryByTestId } = await Promise.resolve(
+      render(
+        <EventCard
+          variant="proposal"
+          event={{
+            ...fullEvent,
+            rating: 3.2,
+          }}
+        />
+      )
     );
 
     expect(getByTestId('alibe-event-card-rating')).toBeTruthy();
@@ -66,11 +70,13 @@ describe('<EventCard />', () => {
   });
 
   test('fills missing proposal location details with placeholders', async () => {
-    const { getByTestId, getAllByText, getByText } = await render(
-      <EventCard
-        variant="proposal"
-        event={{ id: 'proposal-empty-location' }}
-      />
+    const { getByTestId, getAllByText, getByText } = await Promise.resolve(
+      render(
+        <EventCard
+          variant="proposal"
+          event={{ id: 'proposal-empty-location' }}
+        />
+      )
     );
 
     expect(getByTestId('alibe-event-card-address').props.children).toBe('--');
@@ -83,8 +89,8 @@ describe('<EventCard />', () => {
   });
 
   test('shows a location placeholder when there is no image', async () => {
-    const { getByTestId, queryByTestId } = await render(
-      <EventCard event={{ ...fullEvent, imageUrl: null }} />
+    const { getByTestId, queryByTestId } = await Promise.resolve(
+      render(<EventCard event={{ ...fullEvent, imageUrl: null }} />)
     );
 
     expect(getByTestId('alibe-event-card-image-placeholder')).toBeTruthy();
@@ -92,7 +98,9 @@ describe('<EventCard />', () => {
   });
 
   test('hides optional sections when only the id is provided', async () => {
-    const { getByTestId, queryByTestId } = await render(<EventCard event={{ id: 'event-2' }} />);
+    const { getByTestId, queryByTestId } = await Promise.resolve(
+      render(<EventCard event={{ id: 'event-2' }} />)
+    );
 
     expect(getByTestId('alibe-event-card-title').props.children).toBe('Evento');
     for (const part of ['address', 'time', 'budget', 'phone', 'hours', 'website', 'edit']) {
@@ -101,36 +109,42 @@ describe('<EventCard />', () => {
   });
 
   test('falls back to the location description when the event has no name', async () => {
-    const { getByTestId } = await render(
-      <EventCard event={{ id: 'event-3', location: { description: 'Parque Farroupilha' } }} />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <EventCard event={{ id: 'event-3', location: { description: 'Parque Farroupilha' } }} />
+      )
     );
 
     expect(getByTestId('alibe-event-card-title').props.children).toBe('Parque Farroupilha');
   });
 
   test('formats a budget with only one bound', async () => {
-    const { getByText } = await render(<EventCard event={{ id: 'event-4', budgetStart: 50 }} />);
+    const { getByText } = await Promise.resolve(
+      render(<EventCard event={{ id: 'event-4', budgetStart: 50 }} />)
+    );
 
     expect(getByText('A partir de R$ 50')).toBeTruthy();
   });
 
   test('formats a budget with only an upper bound', async () => {
-    const { getByText } = await render(<EventCard event={{ id: 'event-5', budgetEnd: '80.5' }} />);
+    const { getByText } = await Promise.resolve(
+      render(<EventCard event={{ id: 'event-5', budgetEnd: '80.5' }} />)
+    );
 
     expect(getByText('Até R$ 80,5')).toBeTruthy();
   });
 
   test('hides the time pill when the timeslot is invalid', async () => {
-    const { queryByTestId } = await render(
-      <EventCard event={{ id: 'event-6', timeslot: 'not-a-date' }} />
+    const { queryByTestId } = await Promise.resolve(
+      render(<EventCard event={{ id: 'event-6', timeslot: 'not-a-date' }} />)
     );
 
     expect(queryByTestId('alibe-event-card-time')).toBeNull();
   });
 
   test('shows the phone even without a budget', async () => {
-    const { getByTestId, queryByTestId } = await render(
-      <EventCard event={{ id: 'event-7', phone: '(51) 99999-0000' }} />
+    const { getByTestId, queryByTestId } = await Promise.resolve(
+      render(<EventCard event={{ id: 'event-7', phone: '(51) 99999-0000' }} />)
     );
 
     expect(getByTestId('alibe-event-card-phone')).toBeTruthy();
@@ -139,14 +153,17 @@ describe('<EventCard />', () => {
 
   test('calls onEditPress when the edit button is tapped', async () => {
     const onEditPress = jest.fn();
-    const { getByLabelText } = await render(
-      <EventCard
-        event={fullEvent}
-        onEditPress={onEditPress}
-      />
+    const { getByLabelText } = await Promise.resolve(
+      render(
+        <EventCard
+          event={fullEvent}
+          onEditPress={onEditPress}
+        />
+      )
     );
 
-    await fireEvent.press(getByLabelText('Editar evento'));
+    fireEvent.press(getByLabelText('Editar evento'));
+    await Promise.resolve();
 
     expect(onEditPress).toHaveBeenCalledTimes(1);
   });
@@ -160,12 +177,14 @@ describe('<EventCard mode="create" />', () => {
   const emptyDraft: EventCardDraft = { name: '', imageUri: null, address: '', date: '', time: '' };
 
   test('shows the placeholders of an empty draft', async () => {
-    const { getByPlaceholderText, getByText, getByTestId } = await render(
-      <EventCard
-        mode="create"
-        draft={emptyDraft}
-        onChangeDraft={jest.fn()}
-      />
+    const { getByPlaceholderText, getByText, getByTestId } = await Promise.resolve(
+      render(
+        <EventCard
+          mode="create"
+          draft={emptyDraft}
+          onChangeDraft={jest.fn()}
+        />
+      )
     );
 
     expect(getByPlaceholderText('Definir nome do evento')).toBeTruthy();
@@ -181,19 +200,25 @@ describe('<EventCard mode="create" />', () => {
     const onChangeDraft = jest.fn();
     const onDatePress = jest.fn();
     const draft = { ...emptyDraft, name: 'Bloom' };
-    const { getByTestId } = await render(
-      <EventCard
-        mode="create"
-        draft={draft}
-        onChangeDraft={onChangeDraft}
-        onDatePress={onDatePress}
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <EventCard
+          mode="create"
+          draft={draft}
+          onChangeDraft={onChangeDraft}
+          onDatePress={onDatePress}
+        />
+      )
     );
 
-    await fireEvent.changeText(getByTestId('alibe-event-card-name-input'), 'Bloom Café');
-    await fireEvent.changeText(getByTestId('alibe-event-card-address-input'), 'Av. João Wallig');
-    await fireEvent.press(getByTestId('alibe-event-card-date-button'));
-    await fireEvent.changeText(getByTestId('alibe-event-card-time-input'), '1000');
+    fireEvent.changeText(getByTestId('alibe-event-card-name-input'), 'Bloom Café');
+    await Promise.resolve();
+    fireEvent.changeText(getByTestId('alibe-event-card-address-input'), 'Av. João Wallig');
+    await Promise.resolve();
+    fireEvent.press(getByTestId('alibe-event-card-date-button'));
+    await Promise.resolve();
+    fireEvent.changeText(getByTestId('alibe-event-card-time-input'), '1000');
+    await Promise.resolve();
 
     expect(onChangeDraft).toHaveBeenNthCalledWith(1, { ...draft, name: 'Bloom Café' });
     expect(onChangeDraft).toHaveBeenNthCalledWith(2, { ...draft, address: 'Av. João Wallig' });
@@ -202,13 +227,15 @@ describe('<EventCard mode="create" />', () => {
   });
 
   test('shows editable location details on the suggestion card and omits event schedule fields', async () => {
-    const { getByPlaceholderText, queryByTestId } = await render(
-      <EventCard
-        mode="create"
-        variant="suggestion"
-        draft={emptyDraft}
-        onChangeDraft={jest.fn()}
-      />
+    const { getByPlaceholderText, queryByTestId } = await Promise.resolve(
+      render(
+        <EventCard
+          mode="create"
+          variant="suggestion"
+          draft={emptyDraft}
+          onChangeDraft={jest.fn()}
+        />
+      )
     );
 
     expect(getByPlaceholderText('Preço mínimo (R$)')).toBeTruthy();
@@ -226,16 +253,19 @@ describe('<EventCard mode="create" />', () => {
     mockLaunchImageLibrary.mockResolvedValue({ canceled: false, assets: [photo] });
     const onChangeDraft = jest.fn();
     const onImageSelected = jest.fn();
-    const { getByLabelText } = await render(
-      <EventCard
-        mode="create"
-        draft={emptyDraft}
-        onChangeDraft={onChangeDraft}
-        onImageSelected={onImageSelected}
-      />
+    const { getByLabelText } = await Promise.resolve(
+      render(
+        <EventCard
+          mode="create"
+          draft={emptyDraft}
+          onChangeDraft={onChangeDraft}
+          onImageSelected={onImageSelected}
+        />
+      )
     );
 
-    await fireEvent.press(getByLabelText('Adicionar imagem do evento'));
+    fireEvent.press(getByLabelText('Adicionar imagem do evento'));
+    await Promise.resolve();
 
     await waitFor(() => {
       expect(onChangeDraft).toHaveBeenCalledWith({ ...emptyDraft, imageUri: photo.uri });
@@ -249,15 +279,18 @@ describe('<EventCard mode="create" />', () => {
   test('keeps the draft untouched when the gallery permission is denied', async () => {
     mockRequestPermissions.mockResolvedValue({ granted: false });
     const onChangeDraft = jest.fn();
-    const { getByLabelText } = await render(
-      <EventCard
-        mode="create"
-        draft={emptyDraft}
-        onChangeDraft={onChangeDraft}
-      />
+    const { getByLabelText } = await Promise.resolve(
+      render(
+        <EventCard
+          mode="create"
+          draft={emptyDraft}
+          onChangeDraft={onChangeDraft}
+        />
+      )
     );
 
-    await fireEvent.press(getByLabelText('Adicionar imagem do evento'));
+    fireEvent.press(getByLabelText('Adicionar imagem do evento'));
+    await Promise.resolve();
 
     await waitFor(() => {
       expect(mockRequestPermissions).toHaveBeenCalled();
@@ -267,12 +300,14 @@ describe('<EventCard mode="create" />', () => {
   });
 
   test('shows the selected image from the draft', async () => {
-    const { getByLabelText, getByTestId } = await render(
-      <EventCard
-        mode="create"
-        draft={{ ...emptyDraft, imageUri: 'file:///bloom.jpg' }}
-        onChangeDraft={jest.fn()}
-      />
+    const { getByLabelText, getByTestId } = await Promise.resolve(
+      render(
+        <EventCard
+          mode="create"
+          draft={{ ...emptyDraft, imageUri: 'file:///bloom.jpg' }}
+          onChangeDraft={jest.fn()}
+        />
+      )
     );
 
     expect(getByTestId('alibe-event-card-image')).toBeTruthy();
@@ -281,20 +316,23 @@ describe('<EventCard mode="create" />', () => {
 
   test('calls onConfirm unless confirmation is disabled', async () => {
     const onConfirm = jest.fn();
-    const { getByTestId, rerender } = await render(
-      <EventCard
-        mode="create"
-        draft={emptyDraft}
-        onChangeDraft={jest.fn()}
-        onConfirm={onConfirm}
-        isConfirmDisabled
-      />
+    const { getByTestId, rerender } = await Promise.resolve(
+      render(
+        <EventCard
+          mode="create"
+          draft={emptyDraft}
+          onChangeDraft={jest.fn()}
+          onConfirm={onConfirm}
+          isConfirmDisabled
+        />
+      )
     );
 
-    await fireEvent.press(getByTestId('alibe-event-card-confirm'));
+    fireEvent.press(getByTestId('alibe-event-card-confirm'));
+    await Promise.resolve();
     expect(onConfirm).not.toHaveBeenCalled();
 
-    await rerender(
+    rerender(
       <EventCard
         mode="create"
         draft={emptyDraft}
@@ -302,7 +340,9 @@ describe('<EventCard mode="create" />', () => {
         onConfirm={onConfirm}
       />
     );
-    await fireEvent.press(getByTestId('alibe-event-card-confirm'));
+    await Promise.resolve();
+    fireEvent.press(getByTestId('alibe-event-card-confirm'));
+    await Promise.resolve();
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
 });
@@ -311,12 +351,14 @@ describe('<EventCard mode="create" /> confirm button', () => {
   const draft: EventCardDraft = { name: '', imageUri: null, address: '', date: '', time: '' };
 
   test('uses the solid ink color when it can be confirmed', async () => {
-    const { getByTestId } = await render(
-      <EventCard
-        mode="create"
-        draft={draft}
-        onChangeDraft={jest.fn()}
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <EventCard
+          mode="create"
+          draft={draft}
+          onChangeDraft={jest.fn()}
+        />
+      )
     );
 
     const confirm = getByTestId('alibe-event-card-confirm');
@@ -325,13 +367,15 @@ describe('<EventCard mode="create" /> confirm button', () => {
   });
 
   test('uses the softer solid color instead of opacity when disabled', async () => {
-    const { getByTestId } = await render(
-      <EventCard
-        mode="create"
-        draft={draft}
-        onChangeDraft={jest.fn()}
-        isConfirmDisabled
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <EventCard
+          mode="create"
+          draft={draft}
+          onChangeDraft={jest.fn()}
+          isConfirmDisabled
+        />
+      )
     );
 
     const confirm = getByTestId('alibe-event-card-confirm');
@@ -344,18 +388,21 @@ describe('<EventCard mode="create" /> confirm button', () => {
 describe('<EventCard mode="create" /> submitting', () => {
   test('shows the confirm button as busy and ignores presses while submitting', async () => {
     const onConfirm = jest.fn();
-    const { getByTestId } = await render(
-      <EventCard
-        mode="create"
-        draft={{ name: '', imageUri: null, address: '', date: '', time: '' }}
-        onChangeDraft={jest.fn()}
-        onConfirm={onConfirm}
-        isSubmitting
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <EventCard
+          mode="create"
+          draft={{ name: '', imageUri: null, address: '', date: '', time: '' }}
+          onChangeDraft={jest.fn()}
+          onConfirm={onConfirm}
+          isSubmitting
+        />
+      )
     );
 
     const confirm = getByTestId('alibe-event-card-confirm');
-    await fireEvent.press(confirm);
+    fireEvent.press(confirm);
+    await Promise.resolve();
 
     expect(confirm.props.accessibilityState).toEqual(
       expect.objectContaining({ busy: true, disabled: true })

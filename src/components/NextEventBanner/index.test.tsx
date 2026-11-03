@@ -5,14 +5,18 @@ import { NextEventBanner } from './index';
 describe('NextEventBanner', () => {
   test('renders the next event date and name', async () => {
     const timeslot = '2026-05-22T16:00:00.000Z';
-    const { getByText } = await render(<NextEventBanner event={{ name: 'Cinema', timeslot }} />);
+    const { getByText } = await Promise.resolve(
+      render(<NextEventBanner event={{ name: 'Cinema', timeslot }} />)
+    );
 
     expect(getByText('• Sexta-feira, 22 de maio, às 16h')).toBeTruthy();
     expect(getByText('• Cinema')).toBeTruthy();
   });
 
   test('renders the empty state when there is no next event', async () => {
-    const { getByTestId, getByText } = await render(<NextEventBanner event={null} />);
+    const { getByTestId, getByText } = await Promise.resolve(
+      render(<NextEventBanner event={null} />)
+    );
 
     expect(getByTestId('alibe-next-event-banner-empty')).toBeTruthy();
     expect(getByText('Nenhum encontro marcado ainda.')).toBeTruthy();
