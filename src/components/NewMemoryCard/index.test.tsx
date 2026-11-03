@@ -49,7 +49,7 @@ describe('<NewMemoryCard />', () => {
   });
 
   test('shows the title, the empty photo prompt and the event placeholder', async () => {
-    const { getByText, queryByTestId } = await render(<ControlledCard />);
+    const { getByText, queryByTestId } = await Promise.resolve(render(<ControlledCard />));
 
     expect(getByText('Selecione o evento e a imagem')).toBeTruthy();
     expect(getByText('Adicione uma imagem do evento.')).toBeTruthy();
@@ -59,18 +59,20 @@ describe('<NewMemoryCard />', () => {
 
   test('opens the photo picker when the photo area is pressed', async () => {
     const pickImage = jest.fn();
-    const { getByRole } = await render(
-      <ControlledCard usePhotoController={createController({ pickImage })} />
+    const { getByRole } = await Promise.resolve(
+      render(<ControlledCard usePhotoController={createController({ pickImage })} />)
     );
 
-    await fireEvent.press(getByRole('button', { name: 'Adicionar imagem do evento' }));
+    fireEvent.press(getByRole('button', { name: 'Adicionar imagem do evento' }));
 
     expect(pickImage).toHaveBeenCalledTimes(1);
   });
 
   test('shows the picked photo and lets the user swap it', async () => {
-    const { getByRole, getByTestId, queryByText } = await render(
-      <ControlledCard usePhotoController={createController({ photoUri: 'file:///memory.jpg' })} />
+    const { getByRole, getByTestId, queryByText } = await Promise.resolve(
+      render(
+        <ControlledCard usePhotoController={createController({ photoUri: 'file:///memory.jpg' })} />
+      )
     );
 
     expect(getByTestId('new-memory-card-photo-image')).toBeTruthy();
@@ -80,14 +82,16 @@ describe('<NewMemoryCard />', () => {
 
   test('blocks the photo area while the photo is loading', async () => {
     const pickImage = jest.fn();
-    const { getByTestId } = await render(
-      <ControlledCard usePhotoController={createController({ isLoading: true, pickImage })} />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <ControlledCard usePhotoController={createController({ isLoading: true, pickImage })} />
+      )
     );
 
     expect(getByTestId('new-memory-card-photo-loading')).toBeTruthy();
     expect(getByTestId('new-memory-card-photo')).toBeDisabled();
 
-    await fireEvent.press(getByTestId('new-memory-card-photo'));
+    fireEvent.press(getByTestId('new-memory-card-photo'));
 
     expect(pickImage).not.toHaveBeenCalled();
   });
@@ -96,11 +100,13 @@ describe('<NewMemoryCard />', () => {
     const onPhotoSelected = jest.fn();
     const usePhotoController = jest.fn(createController());
 
-    await render(
-      <ControlledCard
-        onPhotoSelected={onPhotoSelected}
-        usePhotoController={usePhotoController}
-      />
+    await Promise.resolve(
+      render(
+        <ControlledCard
+          onPhotoSelected={onPhotoSelected}
+          usePhotoController={usePhotoController}
+        />
+      )
     );
 
     expect(usePhotoController).toHaveBeenCalledWith({ onUploadSuccess: onPhotoSelected });
@@ -108,61 +114,69 @@ describe('<NewMemoryCard />', () => {
 
   test('selects an event from the dropdown', async () => {
     const onSelectEvent = jest.fn();
-    const { getByTestId, getByText } = await render(
-      <NewMemoryCard
-        events={EVENTS}
-        selectedEventId={null}
-        onSelectEvent={onSelectEvent}
-        usePhotoController={createController()}
-      />
+    const { getByTestId, getByText } = await Promise.resolve(
+      render(
+        <NewMemoryCard
+          events={EVENTS}
+          selectedEventId={null}
+          onSelectEvent={onSelectEvent}
+          usePhotoController={createController()}
+        />
+      )
     );
 
-    await fireEvent.press(getByTestId('new-memory-card-event'));
-    await fireEvent.press(getByText('Churrasco'));
+    fireEvent.press(getByTestId('new-memory-card-event'));
+    fireEvent.press(getByText('Churrasco'));
 
     expect(onSelectEvent).toHaveBeenCalledWith('barbecue');
   });
 
   test('shows the selected event in place of the placeholder', async () => {
-    const { getByTestId, getByText, queryByText } = await render(<ControlledCard />);
+    const { getByTestId, getByText, queryByText } = await Promise.resolve(
+      render(<ControlledCard />)
+    );
 
-    await fireEvent.press(getByTestId('new-memory-card-event'));
-    await fireEvent.press(getByText('Jantar de sexta'));
+    fireEvent.press(getByTestId('new-memory-card-event'));
+    fireEvent.press(getByText('Jantar de sexta'));
 
     expect(getByText('Jantar de sexta')).toBeTruthy();
     expect(queryByText('Selecionar evento')).toBeNull();
   });
 
   test('tells the user when there are no events to pick', async () => {
-    const { getByTestId, getByText } = await render(<ControlledCard events={[]} />);
+    const { getByTestId, getByText } = await Promise.resolve(
+      render(<ControlledCard events={[]} />)
+    );
 
-    await fireEvent.press(getByTestId('new-memory-card-event'));
+    fireEvent.press(getByTestId('new-memory-card-event'));
 
     expect(getByText('Nenhum evento disponível')).toBeTruthy();
   });
 
   test('calls onClose from the close button', async () => {
     const onClose = jest.fn();
-    const { getByRole } = await render(<ControlledCard onClose={onClose} />);
+    const { getByRole } = await Promise.resolve(render(<ControlledCard onClose={onClose} />));
 
-    await fireEvent.press(getByRole('button', { name: 'Fechar' }));
+    fireEvent.press(getByRole('button', { name: 'Fechar' }));
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   test('hides the close button without onClose', async () => {
-    const { queryByTestId } = await render(<ControlledCard />);
+    const { queryByTestId } = await Promise.resolve(render(<ControlledCard />));
 
     expect(queryByTestId('new-memory-card-close')).toBeNull();
   });
 
   test('crops the photo to the card frame by default', async () => {
-    await render(
-      <NewMemoryCard
-        events={EVENTS}
-        selectedEventId={null}
-        onSelectEvent={jest.fn()}
-      />
+    await Promise.resolve(
+      render(
+        <NewMemoryCard
+          events={EVENTS}
+          selectedEventId={null}
+          onSelectEvent={jest.fn()}
+        />
+      )
     );
 
     expect(mockDefaultController).toHaveBeenCalledWith(expect.objectContaining({ aspect: [4, 5] }));
