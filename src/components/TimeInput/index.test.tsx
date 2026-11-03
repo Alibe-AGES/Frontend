@@ -23,13 +23,15 @@ function ControlledTimeInput(
 
 describe('<TimeInput />', () => {
   test('renders the label and the placeholder it receives', async () => {
-    const { getByText, getByPlaceholderText } = await render(
-      <TimeInput
-        label="Disponibilidade"
-        placeholder="Horário de início"
-        value=""
-        onChangeTime={jest.fn()}
-      />
+    const { getByText, getByPlaceholderText } = await Promise.resolve(
+      render(
+        <TimeInput
+          label="Disponibilidade"
+          placeholder="Horário de início"
+          value=""
+          onChangeTime={jest.fn()}
+        />
+      )
     );
 
     expect(getByText('Disponibilidade')).toBeTruthy();
@@ -37,11 +39,13 @@ describe('<TimeInput />', () => {
   });
 
   test('shows the value it receives', async () => {
-    const { getByDisplayValue } = await render(
-      <TimeInput
-        value="08:30"
-        onChangeTime={jest.fn()}
-      />
+    const { getByDisplayValue } = await Promise.resolve(
+      render(
+        <TimeInput
+          value="08:30"
+          onChangeTime={jest.fn()}
+        />
+      )
     );
 
     expect(getByDisplayValue('08:30')).toBeTruthy();
@@ -53,33 +57,40 @@ describe('<TimeInput />', () => {
     ['drops characters that are not digits', '9h3m0', '93:0'],
   ])('%s', async (_case, typed, formatted) => {
     const onChangeTime = jest.fn();
-    const { getByTestId } = await render(
-      <TimeInput
-        value=""
-        onChangeTime={onChangeTime}
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <TimeInput
+          value=""
+          onChangeTime={onChangeTime}
+        />
+      )
     );
 
-    await fireEvent.changeText(getByTestId('alibe-time-input'), typed);
+    fireEvent.changeText(getByTestId('alibe-time-input'), typed);
+    await Promise.resolve();
 
     expect(onChangeTime).toHaveBeenLastCalledWith(formatted);
   });
 
   test('lets the user erase the separator by deleting digits', async () => {
-    const { getByTestId, getByDisplayValue } = await render(
-      <ControlledTimeInput initialValue="09:30" />
+    const { getByTestId, getByDisplayValue } = await Promise.resolve(
+      render(<ControlledTimeInput initialValue="09:30" />)
     );
     const input = getByTestId('alibe-time-input');
 
-    await fireEvent.changeText(input, '09:');
+    fireEvent.changeText(input, '09:');
+    await Promise.resolve();
 
     expect(getByDisplayValue('09')).toBeTruthy();
   });
 
   test('reports an invalid time when the field loses focus', async () => {
-    const { getByTestId } = await render(<ControlledTimeInput initialValue="99:99" />);
+    const { getByTestId } = await Promise.resolve(
+      render(<ControlledTimeInput initialValue="99:99" />)
+    );
 
-    await fireEvent(getByTestId('alibe-time-input'), 'blur');
+    fireEvent(getByTestId('alibe-time-input'), 'blur');
+    await Promise.resolve();
 
     expect(getByTestId('alibe-time-input-error')).toHaveTextContent(
       'Informe um horário válido no formato HH:mm.'
@@ -87,66 +98,81 @@ describe('<TimeInput />', () => {
   });
 
   test('reports an incomplete time when the field loses focus', async () => {
-    const { getByTestId, queryByTestId } = await render(<ControlledTimeInput initialValue="9" />);
+    const { getByTestId, queryByTestId } = await Promise.resolve(
+      render(<ControlledTimeInput initialValue="9" />)
+    );
 
-    await fireEvent(getByTestId('alibe-time-input'), 'blur');
+    fireEvent(getByTestId('alibe-time-input'), 'blur');
+    await Promise.resolve();
 
     expect(queryByTestId('alibe-time-input-error')).not.toBeNull();
   });
 
   test('accepts the edges of the valid range', async () => {
-    const { getByTestId, queryByTestId, rerender } = await render(
-      <TimeInput
-        value="00:00"
-        onChangeTime={jest.fn()}
-      />
+    const { getByTestId, queryByTestId, rerender } = await Promise.resolve(
+      render(
+        <TimeInput
+          value="00:00"
+          onChangeTime={jest.fn()}
+        />
+      )
     );
 
-    await fireEvent(getByTestId('alibe-time-input'), 'blur');
+    fireEvent(getByTestId('alibe-time-input'), 'blur');
+    await Promise.resolve();
     expect(queryByTestId('alibe-time-input-error')).toBeNull();
 
-    await rerender(
+    rerender(
       <TimeInput
         value="23:59"
         onChangeTime={jest.fn()}
       />
     );
-    await fireEvent(getByTestId('alibe-time-input'), 'blur');
+    await Promise.resolve();
+    fireEvent(getByTestId('alibe-time-input'), 'blur');
+    await Promise.resolve();
 
     expect(queryByTestId('alibe-time-input-error')).toBeNull();
   });
 
   test('does not complain about an empty field', async () => {
     const onBlur = jest.fn();
-    const { getByTestId, queryByTestId } = await render(<ControlledTimeInput onBlur={onBlur} />);
+    const { getByTestId, queryByTestId } = await Promise.resolve(
+      render(<ControlledTimeInput onBlur={onBlur} />)
+    );
 
-    await fireEvent(getByTestId('alibe-time-input'), 'blur');
+    fireEvent(getByTestId('alibe-time-input'), 'blur');
+    await Promise.resolve();
 
     expect(queryByTestId('alibe-time-input-error')).toBeNull();
     expect(onBlur).toHaveBeenCalledTimes(1);
   });
 
   test('clears the format error as soon as the user types again', async () => {
-    const { getByTestId, queryByTestId } = await render(
-      <ControlledTimeInput initialValue="99:99" />
+    const { getByTestId, queryByTestId } = await Promise.resolve(
+      render(<ControlledTimeInput initialValue="99:99" />)
     );
     const input = getByTestId('alibe-time-input');
 
-    await fireEvent(input, 'blur');
+    fireEvent(input, 'blur');
+    await Promise.resolve();
     expect(queryByTestId('alibe-time-input-error')).not.toBeNull();
 
-    await fireEvent.changeText(input, '0930');
+    fireEvent.changeText(input, '0930');
+    await Promise.resolve();
 
     expect(queryByTestId('alibe-time-input-error')).toBeNull();
   });
 
   test('shows the error received by prop over the format one', async () => {
-    const { getByTestId } = await render(
-      <TimeInput
-        error="O horário de fim deve ser depois do início."
-        value="07:00"
-        onChangeTime={jest.fn()}
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <TimeInput
+          error="O horário de fim deve ser depois do início."
+          value="07:00"
+          onChangeTime={jest.fn()}
+        />
+      )
     );
 
     expect(getByTestId('alibe-time-input-error')).toHaveTextContent(
@@ -155,12 +181,14 @@ describe('<TimeInput />', () => {
   });
 
   test('does not accept edits while disabled', async () => {
-    const { getByTestId } = await render(
-      <TimeInput
-        value=""
-        onChangeTime={jest.fn()}
-        disabled
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <TimeInput
+          value=""
+          onChangeTime={jest.fn()}
+          disabled
+        />
+      )
     );
 
     expect(getByTestId('alibe-time-input').props.editable).toBe(false);
@@ -170,13 +198,15 @@ describe('<TimeInput />', () => {
   });
 
   test('has accessible labels and accepts a custom testID', async () => {
-    const { getByLabelText, getByTestId } = await render(
-      <TimeInput
-        placeholder="Horário de fim"
-        testID="availability-end-time"
-        value=""
-        onChangeTime={jest.fn()}
-      />
+    const { getByLabelText, getByTestId } = await Promise.resolve(
+      render(
+        <TimeInput
+          placeholder="Horário de fim"
+          testID="availability-end-time"
+          value=""
+          onChangeTime={jest.fn()}
+        />
+      )
     );
 
     expect(getByLabelText('Horário de fim')).toBeTruthy();
@@ -188,19 +218,22 @@ describe('<TimeInput />', () => {
     const handleScrollFocus = jest.fn();
     const handleFocus = jest.fn();
 
-    const { getByTestId } = await render(
-      <KeyboardScrollContext.Provider value={handleScrollFocus}>
-        <TimeInput
-          placeholder="Horário"
-          value=""
-          onChangeTime={jest.fn()}
-          onFocus={handleFocus}
-          testID="focused-time-input"
-        />
-      </KeyboardScrollContext.Provider>
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <KeyboardScrollContext.Provider value={handleScrollFocus}>
+          <TimeInput
+            placeholder="Horário"
+            value=""
+            onChangeTime={jest.fn()}
+            onFocus={handleFocus}
+            testID="focused-time-input"
+          />
+        </KeyboardScrollContext.Provider>
+      )
     );
 
-    await fireEvent(getByTestId('focused-time-input'), 'focus');
+    fireEvent(getByTestId('focused-time-input'), 'focus');
+    await Promise.resolve();
 
     expect(handleFocus).toHaveBeenCalled();
     expect(handleScrollFocus).toHaveBeenCalled();

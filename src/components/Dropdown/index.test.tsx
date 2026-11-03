@@ -30,16 +30,16 @@ function ControlledDropdown({ onChange }: { onChange?: (value: string) => void }
 
 describe('<Dropdown />', () => {
   test('shows the placeholder and keeps the menu closed', async () => {
-    const { getByText, queryByTestId } = await render(<ControlledDropdown />);
+    const { getByText, queryByTestId } = await Promise.resolve(render(<ControlledDropdown />));
 
     expect(getByText('Selecionar evento')).toBeTruthy();
     expect(queryByTestId('alibe-dropdown-menu')).toBeNull();
   });
 
   test('opens the menu with every option', async () => {
-    const { getByTestId, getByText } = await render(<ControlledDropdown />);
+    const { getByTestId, getByText } = await Promise.resolve(render(<ControlledDropdown />));
 
-    await fireEvent.press(getByTestId('alibe-dropdown'));
+    fireEvent.press(getByTestId('alibe-dropdown'));
 
     expect(getByTestId('alibe-dropdown')).toBeExpanded();
     expect(getByText('Jantar de sexta')).toBeTruthy();
@@ -48,12 +48,12 @@ describe('<Dropdown />', () => {
 
   test('selects an option, reports it and closes the menu', async () => {
     const onChange = jest.fn();
-    const { getByTestId, getByText, queryByTestId } = await render(
-      <ControlledDropdown onChange={onChange} />
+    const { getByTestId, getByText, queryByTestId } = await Promise.resolve(
+      render(<ControlledDropdown onChange={onChange} />)
     );
 
-    await fireEvent.press(getByTestId('alibe-dropdown'));
-    await fireEvent.press(getByTestId('alibe-dropdown-option-barbecue'));
+    fireEvent.press(getByTestId('alibe-dropdown'));
+    fireEvent.press(getByTestId('alibe-dropdown-option-barbecue'));
 
     expect(onChange).toHaveBeenCalledWith('barbecue');
     expect(queryByTestId('alibe-dropdown-menu')).toBeNull();
@@ -61,35 +61,39 @@ describe('<Dropdown />', () => {
   });
 
   test('marks the current value as selected', async () => {
-    const { getByTestId } = await render(
-      <Dropdown
-        options={OPTIONS}
-        value="dinner"
-        onChange={jest.fn()}
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <Dropdown
+          options={OPTIONS}
+          value="dinner"
+          onChange={jest.fn()}
+        />
+      )
     );
 
-    await fireEvent.press(getByTestId('alibe-dropdown'));
+    fireEvent.press(getByTestId('alibe-dropdown'));
 
     expect(getByTestId('alibe-dropdown-option-dinner')).toBeSelected();
     expect(getByTestId('alibe-dropdown-option-barbecue')).not.toBeSelected();
   });
 
   test('closes the menu when pressing the trigger again', async () => {
-    const { getByTestId, queryByTestId } = await render(<ControlledDropdown />);
+    const { getByTestId, queryByTestId } = await Promise.resolve(render(<ControlledDropdown />));
 
-    await fireEvent.press(getByTestId('alibe-dropdown'));
-    await fireEvent.press(getByTestId('alibe-dropdown'));
+    fireEvent.press(getByTestId('alibe-dropdown'));
+    fireEvent.press(getByTestId('alibe-dropdown'));
 
     expect(queryByTestId('alibe-dropdown-menu')).toBeNull();
   });
 
   test('closes the menu when pressing outside it', async () => {
     const onChange = jest.fn();
-    const { getByTestId, queryByTestId } = await render(<ControlledDropdown onChange={onChange} />);
+    const { getByTestId, queryByTestId } = await Promise.resolve(
+      render(<ControlledDropdown onChange={onChange} />)
+    );
 
-    await fireEvent.press(getByTestId('alibe-dropdown'));
-    await fireEvent.press(getByTestId('alibe-dropdown-backdrop'));
+    fireEvent.press(getByTestId('alibe-dropdown'));
+    fireEvent.press(getByTestId('alibe-dropdown-backdrop'));
 
     expect(queryByTestId('alibe-dropdown-menu')).toBeNull();
     expect(onChange).not.toHaveBeenCalled();
@@ -100,15 +104,17 @@ describe('<Dropdown />', () => {
       label: `Evento ${String(index + 1)}`,
       value: `event-${String(index + 1)}`,
     }));
-    const { getByTestId, getByText } = await render(
-      <Dropdown
-        options={manyOptions}
-        value={null}
-        onChange={jest.fn()}
-      />
+    const { getByTestId, getByText } = await Promise.resolve(
+      render(
+        <Dropdown
+          options={manyOptions}
+          value={null}
+          onChange={jest.fn()}
+        />
+      )
     );
 
-    await fireEvent.press(getByTestId('alibe-dropdown'));
+    fireEvent.press(getByTestId('alibe-dropdown'));
 
     expect(getByTestId('alibe-dropdown-options').props.onContentSizeChange).toBeDefined();
     expect(getByText('Evento 1')).toBeTruthy();
@@ -116,32 +122,36 @@ describe('<Dropdown />', () => {
   });
 
   test('does not open while disabled', async () => {
-    const { getByTestId, queryByTestId } = await render(
-      <Dropdown
-        disabled
-        options={OPTIONS}
-        value={null}
-        onChange={jest.fn()}
-      />
+    const { getByTestId, queryByTestId } = await Promise.resolve(
+      render(
+        <Dropdown
+          disabled
+          options={OPTIONS}
+          value={null}
+          onChange={jest.fn()}
+        />
+      )
     );
 
-    await fireEvent.press(getByTestId('alibe-dropdown'));
+    fireEvent.press(getByTestId('alibe-dropdown'));
 
     expect(queryByTestId('alibe-dropdown-menu')).toBeNull();
     expect(getByTestId('alibe-dropdown')).toBeDisabled();
   });
 
   test('shows the empty message when there are no options', async () => {
-    const { getByTestId, getByText } = await render(
-      <Dropdown
-        emptyMessage="Nenhum evento no grupo"
-        options={[]}
-        value={null}
-        onChange={jest.fn()}
-      />
+    const { getByTestId, getByText } = await Promise.resolve(
+      render(
+        <Dropdown
+          emptyMessage="Nenhum evento no grupo"
+          options={[]}
+          value={null}
+          onChange={jest.fn()}
+        />
+      )
     );
 
-    await fireEvent.press(getByTestId('alibe-dropdown'));
+    fireEvent.press(getByTestId('alibe-dropdown'));
 
     expect(getByText('Nenhum evento no grupo')).toBeTruthy();
   });

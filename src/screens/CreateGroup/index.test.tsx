@@ -21,37 +21,44 @@ describe('<CreateGroupScreen />', () => {
   test.each([/Vamos\s+começar\?/, 'Seu próximo encontro nasce aqui.', 'Adicionar foto (opcional)'])(
     'renders the text %s',
     async (text) => {
-      const { getByText } = await render(<CreateGroupScreen />);
+      const { getByText } = await Promise.resolve(render(<CreateGroupScreen />));
 
       expect(getByText(text)).toBeTruthy();
     }
   );
 
   test('renders the group name input', async () => {
-    const { getByPlaceholderText } = await render(<CreateGroupScreen />);
+    const { getByPlaceholderText } = await Promise.resolve(render(<CreateGroupScreen />));
 
     expect(getByPlaceholderText('Nome do grupo')).toBeTruthy();
   });
 
   test('lets the user enter a group name', async () => {
-    const { getByDisplayValue, getByPlaceholderText } = await render(<CreateGroupScreen />);
+    const { getByDisplayValue, getByPlaceholderText } = await Promise.resolve(
+      render(<CreateGroupScreen />)
+    );
 
-    await fireEvent.changeText(getByPlaceholderText('Nome do grupo'), 'Amigos da faculdade');
+    fireEvent.changeText(getByPlaceholderText('Nome do grupo'), 'Amigos da faculdade');
+    await Promise.resolve();
 
     expect(getByDisplayValue('Amigos da faculdade')).toBeTruthy();
   });
 
   test('renders the continue button', async () => {
-    const { getByText } = await render(<CreateGroupScreen />);
+    const { getByText } = await Promise.resolve(render(<CreateGroupScreen />));
 
     expect(getByText('Continuar')).toBeTruthy();
   });
 
   test('creates the group and navigates to the invite step when continuing', async () => {
-    const { getByPlaceholderText, getByText } = await render(<CreateGroupScreen />);
+    const { getByPlaceholderText, getByText } = await Promise.resolve(
+      render(<CreateGroupScreen />)
+    );
 
-    await fireEvent.changeText(getByPlaceholderText('Nome do grupo'), 'Amigos da faculdade');
-    await fireEvent.press(getByText('Continuar'));
+    fireEvent.changeText(getByPlaceholderText('Nome do grupo'), 'Amigos da faculdade');
+    await Promise.resolve();
+    fireEvent.press(getByText('Continuar'));
+    await Promise.resolve();
 
     await waitFor(() => {
       expect(mockCreateGroup).toHaveBeenCalledWith({
@@ -66,9 +73,10 @@ describe('<CreateGroupScreen />', () => {
   });
 
   test('does not call the backend when the group name is invalid', async () => {
-    const { getByText } = await render(<CreateGroupScreen />);
+    const { getByText } = await Promise.resolve(render(<CreateGroupScreen />));
 
-    await fireEvent.press(getByText('Continuar'));
+    fireEvent.press(getByText('Continuar'));
+    await Promise.resolve();
 
     expect(getByText('O nome deve conter entre 2 e 100 caracteres.')).toBeTruthy();
     expect(mockCreateGroup).not.toHaveBeenCalled();

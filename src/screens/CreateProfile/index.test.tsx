@@ -19,42 +19,53 @@ describe('<CreateProfileScreen />', () => {
     'Adicionar foto (opcional)',
     'Como seus amigos te chamam?',
   ])('renders the text %s', async (text) => {
-    const { getByText } = await render(<CreateProfileScreen onContinue={onContinue} />);
+    const { getByText } = await Promise.resolve(
+      render(<CreateProfileScreen onContinue={onContinue} />)
+    );
 
     expect(getByText(text)).toBeTruthy();
   });
 
   test('shows the camera placeholder while no photo is selected', async () => {
-    const { getByTestId } = await render(<CreateProfileScreen onContinue={onContinue} />);
+    const { getByTestId } = await Promise.resolve(
+      render(<CreateProfileScreen onContinue={onContinue} />)
+    );
 
     expect(getByTestId('create-profile-photo-placeholder')).toBeTruthy();
   });
 
   test('renders the nickname input', async () => {
-    const { getByPlaceholderText } = await render(<CreateProfileScreen onContinue={onContinue} />);
+    const { getByPlaceholderText } = await Promise.resolve(
+      render(<CreateProfileScreen onContinue={onContinue} />)
+    );
 
     expect(getByPlaceholderText('Nome de usuário')).toBeTruthy();
   });
 
   test('keeps the continue button disabled while the nickname is empty', async () => {
-    const { getByTestId } = await render(<CreateProfileScreen onContinue={onContinue} />);
+    const { getByTestId } = await Promise.resolve(
+      render(<CreateProfileScreen onContinue={onContinue} />)
+    );
 
     expect(getByTestId('create-profile-continue').props.accessibilityState).toMatchObject({
       disabled: true,
     });
 
-    await fireEvent.press(getByTestId('create-profile-continue'));
+    fireEvent.press(getByTestId('create-profile-continue'));
+    await Promise.resolve();
 
     expect(onContinue).not.toHaveBeenCalled();
   });
 
   test('keeps the continue button disabled when the nickname only has spaces', async () => {
-    const { getByPlaceholderText, getByTestId } = await render(
-      <CreateProfileScreen onContinue={onContinue} />
+    const { getByPlaceholderText, getByTestId } = await Promise.resolve(
+      render(<CreateProfileScreen onContinue={onContinue} />)
     );
 
-    await fireEvent.changeText(getByPlaceholderText('Nome de usuário'), '   ');
-    await fireEvent.press(getByTestId('create-profile-continue'));
+    fireEvent.changeText(getByPlaceholderText('Nome de usuário'), '   ');
+    await Promise.resolve();
+    fireEvent.press(getByTestId('create-profile-continue'));
+    await Promise.resolve();
 
     expect(getByTestId('create-profile-continue').props.accessibilityState).toMatchObject({
       disabled: true,
@@ -63,11 +74,12 @@ describe('<CreateProfileScreen />', () => {
   });
 
   test('enables the continue button once the nickname is filled', async () => {
-    const { getByPlaceholderText, getByTestId } = await render(
-      <CreateProfileScreen onContinue={onContinue} />
+    const { getByPlaceholderText, getByTestId } = await Promise.resolve(
+      render(<CreateProfileScreen onContinue={onContinue} />)
     );
 
-    await fireEvent.changeText(getByPlaceholderText('Nome de usuário'), 'Rica');
+    fireEvent.changeText(getByPlaceholderText('Nome de usuário'), 'Rica');
+    await Promise.resolve();
 
     expect(getByTestId('create-profile-continue').props.accessibilityState).toMatchObject({
       disabled: false,
@@ -75,15 +87,19 @@ describe('<CreateProfileScreen />', () => {
   });
 
   test('disables the form while the profile is being submitted', async () => {
-    const { getByPlaceholderText, getByTestId } = await render(
-      <CreateProfileScreen
-        onContinue={onContinue}
-        isSubmitting
-      />
+    const { getByPlaceholderText, getByTestId } = await Promise.resolve(
+      render(
+        <CreateProfileScreen
+          onContinue={onContinue}
+          isSubmitting
+        />
+      )
     );
 
-    await fireEvent.changeText(getByPlaceholderText('Nome de usuário'), 'Rica');
-    await fireEvent.press(getByTestId('create-profile-continue'));
+    fireEvent.changeText(getByPlaceholderText('Nome de usuário'), 'Rica');
+    await Promise.resolve();
+    fireEvent.press(getByTestId('create-profile-continue'));
+    await Promise.resolve();
 
     expect(getByTestId('create-profile-continue').props.accessibilityState).toMatchObject({
       disabled: true,
@@ -95,12 +111,14 @@ describe('<CreateProfileScreen />', () => {
   });
 
   test('continues with the trimmed nickname and no photo', async () => {
-    const { getByPlaceholderText, getByTestId } = await render(
-      <CreateProfileScreen onContinue={onContinue} />
+    const { getByPlaceholderText, getByTestId } = await Promise.resolve(
+      render(<CreateProfileScreen onContinue={onContinue} />)
     );
 
-    await fireEvent.changeText(getByPlaceholderText('Nome de usuário'), '  Rica  ');
-    await fireEvent.press(getByTestId('create-profile-continue'));
+    fireEvent.changeText(getByPlaceholderText('Nome de usuário'), '  Rica  ');
+    await Promise.resolve();
+    fireEvent.press(getByTestId('create-profile-continue'));
+    await Promise.resolve();
 
     expect(onContinue).toHaveBeenCalledWith({ nickname: 'Rica', photo: null });
   });

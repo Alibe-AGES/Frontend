@@ -22,35 +22,41 @@ function ControlledEmailInput(
 
 describe('<EmailInput />', () => {
   test('always uses "Email" as the placeholder', async () => {
-    const { getByPlaceholderText } = await render(
-      <EmailInput
-        value=""
-        onChangeText={jest.fn()}
-      />
+    const { getByPlaceholderText } = await Promise.resolve(
+      render(
+        <EmailInput
+          value=""
+          onChangeText={jest.fn()}
+        />
+      )
     );
 
     expect(getByPlaceholderText('Email')).toBeTruthy();
   });
 
   test('accepts an optional label', async () => {
-    const { getByText } = await render(
-      <EmailInput
-        label="E-mail"
-        value=""
-        onChangeText={jest.fn()}
-      />
+    const { getByText } = await Promise.resolve(
+      render(
+        <EmailInput
+          label="E-mail"
+          value=""
+          onChangeText={jest.fn()}
+        />
+      )
     );
 
     expect(getByText('E-mail')).toBeTruthy();
   });
 
   test('configures the field for email entry', async () => {
-    const { getByTestId } = await render(
-      <EmailInput
-        value=""
-        onChangeText={jest.fn()}
-        testID="email-input"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <EmailInput
+          value=""
+          onChangeText={jest.fn()}
+          testID="email-input"
+        />
+      )
     );
 
     const field = getByTestId('email-input');
@@ -59,83 +65,97 @@ describe('<EmailInput />', () => {
   });
 
   test('renders the at icon over a coral badge by default', async () => {
-    const { getByTestId } = await render(
-      <EmailInput
-        value=""
-        onChangeText={jest.fn()}
-        testID="email-input"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <EmailInput
+          value=""
+          onChangeText={jest.fn()}
+          testID="email-input"
+        />
+      )
     );
 
     expect(getByTestId('email-input-icon').props.className).toContain('bg-coral');
   });
 
   test('renders the at icon over an ink badge when asked', async () => {
-    const { getByTestId } = await render(
-      <EmailInput
-        value=""
-        onChangeText={jest.fn()}
-        iconBackground="ink"
-        testID="email-input"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <EmailInput
+          value=""
+          onChangeText={jest.fn()}
+          iconBackground="ink"
+          testID="email-input"
+        />
+      )
     );
 
     expect(getByTestId('email-input-icon').props.className).toContain('bg-ink');
   });
 
   test('lets the user type an address', async () => {
-    const { getByTestId, getByDisplayValue } = await render(
-      <ControlledEmailInput testID="email-input" />
+    const { getByTestId, getByDisplayValue } = await Promise.resolve(
+      render(<ControlledEmailInput testID="email-input" />)
     );
 
-    await fireEvent.changeText(getByTestId('email-input'), 'user@example.com');
+    fireEvent.changeText(getByTestId('email-input'), 'user@example.com');
+    await Promise.resolve();
 
     expect(getByDisplayValue('user@example.com')).toBeTruthy();
   });
 
   test('warns about an invalid address on blur', async () => {
-    const { getByTestId, getByText } = await render(
-      <ControlledEmailInput
-        initialValue="not-an-email"
-        testID="email-input"
-      />
+    const { getByTestId, getByText } = await Promise.resolve(
+      render(
+        <ControlledEmailInput
+          initialValue="not-an-email"
+          testID="email-input"
+        />
+      )
     );
 
-    await fireEvent(getByTestId('email-input'), 'blur');
+    fireEvent(getByTestId('email-input'), 'blur');
+    await Promise.resolve();
 
     expect(getByText('Informe um e-mail válido.')).toBeTruthy();
   });
 
   test('has no error for a valid address on blur', async () => {
-    const { getByTestId, queryByTestId } = await render(
-      <ControlledEmailInput
-        initialValue="user@example.com"
-        testID="email-input"
-      />
+    const { getByTestId, queryByTestId } = await Promise.resolve(
+      render(
+        <ControlledEmailInput
+          initialValue="user@example.com"
+          testID="email-input"
+        />
+      )
     );
 
-    await fireEvent(getByTestId('email-input'), 'blur');
+    fireEvent(getByTestId('email-input'), 'blur');
+    await Promise.resolve();
 
     expect(queryByTestId('email-input-error')).toBeNull();
   });
 
   test('has no error for an empty value on blur', async () => {
-    const { getByTestId, queryByTestId } = await render(
-      <ControlledEmailInput testID="email-input" />
+    const { getByTestId, queryByTestId } = await Promise.resolve(
+      render(<ControlledEmailInput testID="email-input" />)
     );
 
-    await fireEvent(getByTestId('email-input'), 'blur');
+    fireEvent(getByTestId('email-input'), 'blur');
+    await Promise.resolve();
 
     expect(queryByTestId('email-input-error')).toBeNull();
   });
 
   test('an externally provided error takes precedence over the format validation', async () => {
-    const { getByText, queryByText } = await render(
-      <EmailInput
-        value="not-an-email"
-        onChangeText={jest.fn()}
-        error="Campo obrigatório."
-      />
+    const { getByText, queryByText } = await Promise.resolve(
+      render(
+        <EmailInput
+          value="not-an-email"
+          onChangeText={jest.fn()}
+          error="Campo obrigatório."
+        />
+      )
     );
 
     expect(getByText('Campo obrigatório.')).toBeTruthy();
@@ -143,13 +163,15 @@ describe('<EmailInput />', () => {
   });
 
   test('is not editable when disabled', async () => {
-    const { getByTestId } = await render(
-      <EmailInput
-        value=""
-        onChangeText={jest.fn()}
-        disabled
-        testID="email-input"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <EmailInput
+          value=""
+          onChangeText={jest.fn()}
+          disabled
+          testID="email-input"
+        />
+      )
     );
 
     expect(getByTestId('email-input').props.editable).toBe(false);
@@ -157,16 +179,19 @@ describe('<EmailInput />', () => {
 
   test('calls the onBlur callback', async () => {
     const onBlur = jest.fn();
-    const { getByTestId } = await render(
-      <EmailInput
-        value=""
-        onChangeText={jest.fn()}
-        onBlur={onBlur}
-        testID="email-input"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <EmailInput
+          value=""
+          onChangeText={jest.fn()}
+          onBlur={onBlur}
+          testID="email-input"
+        />
+      )
     );
 
-    await fireEvent(getByTestId('email-input'), 'blur');
+    fireEvent(getByTestId('email-input'), 'blur');
+    await Promise.resolve();
 
     expect(onBlur).toHaveBeenCalledTimes(1);
   });

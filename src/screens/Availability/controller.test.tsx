@@ -31,6 +31,13 @@ const mockGetAvailabilityStatusesByDate = getAvailabilityStatusesByDate as jest.
 >;
 const mockCreateAvailability = createAvailability as jest.MockedFunction<typeof createAvailability>;
 
+async function renderController() {
+  render(<AvailabilityController />);
+  await waitFor(() => {
+    expect(mockAvailabilityProps.participants).toHaveLength(2);
+  });
+}
+
 describe('AvailabilityController', () => {
   const back = jest.fn();
   const replace = jest.fn();
@@ -60,7 +67,7 @@ describe('AvailabilityController', () => {
   });
 
   test('loads participants and supplies an avatar fallback', async () => {
-    await render(<AvailabilityController />);
+    await renderController();
 
     await waitFor(() => {
       expect(mockGetAvailabilityStatusesByDate).toHaveBeenCalledWith('group-1', '2026-09-14');
@@ -83,7 +90,7 @@ describe('AvailabilityController', () => {
   });
 
   test('submits only complete intervals and navigates back', async () => {
-    await render(<AvailabilityController />);
+    await renderController();
     const onConfirm = mockAvailabilityProps.onConfirm as (intervals: unknown[]) => Promise<void>;
 
     await onConfirm([
@@ -102,7 +109,7 @@ describe('AvailabilityController', () => {
 
   test('replaces the route when confirming without back history', async () => {
     canGoBack.mockReturnValue(false);
-    await render(<AvailabilityController />);
+    await renderController();
     const onConfirm = mockAvailabilityProps.onConfirm as (intervals: unknown[]) => Promise<void>;
 
     await onConfirm([]);
@@ -111,7 +118,7 @@ describe('AvailabilityController', () => {
   });
 
   test('declines by going back or replacing the route', async () => {
-    await render(<AvailabilityController />);
+    await renderController();
     const onDecline = mockAvailabilityProps.onDecline as () => void;
 
     onDecline();
