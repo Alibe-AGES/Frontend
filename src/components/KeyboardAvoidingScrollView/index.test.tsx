@@ -23,28 +23,33 @@ describe('<KeyboardAvoidingScrollView />', () => {
 
   const emit = async (suffix: 'Show' | 'Hide', height: number) => {
     const listener = [...listeners.entries()].find(([name]) => name.endsWith(suffix))?.[1];
-    await act(() => {
+    act(() => {
       listener?.({ endCoordinates: { height } } as KeyboardEvent);
     });
+    await Promise.resolve();
   };
 
   const bottomPadding = (style: unknown) => JSON.stringify(style);
 
   test('renders its children', async () => {
-    const { getByText } = await render(
-      <KeyboardAvoidingScrollView>
-        <Text>Conteúdo</Text>
-      </KeyboardAvoidingScrollView>
+    const { getByText } = await Promise.resolve(
+      render(
+        <KeyboardAvoidingScrollView>
+          <Text>Conteúdo</Text>
+        </KeyboardAvoidingScrollView>
+      )
     );
 
     expect(getByText('Conteúdo')).toBeTruthy();
   });
 
   test('reserves space for the keyboard only while it is visible', async () => {
-    const { getByTestId } = await render(
-      <KeyboardAvoidingScrollView testID="keyboard-scroll">
-        <Text>Conteúdo</Text>
-      </KeyboardAvoidingScrollView>
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <KeyboardAvoidingScrollView testID="keyboard-scroll">
+          <Text>Conteúdo</Text>
+        </KeyboardAvoidingScrollView>
+      )
     );
     const getStyle = (): unknown =>
       (getByTestId('keyboard-scroll').props as { contentContainerStyle?: unknown })
@@ -74,20 +79,23 @@ describe('<KeyboardAvoidingScrollView />', () => {
       measureLayout: mockMeasureLayout,
     } as unknown as ReturnType<typeof TextInput.State.currentlyFocusedInput>);
 
-    await render(
-      <KeyboardAvoidingScrollView
-        testID="keyboard-scroll"
-        topOffset={80}
-      >
-        <Text>Conteúdo</Text>
-      </KeyboardAvoidingScrollView>
+    await Promise.resolve(
+      render(
+        <KeyboardAvoidingScrollView
+          testID="keyboard-scroll"
+          topOffset={80}
+        >
+          <Text>Conteúdo</Text>
+        </KeyboardAvoidingScrollView>
+      )
     );
 
     await emit('Show', 300);
 
-    await act(() => {
+    act(() => {
       jest.advanceTimersByTime(150);
     });
+    await Promise.resolve();
 
     expect(mockMeasureLayout).toHaveBeenCalled();
     jest.useRealTimers();
@@ -96,10 +104,12 @@ describe('<KeyboardAvoidingScrollView />', () => {
   test('does not add redundant keyboard padding on android', async () => {
     Object.defineProperty(Platform, 'OS', { get: () => 'android', configurable: true });
 
-    const { getByTestId } = await render(
-      <KeyboardAvoidingScrollView testID="keyboard-scroll-android">
-        <Text>Conteúdo Android</Text>
-      </KeyboardAvoidingScrollView>
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <KeyboardAvoidingScrollView testID="keyboard-scroll-android">
+          <Text>Conteúdo Android</Text>
+        </KeyboardAvoidingScrollView>
+      )
     );
 
     const getStyle = (): unknown =>
@@ -130,17 +140,20 @@ describe('<KeyboardAvoidingScrollView />', () => {
       measureInWindow: mockMeasureInWindow,
     } as unknown as ReturnType<typeof TextInput.State.currentlyFocusedInput>);
 
-    await render(
-      <KeyboardAvoidingScrollView testID="keyboard-scroll">
-        <Text>Conteúdo</Text>
-      </KeyboardAvoidingScrollView>
+    await Promise.resolve(
+      render(
+        <KeyboardAvoidingScrollView testID="keyboard-scroll">
+          <Text>Conteúdo</Text>
+        </KeyboardAvoidingScrollView>
+      )
     );
 
     await emit('Show', 300);
 
-    await act(() => {
+    act(() => {
       jest.advanceTimersByTime(150);
     });
+    await Promise.resolve();
 
     expect(mockMeasureLayout).toHaveBeenCalled();
     expect(mockMeasureInWindow).toHaveBeenCalled();
@@ -163,17 +176,20 @@ describe('<KeyboardAvoidingScrollView />', () => {
       measureInWindow: mockMeasureInWindow,
     } as unknown as ReturnType<typeof TextInput.State.currentlyFocusedInput>);
 
-    await render(
-      <KeyboardAvoidingScrollView testID="keyboard-scroll">
-        <Text>Conteúdo</Text>
-      </KeyboardAvoidingScrollView>
+    await Promise.resolve(
+      render(
+        <KeyboardAvoidingScrollView testID="keyboard-scroll">
+          <Text>Conteúdo</Text>
+        </KeyboardAvoidingScrollView>
+      )
     );
 
     await emit('Show', 300);
 
-    await act(() => {
+    act(() => {
       jest.advanceTimersByTime(150);
     });
+    await Promise.resolve();
 
     expect(mockMeasureInWindow).toHaveBeenCalled();
     jest.useRealTimers();
@@ -191,17 +207,20 @@ describe('<KeyboardAvoidingScrollView />', () => {
       measureInWindow: mockMeasureInWindow,
     } as unknown as ReturnType<typeof TextInput.State.currentlyFocusedInput>);
 
-    await render(
-      <KeyboardAvoidingScrollView testID="keyboard-scroll">
-        <Text>Conteúdo</Text>
-      </KeyboardAvoidingScrollView>
+    await Promise.resolve(
+      render(
+        <KeyboardAvoidingScrollView testID="keyboard-scroll">
+          <Text>Conteúdo</Text>
+        </KeyboardAvoidingScrollView>
+      )
     );
 
     await emit('Show', 300);
 
-    await act(() => {
+    act(() => {
       jest.advanceTimersByTime(150);
     });
+    await Promise.resolve();
 
     expect(mockMeasureInWindow).toHaveBeenCalled();
     jest.useRealTimers();
@@ -231,18 +250,21 @@ describe('<KeyboardAvoidingScrollView />', () => {
       );
     }
 
-    const { getByTestId } = await render(
-      <KeyboardAvoidingScrollView testID="keyboard-scroll">
-        <FocusableChild />
-      </KeyboardAvoidingScrollView>
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <KeyboardAvoidingScrollView testID="keyboard-scroll">
+          <FocusableChild />
+        </KeyboardAvoidingScrollView>
+      )
     );
 
     await emit('Show', 300);
 
-    await act(() => {
+    act(() => {
       (getByTestId('trigger-focus-child').props as { onPress: () => void }).onPress();
       jest.advanceTimersByTime(100);
     });
+    await Promise.resolve();
 
     expect(mockMeasureInWindow).toHaveBeenCalled();
     jest.useRealTimers();
@@ -256,41 +278,47 @@ describe('<KeyboardAvoidingScrollView />', () => {
       return <Text>{label}</Text>;
     }
 
-    const { rerender } = await render(
-      <KeyboardAvoidingScrollView>
-        <FocusableChild label="First" />
-      </KeyboardAvoidingScrollView>
+    const { rerender } = await Promise.resolve(
+      render(
+        <KeyboardAvoidingScrollView>
+          <FocusableChild label="First" />
+        </KeyboardAvoidingScrollView>
+      )
     );
 
-    await act(() =>
+    act(() => {
       rerender(
         <KeyboardAvoidingScrollView>
           <FocusableChild label="Second" />
         </KeyboardAvoidingScrollView>
-      )
-    );
+      );
+    });
+    await Promise.resolve();
 
     expect(observedHandlers[1]).toBe(observedHandlers[0]);
   });
 
   test('forwards scroll events and records offset', async () => {
     const onScrollMock = jest.fn();
-    const { getByTestId } = await render(
-      <KeyboardAvoidingScrollView
-        testID="keyboard-scroll"
-        onScroll={onScrollMock}
-      >
-        <Text>Conteúdo</Text>
-      </KeyboardAvoidingScrollView>
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <KeyboardAvoidingScrollView
+          testID="keyboard-scroll"
+          onScroll={onScrollMock}
+        >
+          <Text>Conteúdo</Text>
+        </KeyboardAvoidingScrollView>
+      )
     );
 
-    await act(() => {
+    act(() => {
       (
         getByTestId('keyboard-scroll').props as {
           onScroll: (e: { nativeEvent: { contentOffset: { y: number } } }) => void;
         }
       ).onScroll({ nativeEvent: { contentOffset: { y: 120 } } });
     });
+    await Promise.resolve();
 
     expect(onScrollMock).toHaveBeenCalled();
   });

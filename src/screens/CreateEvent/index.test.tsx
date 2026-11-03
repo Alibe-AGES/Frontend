@@ -70,8 +70,8 @@ function buildProps(overrides: Partial<CreateEventScreenProps> = {}): CreateEven
 
 describe('<CreateEventScreen />', () => {
   test('renders the tabs, event form, and participants', async () => {
-    const { getByText, getByPlaceholderText, getByTestId } = await render(
-      <CreateEventScreen {...buildProps()} />
+    const { getByText, getByPlaceholderText, getByTestId } = await Promise.resolve(
+      render(<CreateEventScreen {...buildProps()} />)
     );
 
     expect(getByTestId('create-event-tabs-header')).toBeTruthy();
@@ -87,22 +87,26 @@ describe('<CreateEventScreen />', () => {
 
   test('opens the date sheet and forwards the selected date', async () => {
     const onSelectDate = jest.fn();
-    const { getByTestId, queryByTestId } = await render(
-      <CreateEventScreen {...buildProps({ onSelectDate })} />
+    const { getByTestId, queryByTestId } = await Promise.resolve(
+      render(<CreateEventScreen {...buildProps({ onSelectDate })} />)
     );
 
     expect(queryByTestId('mock-date-picker-sheet')).toBeNull();
-    await fireEvent.press(getByTestId('create-event-card-date-button'));
-    await fireEvent.press(getByTestId('mock-date-picker-sheet'));
+    fireEvent.press(getByTestId('create-event-card-date-button'));
+    await Promise.resolve();
+    fireEvent.press(getByTestId('mock-date-picker-sheet'));
+    await Promise.resolve();
 
     expect(onSelectDate).toHaveBeenCalledWith('2026-10-15');
   });
 
   test('does not show a date picker for location suggestions', async () => {
-    const { queryByTestId } = await render(
-      <CreateEventScreen
-        {...buildProps({ activeTab: 'suggestion', openDatePickerOnMount: true })}
-      />
+    const { queryByTestId } = await Promise.resolve(
+      render(
+        <CreateEventScreen
+          {...buildProps({ activeTab: 'suggestion', openDatePickerOnMount: true })}
+        />
+      )
     );
 
     expect(queryByTestId('mock-date-picker-sheet')).toBeNull();
@@ -110,19 +114,25 @@ describe('<CreateEventScreen />', () => {
 
   test('forwards draft edits to the controller', async () => {
     const onChangeDraft = jest.fn();
-    const { getByTestId } = await render(<CreateEventScreen {...buildProps({ onChangeDraft })} />);
+    const { getByTestId } = await Promise.resolve(
+      render(<CreateEventScreen {...buildProps({ onChangeDraft })} />)
+    );
 
-    await fireEvent.changeText(getByTestId('create-event-card-name-input'), 'Bloom Café');
+    fireEvent.changeText(getByTestId('create-event-card-name-input'), 'Bloom Café');
+    await Promise.resolve();
 
     expect(onChangeDraft).toHaveBeenCalledWith({ ...EMPTY_DRAFT, name: 'Bloom Café' });
   });
 
   test('disables confirm while the draft is incomplete', async () => {
     const onConfirm = jest.fn();
-    const { getByTestId } = await render(<CreateEventScreen {...buildProps({ onConfirm })} />);
+    const { getByTestId } = await Promise.resolve(
+      render(<CreateEventScreen {...buildProps({ onConfirm })} />)
+    );
 
     const confirm = getByTestId('create-event-card-confirm');
-    await fireEvent.press(confirm);
+    fireEvent.press(confirm);
+    await Promise.resolve();
 
     expect(confirm.props.accessibilityState).toMatchObject({ disabled: true });
     expect(onConfirm).not.toHaveBeenCalled();
@@ -130,26 +140,29 @@ describe('<CreateEventScreen />', () => {
 
   test('calls onConfirm when the draft is complete', async () => {
     const onConfirm = jest.fn();
-    const { getByTestId } = await render(
-      <CreateEventScreen {...buildProps({ onConfirm, isConfirmDisabled: false })} />
+    const { getByTestId } = await Promise.resolve(
+      render(<CreateEventScreen {...buildProps({ onConfirm, isConfirmDisabled: false })} />)
     );
 
-    await fireEvent.press(getByTestId('create-event-card-confirm'));
+    fireEvent.press(getByTestId('create-event-card-confirm'));
+    await Promise.resolve();
 
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
 
   test('shows a loading message while participants load', async () => {
-    const { getByText } = await render(
-      <CreateEventScreen {...buildProps({ participants: [], isLoadingParticipants: true })} />
+    const { getByText } = await Promise.resolve(
+      render(
+        <CreateEventScreen {...buildProps({ participants: [], isLoadingParticipants: true })} />
+      )
     );
 
     expect(getByText('Carregando…')).toBeTruthy();
   });
 
   test('hides the navigation bar without a group id', async () => {
-    const { queryByTestId } = await render(
-      <CreateEventScreen {...buildProps({ groupId: undefined })} />
+    const { queryByTestId } = await Promise.resolve(
+      render(<CreateEventScreen {...buildProps({ groupId: undefined })} />)
     );
 
     expect(queryByTestId('mock-navigation-bar')).toBeNull();
@@ -157,8 +170,8 @@ describe('<CreateEventScreen />', () => {
 
   test('switches between the event and suggestion tabs when pressed', async () => {
     const onSelectTab = jest.fn();
-    const { getByTestId, getByPlaceholderText, getByText, rerender } = await render(
-      <CreateEventScreen {...buildProps({ activeTab: 'event', onSelectTab })} />
+    const { getByTestId, getByPlaceholderText, getByText, rerender } = await Promise.resolve(
+      render(<CreateEventScreen {...buildProps({ activeTab: 'event', onSelectTab })} />)
     );
 
     expect(getByTestId('create-event-tab-event').props.accessibilityState).toEqual({
@@ -170,10 +183,12 @@ describe('<CreateEventScreen />', () => {
     expect(getByPlaceholderText('Definir nome do evento')).toBeTruthy();
     expect(getByText('Adicione uma imagem que representa seu evento')).toBeTruthy();
 
-    await fireEvent.press(getByTestId('create-event-tab-suggestion'));
+    fireEvent.press(getByTestId('create-event-tab-suggestion'));
+    await Promise.resolve();
     expect(onSelectTab).toHaveBeenCalledWith('suggestion');
 
-    await rerender(<CreateEventScreen {...buildProps({ activeTab: 'suggestion', onSelectTab })} />);
+    rerender(<CreateEventScreen {...buildProps({ activeTab: 'suggestion', onSelectTab })} />);
+    await Promise.resolve();
 
     expect(getByTestId('create-event-tab-event').props.accessibilityState).toEqual({
       selected: false,
@@ -184,7 +199,8 @@ describe('<CreateEventScreen />', () => {
     expect(getByPlaceholderText('Definir nome da sugestão')).toBeTruthy();
     expect(getByText('Adicione uma imagem que representa sua sugestão')).toBeTruthy();
 
-    await fireEvent.press(getByTestId('create-event-tab-event'));
+    fireEvent.press(getByTestId('create-event-tab-event'));
+    await Promise.resolve();
     expect(onSelectTab).toHaveBeenCalledWith('event');
   });
 });

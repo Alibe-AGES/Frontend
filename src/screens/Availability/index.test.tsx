@@ -82,14 +82,16 @@ describe('AvailabilityScreen', () => {
   });
 
   it('renders the formatted date correctly', async () => {
-    const { getByTestId } = await render(<AvailabilityScreen date="2026-09-14" />);
+    const { getByTestId } = await Promise.resolve(render(<AvailabilityScreen date="2026-09-14" />));
     const dateText: unknown = getByTestId('availability-screen-date-text');
 
     expect(getChildren(dateText)).toContain('14/09');
   });
 
   it('shows the empty-state message when there are no participants', async () => {
-    const { getByTestId, queryByTestId } = await render(<AvailabilityScreen date="2026-09-14" />);
+    const { getByTestId, queryByTestId } = await Promise.resolve(
+      render(<AvailabilityScreen date="2026-09-14" />)
+    );
     const heading: unknown = getByTestId('availability-screen-participants-heading');
 
     expect(getChildren(heading)).toContain('Nenhum participante no grupo');
@@ -107,11 +109,13 @@ describe('AvailabilityScreen', () => {
       { id: '2', name: 'Bia', avatarUrl: '', status: 'no-response' as const },
     ];
 
-    const { getByTestId, getByText } = await render(
-      <AvailabilityScreen
-        date="2026-09-14"
-        participants={participants}
-      />
+    const { getByTestId, getByText } = await Promise.resolve(
+      render(
+        <AvailabilityScreen
+          date="2026-09-14"
+          participants={participants}
+        />
+      )
     );
 
     const heading: unknown = getByTestId('availability-screen-participants-heading');
@@ -126,15 +130,17 @@ describe('AvailabilityScreen', () => {
 
   it('calls onConfirm and shows success toast when confirmed', async () => {
     const onConfirm = jest.fn().mockResolvedValue(undefined);
-    const { getByTestId } = await render(
-      <AvailabilityScreen
-        date="2026-09-14"
-        onConfirm={onConfirm}
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <AvailabilityScreen
+          date="2026-09-14"
+          onConfirm={onConfirm}
+        />
+      )
     );
 
     const btnConfirm = getByTestId('button-Confirmar!');
-    void fireEvent.press(btnConfirm);
+    fireEvent.press(btnConfirm);
 
     await waitFor(() => {
       expect(onConfirm).toHaveBeenCalledTimes(1);
@@ -148,15 +154,17 @@ describe('AvailabilityScreen', () => {
 
   it('shows error toast when onConfirm fails', async () => {
     const onConfirmError = jest.fn().mockRejectedValue(new Error('API Error'));
-    const { getByTestId } = await render(
-      <AvailabilityScreen
-        date="2026-09-14"
-        onConfirm={onConfirmError}
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <AvailabilityScreen
+          date="2026-09-14"
+          onConfirm={onConfirmError}
+        />
+      )
     );
 
     const btnConfirm = getByTestId('button-Confirmar!');
-    void fireEvent.press(btnConfirm);
+    fireEvent.press(btnConfirm);
 
     await waitFor(() => {
       expect(Toast.show).toHaveBeenCalledWith(
@@ -167,15 +175,17 @@ describe('AvailabilityScreen', () => {
 
   it('calls onDecline and shows success toast when declined', async () => {
     const onDecline = jest.fn().mockResolvedValue(undefined);
-    const { getByTestId } = await render(
-      <AvailabilityScreen
-        date="2026-09-14"
-        onDecline={onDecline}
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <AvailabilityScreen
+          date="2026-09-14"
+          onDecline={onDecline}
+        />
+      )
     );
 
     const btnDecline = getByTestId('button-Sair sem informar disponibilidade');
-    void fireEvent.press(btnDecline);
+    fireEvent.press(btnDecline);
 
     await waitFor(() => {
       expect(onDecline).toHaveBeenCalledTimes(1);
@@ -188,15 +198,17 @@ describe('AvailabilityScreen', () => {
 
   it('shows error toast when onDecline fails', async () => {
     const onDeclineError = jest.fn().mockRejectedValue(new Error('API Error'));
-    const { getByTestId } = await render(
-      <AvailabilityScreen
-        date="2026-09-14"
-        onDecline={onDeclineError}
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <AvailabilityScreen
+          date="2026-09-14"
+          onDecline={onDeclineError}
+        />
+      )
     );
 
     const btnDecline = getByTestId('button-Sair sem informar disponibilidade');
-    void fireEvent.press(btnDecline);
+    fireEvent.press(btnDecline);
 
     await waitFor(() => {
       expect(Toast.show).toHaveBeenCalledWith(

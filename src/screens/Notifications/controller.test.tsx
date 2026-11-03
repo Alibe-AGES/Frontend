@@ -77,7 +77,7 @@ function screenProps(): CapturedProps {
 }
 
 async function renderLoaded() {
-  await render(<NotificationsController />);
+  await Promise.resolve(render(<NotificationsController />));
   await waitFor(() => {
     expect(screenProps().isLoading).toBe(false);
   });
@@ -126,7 +126,7 @@ describe('NotificationsController', () => {
     mockGetGroupNotifications.mockRejectedValue(new Error('boom'));
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
 
-    await render(<NotificationsController />);
+    await Promise.resolve(render(<NotificationsController />));
 
     await waitFor(() => {
       expect(screenProps().errorMessage).toBe('Não foi possível carregar as notificações.');

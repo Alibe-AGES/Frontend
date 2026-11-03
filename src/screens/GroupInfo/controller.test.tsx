@@ -1,6 +1,6 @@
 import { getGroupCalendar } from '@/server/calendar';
 import { getGroup, getGroupInviteLink, getMe } from '@/server/groups';
-import { render, waitFor } from '@testing-library/react-native';
+import { act, render, waitFor } from '@testing-library/react-native';
 import { createURL } from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import GroupInfoController from './controller';
@@ -42,6 +42,13 @@ const mockGetGroupCalendar = getGroupCalendar as jest.MockedFunction<typeof getG
 const mockGetGroupInviteLink = getGroupInviteLink as jest.MockedFunction<typeof getGroupInviteLink>;
 const mockGetMe = getMe as jest.MockedFunction<typeof getMe>;
 const mockCreateURL = createURL as jest.MockedFunction<typeof createURL>;
+
+async function renderController() {
+  render(<GroupInfoController />);
+  await waitFor(() => {
+    expect(mockGroupInfoProps.isLoading).toBe(false);
+  });
+}
 
 describe('GroupInfoController', () => {
   const push = jest.fn();
@@ -85,7 +92,7 @@ describe('GroupInfoController', () => {
   });
 
   test('loads group data, sorted availabilities, current user, and invite URL', async () => {
-    await render(<GroupInfoController />);
+    await renderController();
 
     await waitFor(() => {
       expect(mockGroupInfoProps.group).toMatchObject({ id: 'group-1', name: 'Hermanas' });
@@ -100,7 +107,7 @@ describe('GroupInfoController', () => {
   });
 
   test('navigates to the leave route', async () => {
-    await render(<GroupInfoController />);
+    await renderController();
     const onLeaveGroup = mockGroupInfoProps.onLeaveGroup as () => void;
 
     onLeaveGroup();
@@ -112,12 +119,15 @@ describe('GroupInfoController', () => {
   });
 
   test('refreshes the invite when requested', async () => {
-    await render(<GroupInfoController />);
+    await renderController();
     mockGetGroupInviteLink.mockResolvedValueOnce({ token: 'new-token', expiresAt: '2027-01-01' });
     mockCreateURL.mockReturnValueOnce('alibe://groups?invite=new-token');
 
     const onRefreshInvite = mockGroupInfoProps.onRefreshInvite as () => void;
-    onRefreshInvite();
+    await act(async () => {
+      onRefreshInvite();
+      await Promise.resolve();
+    });
 
     await waitFor(() => {
       expect(mockGetGroupInviteLink).toHaveBeenCalledTimes(2);

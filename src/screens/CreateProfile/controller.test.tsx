@@ -103,17 +103,20 @@ describe('CreateProfileController', () => {
   });
 
   async function renderAndFill(selectPhoto = false) {
-    const screen = await render(<CreateProfileController />);
+    const screen = await Promise.resolve(render(<CreateProfileController />));
 
     if (selectPhoto) {
-      await fireEvent.press(screen.getByTestId('create-profile-photo'));
+      fireEvent.press(screen.getByTestId('create-profile-photo'));
+      await Promise.resolve();
       await waitFor(() => {
         expect(screen.getByTestId('create-profile-photo-photo')).toBeTruthy();
       });
     }
 
-    await fireEvent.changeText(screen.getByPlaceholderText('Nome de usuário'), '  Rica  ');
-    await fireEvent.press(screen.getByTestId('create-profile-continue'));
+    fireEvent.changeText(screen.getByPlaceholderText('Nome de usuário'), '  Rica  ');
+    await Promise.resolve();
+    fireEvent.press(screen.getByTestId('create-profile-continue'));
+    await Promise.resolve();
 
     return screen;
   }

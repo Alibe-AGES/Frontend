@@ -75,14 +75,16 @@ describe('UserProfileController', () => {
   test('calls signOut and redirects to /auth when user confirms logout', async () => {
     mockSignOut.mockResolvedValue({ success: true });
 
-    const { getByTestId } = await render(<UserProfileController />);
+    const { getByTestId } = await Promise.resolve(render(<UserProfileController />));
 
     await waitFor(() => {
       expect(mockGetMyProfile).toHaveBeenCalledTimes(1);
     });
 
-    await fireEvent.press(getByTestId('user-profile-logout-button'));
-    await fireEvent.press(getByTestId('user-profile-logout-confirm'));
+    fireEvent.press(getByTestId('user-profile-logout-button'));
+    await Promise.resolve();
+    fireEvent.press(getByTestId('user-profile-logout-confirm'));
+    await Promise.resolve();
 
     await waitFor(() => {
       expect(mockSignOut).toHaveBeenCalledTimes(1);
@@ -93,14 +95,16 @@ describe('UserProfileController', () => {
   test('does not redirect to /auth when signOut fails', async () => {
     mockSignOut.mockRejectedValue(new Error('Logout failed'));
 
-    const { getByTestId } = await render(<UserProfileController />);
+    const { getByTestId } = await Promise.resolve(render(<UserProfileController />));
 
     await waitFor(() => {
       expect(mockGetMyProfile).toHaveBeenCalledTimes(1);
     });
 
-    await fireEvent.press(getByTestId('user-profile-logout-button'));
-    await fireEvent.press(getByTestId('user-profile-logout-confirm'));
+    fireEvent.press(getByTestId('user-profile-logout-button'));
+    await Promise.resolve();
+    fireEvent.press(getByTestId('user-profile-logout-confirm'));
+    await Promise.resolve();
 
     await waitFor(() => {
       expect(mockSignOut).toHaveBeenCalledTimes(1);

@@ -82,7 +82,7 @@ describe('GroupScreen', () => {
   });
 
   test('loads and renders the group name and members', async () => {
-    const { getByText, getByText: findText } = await render(<GroupScreen />);
+    const { getByText, getByText: findText } = await Promise.resolve(render(<GroupScreen />));
 
     await waitFor(() => {
       expect(getByText('Hermanas')).toBeTruthy();
@@ -95,7 +95,7 @@ describe('GroupScreen', () => {
   test('shows the empty member state when no members are returned', async () => {
     mockGetGroupMembers.mockResolvedValue([]);
 
-    const { getByText } = await render(<GroupScreen />);
+    const { getByText } = await Promise.resolve(render(<GroupScreen />));
 
     await waitFor(() => {
       expect(getByText('Nenhum membro encontrado neste grupo.')).toBeTruthy();
@@ -103,14 +103,15 @@ describe('GroupScreen', () => {
   });
 
   test('navigates to day availability and group info', async () => {
-    const { getByTestId } = await render(<GroupScreen />);
+    const { getByTestId } = await Promise.resolve(render(<GroupScreen />));
 
     await waitFor(() => {
       expect(getByTestId('group-screen')).toBeTruthy();
     });
 
     mockDayPress?.('2026-09-22');
-    await fireEvent.press(getByTestId('group-screen-members'));
+    fireEvent.press(getByTestId('group-screen-members'));
+    await Promise.resolve();
 
     expect(push).toHaveBeenCalledWith({
       pathname: '/group/[id]/day/[date]/availability',
@@ -123,13 +124,14 @@ describe('GroupScreen', () => {
   });
 
   test('opens the user profile from the header keeping the group context', async () => {
-    const { getByTestId } = await render(<GroupScreen />);
+    const { getByTestId } = await Promise.resolve(render(<GroupScreen />));
 
     await waitFor(() => {
       expect(getByTestId('group-screen')).toBeTruthy();
     });
 
-    await fireEvent.press(getByTestId('group-screen-profile'));
+    fireEvent.press(getByTestId('group-screen-profile'));
+    await Promise.resolve();
 
     expect(push).toHaveBeenCalledWith({
       pathname: '/(profile)/profile/[userId]',
@@ -138,7 +140,7 @@ describe('GroupScreen', () => {
   });
 
   test('starts event creation with the pressed calendar date', async () => {
-    await render(<GroupScreen />);
+    await Promise.resolve(render(<GroupScreen />));
 
     mockDayCreatePress?.('2026-10-15');
 
@@ -208,7 +210,7 @@ describe('GroupScreen', () => {
       },
     ]);
 
-    await render(<GroupScreen />);
+    await Promise.resolve(render(<GroupScreen />));
 
     await waitFor(() => {
       expect(mockDayMarks?.['2026-09-30']).toMatchObject({
@@ -248,7 +250,7 @@ describe('GroupScreen', () => {
       },
     ]);
 
-    await render(<GroupScreen />);
+    await Promise.resolve(render(<GroupScreen />));
 
     await waitFor(() => {
       expect(mockDayMarks?.['2026-10-12'].proposalIds).toEqual(['proposal-2']);
@@ -276,7 +278,7 @@ describe('GroupScreen', () => {
       },
     });
 
-    const { getByText } = await render(<GroupScreen />);
+    const { getByText } = await Promise.resolve(render(<GroupScreen />));
 
     await waitFor(() => {
       expect(getByText('• Cinema')).toBeTruthy();
@@ -284,7 +286,7 @@ describe('GroupScreen', () => {
   });
 
   test('shows the empty next event banner when the group has no events', async () => {
-    const { getByTestId } = await render(<GroupScreen />);
+    const { getByTestId } = await Promise.resolve(render(<GroupScreen />));
 
     await waitFor(() => {
       expect(getByTestId('alibe-next-event-banner-empty')).toBeTruthy();

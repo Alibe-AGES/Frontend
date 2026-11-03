@@ -66,7 +66,9 @@ describe('<PhotoPicker />', () => {
   };
 
   test('renders with the default label and group placeholder', async () => {
-    const { getByText, getByTestId } = await render(<PhotoPicker {...defaultProps} />);
+    const { getByText, getByTestId } = await Promise.resolve(
+      render(<PhotoPicker {...defaultProps} />)
+    );
 
     expect(getByText('Adicionar foto (opcional)')).toBeTruthy();
     expect(getByTestId('alibe-photo-picker-placeholder-icon')).toHaveTextContent('people-outline');
@@ -74,22 +76,26 @@ describe('<PhotoPicker />', () => {
 
   test('renders with a custom label', async () => {
     const customLabel = 'Mudar foto de perfil';
-    const { getByText } = await render(
-      <PhotoPicker
-        {...defaultProps}
-        label={customLabel}
-      />
+    const { getByText } = await Promise.resolve(
+      render(
+        <PhotoPicker
+          {...defaultProps}
+          label={customLabel}
+        />
+      )
     );
 
     expect(getByText(customLabel)).toBeTruthy();
   });
 
   test('uses the camera placeholder icon when specified', async () => {
-    const { getByTestId } = await render(
-      <PhotoPicker
-        {...defaultProps}
-        placeholder="camera"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <PhotoPicker
+          {...defaultProps}
+          placeholder="camera"
+        />
+      )
     );
 
     expect(getByTestId('alibe-photo-picker-placeholder-icon')).toHaveTextContent('camera-outline');
@@ -99,10 +105,12 @@ describe('<PhotoPicker />', () => {
     const mockPickImage = jest.fn();
     const mockController = createMockController({ pickImage: mockPickImage });
 
-    const { getByTestId } = await render(<PhotoPicker useController={mockController} />);
+    const { getByTestId } = await Promise.resolve(
+      render(<PhotoPicker useController={mockController} />)
+    );
 
     // Aplicando void para ignorar a floating promise
-    void fireEvent.press(getByTestId('alibe-photo-picker'));
+    fireEvent.press(getByTestId('alibe-photo-picker'));
 
     expect(mockPickImage).toHaveBeenCalledTimes(1);
   });
@@ -111,15 +119,17 @@ describe('<PhotoPicker />', () => {
     const mockPickImage = jest.fn();
     const mockController = createMockController({ pickImage: mockPickImage });
 
-    const { getByTestId } = await render(
-      <PhotoPicker
-        useController={mockController}
-        disabled
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <PhotoPicker
+          useController={mockController}
+          disabled
+        />
+      )
     );
 
     // Aplicando void para ignorar a floating promise
-    void fireEvent.press(getByTestId('alibe-photo-picker'));
+    fireEvent.press(getByTestId('alibe-photo-picker'));
 
     expect(mockPickImage).not.toHaveBeenCalled();
   });
@@ -131,15 +141,15 @@ describe('<PhotoPicker />', () => {
       pickImage: mockPickImage,
     });
 
-    const { getByTestId, queryByTestId } = await render(
-      <PhotoPicker useController={mockController} />
+    const { getByTestId, queryByTestId } = await Promise.resolve(
+      render(<PhotoPicker useController={mockController} />)
     );
 
     expect(getByTestId('alibe-photo-picker-loading')).toBeTruthy();
     expect(queryByTestId('alibe-photo-picker-photo')).toBeNull();
 
     // Aplicando void para ignorar a floating promise
-    void fireEvent.press(getByTestId('alibe-photo-picker'));
+    fireEvent.press(getByTestId('alibe-photo-picker'));
 
     expect(mockPickImage).not.toHaveBeenCalled();
   });
@@ -148,16 +158,18 @@ describe('<PhotoPicker />', () => {
     const testUri = 'https://example.com/photo.jpg';
     const mockController = createMockController({ photoUri: testUri });
 
-    const { getByTestId } = await render(<PhotoPicker useController={mockController} />);
+    const { getByTestId } = await Promise.resolve(
+      render(<PhotoPicker useController={mockController} />)
+    );
 
     expect(getByTestId('alibe-photo-picker-photo-uri')).toHaveTextContent(testUri);
   });
 
   test('falls back to useDefaultPhotoPickerController if no useController prop is provided', async () => {
-    const { getByTestId } = await render(<PhotoPicker />);
+    const { getByTestId } = await Promise.resolve(render(<PhotoPicker />));
 
     // Aplicando void para ignorar a floating promise
-    void fireEvent.press(getByTestId('alibe-photo-picker'));
+    fireEvent.press(getByTestId('alibe-photo-picker'));
 
     expect(mockDefaultPickImage).toHaveBeenCalledTimes(1);
   });
