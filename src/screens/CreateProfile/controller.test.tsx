@@ -1,13 +1,13 @@
 import { useSignUpDraft } from '@/hooks/useSignUpDraft';
+import { synchronizePushToken } from '@/notifications/synchronize-push-token';
 import { ApiError } from '@/server/api';
 import { signUpWithEmail } from '@/server/auth';
 import { authClient } from '@/server/auth-client';
 import { updateUserProfilePicture } from '@/server/users';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import CreateProfileController from './controller';
-import { synchronizePushToken } from '@/notifications/synchronize-push-token';
 
 interface PermissionResult {
   granted: boolean;
@@ -115,8 +115,14 @@ describe('CreateProfileController', () => {
 
     fireEvent.changeText(screen.getByPlaceholderText('Nome de usuário'), '  Rica  ');
     await Promise.resolve();
-    fireEvent.press(screen.getByTestId('create-profile-continue'));
-    await Promise.resolve();
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('create-profile-continue'));
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
 
     return screen;
   }
@@ -153,7 +159,13 @@ describe('CreateProfileController', () => {
     expect(mockSignUp).toHaveBeenCalled();
     expect(mockSignIn).not.toHaveBeenCalled();
 
-    finishSignUp();
+    await act(async () => {
+      finishSignUp();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
 
     await waitFor(() => {
       expect(mockSignIn).toHaveBeenCalledWith({ ...ACCOUNT, rememberMe: true });

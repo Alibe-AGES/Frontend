@@ -17,6 +17,14 @@ jest.mock('@/server/groups', () => ({
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
 const mockGetMe = getMe as jest.MockedFunction<typeof getMe>;
 
+async function flushAsyncEffects(): Promise<void> {
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+}
+
 describe('<AuthenticatedRoute />', () => {
   const replace = jest.fn();
 
@@ -31,13 +39,12 @@ describe('<AuthenticatedRoute />', () => {
   test('renders protected content after the current user is confirmed', async () => {
     mockGetMe.mockResolvedValue({ id: 'user-1', name: 'User', profilePic: null });
 
-    const { getByText } = await Promise.resolve(
-      render(
-        <AuthenticatedRoute>
-          <Text>Protected page</Text>
-        </AuthenticatedRoute>
-      )
+    const { getByText } = render(
+      <AuthenticatedRoute>
+        <Text>Protected page</Text>
+      </AuthenticatedRoute>
     );
+    await flushAsyncEffects();
 
     await waitFor(() => {
       expect(getByText('Protected page')).toBeTruthy();
@@ -61,12 +68,10 @@ describe('<AuthenticatedRoute />', () => {
       return <Text>Protected page</Text>;
     }
 
-    const { getByTestId, queryByTestId } = await Promise.resolve(
-      render(
-        <AuthenticatedRoute>
-          <ProtectedPage />
-        </AuthenticatedRoute>
-      )
+    const { getByTestId, queryByTestId } = render(
+      <AuthenticatedRoute>
+        <ProtectedPage />
+      </AuthenticatedRoute>
     );
 
     expect(onProtectedPageMount).toHaveBeenCalledTimes(1);
@@ -90,12 +95,10 @@ describe('<AuthenticatedRoute />', () => {
       return <Text>Current page</Text>;
     }
 
-    const { getByText, rerender } = await Promise.resolve(
-      render(
-        <AuthenticatedRoute enabled={false}>
-          <CurrentPage />
-        </AuthenticatedRoute>
-      )
+    const { getByText, rerender } = render(
+      <AuthenticatedRoute enabled={false}>
+        <CurrentPage />
+      </AuthenticatedRoute>
     );
 
     expect(getByText('Current page')).toBeTruthy();
@@ -106,7 +109,7 @@ describe('<AuthenticatedRoute />', () => {
         <CurrentPage />
       </AuthenticatedRoute>
     );
-    await Promise.resolve();
+    await flushAsyncEffects();
 
     await waitFor(() => {
       expect(mockGetMe).toHaveBeenCalledTimes(1);
@@ -118,13 +121,12 @@ describe('<AuthenticatedRoute />', () => {
   test('shows the access error and routes to login when the session is rejected', async () => {
     mockGetMe.mockRejectedValue(new Error('Unauthorized'));
 
-    const { getByText, getByTestId, queryByText } = await Promise.resolve(
-      render(
-        <AuthenticatedRoute>
-          <Text>Protected page</Text>
-        </AuthenticatedRoute>
-      )
+    const { getByText, getByTestId, queryByText } = render(
+      <AuthenticatedRoute>
+        <Text>Protected page</Text>
+      </AuthenticatedRoute>
     );
+    await flushAsyncEffects();
 
     await waitFor(() => {
       expect(getByText('Acesso restrito')).toBeTruthy();

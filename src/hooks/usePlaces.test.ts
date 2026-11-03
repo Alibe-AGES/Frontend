@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { act, renderHook, waitFor } from '@testing-library/react-native';
 
 import { EMPTY_FILTER_VALUE } from '@/components/FilterSheet';
 import { searchPlaces } from '@/server/places';
@@ -34,7 +34,12 @@ describe('usePlaces', () => {
 
   test('requests nearby backend places using the current device location', async () => {
     const input = { query: '', tagIds: [], filters: EMPTY_FILTER_VALUE };
-    const { result } = await Promise.resolve(renderHook(() => usePlaces(input)));
+    const { result } = renderHook(() => usePlaces(input));
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -51,9 +56,14 @@ describe('usePlaces', () => {
 
   test('shows a useful error when location access is denied', async () => {
     (Location.requestForegroundPermissionsAsync as jest.Mock).mockResolvedValue({ granted: false });
-    const { result } = await Promise.resolve(
-      renderHook(() => usePlaces({ query: '', tagIds: [], filters: EMPTY_FILTER_VALUE }))
+    const { result } = renderHook(() =>
+      usePlaces({ query: '', tagIds: [], filters: EMPTY_FILTER_VALUE })
     );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
 
     await waitFor(() => {
       expect(result.current.error).toMatch(/localização/i);
