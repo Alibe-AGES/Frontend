@@ -17,7 +17,7 @@ describe('<EventCreatedScreen />', () => {
   });
 
   test('renders the screen with the hands illustration and the logo', async () => {
-    const { getByTestId, getByLabelText } = await render(<EventCreatedScreen />);
+    const { getByTestId, getByLabelText } = await Promise.resolve(render(<EventCreatedScreen />));
 
     expect(getByTestId('event-created-screen')).toBeTruthy();
     expect(getByTestId('event-created-illustration')).toBeTruthy();
@@ -26,13 +26,13 @@ describe('<EventCreatedScreen />', () => {
   });
 
   test('renders the confirmation headline', async () => {
-    const { getByRole } = await render(<EventCreatedScreen />);
+    const { getByRole } = await Promise.resolve(render(<EventCreatedScreen />));
 
     expect(getByRole('header', { name: 'Evento confirmado, vocês tem um álibi!' })).toBeTruthy();
   });
 
   test('renders the star calendar hint', async () => {
-    const { getByText, getByLabelText } = await render(<EventCreatedScreen />);
+    const { getByText, getByLabelText } = await Promise.resolve(render(<EventCreatedScreen />));
 
     const hint = 'Esse evento aparecerá no calendário sinalizado por uma estrela!';
     expect(getByText(hint)).toBeTruthy();
@@ -40,16 +40,17 @@ describe('<EventCreatedScreen />', () => {
   });
 
   test('renders a single back button', async () => {
-    const { getAllByRole, getByText } = await render(<EventCreatedScreen />);
+    const { getAllByRole, getByText } = await Promise.resolve(render(<EventCreatedScreen />));
 
     expect(getByText('Voltar a tela inicial')).toBeTruthy();
     expect(getAllByRole('button')).toHaveLength(1);
   });
 
   test('returns to the group main page when the back button is pressed', async () => {
-    const { getByTestId } = await render(<EventCreatedScreen />);
+    const { getByTestId } = await Promise.resolve(render(<EventCreatedScreen />));
 
-    await fireEvent.press(getByTestId('event-created-back-home'));
+    fireEvent.press(getByTestId('event-created-back-home'));
+    await Promise.resolve();
 
     expect(mockDismissTo).toHaveBeenCalledTimes(1);
     expect(mockDismissTo).toHaveBeenCalledWith({

@@ -1,10 +1,10 @@
+import type { Place } from '@/components/PlaceList/PlaceList.types';
+import type { PlacesSearchInput } from '@/server/places';
+import { searchPlaces } from '@/server/places';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import * as Location from 'expo-location';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import type { Place } from '@/components/PlaceList/PlaceList.types';
-import { searchPlaces } from '@/server/places';
-import type { PlacesSearchInput } from '@/server/places';
-import * as Location from 'expo-location';
 
 import { ExperiencesScreen } from '.';
 
@@ -96,61 +96,59 @@ describe('<ExperiencesScreen />', () => {
   });
 
   test('opens the selected place details', async () => {
-    const { findByText, getByTestId } = await renderScreen();
+    const { findByText, getByTestId } = await Promise.resolve(renderScreen());
 
     expect(getByTestId('experiences-back').props.accessibilityLabel).toBe('Voltar para o grupo');
     await findByText('Bloom Café');
-    await fireEvent.press(getByTestId('experiences-places-item-bloom'));
+    fireEvent.press(getByTestId('experiences-places-item-bloom'));
+    await Promise.resolve();
 
     expect(mockPush).toHaveBeenCalledWith('/group/group-1/experiences/bloom');
   });
 
   test('filters places by search text', async () => {
-    const { findByText, getByTestId, queryByText } = await renderScreen();
+    const { findByText, getByTestId, queryByText } = await Promise.resolve(renderScreen());
 
     expect(await findByText('Bloom Café')).toBeTruthy();
-    await fireEvent.changeText(getByTestId('experiences-search'), 'arena');
-
-    await waitFor(() => {
-      expect(queryByText('Bloom Café')).toBeNull();
-    });
-    expect(queryByText('Arena Kart')).toBeTruthy();
+    fireEvent.changeText(getByTestId('experiences-search'), 'arena');
     await waitFor(() => {
       expect(searchPlaces).toHaveBeenLastCalledWith(expect.objectContaining({ query: 'arena' }));
     });
+    expect(await findByText('Arena Kart')).toBeTruthy();
+    expect(queryByText('Bloom Café')).toBeNull();
   });
 
   test('filters places by carousel tag', async () => {
-    const { findByText, getByTestId, queryByText } = await renderScreen();
+    const { findByText, getByTestId, queryByText } = await Promise.resolve(renderScreen());
 
     await findByText('Bloom Café');
-    await fireEvent.press(getByTestId('experiences-filters-tag-restaurant'));
-
+    fireEvent.press(getByTestId('experiences-filters-tag-restaurant'));
     await waitFor(() => {
-      expect(queryByText('Arena Kart')).toBeNull();
+      expect(searchPlaces).toHaveBeenLastCalledWith(
+        expect.objectContaining({ tagIds: ['restaurant'] })
+      );
     });
+    expect(queryByText('Arena Kart')).toBeNull();
     expect(queryByText('Bloom Café')).toBeTruthy();
-    expect(searchPlaces).toHaveBeenLastCalledWith(
-      expect.objectContaining({ tagIds: ['restaurant'] })
-    );
   });
 
   test('applies sheet filters on confirm', async () => {
-    const { findByText, getByTestId, queryByText } = await renderScreen();
+    const { findByText, getByTestId, queryByText } = await Promise.resolve(renderScreen());
 
     await findByText('Bloom Café');
-    await fireEvent.press(getByTestId('experiences-filters-open-filters'));
-    await fireEvent.press(getByTestId('experiences-filter-sheet-environment-outdoor'));
-    await fireEvent.press(getByTestId('experiences-filter-sheet-confirm'));
-
+    fireEvent.press(getByTestId('experiences-filters-open-filters'));
+    await Promise.resolve();
+    fireEvent.press(getByTestId('experiences-filter-sheet-environment-outdoor'));
+    await Promise.resolve();
+    fireEvent.press(getByTestId('experiences-filter-sheet-confirm'));
     await waitFor(() => {
-      expect(queryByText('Bloom Café')).toBeNull();
+      expect(searchPlaces).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          filters: { minBudget: '', maxBudget: '', selections: { environment: ['outdoor'] } },
+        })
+      );
     });
-    expect(queryByText('Estúdio de Yoga')).toBeTruthy();
-    expect(searchPlaces).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        filters: { minBudget: '', maxBudget: '', selections: { environment: ['outdoor'] } },
-      })
-    );
+    expect(await findByText('Estúdio de Yoga')).toBeTruthy();
+    expect(queryByText('Bloom Café')).toBeNull();
   });
 });

@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import Toast from 'react-native-toast-message';
 import { UserProfileScreen, UserProfileScreenProps } from './index';
 
@@ -67,7 +67,7 @@ describe('UserProfileScreen', () => {
       error: new Error('Network error'),
     };
 
-    const { getByText } = await render(<UserProfileScreen {...errorProps} />);
+    const { getByText } = await Promise.resolve(render(<UserProfileScreen {...errorProps} />));
 
     expect(getByText('Não foi possível carregar o perfil.')).toBeTruthy();
   });
@@ -84,7 +84,9 @@ describe('UserProfileScreen', () => {
       },
     };
 
-    const { getByText, getByTestId } = await render(<UserProfileScreen {...successProps} />);
+    const { getByText, getByTestId } = await Promise.resolve(
+      render(<UserProfileScreen {...successProps} />)
+    );
 
     expect(getByTestId('user-profile-screen-name')).toHaveTextContent('Ellen Miranda');
     expect(getByText('no alibe desde 21 de Setembro de 2026')).toBeTruthy();
@@ -95,20 +97,23 @@ describe('UserProfileScreen', () => {
   });
 
   test('keeps edit-profile modal content visible and scrollable', async () => {
-    const { getByText, getByTestId, getByPlaceholderText } = await render(
-      <UserProfileScreen
-        {...defaultProps}
-        profile={{
-          name: 'Ellen Miranda',
-          created_at: '21 de Setembro de 2026',
-          completedEventsCount: 0,
-          pendingEventsCount: 0,
-          photoUri: null,
-        }}
-      />
+    const { getByText, getByTestId, getByPlaceholderText } = await Promise.resolve(
+      render(
+        <UserProfileScreen
+          {...defaultProps}
+          profile={{
+            name: 'Ellen Miranda',
+            created_at: '21 de Setembro de 2026',
+            completedEventsCount: 0,
+            pendingEventsCount: 0,
+            photoUri: null,
+          }}
+        />
+      )
     );
 
-    await fireEvent.press(getByText('Editar perfil'));
+    fireEvent.press(getByText('Editar perfil'));
+    await Promise.resolve();
 
     const editModalScroll = getByTestId('user-profile-edit-modal-scroll');
     expect(editModalScroll.props.contentContainerStyle).toMatchObject({
@@ -124,9 +129,12 @@ describe('UserProfileScreen', () => {
   });
 
   test('keeps the change-password modal centered in a bounded scroll panel', async () => {
-    const { getByText, getByTestId } = await render(<UserProfileScreen {...defaultProps} />);
+    const { getByText, getByTestId } = await Promise.resolve(
+      render(<UserProfileScreen {...defaultProps} />)
+    );
 
-    await fireEvent.press(getByText('Alterar Senha'));
+    fireEvent.press(getByText('Alterar Senha'));
+    await Promise.resolve();
 
     const passwordModalScroll = getByTestId('user-profile-password-modal-scroll');
     expect(passwordModalScroll.props.contentContainerStyle).toMatchObject({
@@ -142,17 +150,19 @@ describe('UserProfileScreen', () => {
 
   test('uses the loaded profile photo for the avatar', async () => {
     const profilePhotoUrl = 'https://api.alibe.test/users/user-123/profile-picture';
-    const { getByTestId } = await render(
-      <UserProfileScreen
-        {...defaultProps}
-        profile={{
-          name: 'Ellen Miranda',
-          photoUri: profilePhotoUrl,
-          created_at: '21 de Setembro de 2026',
-          completedEventsCount: 5,
-          pendingEventsCount: 2,
-        }}
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <UserProfileScreen
+          {...defaultProps}
+          profile={{
+            name: 'Ellen Miranda',
+            photoUri: profilePhotoUrl,
+            created_at: '21 de Setembro de 2026',
+            completedEventsCount: 5,
+            pendingEventsCount: 2,
+          }}
+        />
+      )
     );
 
     expect(getByTestId('profile-card-avatar-source')).toHaveTextContent(profilePhotoUrl);
@@ -171,8 +181,8 @@ describe('UserProfileScreen', () => {
       },
     };
 
-    const { queryByText, getByTestId } = await render(
-      <UserProfileScreen {...thirdPartyProfileProps} />
+    const { queryByText, getByTestId } = await Promise.resolve(
+      render(<UserProfileScreen {...thirdPartyProfileProps} />)
     );
 
     expect(getByTestId('user-profile-screen-name')).toHaveTextContent('Carlos Silva');
@@ -183,19 +193,23 @@ describe('UserProfileScreen', () => {
 
   test('opens logout confirmation modal and cancels logout', async () => {
     const onLogout = jest.fn();
-    const { getByTestId, getByText, queryByText } = await render(
-      <UserProfileScreen
-        {...defaultProps}
-        onLogout={onLogout}
-      />
+    const { getByTestId, getByText, queryByText } = await Promise.resolve(
+      render(
+        <UserProfileScreen
+          {...defaultProps}
+          onLogout={onLogout}
+        />
+      )
     );
 
-    await fireEvent.press(getByTestId('user-profile-logout-button'));
+    fireEvent.press(getByTestId('user-profile-logout-button'));
+    await Promise.resolve();
 
     expect(getByText('Sair da conta')).toBeTruthy();
     expect(getByText('Tem certeza de que deseja sair da sua conta?')).toBeTruthy();
 
-    await fireEvent.press(getByTestId('user-profile-logout-cancel'));
+    fireEvent.press(getByTestId('user-profile-logout-cancel'));
+    await Promise.resolve();
 
     expect(queryByText('Tem certeza de que deseja sair da sua conta?')).toBeNull();
     expect(onLogout).not.toHaveBeenCalled();
@@ -203,15 +217,22 @@ describe('UserProfileScreen', () => {
 
   test('calls onLogout when confirming in the logout modal', async () => {
     const onLogout = jest.fn().mockResolvedValue(undefined);
-    const { getByTestId } = await render(
-      <UserProfileScreen
-        {...defaultProps}
-        onLogout={onLogout}
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <UserProfileScreen
+          {...defaultProps}
+          onLogout={onLogout}
+        />
+      )
     );
 
-    await fireEvent.press(getByTestId('user-profile-logout-button'));
-    await fireEvent.press(getByTestId('user-profile-logout-confirm'));
+    fireEvent.press(getByTestId('user-profile-logout-button'));
+    await Promise.resolve();
+    await act(async () => {
+      fireEvent.press(getByTestId('user-profile-logout-confirm'));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
 
     await waitFor(() => {
       expect(onLogout).toHaveBeenCalledTimes(1);
@@ -222,15 +243,22 @@ describe('UserProfileScreen', () => {
     const toastShowSpy = jest.spyOn(Toast, 'show').mockImplementation(jest.fn());
     const onLogout = jest.fn().mockRejectedValue(new Error('Network error'));
 
-    const { getByTestId } = await render(
-      <UserProfileScreen
-        {...defaultProps}
-        onLogout={onLogout}
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <UserProfileScreen
+          {...defaultProps}
+          onLogout={onLogout}
+        />
+      )
     );
 
-    await fireEvent.press(getByTestId('user-profile-logout-button'));
-    await fireEvent.press(getByTestId('user-profile-logout-confirm'));
+    fireEvent.press(getByTestId('user-profile-logout-button'));
+    await Promise.resolve();
+    await act(async () => {
+      fireEvent.press(getByTestId('user-profile-logout-confirm'));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
 
     await waitFor(() => {
       expect(toastShowSpy).toHaveBeenCalledWith({
