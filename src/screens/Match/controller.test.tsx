@@ -28,6 +28,16 @@ const mockUseRouter = jest.mocked(useRouter);
 const mockGetGroup = jest.mocked(getGroup);
 const mockGetMe = jest.mocked(getMe);
 
+async function renderController() {
+  const result = render(<MatchController />);
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  return result;
+}
+
 describe('MatchController', () => {
   const replace = jest.fn();
 
@@ -58,7 +68,7 @@ describe('MatchController', () => {
   });
 
   test('loads group members and continues to event creation with matched details', async () => {
-    await Promise.resolve(render(<MatchController />));
+    await renderController();
 
     await waitFor(() => {
       expect(mockScreenProps.participants).toHaveLength(2);
@@ -85,7 +95,7 @@ describe('MatchController', () => {
 
   test('disables confirmation when matched location details are missing', async () => {
     mockUseLocalSearchParams.mockReturnValue({ id: 'group-1' });
-    await Promise.resolve(render(<MatchController />));
+    await renderController();
 
     expect(mockScreenProps.isConfirmDisabled).toBe(true);
     act(() => {

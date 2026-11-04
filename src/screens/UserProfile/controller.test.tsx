@@ -1,6 +1,6 @@
 import { signOut } from '@/server/auth';
 import { getMyProfile } from '@/server/users';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import UserProfileController from './controller';
 
 const mockReplace = jest.fn();
@@ -25,6 +25,10 @@ jest.mock('@/server/users', () => ({
 
 jest.mock('../../../src/hooks/useUserAvatarSource', () => ({
   useUserAvatarSource: jest.fn(() => null),
+}));
+
+jest.mock('@/hooks/use-authenticated-image-source', () => ({
+  useAuthenticatedImageSource: (uri?: string) => (uri ? { uri } : null),
 }));
 
 jest.mock('@/components/BackButton', () => {
@@ -60,6 +64,17 @@ jest.mock('react-native-safe-area-context', () => ({
 const mockSignOut = signOut as jest.MockedFunction<typeof signOut>;
 const mockGetMyProfile = getMyProfile as jest.MockedFunction<typeof getMyProfile>;
 
+async function renderProfileController() {
+  const result = render(<UserProfileController />);
+  const request = mockGetMyProfile.mock.results.at(-1)?.value as Promise<unknown> | undefined;
+  await act(async () => {
+    await request;
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  return result;
+}
+
 describe('UserProfileController', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -75,7 +90,7 @@ describe('UserProfileController', () => {
   test('calls signOut and redirects to /auth when user confirms logout', async () => {
     mockSignOut.mockResolvedValue({ success: true });
 
-    const { getByTestId } = await Promise.resolve(render(<UserProfileController />));
+    const { getByTestId } = await renderProfileController();
 
     await waitFor(() => {
       expect(mockGetMyProfile).toHaveBeenCalledTimes(1);
@@ -95,7 +110,7 @@ describe('UserProfileController', () => {
   test('does not redirect to /auth when signOut fails', async () => {
     mockSignOut.mockRejectedValue(new Error('Logout failed'));
 
-    const { getByTestId } = await Promise.resolve(render(<UserProfileController />));
+    const { getByTestId } = await renderProfileController();
 
     await waitFor(() => {
       expect(mockGetMyProfile).toHaveBeenCalledTimes(1);

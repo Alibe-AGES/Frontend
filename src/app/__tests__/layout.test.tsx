@@ -1,9 +1,10 @@
 import RootLayout from '@/app/_layout';
 import { AuthenticatedRoute } from '@/components/AuthenticatedRoute';
 import { useFonts } from '@expo-google-fonts/poppins';
-import { render, screen } from '@testing-library/react-native';
+import { act, render, screen } from '@testing-library/react-native';
 import { usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { AccessibilityInfo } from 'react-native';
 
 jest.mock('@/global.css', () => ({}));
 
@@ -45,10 +46,20 @@ const mockUseFonts = useFonts as jest.Mock;
 const mockUsePathname = usePathname as jest.Mock;
 const mockAuthenticatedRoute = jest.mocked(AuthenticatedRoute);
 
+async function renderLayout() {
+  const result = render(<RootLayout />);
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  return result;
+}
+
 describe('<RootLayout />', () => {
   beforeEach(() => {
     mockUseFonts.mockReturnValue([true]);
     mockUsePathname.mockReturnValue('/groups');
+    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
   });
 
   afterEach(() => {
@@ -58,7 +69,7 @@ describe('<RootLayout />', () => {
   test('shows only the splash while the fonts are loading', async () => {
     mockUseFonts.mockReturnValue([false]);
 
-    await Promise.resolve(render(<RootLayout />));
+    await renderLayout();
 
     expect(screen.getByTestId('splash-screen')).toBeTruthy();
     expect(SplashScreen.hideAsync).toHaveBeenCalled();
@@ -67,7 +78,7 @@ describe('<RootLayout />', () => {
 
   test.each(['/groups', '/profile/user-123'])('protects private route %s', async (pathname) => {
     mockUsePathname.mockReturnValue(pathname);
-    await Promise.resolve(render(<RootLayout />));
+    await renderLayout();
 
     expect(mockAuthenticatedRoute.mock.calls[0]?.[0].enabled).toBe(true);
   });
@@ -76,7 +87,7 @@ describe('<RootLayout />', () => {
     'does not protect the public route %s',
     async (pathname) => {
       mockUsePathname.mockReturnValue(pathname);
-      await Promise.resolve(render(<RootLayout />));
+      await renderLayout();
 
       expect(mockAuthenticatedRoute.mock.calls[0]?.[0].enabled).toBe(false);
     }

@@ -76,6 +76,16 @@ async function fillDraft(draft: EventCardDraft): Promise<void> {
   await Promise.resolve();
 }
 
+async function renderController() {
+  const result = render(<CreateEventController />);
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  return result;
+}
+
 describe('CreateEventController', () => {
   const replace = jest.fn();
 
@@ -104,7 +114,7 @@ describe('CreateEventController', () => {
   });
 
   test('loads the group participants and the current user', async () => {
-    await Promise.resolve(render(<CreateEventController />));
+    await renderController();
 
     await waitFor(() => {
       expect(mockScreenProps.participants).toHaveLength(2);
@@ -118,7 +128,7 @@ describe('CreateEventController', () => {
   test('prefills the date passed from the group calendar', async () => {
     mockUseLocalSearchParams.mockReturnValue({ id: 'group-1', date: '2026-10-15' });
 
-    await Promise.resolve(render(<CreateEventController />));
+    await renderController();
 
     expect(mockScreenProps.draft.date).toBe('2026-10-15');
     expect(mockScreenProps.isConfirmDisabled).toBe(true);
@@ -128,7 +138,7 @@ describe('CreateEventController', () => {
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
     mockGetGroup.mockRejectedValue(new Error('offline'));
 
-    await Promise.resolve(render(<CreateEventController />));
+    await renderController();
 
     await waitFor(() => {
       expect(mockScreenProps.isLoadingParticipants).toBe(false);
@@ -139,7 +149,7 @@ describe('CreateEventController', () => {
   test('still lists participants when the current user cannot be loaded', async () => {
     mockGetMe.mockRejectedValue(new Error('offline'));
 
-    await Promise.resolve(render(<CreateEventController />));
+    await renderController();
 
     await waitFor(() => {
       expect(mockScreenProps.participants).toHaveLength(2);
@@ -148,7 +158,7 @@ describe('CreateEventController', () => {
   });
 
   test('keeps confirm disabled until every required field is valid', async () => {
-    await Promise.resolve(render(<CreateEventController />));
+    await renderController();
     expect(mockScreenProps.isConfirmDisabled).toBe(true);
 
     await fillDraft({ ...COMPLETE_DRAFT, date: '2026-02-31' });
@@ -165,7 +175,7 @@ describe('CreateEventController', () => {
   });
 
   test('does not submit an incomplete draft', async () => {
-    await Promise.resolve(render(<CreateEventController />));
+    await renderController();
 
     act(() => {
       mockScreenProps.onConfirm();

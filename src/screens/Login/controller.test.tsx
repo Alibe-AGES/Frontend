@@ -1,6 +1,6 @@
 import { synchronizePushToken } from '@/notifications/synchronize-push-token';
 import { authClient } from '@/server/auth';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
 import LoginController from './controller';
 
@@ -48,8 +48,12 @@ describe('LoginController', () => {
     await Promise.resolve();
     fireEvent.changeText(getByPlaceholderText('Senha'), 'senha-segura');
     await Promise.resolve();
-    fireEvent.press(getByTestId('login-continue'));
-    await Promise.resolve();
+    await act(async () => {
+      fireEvent.press(getByTestId('login-continue'));
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
 
     expect(mockSignInEmail).toHaveBeenCalledWith({
       email: 'user@example.com',
@@ -72,8 +76,12 @@ describe('LoginController', () => {
     await Promise.resolve();
     fireEvent.changeText(getByPlaceholderText('Senha'), 'wrong-password');
     await Promise.resolve();
-    fireEvent.press(getByTestId('login-continue'));
-    await Promise.resolve();
+    await act(async () => {
+      fireEvent.press(getByTestId('login-continue'));
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
 
     expect(await findByRole('alert')).toHaveTextContent(/Não foi possível entrar/);
     expect(mockSynchronizePushToken).not.toHaveBeenCalled();
