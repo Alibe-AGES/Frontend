@@ -1,7 +1,7 @@
 import { DayMark } from '@/components/Calendar/Calendar.types';
 import { getGroupCalendar } from '@/server/calendar';
 import { getGroup, getGroupMembers } from '@/server/groups';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { GroupScreen } from './index';
 
@@ -54,6 +54,19 @@ const mockGetGroupCalendar = getGroupCalendar as jest.MockedFunction<typeof getG
 const mockGetGroup = getGroup as jest.MockedFunction<typeof getGroup>;
 const mockGetGroupMembers = getGroupMembers as jest.MockedFunction<typeof getGroupMembers>;
 
+async function renderGroup() {
+  const result = render(<GroupScreen />);
+  const requests = [
+    mockGetGroup.mock.results.at(-1)?.value,
+    mockGetGroupMembers.mock.results.at(-1)?.value,
+    mockGetGroupCalendar.mock.results.at(-1)?.value,
+  ];
+  await act(async () => {
+    await Promise.all(requests.map((request) => Promise.resolve(request)));
+  });
+  return result;
+}
+
 describe('GroupScreen', () => {
   const push = jest.fn();
 
@@ -82,7 +95,7 @@ describe('GroupScreen', () => {
   });
 
   test('loads and renders the group name and members', async () => {
-    const { getByText, getByText: findText } = await Promise.resolve(render(<GroupScreen />));
+    const { getByText, getByText: findText } = await renderGroup();
 
     await waitFor(() => {
       expect(getByText('Hermanas')).toBeTruthy();
@@ -95,7 +108,7 @@ describe('GroupScreen', () => {
   test('shows the empty member state when no members are returned', async () => {
     mockGetGroupMembers.mockResolvedValue([]);
 
-    const { getByText } = await Promise.resolve(render(<GroupScreen />));
+    const { getByText } = await renderGroup();
 
     await waitFor(() => {
       expect(getByText('Nenhum membro encontrado neste grupo.')).toBeTruthy();
@@ -103,7 +116,7 @@ describe('GroupScreen', () => {
   });
 
   test('navigates to day availability and group info', async () => {
-    const { getByTestId } = await Promise.resolve(render(<GroupScreen />));
+    const { getByTestId } = await renderGroup();
 
     await waitFor(() => {
       expect(getByTestId('group-screen')).toBeTruthy();
@@ -124,7 +137,7 @@ describe('GroupScreen', () => {
   });
 
   test('opens the user profile from the header keeping the group context', async () => {
-    const { getByTestId } = await Promise.resolve(render(<GroupScreen />));
+    const { getByTestId } = await renderGroup();
 
     await waitFor(() => {
       expect(getByTestId('group-screen')).toBeTruthy();
@@ -140,7 +153,7 @@ describe('GroupScreen', () => {
   });
 
   test('starts event creation with the pressed calendar date', async () => {
-    await Promise.resolve(render(<GroupScreen />));
+    await renderGroup();
 
     mockDayCreatePress?.('2026-10-15');
 
@@ -210,7 +223,7 @@ describe('GroupScreen', () => {
       },
     ]);
 
-    await Promise.resolve(render(<GroupScreen />));
+    await renderGroup();
 
     await waitFor(() => {
       expect(mockDayMarks?.['2026-09-30']).toMatchObject({
@@ -250,7 +263,7 @@ describe('GroupScreen', () => {
       },
     ]);
 
-    await Promise.resolve(render(<GroupScreen />));
+    await renderGroup();
 
     await waitFor(() => {
       expect(mockDayMarks?.['2026-10-12'].proposalIds).toEqual(['proposal-2']);
@@ -278,7 +291,7 @@ describe('GroupScreen', () => {
       },
     });
 
-    const { getByText } = await Promise.resolve(render(<GroupScreen />));
+    const { getByText } = await renderGroup();
 
     await waitFor(() => {
       expect(getByText('• Cinema')).toBeTruthy();
@@ -286,7 +299,7 @@ describe('GroupScreen', () => {
   });
 
   test('shows the empty next event banner when the group has no events', async () => {
-    const { getByTestId } = await Promise.resolve(render(<GroupScreen />));
+    const { getByTestId } = await renderGroup();
 
     await waitFor(() => {
       expect(getByTestId('alibe-next-event-banner-empty')).toBeTruthy();

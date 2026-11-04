@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { CreateGroupScreen } from '.';
 
 const mockPush = jest.fn();
@@ -57,8 +57,11 @@ describe('<CreateGroupScreen />', () => {
 
     fireEvent.changeText(getByPlaceholderText('Nome do grupo'), 'Amigos da faculdade');
     await Promise.resolve();
-    fireEvent.press(getByText('Continuar'));
-    await Promise.resolve();
+    await act(async () => {
+      fireEvent.press(getByText('Continuar'));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
 
     await waitFor(() => {
       expect(mockCreateGroup).toHaveBeenCalledWith({

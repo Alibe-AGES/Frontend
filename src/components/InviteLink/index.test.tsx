@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import * as Clipboard from 'expo-clipboard';
 
 import { InviteLink } from './index';
@@ -51,8 +51,10 @@ describe('<InviteLink />', () => {
       )
     );
 
-    fireEvent.press(getByTestId('alibe-invite-link'));
-    await Promise.resolve();
+    await act(async () => {
+      fireEvent.press(getByTestId('alibe-invite-link'));
+      await Promise.resolve();
+    });
 
     await waitFor(() => {
       expect(mockSetStringAsync).toHaveBeenCalledWith(INVITE_LINK);
@@ -65,8 +67,10 @@ describe('<InviteLink />', () => {
     const onCopy = jest.fn();
     const { getByTestId } = await Promise.resolve(render(<InviteLink onCopy={onCopy} />));
 
-    fireEvent.press(getByTestId('alibe-invite-link'));
-    await Promise.resolve();
+    await act(async () => {
+      fireEvent.press(getByTestId('alibe-invite-link'));
+      await Promise.resolve();
+    });
 
     expect(mockSetStringAsync).not.toHaveBeenCalled();
     expect(onCopy).not.toHaveBeenCalled();
@@ -87,8 +91,10 @@ describe('<InviteLink />', () => {
       )
     );
 
-    fireEvent.press(getByTestId('alibe-invite-link'));
-    await Promise.resolve();
+    await act(async () => {
+      fireEvent.press(getByTestId('alibe-invite-link'));
+      await Promise.resolve();
+    });
 
     expect(mockSetStringAsync).not.toHaveBeenCalled();
     expect(onCopy).not.toHaveBeenCalled();
@@ -108,8 +114,10 @@ describe('<InviteLink />', () => {
       )
     );
 
-    fireEvent.press(getByTestId('alibe-invite-link'));
-    await Promise.resolve();
+    await act(async () => {
+      fireEvent.press(getByTestId('alibe-invite-link'));
+      await Promise.resolve();
+    });
 
     expect(onExpired).toHaveBeenCalledTimes(1);
     expect(mockSetStringAsync).not.toHaveBeenCalled();
@@ -132,8 +140,10 @@ describe('<InviteLink />', () => {
       )
     );
 
-    fireEvent.press(getByTestId('alibe-invite-link'));
-    await Promise.resolve();
+    await act(async () => {
+      fireEvent.press(getByTestId('alibe-invite-link'));
+      await Promise.resolve();
+    });
 
     await waitFor(() => {
       expect(onCopyError).toHaveBeenCalledWith(failure);
@@ -147,8 +157,10 @@ describe('<InviteLink />', () => {
       render(<InviteLink link={INVITE_LINK} />)
     );
 
-    fireEvent.press(getByTestId('alibe-invite-link'));
-    await Promise.resolve();
+    await act(async () => {
+      fireEvent.press(getByTestId('alibe-invite-link'));
+      await Promise.resolve();
+    });
     await waitFor(() => {
       expect(getByText('Copiado')).toBeTruthy();
     });
