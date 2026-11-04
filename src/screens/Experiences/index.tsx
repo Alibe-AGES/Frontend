@@ -34,7 +34,7 @@ export function ExperiencesScreen() {
   };
 
   return (
-    <View className="flex-1 bg-canvas">
+    <View className="flex-1 bg-canvas pt-10">
       <View className="w-full max-w-2xl flex-1 self-center">
         <PlaceList
           places={places}
@@ -49,15 +49,17 @@ export function ExperiencesScreen() {
           contentContainerClassName="gap-4 px-6 pb-32 pt-6"
           header={
             <View className="gap-4">
-              <BackButton
-                fallbackHref={groupId ? `/group/${groupId}` : '/groups'}
-                accessibilityLabel="Voltar para o grupo"
-              />
-              <SearchBar
-                value={query}
-                onChangeText={setQuery}
-                testID="experiences-search"
-              />
+              <View className="flex-row items-center justify-between gap-4 pr-10">
+                <BackButton
+                  fallbackHref={groupId ? `/group/${groupId}` : '/groups'}
+                  accessibilityLabel="Voltar para o grupo"
+                />
+                <SearchBar
+                  value={query}
+                  onChangeText={setQuery}
+                  testID="experiences-search"
+                />
+              </View>
 
               <View className="items-center gap-1">
                 <Text className={`pt-3 text-center text-4xl text-ink ${theme.typography.display}`}>
