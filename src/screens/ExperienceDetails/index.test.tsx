@@ -29,7 +29,7 @@ const details: PlaceDetails = {
 
 async function renderDetails(props: ComponentProps<typeof ExperienceDetailsScreen>) {
   const result = render(<ExperienceDetailsScreen {...props} />);
-  const request = props.isStoredLocation
+  const request: unknown = props.isStoredLocation
     ? jest.mocked(getStoredLocationDetails).mock.results.at(-1)?.value
     : jest.mocked(getPlaceDetails).mock.results.at(-1)?.value;
   await waitFor(() => {
