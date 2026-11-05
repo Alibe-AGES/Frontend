@@ -1,14 +1,16 @@
-import { ScrollView, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { BackButton } from '@/components/BackButton';
 import { Button } from '@/components/Button';
 import type { DropdownOption } from '@/components/Dropdown';
+import { NavigationBar } from '@/components/NavigationBar';
 import { NewMemoryCard } from '@/components/NewMemoryCard';
 import type { SelectedPhoto, UsePhotoPickerHook } from '@/components/PhotoPicker/PhotoPicker.types';
+import { ScreenFrame } from '@/components/ScreenFrame';
 import { theme } from '@/theme';
 
 export interface NewMemoryScreenProps {
-  groupId?: string;
+  groupId: string;
   events: DropdownOption[];
   selectedEventId: string | null;
   hasPhoto: boolean;
@@ -40,27 +42,31 @@ export function NewMemoryScreen({
   const isCreateDisabled = !selectedEventId || !hasPhoto || isLoadingEvents;
 
   return (
-    <View className="flex-1 bg-canvas">
-      <ScrollView contentContainerClassName="grow px-8 pb-10 pt-12">
+    <ScreenFrame
+      footer={<NavigationBar groupId={groupId} />}
+      gap="md"
+      header={
         <BackButton
           accessibilityLabel="Voltar para as memórias"
-          className="mb-6"
-          fallbackHref={groupId ? `/group/${groupId}/memories` : '/groups'}
+          fallbackHref={{ pathname: '/group/[id]/memories', params: { id: groupId } }}
         />
+      }
+      testID="new-memory-screen"
+    >
+      <Text className={`text-center text-4xl text-wine ${theme.typography.display}`}>
+        Nova memória
+      </Text>
 
-        <Text className={`mb-8 text-center text-4xl text-wine ${theme.typography.display}`}>
-          Nova memória
+      {error ? (
+        <Text
+          accessibilityRole="alert"
+          className="text-center font-poppins text-sm text-wine"
+        >
+          {error}
         </Text>
+      ) : null}
 
-        {error ? (
-          <Text
-            accessibilityRole="alert"
-            className="mb-4 text-center font-poppins text-sm text-wine"
-          >
-            {error}
-          </Text>
-        ) : null}
-
+      <View className="gap-4 px-4">
         <NewMemoryCard
           events={events}
           onClose={onClose}
@@ -71,16 +77,14 @@ export function NewMemoryScreen({
           usePhotoController={usePhotoController}
         />
 
-        <View className="mt-3">
-          <Button
-            disabled={isCreateDisabled}
-            isLoading={isSubmitting}
-            onPress={onCreate}
-            testID="new-memory-submit"
-            title="Criar memória"
-          />
-        </View>
-      </ScrollView>
-    </View>
+        <Button
+          disabled={isCreateDisabled}
+          isLoading={isSubmitting}
+          onPress={onCreate}
+          testID="new-memory-submit"
+          title="Criar memória"
+        />
+      </View>
+    </ScreenFrame>
   );
 }

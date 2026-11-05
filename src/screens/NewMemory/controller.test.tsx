@@ -1,23 +1,28 @@
-import { render, waitFor } from '@testing-library/react-native';
+import { act, render, waitFor } from '@testing-library/react-native';
+import Toast from 'react-native-toast-message';
 
 import { getGroupCalendar } from '@/server/calendar';
 import { getEventDetails } from '@/server/events';
+import { createMemory } from '@/server/memories';
 import NewMemoryController from './controller';
 import type { NewMemoryScreenProps } from '.';
 
 let mockScreenProps: NewMemoryScreenProps | null = null;
+const mockReplace = jest.fn();
 
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ id: 'group-1' }),
   useRouter: () => ({
     back: jest.fn(),
-    replace: jest.fn(),
+    replace: mockReplace,
     canGoBack: () => true,
   }),
 }));
 
 jest.mock('@/server/calendar', () => ({ getGroupCalendar: jest.fn() }));
 jest.mock('@/server/events', () => ({ getEventDetails: jest.fn() }));
+jest.mock('@/server/memories', () => ({ createMemory: jest.fn() }));
+jest.mock('react-native-toast-message', () => ({ __esModule: true, default: { show: jest.fn() } }));
 
 jest.mock('.', () => ({
   NewMemoryScreen: (props: NewMemoryScreenProps) => {
@@ -28,6 +33,7 @@ jest.mock('.', () => ({
 
 const mockedCalendar = jest.mocked(getGroupCalendar);
 const mockedEventDetails = jest.mocked(getEventDetails);
+const PHOTO = { uri: 'file:///memory.jpg' };
 
 function calendarDay(completedEventIds: string[]) {
   return {
@@ -97,5 +103,56 @@ describe('<NewMemoryController />', () => {
 
     expect(mockScreenProps?.events).toEqual([]);
     expect(mockScreenProps?.isLoadingEvents).toBe(false);
+  });
+
+  async function fillForm() {
+    mockedCalendar.mockResolvedValue([calendarDay(['event-1'])]);
+    mockedEventDetails.mockResolvedValue(eventDetails('event-1', 'Churrasco'));
+
+    render(<NewMemoryController />);
+
+    await waitFor(() => {
+      expect(mockScreenProps?.isLoadingEvents).toBe(false);
+    });
+
+    act(() => {
+      mockScreenProps?.onSelectEvent('event-1');
+      mockScreenProps?.onPhotoSelected(PHOTO);
+    });
+  }
+
+  test('creates the memory and opens the confirmation screen', async () => {
+    jest.mocked(createMemory).mockResolvedValue();
+    await fillForm();
+
+    act(() => {
+      mockScreenProps?.onCreate();
+    });
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith({
+        pathname: '/group/[id]/memories/created',
+        params: { id: 'group-1' },
+      });
+    });
+    expect(createMemory).toHaveBeenCalledWith('event-1', PHOTO);
+  });
+
+  test('stays on the screen and warns when the memory cannot be created', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    jest.mocked(createMemory).mockRejectedValue(new Error('offline'));
+    await fillForm();
+
+    act(() => {
+      mockScreenProps?.onCreate();
+    });
+
+    await waitFor(() => {
+      expect(Toast.show).toHaveBeenCalledTimes(1);
+    });
+    expect(mockReplace).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(mockScreenProps?.isSubmitting).toBe(false);
+    });
   });
 });

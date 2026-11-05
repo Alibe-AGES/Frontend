@@ -1,11 +1,13 @@
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
+import Toast from 'react-native-toast-message';
 
 import { useDefaultBackController } from '@/components/BackButton/controllers/useDefaultBackController';
 import type { DropdownOption } from '@/components/Dropdown';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
 import { getGroupCalendar } from '@/server/calendar';
 import { getEventDetails } from '@/server/events';
+import { createMemory } from '@/server/memories';
 import { NewMemoryScreen } from '.';
 
 // Memories are made from events that already happened, so the dropdown lists
@@ -23,15 +25,17 @@ async function loadCompletedEvents(groupId: string): Promise<DropdownOption[]> {
 }
 
 export default function NewMemoryController() {
+  const router = useRouter();
   const { id: groupId } = useLocalSearchParams<{ id: string }>();
   const { handleBack } = useDefaultBackController({
-    fallbackHref: groupId ? `/group/${groupId}/memories` : '/groups',
+    fallbackHref: { pathname: '/group/[id]/memories', params: { id: groupId } },
   });
 
   const [events, setEvents] = useState<DropdownOption[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [photo, setPhoto] = useState<SelectedPhoto | null>(null);
   const [isLoadingEvents, setIsLoadingEvents] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadEvents = useCallback(async () => {
@@ -58,12 +62,24 @@ export default function NewMemoryController() {
     void loadEvents();
   }, [loadEvents]);
 
-  const goBack = () => {
-    void handleBack();
-  };
+  const handleCreate = async () => {
+    if (!selectedEventId || !photo || isSubmitting) return;
 
-  // There is no endpoint to persist a memory yet, so creating just closes the flow.
-  const handleCreate = goBack;
+    setIsSubmitting(true);
+    try {
+      await createMemory(selectedEventId, photo);
+      router.replace({ pathname: '/group/[id]/memories/created', params: { id: groupId } });
+    } catch (createError: unknown) {
+      console.error('Erro ao criar a memória', createError);
+      Toast.show({
+        type: 'error',
+        text1: 'Erro',
+        text2: 'Não foi possível criar a memória. Tente novamente.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <NewMemoryScreen
@@ -72,9 +88,13 @@ export default function NewMemoryController() {
       groupId={groupId}
       hasPhoto={photo !== null}
       isLoadingEvents={isLoadingEvents}
-      isSubmitting={false}
-      onClose={goBack}
-      onCreate={handleCreate}
+      isSubmitting={isSubmitting}
+      onClose={() => {
+        void handleBack();
+      }}
+      onCreate={() => {
+        void handleCreate();
+      }}
       onPhotoSelected={setPhoto}
       onSelectEvent={setSelectedEventId}
       selectedEventId={selectedEventId}
