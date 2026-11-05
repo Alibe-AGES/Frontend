@@ -13,6 +13,7 @@ import { Stack } from 'expo-router/stack';
 import * as SplashScreen from 'expo-splash-screen';
 import { polyfillWebCrypto } from 'expo-standard-web-crypto';
 import { useEffect, useState } from 'react';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import Toast from 'react-native-toast-message';
 
 import { AuthenticatedRoute } from '@/components/AuthenticatedRoute';
@@ -59,26 +60,29 @@ export default function RootLayout() {
   const isPublicRoute = publicPaths.includes(pathname);
 
   return (
-    <SignUpDraftProvider>
-      <PendingInviteProvider>
-        {isAppReady ? (
-          <AuthenticatedRoute enabled={!isPublicRoute}>{stack}</AuthenticatedRoute>
-        ) : null}
-        {isSplashVisible ? (
-          <AnimatedSplash
-            isReady={isAppReady}
-            onFinish={() => {
-              setIsSplashVisible(false);
-            }}
+    // Required by ScreenFrame: keyboard-aware scrolling does nothing without this provider.
+    <KeyboardProvider>
+      <SignUpDraftProvider>
+        <PendingInviteProvider>
+          {isAppReady ? (
+            <AuthenticatedRoute enabled={!isPublicRoute}>{stack}</AuthenticatedRoute>
+          ) : null}
+          {isSplashVisible ? (
+            <AnimatedSplash
+              isReady={isAppReady}
+              onFinish={() => {
+                setIsSplashVisible(false);
+              }}
+            />
+          ) : null}
+          <PushNotifications />
+          <StatusBar
+            barStyle="dark-content"
+            backgroundColor={theme.colors.canvas}
           />
-        ) : null}
-        <PushNotifications />
-        <StatusBar
-          barStyle="dark-content"
-          backgroundColor={theme.colors.canvas}
-        />
-        <Toast />
-      </PendingInviteProvider>
-    </SignUpDraftProvider>
+          <Toast />
+        </PendingInviteProvider>
+      </SignUpDraftProvider>
+    </KeyboardProvider>
   );
 }

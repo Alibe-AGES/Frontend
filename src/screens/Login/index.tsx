@@ -3,12 +3,12 @@ import { ContinueButton } from '@/components/ContinueButton';
 import { EmailInput } from '@/components/EmailInput';
 import { GoogleButton } from '@/components/GoogleButton';
 import { PasswordInput } from '@/components/PasswordInput';
+import { ScreenFrame } from '@/components/ScreenFrame';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import tw from 'twrnc';
-import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
 
 import LoginHandsDecoration from '@/assets/images/login-hands-decoration.svg';
 
@@ -39,11 +39,7 @@ export function LoginScreen({
   const canContinue = trimmedEmail.length > 0 && password.length > 0;
 
   return (
-    <KeyboardAvoidingScrollView
-      className="flex-1 bg-canvas"
-      contentContainerClassName="flex-grow px-6"
-      keyboardShouldPersistTaps="handled"
-    >
+    <ScreenFrame padding="horizontal">
       <View
         accessible={false}
         className="-mx-8 aspect-[390/280]"
@@ -150,6 +146,6 @@ export function LoginScreen({
           />
         </View>
       </View>
-    </KeyboardAvoidingScrollView>
+    </ScreenFrame>
   );
 }
