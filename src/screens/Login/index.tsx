@@ -118,7 +118,9 @@ export function LoginScreen({
         <View className="mt-12 items-center gap-6 pb-12">
           <View className="w-full flex-row items-center gap-4">
             <View className="h-0.5 flex-1 bg-wine" />
-            <Text className="text-center font-poppins-light text-lg text-wine">Ou continue com</Text>
+            <Text className="text-center font-poppins-light text-lg text-wine">
+              Ou continue com
+            </Text>
             <View className="h-0.5 flex-1 bg-wine" />
           </View>
 

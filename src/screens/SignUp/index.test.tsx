@@ -33,7 +33,9 @@ describe('<SignUpScreen />', () => {
   });
 
   test('renders the Google sign up option', async () => {
-    const { getByText, getByLabelText } = await Promise.resolve(render(<SignUpScreen onContinue={onContinue} />));
+    const { getByText, getByLabelText } = await Promise.resolve(
+      render(<SignUpScreen onContinue={onContinue} />)
+    );
 
     expect(getByText('Ou continue com')).toBeTruthy();
     expect(getByLabelText('Continuar com Google')).toBeTruthy();
