@@ -9,7 +9,7 @@ import { Button } from '@/components/Button';
 import { theme } from '@/theme';
 
 const HEADLINE = 'Memória adicionada!';
-const DESCRIPTION = 'Volte a galeria de memórias para conferir!';
+const DESCRIPTION = 'Volte a galeria de memórias\npara conferir!';
 
 export function MemoryCreatedScreen() {
   const router = useRouter();
@@ -24,7 +24,7 @@ export function MemoryCreatedScreen() {
       {/* Outside the safe area so the cropped edges sit flush with the device corner. */}
       <View
         accessible={false}
-        className="pointer-events-none absolute right-0 top-0 aspect-[167/142] w-32"
+        className="pointer-events-none absolute right-0 top-0 aspect-[167/142] w-44"
         testID="memory-created-spin"
       >
         <SpinDecoration
@@ -46,11 +46,11 @@ export function MemoryCreatedScreen() {
             <Text
               accessibilityRole="header"
               accessibilityLabel={HEADLINE}
-              className="text-center font-poppins-black text-3xl leading-10 text-ink"
+              className="text-center font-poppins-black text-[2.625rem] leading-[3.25rem] text-ink"
             >
               {'Memória\nadicionada!'}
             </Text>
-            <Text className="mt-3 max-w-xs text-center font-poppins text-sm text-wine">
+            <Text className="mt-5 text-center font-poppins text-xl leading-7 text-wine">
               {DESCRIPTION}
             </Text>
           </View>
