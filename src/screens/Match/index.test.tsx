@@ -12,14 +12,16 @@ const participants: GroupMember[] = [
 describe('<MatchScreen />', () => {
   test('shows the match message, group members, and event action', async () => {
     const onConfirm = jest.fn();
-    const { getByText, getByTestId } = await render(
-      <MatchScreen
-        participants={participants}
-        currentUserId="user-1"
-        isLoadingParticipants={false}
-        isConfirmDisabled={false}
-        onConfirm={onConfirm}
-      />
+    const { getByText, getByTestId } = await Promise.resolve(
+      render(
+        <MatchScreen
+          participants={participants}
+          currentUserId="user-1"
+          isLoadingParticipants={false}
+          isConfirmDisabled={false}
+          onConfirm={onConfirm}
+        />
+      )
     );
 
     expect(getByText('Vocês tem um álibi!')).toBeTruthy();
@@ -27,18 +29,21 @@ describe('<MatchScreen />', () => {
     expect(getByText('Kata')).toBeTruthy();
     expect(getByText('Manu')).toBeTruthy();
     expect(getByText('May')).toBeTruthy();
-    await fireEvent.press(getByTestId('match-create-event'));
+    fireEvent.press(getByTestId('match-create-event'));
+    await Promise.resolve();
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
 
   test('shows a loading indicator while group members are loading', async () => {
-    const { getByTestId } = await render(
-      <MatchScreen
-        participants={[]}
-        isLoadingParticipants
-        isConfirmDisabled
-        onConfirm={jest.fn()}
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <MatchScreen
+          participants={[]}
+          isLoadingParticipants
+          isConfirmDisabled
+          onConfirm={jest.fn()}
+        />
+      )
     );
 
     expect(getByTestId('match-participants-loading')).toBeTruthy();

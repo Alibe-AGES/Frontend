@@ -1,7 +1,8 @@
-import { fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
 
 import { getPlaceDetails, getStoredLocationDetails, PlaceDetails } from '@/server/places';
+import type { ComponentProps } from 'react';
 import { ExperienceDetailsScreen } from '.';
 
 jest.mock('expo-router', () => ({
@@ -26,6 +27,22 @@ const details: PlaceDetails = {
   openingHours: [],
 };
 
+async function renderDetails(props: ComponentProps<typeof ExperienceDetailsScreen>) {
+  const result = render(<ExperienceDetailsScreen {...props} />);
+  const request: unknown = props.isStoredLocation
+    ? jest.mocked(getStoredLocationDetails).mock.results.at(-1)?.value
+    : jest.mocked(getPlaceDetails).mock.results.at(-1)?.value;
+  await waitFor(() => {
+    expect(request).toBeDefined();
+  });
+  await act(async () => {
+    await Promise.resolve(request).catch(() => undefined);
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  return result;
+}
+
 describe('<ExperienceDetailsScreen />', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -35,12 +52,10 @@ describe('<ExperienceDetailsScreen />', () => {
   });
 
   test('shows the Google photo and defaults for missing location data', async () => {
-    const { findByText, getAllByText, getByTestId } = await render(
-      <ExperienceDetailsScreen
-        groupId="group-1"
-        placeId="cafe-1"
-      />
-    );
+    const { findByText, getAllByText, getByTestId } = await renderDetails({
+      groupId: 'group-1',
+      placeId: 'cafe-1',
+    });
 
     expect(await findByText('Bloom Café')).toBeTruthy();
     expect(getByTestId('experience-details-image').props.accessibilityLabel).toBe(
@@ -57,14 +72,10 @@ describe('<ExperienceDetailsScreen />', () => {
   test('returns to the previous screen', async () => {
     const back = jest.fn();
     (useRouter as jest.Mock).mockReturnValue({ back, push: jest.fn() });
-    const { getByTestId } = await render(
-      <ExperienceDetailsScreen
-        groupId="group-1"
-        placeId="cafe-1"
-      />
-    );
+    const { getByTestId } = await renderDetails({ groupId: 'group-1', placeId: 'cafe-1' });
 
-    await fireEvent.press(getByTestId('experience-details-back'));
+    fireEvent.press(getByTestId('experience-details-back'));
+    await Promise.resolve();
     expect(back).toHaveBeenCalled();
   });
 
@@ -80,12 +91,10 @@ describe('<ExperienceDetailsScreen />', () => {
       openingHours: ['segunda-feira: 09:00–18:00'],
     });
 
-    const { findByText, getByTestId, queryByTestId } = await render(
-      <ExperienceDetailsScreen
-        groupId="group-1"
-        placeId="cafe-1"
-      />
-    );
+    const { findByText, getByTestId, queryByTestId } = await renderDetails({
+      groupId: 'group-1',
+      placeId: 'cafe-1',
+    });
 
     expect(await findByText('Rua das Flores, 10')).toBeTruthy();
     expect(await findByText('(51) 3333-4444')).toBeTruthy();
@@ -105,14 +114,10 @@ describe('<ExperienceDetailsScreen />', () => {
       ...details,
       address: 'Rua Padre Chagas, 320',
     });
-    const { findByTestId } = await render(
-      <ExperienceDetailsScreen
-        groupId="group-1"
-        placeId="cafe-1"
-      />
-    );
+    const { findByTestId } = await renderDetails({ groupId: 'group-1', placeId: 'cafe-1' });
 
-    await fireEvent.press(await findByTestId('experience-suggest-location'));
+    fireEvent.press(await findByTestId('experience-suggest-location'));
+    await Promise.resolve();
     expect(push).toHaveBeenCalledWith({
       pathname: '/group/[id]/create-event',
       params: {
@@ -134,15 +139,14 @@ describe('<ExperienceDetailsScreen />', () => {
       address: 'Rua das Flores, 10',
     });
 
-    const { findByTestId } = await render(
-      <ExperienceDetailsScreen
-        groupId="group-1"
-        placeId="location-1"
-        isStoredLocation
-      />
-    );
+    const { findByTestId } = await renderDetails({
+      groupId: 'group-1',
+      placeId: 'location-1',
+      isStoredLocation: true,
+    });
 
-    await fireEvent.press(await findByTestId('experience-suggest-location'));
+    fireEvent.press(await findByTestId('experience-suggest-location'));
+    await Promise.resolve();
 
     expect(getStoredLocationDetails).toHaveBeenCalledWith('location-1');
     expect(getPlaceDetails).not.toHaveBeenCalled();
@@ -166,15 +170,21 @@ describe('<ExperienceDetailsScreen />', () => {
       })
     );
 
-    const { findByText, getByTestId } = await render(
-      <ExperienceDetailsScreen
-        groupId="group-1"
-        placeId="slow-place"
-      />
+    const { findByText, getByTestId } = await Promise.resolve(
+      render(
+        <ExperienceDetailsScreen
+          groupId="group-1"
+          placeId="slow-place"
+        />
+      )
     );
 
     expect(getByTestId('experience-details-loading')).toBeTruthy();
-    resolveDetails(details);
+    await act(async () => {
+      resolveDetails(details);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
     expect(await findByText('Bloom Café')).toBeTruthy();
   });
 
@@ -184,12 +194,10 @@ describe('<ExperienceDetailsScreen />', () => {
       priceRange: { start: null, end: null, currencyCode: 'BRL' },
     });
 
-    const { findByText, getAllByText } = await render(
-      <ExperienceDetailsScreen
-        groupId="group-1"
-        placeId="empty-price-place"
-      />
-    );
+    const { findByText, getAllByText } = await renderDetails({
+      groupId: 'group-1',
+      placeId: 'empty-price-place',
+    });
 
     expect(await findByText('Bloom Café')).toBeTruthy();
     expect(getAllByText('--')).toHaveLength(3);
@@ -200,15 +208,14 @@ describe('<ExperienceDetailsScreen />', () => {
     const back = jest.fn();
     (useRouter as jest.Mock).mockReturnValue({ back, push: jest.fn() });
 
-    const { findByText, getByTestId } = await render(
-      <ExperienceDetailsScreen
-        groupId="group-1"
-        placeId="unavailable-place"
-      />
-    );
+    const { findByText, getByTestId } = await renderDetails({
+      groupId: 'group-1',
+      placeId: 'unavailable-place',
+    });
 
     expect(await findByText('Não foi possível carregar as informações deste local.')).toBeTruthy();
-    await fireEvent.press(getByTestId('experience-details-error-back'));
+    fireEvent.press(getByTestId('experience-details-error-back'));
+    await Promise.resolve();
     expect(back).toHaveBeenCalled();
   });
 });
