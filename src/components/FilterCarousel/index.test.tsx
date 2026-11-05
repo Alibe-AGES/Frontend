@@ -10,17 +10,21 @@ describe('<FilterCarousel />', () => {
   test('toggles tags and opens filters', async () => {
     const onToggleTag = jest.fn();
     const onOpenFilters = jest.fn();
-    const { getByLabelText } = await render(
-      <FilterCarousel
-        tags={tags}
-        selectedTagIds={['a']}
-        onToggleTag={onToggleTag}
-        onOpenFilters={onOpenFilters}
-      />
+    const { getByLabelText } = await Promise.resolve(
+      render(
+        <FilterCarousel
+          tags={tags}
+          selectedTagIds={['a']}
+          onToggleTag={onToggleTag}
+          onOpenFilters={onOpenFilters}
+        />
+      )
     );
 
-    await fireEvent.press(getByLabelText('Tag B'));
-    await fireEvent.press(getByLabelText('Abrir filtros'));
+    fireEvent.press(getByLabelText('Tag B'));
+    await Promise.resolve();
+    fireEvent.press(getByLabelText('Abrir filtros'));
+    await Promise.resolve();
 
     expect(onToggleTag).toHaveBeenCalledWith('b');
     expect(onOpenFilters).toHaveBeenCalled();
@@ -28,13 +32,15 @@ describe('<FilterCarousel />', () => {
   });
 
   test('moves selected tags to the start of the carousel', async () => {
-    const { getAllByRole } = await render(
-      <FilterCarousel
-        tags={tags}
-        selectedTagIds={['b']}
-        onToggleTag={jest.fn()}
-        onOpenFilters={jest.fn()}
-      />
+    const { getAllByRole } = await Promise.resolve(
+      render(
+        <FilterCarousel
+          tags={tags}
+          selectedTagIds={['b']}
+          onToggleTag={jest.fn()}
+          onOpenFilters={jest.fn()}
+        />
+      )
     );
 
     const labels = getAllByRole('button').map((button) => String(button.props.accessibilityLabel));

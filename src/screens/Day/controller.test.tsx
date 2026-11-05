@@ -107,7 +107,9 @@ describe('DayController', () => {
   });
 
   test('loads event and proposal details in the standalone carousel screen', async () => {
-    const { getAllByText, getByText, getByTestId } = await render(<DayController />);
+    const { getAllByText, getByText, getByTestId } = await Promise.resolve(
+      render(<DayController />)
+    );
 
     await waitFor(() => {
       expect(mockGetGroupCalendar).toHaveBeenCalledWith('group-1', 10, 2026);
@@ -124,15 +126,18 @@ describe('DayController', () => {
       expect(getByText('1 / 2')).toBeTruthy();
     });
 
-    await fireEvent.press(getByTestId('group-day-carousel-next'));
+    fireEvent.press(getByTestId('group-day-carousel-next'));
+    await Promise.resolve();
     expect(getByText('2 / 2')).toBeTruthy();
 
-    await fireEvent.press(getByTestId('group-day-carousel-presence-yes-event-2'));
+    fireEvent.press(getByTestId('group-day-carousel-presence-yes-event-2'));
+    await Promise.resolve();
     await waitFor(() => {
       expect(mockRespondToEventProposal).toHaveBeenCalledWith('event-2', 'yes', false);
     });
 
-    await fireEvent.press(getByTestId('group-day-carousel-availability'));
+    fireEvent.press(getByTestId('group-day-carousel-availability'));
+    await Promise.resolve();
     expect(push).toHaveBeenCalledWith({
       pathname: '/group/[id]/day/[date]/availability',
       params: { id: 'group-1', date: '2026-10-12' },

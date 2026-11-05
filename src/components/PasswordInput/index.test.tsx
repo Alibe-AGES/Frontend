@@ -22,72 +22,84 @@ function ControlledPasswordInput(
 
 describe('<PasswordInput />', () => {
   test('uses "Senha" as the placeholder by default', async () => {
-    const { getByPlaceholderText } = await render(
-      <PasswordInput
-        value=""
-        onChangeText={jest.fn()}
-      />
+    const { getByPlaceholderText } = await Promise.resolve(
+      render(
+        <PasswordInput
+          value=""
+          onChangeText={jest.fn()}
+        />
+      )
     );
 
     expect(getByPlaceholderText('Senha')).toBeTruthy();
   });
 
   test('uses "Confirmar senha" as the placeholder for the confirm variant', async () => {
-    const { getByPlaceholderText } = await render(
-      <PasswordInput
-        variant="confirm"
-        value=""
-        onChangeText={jest.fn()}
-      />
+    const { getByPlaceholderText } = await Promise.resolve(
+      render(
+        <PasswordInput
+          variant="confirm"
+          value=""
+          onChangeText={jest.fn()}
+        />
+      )
     );
 
     expect(getByPlaceholderText('Confirmar senha')).toBeTruthy();
   });
 
   test('accepts an optional label', async () => {
-    const { getByText } = await render(
-      <PasswordInput
-        label="Senha"
-        value=""
-        onChangeText={jest.fn()}
-      />
+    const { getByText } = await Promise.resolve(
+      render(
+        <PasswordInput
+          label="Senha"
+          value=""
+          onChangeText={jest.fn()}
+        />
+      )
     );
 
     expect(getByText('Senha')).toBeTruthy();
   });
 
   test('hides the password by default', async () => {
-    const { getByTestId } = await render(
-      <PasswordInput
-        value=""
-        onChangeText={jest.fn()}
-        testID="password-input"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <PasswordInput
+          value=""
+          onChangeText={jest.fn()}
+          testID="password-input"
+        />
+      )
     );
 
     expect(getByTestId('password-input').props.secureTextEntry).toBe(true);
   });
 
   test('shows the password when visible', async () => {
-    const { getByTestId } = await render(
-      <PasswordInput
-        value=""
-        onChangeText={jest.fn()}
-        visible
-        testID="password-input"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <PasswordInput
+          value=""
+          onChangeText={jest.fn()}
+          visible
+          testID="password-input"
+        />
+      )
     );
 
     expect(getByTestId('password-input').props.secureTextEntry).toBe(false);
   });
 
   test('configures the field for password entry', async () => {
-    const { getByTestId } = await render(
-      <PasswordInput
-        value=""
-        onChangeText={jest.fn()}
-        testID="password-input"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <PasswordInput
+          value=""
+          onChangeText={jest.fn()}
+          testID="password-input"
+        />
+      )
     );
 
     const field = getByTestId('password-input');
@@ -96,61 +108,70 @@ describe('<PasswordInput />', () => {
   });
 
   test('renders the icon over a coral badge by default', async () => {
-    const { getByTestId } = await render(
-      <PasswordInput
-        value=""
-        onChangeText={jest.fn()}
-        testID="password-input"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <PasswordInput
+          value=""
+          onChangeText={jest.fn()}
+          testID="password-input"
+        />
+      )
     );
 
     expect(getByTestId('password-input-icon').props.className).toContain('bg-coral');
   });
 
   test('renders the icon over an ink badge when asked', async () => {
-    const { getByTestId } = await render(
-      <PasswordInput
-        value=""
-        onChangeText={jest.fn()}
-        iconBackground="ink"
-        testID="password-input"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <PasswordInput
+          value=""
+          onChangeText={jest.fn()}
+          iconBackground="ink"
+          testID="password-input"
+        />
+      )
     );
 
     expect(getByTestId('password-input-icon').props.className).toContain('bg-ink');
   });
 
   test('lets the user type any character', async () => {
-    const { getByTestId, getByDisplayValue } = await render(
-      <ControlledPasswordInput testID="password-input" />
+    const { getByTestId, getByDisplayValue } = await Promise.resolve(
+      render(<ControlledPasswordInput testID="password-input" />)
     );
 
-    await fireEvent.changeText(getByTestId('password-input'), 'Alibe#2026!');
+    fireEvent.changeText(getByTestId('password-input'), 'Alibe#2026!');
+    await Promise.resolve();
 
     expect(getByDisplayValue('Alibe#2026!')).toBeTruthy();
   });
 
   test('renders an externally provided error', async () => {
-    const { getByText } = await render(
-      <PasswordInput
-        variant="confirm"
-        value="abc"
-        onChangeText={jest.fn()}
-        error="As senhas não coincidem."
-      />
+    const { getByText } = await Promise.resolve(
+      render(
+        <PasswordInput
+          variant="confirm"
+          value="abc"
+          onChangeText={jest.fn()}
+          error="As senhas não coincidem."
+        />
+      )
     );
 
     expect(getByText('As senhas não coincidem.')).toBeTruthy();
   });
 
   test('is not editable when disabled', async () => {
-    const { getByTestId } = await render(
-      <PasswordInput
-        value=""
-        onChangeText={jest.fn()}
-        disabled
-        testID="password-input"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <PasswordInput
+          value=""
+          onChangeText={jest.fn()}
+          disabled
+          testID="password-input"
+        />
+      )
     );
 
     expect(getByTestId('password-input').props.editable).toBe(false);
@@ -158,16 +179,19 @@ describe('<PasswordInput />', () => {
 
   test('calls the onBlur callback', async () => {
     const onBlur = jest.fn();
-    const { getByTestId } = await render(
-      <PasswordInput
-        value=""
-        onChangeText={jest.fn()}
-        onBlur={onBlur}
-        testID="password-input"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <PasswordInput
+          value=""
+          onChangeText={jest.fn()}
+          onBlur={onBlur}
+          testID="password-input"
+        />
+      )
     );
 
-    await fireEvent(getByTestId('password-input'), 'blur');
+    fireEvent(getByTestId('password-input'), 'blur');
+    await Promise.resolve();
 
     expect(onBlur).toHaveBeenCalledTimes(1);
   });

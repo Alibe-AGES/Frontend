@@ -9,7 +9,7 @@ jest.mock('expo-router', () => ({
 
 describe('<HomeScreen/>', () => {
   test('shows the auth screen as the first screen', async () => {
-    const { getByTestId, getByText } = await render(<HomeScreen />);
+    const { getByTestId, getByText } = await Promise.resolve(render(<HomeScreen />));
 
     expect(getByTestId('auth-screen')).toBeTruthy();
     expect(getByText('Login')).toBeTruthy();

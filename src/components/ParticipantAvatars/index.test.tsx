@@ -9,11 +9,13 @@ const participants = [
 
 describe('<ParticipantAvatars />', () => {
   test('labels the current user as "Eu" and lists them first', async () => {
-    const { getAllByText, getByText } = await render(
-      <ParticipantAvatars
-        participants={participants}
-        currentUserId="user-1"
-      />
+    const { getAllByText, getByText } = await Promise.resolve(
+      render(
+        <ParticipantAvatars
+          participants={participants}
+          currentUserId="user-1"
+        />
+      )
     );
 
     const labels = getAllByText(/^(Eu|Katarina|Manu)$/).map(
@@ -24,8 +26,8 @@ describe('<ParticipantAvatars />', () => {
   });
 
   test('shows the photo when available and a placeholder otherwise', async () => {
-    const { getByTestId, getByLabelText } = await render(
-      <ParticipantAvatars participants={participants} />
+    const { getByTestId, getByLabelText } = await Promise.resolve(
+      render(<ParticipantAvatars participants={participants} />)
     );
 
     expect(getByLabelText('Foto de Katarina Souza')).toBeTruthy();
@@ -33,11 +35,13 @@ describe('<ParticipantAvatars />', () => {
   });
 
   test('shows the empty message when there are no participants', async () => {
-    const { getByText } = await render(
-      <ParticipantAvatars
-        participants={[]}
-        emptyMessage="Carregando…"
-      />
+    const { getByText } = await Promise.resolve(
+      render(
+        <ParticipantAvatars
+          participants={[]}
+          emptyMessage="Carregando…"
+        />
+      )
     );
 
     expect(getByText('Carregando…')).toBeTruthy();
@@ -65,8 +69,8 @@ describe('<ParticipantAvatars />', () => {
       },
     ];
 
-    const { getByTestId, queryByTestId, getByLabelText } = await render(
-      <ParticipantAvatars participants={participantsWithAnswers} />
+    const { getByTestId, queryByTestId, getByLabelText } = await Promise.resolve(
+      render(<ParticipantAvatars participants={participantsWithAnswers} />)
     );
 
     expect(getByTestId('alibe-participant-avatars-user-1-badge-yes')).toBeTruthy();
