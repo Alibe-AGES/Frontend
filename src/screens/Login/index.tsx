@@ -36,7 +36,10 @@ export function LoginScreen({
   const canContinue = trimmedEmail.length > 0 && password.length > 0;
 
   return (
-    <ScreenFrame padding="horizontal">
+    <ScreenFrame
+      padding="horizontal"
+      testID="login-screen"
+    >
       <View
         accessible={false}
         className="-mx-6 aspect-[390/280]"

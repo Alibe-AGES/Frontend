@@ -216,6 +216,7 @@ export function NewExperienceScreen({
       scrollable={false}
       padding="none"
       footer={<NavigationBar groupId={groupId} />}
+      testID="new-experience-screen"
     >
       <View className="flex-1 items-center justify-center px-6 pt-12">
         <View className="mb-6 items-center gap-2">

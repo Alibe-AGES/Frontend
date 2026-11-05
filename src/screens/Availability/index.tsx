@@ -177,6 +177,7 @@ export function AvailabilityScreen({
           variant="tertiary"
           onPress={() => void handleConfirm()}
           disabled={isSubmitting}
+          testID="availability-confirm"
         />
 
         <Button
@@ -184,6 +185,7 @@ export function AvailabilityScreen({
           variant="tertiary"
           onPress={() => void handleDecline()}
           disabled={isSubmitting}
+          testID="availability-decline"
         />
       </View>
     </ScreenFrame>

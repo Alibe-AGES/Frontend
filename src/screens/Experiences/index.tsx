@@ -40,6 +40,7 @@ export function ExperiencesScreen() {
         scrollable={false}
         padding="none"
         footer={<NavigationBar groupId={groupId} />}
+        testID="experiences-screen"
       >
         <View className="w-full max-w-2xl flex-1 self-center">
           <PlaceList

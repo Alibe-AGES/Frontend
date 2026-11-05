@@ -69,6 +69,7 @@ export const PlaceList: FC<PlaceListProps> = ({
             accessibilityLabel="Tentar novamente"
             onPress={onRetry}
             className="rounded-full bg-ink px-5 py-2 active:opacity-75"
+            testID={`${testID}-retry`}
           >
             <Text className="font-poppins-semibold text-sm text-white">Tentar novamente</Text>
           </Pressable>

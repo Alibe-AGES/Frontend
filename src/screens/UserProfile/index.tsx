@@ -271,11 +271,13 @@ export const UserProfileScreen = ({
               icon="person-outline"
               label="Editar perfil"
               onPress={handleOpenEditModal}
+              testID="user-profile-edit-button"
             />
             <ProfileMenuButton
               icon="lock-closed-outline"
               label="Alterar Senha"
               onPress={handleOpenPasswordModal}
+              testID="user-profile-password-button"
             />
             <ProfileMenuButton
               icon="log-out-outline"
@@ -299,6 +301,7 @@ export const UserProfileScreen = ({
           initialPhotoUri={profile?.photoUri ?? null}
           onUploadSuccess={setEditPhoto}
           disabled={isSubmittingProfile}
+          testID="user-profile-edit-photo"
         />
 
         <View className="mt-4 gap-3">
@@ -307,6 +310,7 @@ export const UserProfileScreen = ({
             onChangeText={setEditName}
             placeholder="Seu nome"
             disabled={isSubmittingProfile}
+            testID="user-profile-edit-name"
           />
         </View>
 
@@ -315,6 +319,7 @@ export const UserProfileScreen = ({
             onPress={handleCloseEditModal}
             disabled={isSubmittingProfile}
             className="flex-1 items-center justify-center rounded-full border-2 border-coral py-3"
+            testID="user-profile-edit-cancel"
           >
             <Text className="font-poppins-semibold text-coral">Cancelar</Text>
           </TouchableOpacity>
@@ -327,6 +332,7 @@ export const UserProfileScreen = ({
             className={`flex-1 items-center justify-center rounded-full bg-coral py-3 ${
               isSubmittingProfile ? 'opacity-60' : ''
             }`}
+            testID="user-profile-edit-save"
           >
             <Text className="font-poppins-semibold text-surface">
               {isSubmittingProfile ? 'Salvando...' : 'Salvar'}
@@ -347,18 +353,21 @@ export const UserProfileScreen = ({
             variant="password"
             value={currentPassword}
             onChangeText={setCurrentPassword}
+            testID="user-profile-password-current"
           />
           <PasswordInput
             label="Nova Senha"
             variant="password"
             value={newPassword}
             onChangeText={setNewPassword}
+            testID="user-profile-password-new"
           />
           <PasswordInput
             label="Confirmar Nova Senha"
             variant="confirm"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
+            testID="user-profile-password-confirm"
           />
         </View>
 
@@ -366,6 +375,7 @@ export const UserProfileScreen = ({
           <TouchableOpacity
             onPress={handleClosePasswordModal}
             className="flex-1 items-center justify-center rounded-full border-2 border-coral py-3"
+            testID="user-profile-password-cancel"
           >
             <Text className="font-poppins-semibold text-coral">Cancelar</Text>
           </TouchableOpacity>
@@ -373,6 +383,7 @@ export const UserProfileScreen = ({
           <TouchableOpacity
             onPress={handleSavePassword}
             className="flex-1 items-center justify-center rounded-full bg-coral py-3"
+            testID="user-profile-password-save"
           >
             <Text className="font-poppins-semibold text-surface">Salvar</Text>
           </TouchableOpacity>

@@ -58,6 +58,7 @@ export function InviteGroupScreen() {
     <ScreenFrame
       background="surface"
       padding="none"
+      testID="invite-group-screen"
     >
       <View className="flex-1 px-6 pb-28 pt-40">
         <Text className="text-center font-poppins-black text-4xl leading-tight text-ink">
@@ -119,6 +120,7 @@ export function InviteGroupScreen() {
             onPress={() => {
               router.replace('/groups');
             }}
+            testID="invite-group-continue"
           />
         </View>
       </View>

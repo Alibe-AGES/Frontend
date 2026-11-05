@@ -32,7 +32,7 @@ export function CreateProfileScreen({
   const trimmedNickname = nickname.trim();
 
   return (
-    <ScreenFrame>
+    <ScreenFrame testID="create-profile-screen">
       <View
         accessible={false}
         className="absolute -left-12 -top-10 h-48 w-48 rotate-[100deg]"

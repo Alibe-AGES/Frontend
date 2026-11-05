@@ -178,6 +178,7 @@ function CalendarDayCell({ dateString, day, mark, onPress, onCreatePress }: Cale
         onPress={() => {
           onPress?.(dateString);
         }}
+        testID={`calendar-day-button-${dateString}`}
       >
         <View
           className={`h-9 w-9 items-center justify-center rounded-lg ${dayContainerClasses[displayStatus]}`}

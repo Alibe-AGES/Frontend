@@ -39,7 +39,10 @@ export function SignUpScreen({ onContinue, emailError }: SignUpScreenProps) {
     !passwordsMismatch;
 
   return (
-    <ScreenFrame padding="horizontal">
+    <ScreenFrame
+      padding="horizontal"
+      testID="sign-up-screen"
+    >
       <View
         accessible={false}
         className="-mx-6 aspect-[390/280]"
