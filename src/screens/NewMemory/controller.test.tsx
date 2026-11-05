@@ -103,6 +103,18 @@ describe('<NewMemoryController />', () => {
 
     expect(mockScreenProps?.events).toEqual([]);
     expect(mockScreenProps?.isLoadingEvents).toBe(false);
+
+    mockedCalendar.mockResolvedValue([calendarDay(['event-1'])]);
+    mockedEventDetails.mockResolvedValue(eventDetails('event-1', 'Churrasco'));
+
+    act(() => {
+      mockScreenProps?.onRetry();
+    });
+
+    await waitFor(() => {
+      expect(mockScreenProps?.events).toEqual([{ label: 'Churrasco', value: 'event-1' }]);
+    });
+    expect(mockScreenProps?.error).toBeNull();
   });
 
   async function fillForm() {

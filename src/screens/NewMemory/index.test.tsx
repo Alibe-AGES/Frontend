@@ -8,6 +8,10 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
 
+jest.mock('@expo/vector-icons', () => ({
+  Ionicons: () => null,
+}));
+
 jest.mock('@/components/NavigationBar', () => ({
   NavigationBar: () => null,
 }));
@@ -48,6 +52,7 @@ async function renderScreen(overrides?: Partial<NewMemoryScreenProps>) {
     error: null,
     onSelectEvent: jest.fn(),
     onPhotoSelected: jest.fn(),
+    onRetry: jest.fn(),
     onClose: jest.fn(),
     onCreate: jest.fn(),
     usePhotoController: createPhotoController(),
@@ -113,10 +118,27 @@ describe('<NewMemoryScreen />', () => {
     expect(props.onSelectEvent).toHaveBeenCalledWith('barbecue');
   });
 
-  test('shows the error message when the events fail to load', async () => {
-    const { getByText } = await renderScreen({ error: 'Não foi possível carregar os eventos.' });
+  test('shows the error and retries when the events fail to load', async () => {
+    const { getByTestId, getByText, props } = await renderScreen({
+      error: 'Não foi possível carregar os eventos.',
+    });
 
     expect(getByText('Não foi possível carregar os eventos.')).toBeTruthy();
+
+    fireEvent.press(getByTestId('new-memory-retry'));
+
+    expect(props.onRetry).toHaveBeenCalledTimes(1);
+  });
+
+  test('shows the spinner on the create button while submitting', async () => {
+    const { getByTestId } = await renderScreen({
+      selectedEventId: 'dinner',
+      hasPhoto: true,
+      isSubmitting: true,
+    });
+
+    expect(getByTestId('new-memory-submit-loading')).toBeTruthy();
+    expect(getByTestId('new-memory-submit')).toBeDisabled();
   });
 
   test('blocks the create button while the events are loading', async () => {

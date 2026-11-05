@@ -96,6 +96,9 @@ export default function NewMemoryController() {
         void handleCreate();
       }}
       onPhotoSelected={setPhoto}
+      onRetry={() => {
+        void loadEvents();
+      }}
       onSelectEvent={setSelectedEventId}
       selectedEventId={selectedEventId}
     />

@@ -17,6 +17,7 @@ export interface NewMemoryScreenProps {
   isLoadingEvents: boolean;
   isSubmitting: boolean;
   error: string | null;
+  onRetry: () => void;
   onSelectEvent: (eventId: string) => void;
   onPhotoSelected: (photo: SelectedPhoto) => void;
   onClose: () => void;
@@ -33,6 +34,7 @@ export function NewMemoryScreen({
   isLoadingEvents,
   isSubmitting,
   error,
+  onRetry,
   onSelectEvent,
   onPhotoSelected,
   onClose,
@@ -58,17 +60,26 @@ export function NewMemoryScreen({
       </Text>
 
       {error ? (
-        <Text
-          accessibilityRole="alert"
-          className="text-center font-poppins text-sm text-wine"
-        >
-          {error}
-        </Text>
+        <View className="items-center gap-3">
+          <Text
+            accessibilityRole="alert"
+            className="text-center font-poppins text-sm text-wine"
+          >
+            {error}
+          </Text>
+          <Button
+            onPress={onRetry}
+            testID="new-memory-retry"
+            title="Tentar novamente"
+            variant="secondary"
+          />
+        </View>
       ) : null}
 
       <View className="gap-4 px-4">
         <NewMemoryCard
           events={events}
+          isLoadingEvents={isLoadingEvents}
           onClose={onClose}
           onPhotoSelected={onPhotoSelected}
           onSelectEvent={onSelectEvent}

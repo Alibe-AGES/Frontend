@@ -48,6 +48,15 @@ describe('<NewMemoryCard />', () => {
     jest.clearAllMocks();
   });
 
+  test('blocks the event dropdown while the events are loading', async () => {
+    const { getByTestId, getByText } = await Promise.resolve(
+      render(<ControlledCard isLoadingEvents />)
+    );
+
+    expect(getByText('Carregando eventos...')).toBeTruthy();
+    expect(getByTestId('new-memory-card-event')).toBeDisabled();
+  });
+
   test('shows the title, the empty photo prompt and the event placeholder', async () => {
     const { getByText, queryByTestId } = await Promise.resolve(render(<ControlledCard />));
 
