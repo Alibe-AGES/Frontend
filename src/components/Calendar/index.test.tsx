@@ -98,6 +98,31 @@ describe('Calendar', () => {
     expect(onDayPress).toHaveBeenCalledWith('2026-05-18');
   });
 
+  test('renders the first memory image on a day and keeps it selectable even in the past', async () => {
+    const onDayPress = jest.fn();
+    const { getByTestId, getByLabelText } = await Promise.resolve(
+      render(
+        <Calendar
+          initialDate="2025-05-01"
+          dayMarks={{
+            '2025-05-08': {
+              status: 'realized',
+              imageUrl: 'https://cdn.alibe.com/memory-1.jpg',
+            },
+          }}
+          onDayPress={onDayPress}
+        />
+      )
+    );
+
+    expect(getByTestId('calendar-day-image-2025-05-08')).toBeTruthy();
+
+    fireEvent.press(getByLabelText('Dia 2025-05-08'));
+    await Promise.resolve();
+
+    expect(onDayPress).toHaveBeenCalledWith('2025-05-08');
+  });
+
   test('preserves realized and suggested styles for past event days without IDs', async () => {
     const { getByTestId, getByText } = await Promise.resolve(
       render(
