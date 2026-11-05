@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import Toast from 'react-native-toast-message';
 import { UserProfileScreen, UserProfileScreenProps } from './index';
 
@@ -228,8 +228,11 @@ describe('UserProfileScreen', () => {
 
     fireEvent.press(getByTestId('user-profile-logout-button'));
     await Promise.resolve();
-    fireEvent.press(getByTestId('user-profile-logout-confirm'));
-    await Promise.resolve();
+    await act(async () => {
+      fireEvent.press(getByTestId('user-profile-logout-confirm'));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
 
     await waitFor(() => {
       expect(onLogout).toHaveBeenCalledTimes(1);
@@ -251,8 +254,11 @@ describe('UserProfileScreen', () => {
 
     fireEvent.press(getByTestId('user-profile-logout-button'));
     await Promise.resolve();
-    fireEvent.press(getByTestId('user-profile-logout-confirm'));
-    await Promise.resolve();
+    await act(async () => {
+      fireEvent.press(getByTestId('user-profile-logout-confirm'));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
 
     await waitFor(() => {
       expect(toastShowSpy).toHaveBeenCalledWith({

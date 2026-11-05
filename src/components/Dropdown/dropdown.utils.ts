@@ -23,6 +23,8 @@ export interface MenuPlacement {
 // Space kept between the menu and the screen edge, in density-independent units.
 const SCREEN_EDGE_MARGIN = 8;
 
+// Opens the menu below the trigger, or above it when there is more room there, and caps its
+// height so it never runs past the screen edges.
 export function getMenuPlacement(
   trigger: TriggerFrame,
   contentHeight: number,

@@ -3,6 +3,7 @@ import { EMPTY_FILTER_VALUE, FilterSheet } from '@/components/FilterSheet';
 import { BackButton } from '@/components/BackButton';
 import { NavigationBar } from '@/components/NavigationBar';
 import { PlaceList } from '@/components/PlaceList';
+import { ScreenFrame } from '@/components/ScreenFrame';
 import { SearchBar } from '@/components/SearchBar';
 import { usePlaces } from '@/hooks/usePlaces';
 import { theme } from '@/theme';
@@ -34,59 +35,65 @@ export function ExperiencesScreen() {
   };
 
   return (
-    <View className="flex-1 bg-canvas">
-      <View className="w-full max-w-2xl flex-1 self-center">
-        <PlaceList
-          places={places}
-          isLoading={isLoading}
-          error={error}
-          onRetry={() => {
-            void refetch();
-          }}
-          onPlacePress={(placeId) => {
-            router.push(`/group/${groupId}/experiences/${encodeURIComponent(placeId)}`);
-          }}
-          contentContainerClassName="gap-4 px-6 pb-32 pt-6"
-          header={
-            <View className="gap-4">
-              <BackButton
-                fallbackHref={groupId ? `/group/${groupId}` : '/groups'}
-                accessibilityLabel="Voltar para o grupo"
-              />
-              <SearchBar
-                value={query}
-                onChangeText={setQuery}
-                testID="experiences-search"
-              />
-
-              <View className="items-center gap-1">
-                <Text className={`pt-3 text-center text-4xl text-ink ${theme.typography.display}`}>
-                  Experiências
-                </Text>
-                <Text className={`text-center text-sm text-wine ${theme.typography.body}`}>
-                  Toque nas sugestões para saber mais
-                </Text>
-              </View>
-
-              <View>
-                <FilterCarousel
-                  tags={CATEGORY_TAGS}
-                  selectedTagIds={selectedTagIds}
-                  onToggleTag={handleToggleTag}
-                  onOpenFilters={() => {
-                    setIsFilterSheetVisible(true);
-                  }}
-                  hasActiveFilters={hasActiveFilters}
-                  testID="experiences-filters"
+    <>
+      <ScreenFrame
+        scrollable={false}
+        padding="none"
+        footer={<NavigationBar groupId={groupId} />}
+      >
+        <View className="w-full max-w-2xl flex-1 self-center">
+          <PlaceList
+            places={places}
+            isLoading={isLoading}
+            error={error}
+            onRetry={() => {
+              void refetch();
+            }}
+            onPlacePress={(placeId) => {
+              router.push(`/group/${groupId}/experiences/${encodeURIComponent(placeId)}`);
+            }}
+            contentContainerClassName="gap-4 px-6 pb-32 pt-6"
+            header={
+              <View className="gap-4">
+                <BackButton
+                  fallbackHref={groupId ? `/group/${groupId}` : '/groups'}
+                  accessibilityLabel="Voltar para o grupo"
                 />
-              </View>
-            </View>
-          }
-          testID="experiences-places"
-        />
-      </View>
+                <SearchBar
+                  value={query}
+                  onChangeText={setQuery}
+                  testID="experiences-search"
+                />
 
-      <NavigationBar groupId={groupId} />
+                <View className="items-center gap-1">
+                  <Text
+                    className={`pt-3 text-center text-4xl text-ink ${theme.typography.display}`}
+                  >
+                    Experiências
+                  </Text>
+                  <Text className={`text-center text-sm text-wine ${theme.typography.body}`}>
+                    Toque nas sugestões para saber mais
+                  </Text>
+                </View>
+
+                <View>
+                  <FilterCarousel
+                    tags={CATEGORY_TAGS}
+                    selectedTagIds={selectedTagIds}
+                    onToggleTag={handleToggleTag}
+                    onOpenFilters={() => {
+                      setIsFilterSheetVisible(true);
+                    }}
+                    hasActiveFilters={hasActiveFilters}
+                    testID="experiences-filters"
+                  />
+                </View>
+              </View>
+            }
+            testID="experiences-places"
+          />
+        </View>
+      </ScreenFrame>
 
       <FilterSheet
         visible={isFilterSheetVisible}
@@ -102,6 +109,6 @@ export function ExperiencesScreen() {
         }}
         testID="experiences-filter-sheet"
       />
-    </View>
+    </>
   );
 }
