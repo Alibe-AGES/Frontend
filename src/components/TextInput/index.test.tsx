@@ -391,13 +391,13 @@ describe('<TextInput />', () => {
 
     const { getByTestId } = await Promise.resolve(
       render(
-          <TextInput
+        <TextInput
           value=""
           onChangeText={jest.fn()}
           onFocus={handleFocus}
           testID="focused-input"
         />
-        )
+      )
     );
 
     fireEvent(getByTestId('focused-input'), 'focus');

@@ -218,14 +218,14 @@ describe('<TimeInput />', () => {
 
     const { getByTestId } = await Promise.resolve(
       render(
-          <TimeInput
+        <TimeInput
           placeholder="Horário"
           value=""
           onChangeTime={jest.fn()}
           onFocus={handleFocus}
           testID="focused-time-input"
         />
-        )
+      )
     );
 
     fireEvent(getByTestId('focused-time-input'), 'focus');

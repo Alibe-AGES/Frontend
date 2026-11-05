@@ -10,8 +10,8 @@ const flattenStyle = (style: unknown): Record<string, unknown> =>
   Object.assign({}, ...[style].flat(Infinity).filter(Boolean)) as Record<string, unknown>;
 
 describe('<ScreenFrame />', () => {
-  test('renders its children inside a scroll view by default', async () => {
-    const { getByTestId, getByText } = await render(
+  test('renders its children inside a scroll view by default', () => {
+    const { getByTestId, getByText } = render(
       <ScreenFrame testID="frame">
         <Text>Conteúdo</Text>
       </ScreenFrame>
@@ -21,8 +21,8 @@ describe('<ScreenFrame />', () => {
     expect(getByTestId('frame').props.keyboardShouldPersistTaps).toBe('handled');
   });
 
-  test('renders the header outside the scrollable content', async () => {
-    const { getByTestId, getByText } = await render(
+  test('renders the header outside the scrollable content', () => {
+    const { getByTestId, getByText } = render(
       <ScreenFrame
         header={<Text>Cabeçalho</Text>}
         testID="frame"
@@ -36,8 +36,8 @@ describe('<ScreenFrame />', () => {
     expect(getByTestId('frame')).toContainElement(getByText('Conteúdo'));
   });
 
-  test('reserves the measured footer height below the scrollable content', async () => {
-    const { getByTestId, getByText } = await render(
+  test('reserves the measured footer height below the scrollable content', () => {
+    const { getByTestId, getByText } = render(
       <ScreenFrame
         footer={<Text>Rodapé</Text>}
         testID="frame"
@@ -51,15 +51,15 @@ describe('<ScreenFrame />', () => {
     expect(getByText('Rodapé')).toBeTruthy();
     expect(getPaddingBottom()).toBe(FOOTER_SPACING);
 
-    await fireEvent(getByTestId('screen-frame-footer'), 'layout', {
+    fireEvent(getByTestId('screen-frame-footer'), 'layout', {
       nativeEvent: { layout: { height: FOOTER_HEIGHT } },
     });
 
     expect(getPaddingBottom()).toBe(FOOTER_HEIGHT + FOOTER_SPACING);
   });
 
-  test('renders a static content area when scrolling is disabled', async () => {
-    const { getByTestId } = await render(
+  test('renders a static content area when scrolling is disabled', () => {
+    const { getByTestId } = render(
       <ScreenFrame
         scrollable={false}
         footer={<Text>Rodapé</Text>}
@@ -71,15 +71,15 @@ describe('<ScreenFrame />', () => {
 
     expect(getByTestId('frame').props.contentContainerStyle).toBeUndefined();
 
-    await fireEvent(getByTestId('screen-frame-footer'), 'layout', {
+    fireEvent(getByTestId('screen-frame-footer'), 'layout', {
       nativeEvent: { layout: { height: FOOTER_HEIGHT } },
     });
 
     expect(flattenStyle(getByTestId('frame').props.style).paddingBottom).toBe(FOOTER_HEIGHT);
   });
 
-  test('does not reserve footer space when there is no footer', async () => {
-    const { getByTestId, queryByTestId } = await render(
+  test('does not reserve footer space when there is no footer', () => {
+    const { getByTestId, queryByTestId } = render(
       <ScreenFrame testID="frame">
         <Text>Conteúdo</Text>
       </ScreenFrame>
