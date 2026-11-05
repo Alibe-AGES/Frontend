@@ -1,7 +1,7 @@
 import { ContinueButton } from '@/components/ContinueButton';
-import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
 import { PhotoPicker } from '@/components/PhotoPicker';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
+import { ScreenFrame } from '@/components/ScreenFrame';
 import { TextInput } from '@/components/TextInput';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,11 +32,7 @@ export function CreateProfileScreen({
   const trimmedNickname = nickname.trim();
 
   return (
-    <KeyboardAvoidingScrollView
-      className="flex-1 bg-canvas"
-      contentContainerClassName="flex-grow px-6 pt-16"
-      keyboardShouldPersistTaps="handled"
-    >
+    <ScreenFrame>
       <View
         accessible={false}
         className="absolute -left-12 -top-10 h-48 w-48 rotate-[100deg]"
@@ -112,6 +108,6 @@ export function CreateProfileScreen({
           />
         </View>
       </View>
-    </KeyboardAvoidingScrollView>
+    </ScreenFrame>
   );
 }

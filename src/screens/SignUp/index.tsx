@@ -1,8 +1,8 @@
 import { BackButton } from '@/components/BackButton';
 import { ContinueButton } from '@/components/ContinueButton';
 import { EmailInput } from '@/components/EmailInput';
-import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
 import { PasswordInput } from '@/components/PasswordInput';
+import { ScreenFrame } from '@/components/ScreenFrame';
 import { theme } from '@/theme';
 import { isValidEmail } from '@/utils/email';
 import { Ionicons } from '@expo/vector-icons';
@@ -39,11 +39,7 @@ export function SignUpScreen({ onContinue, emailError }: SignUpScreenProps) {
     !passwordsMismatch;
 
   return (
-    <KeyboardAvoidingScrollView
-      className="flex-1 bg-canvas"
-      contentContainerClassName="flex-grow px-6"
-      keyboardShouldPersistTaps="handled"
-    >
+    <ScreenFrame padding="horizontal">
       <View
         accessible={false}
         className="-mx-6 aspect-[390/280]"
@@ -129,6 +125,6 @@ export function SignUpScreen({ onContinue, emailError }: SignUpScreenProps) {
           />
         </View>
       </View>
-    </KeyboardAvoidingScrollView>
+    </ScreenFrame>
   );
 }
