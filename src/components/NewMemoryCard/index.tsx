@@ -21,6 +21,7 @@ function useMemoryPhotoController(params?: UsePhotoPickerParams) {
 export function NewMemoryCard({
   events,
   selectedEventId,
+  isLoadingEvents = false,
   onSelectEvent,
   onPhotoSelected,
   onClose,
@@ -105,10 +106,11 @@ export function NewMemoryCard({
 
       <View className="py-1">
         <Dropdown
+          disabled={isLoadingEvents}
           emptyMessage="Nenhum evento disponível"
           onChange={onSelectEvent}
           options={events}
-          placeholder="Selecionar evento"
+          placeholder={isLoadingEvents ? 'Carregando eventos...' : 'Selecionar evento'}
           testID={`${testID}-event`}
           value={selectedEventId}
         />
