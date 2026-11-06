@@ -73,7 +73,7 @@ export function NewMemoryScreen({
         </View>
       ) : null}
 
-      <View className="gap-4 px-6">
+      <View className="gap-4 px-4">
         <NewMemoryCard
           events={events}
           isLoadingEvents={isLoadingEvents}
