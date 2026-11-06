@@ -26,6 +26,16 @@ describe('<CreateProfileScreen />', () => {
     expect(getByText(text)).toBeTruthy();
   });
 
+  test('keeps the title on its two lines, shrinking it when it does not fit', async () => {
+    const { getByText } = await Promise.resolve(
+      render(<CreateProfileScreen onContinue={onContinue} />)
+    );
+    const title = getByText(/Vamos criar\s+seu perfil\?/);
+
+    expect(title.props.numberOfLines).toBe(2);
+    expect(title.props.adjustsFontSizeToFit).toBe(true);
+  });
+
   test('shows the camera placeholder while no photo is selected', async () => {
     const { getByTestId } = await Promise.resolve(
       render(<CreateProfileScreen onContinue={onContinue} />)

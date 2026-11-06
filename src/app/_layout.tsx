@@ -6,6 +6,7 @@ import {
   Poppins_600SemiBold,
   Poppins_700Bold,
   Poppins_900Black,
+  Poppins_800ExtraBold,
   useFonts,
 } from '@expo-google-fonts/poppins';
 import { usePathname } from 'expo-router';
@@ -37,6 +38,7 @@ export default function RootLayout() {
     Poppins_500Medium,
     Poppins_600SemiBold,
     Poppins_700Bold,
+    Poppins_800ExtraBold,
     Poppins_900Black,
   });
 

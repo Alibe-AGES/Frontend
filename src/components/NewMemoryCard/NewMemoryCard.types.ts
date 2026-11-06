@@ -4,6 +4,8 @@ import type { SelectedPhoto, UsePhotoPickerHook } from '@/components/PhotoPicker
 export interface NewMemoryCardProps {
   events: DropdownOption[];
   selectedEventId: string | null;
+  // Blocks the dropdown while the event list is still on its way.
+  isLoadingEvents?: boolean;
   onSelectEvent: (eventId: string) => void;
   onPhotoSelected?: (photo: SelectedPhoto) => void;
   // The close button only shows up when this is provided.
