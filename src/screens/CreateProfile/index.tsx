@@ -69,7 +69,7 @@ export function CreateProfileScreen({
       </Text>
 
       <View
-        className="pb-16 mt-[5.25rem] flex-1 rounded-t-[2.36rem] px-6 pt-8"
+        className="mt-[5.25rem] flex-1 rounded-t-[2.36rem] px-6 pb-16 pt-8"
         style={{ backgroundColor: theme.colors.pink }}
       >
         <PhotoPicker

@@ -1,4 +1,4 @@
-import { fireEvent, render, within } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 import { SignUpScreen } from '.';
 
 jest.mock('expo-router', () => ({
