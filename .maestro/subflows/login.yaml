@@ -1,0 +1,22 @@
+# Logs in with a seeded user and waits for the groups screen. Run it after launch.yaml.
+appId: com.alibe.app
+---
+- extendedWaitUntil:
+    visible:
+      id: auth-screen
+    timeout: 60000
+- tapOn:
+    id: auth-login
+- tapOn:
+    id: login-email
+- inputText: ana.silva@example.com
+- tapOn:
+    id: login-password
+- inputText: senha-segura
+- hideKeyboard
+- tapOn:
+    id: login-continue
+- extendedWaitUntil:
+    visible:
+      id: groups-screen
+    timeout: 30000
