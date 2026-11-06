@@ -18,12 +18,12 @@ const PLACEHOLDER_ICONS: Record<
 export const PhotoPicker: FC<PhotoPickerProps> = ({
   useController,
   label = 'Adicionar foto (opcional)',
+  labelClassName = 'text-black',
   placeholder = 'group',
   uploadUrl,
   initialPhotoUri,
   onUploadSuccess,
   onUploadError,
-  imageClassName = '',
   disabled,
   testID = 'alibe-photo-picker',
   ...pressableProps
@@ -44,7 +44,9 @@ export const PhotoPicker: FC<PhotoPickerProps> = ({
       className="items-center"
       testID={`${testID}-container`}
     >
-      <Text className="mb-4 text-center font-poppins text-lg text-black">{label}</Text>
+      <Text className={`mb-4 text-center font-poppins-medium text-base ${labelClassName}`}>
+        {label}
+      </Text>
 
       <Pressable
         accessibilityRole="button"
@@ -69,7 +71,7 @@ export const PhotoPicker: FC<PhotoPickerProps> = ({
           <Avatar
             photoUri={photoUri}
             accessibilityLabel="Foto selecionada"
-            imageClassName={`h-36 w-36 rounded-full ${imageClassName}`}
+            imageClassName="h-full w-full rounded-full"
             iconSize={80}
             fallbackIconName={currentPlaceholder.name}
             fallbackIconColor={currentPlaceholder.color}

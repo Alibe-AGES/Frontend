@@ -56,7 +56,7 @@ export function LoginScreen({
       />
 
       <Text
-        className={`text-center text-5xl leading-tight tracking-[0.4rem] text-ink ${theme.typography.display}`}
+        className={`text-center text-[2.857rem] leading-tight text-ink ${theme.typography.display}`}
       >
         Login
       </Text>

@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, within } from '@testing-library/react-native';
 import { SignUpScreen } from '.';
 
 jest.mock('expo-router', () => ({
@@ -30,6 +30,14 @@ describe('<SignUpScreen />', () => {
     const { getByText } = await Promise.resolve(render(<SignUpScreen onContinue={onContinue} />));
 
     expect(getByText(text)).toBeTruthy();
+  });
+
+  test('keeps the title on a single line, shrinking it when it does not fit', async () => {
+    const { getByText } = await Promise.resolve(render(<SignUpScreen onContinue={onContinue} />));
+    const title = getByText('Criar conta');
+
+    expect(title.props.numberOfLines).toBe(1);
+    expect(title.props.adjustsFontSizeToFit).toBe(true);
   });
 
   test('renders the Google sign up option', async () => {

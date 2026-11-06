@@ -58,12 +58,14 @@ export function SignUpScreen({ onContinue, onGoogleSignUp, emailError }: SignUpS
       />
 
       <Text
-        className={`text-center text-5xl leading-tight tracking-[0.4rem] text-ink ${theme.typography.display}`}
+        adjustsFontSizeToFit
+        numberOfLines={1}
+        className={`mt-4 text-center text-[2.857rem] text-ink ${theme.typography.display}`}
       >
         Criar conta
       </Text>
 
-      <View className="mt-10 flex-grow rounded-t-3xl bg-pink/70 px-6 pb-12 pt-8">
+      <View className="mt-4 flex-grow rounded-t-3xl bg-pink/70 px-6 pb-12 pt-8">
         <View className="gap-4">
           <EmailInput
             value={email}
