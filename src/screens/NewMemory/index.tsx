@@ -7,7 +7,6 @@ import { NavigationBar } from '@/components/NavigationBar';
 import { NewMemoryCard } from '@/components/NewMemoryCard';
 import type { SelectedPhoto, UsePhotoPickerHook } from '@/components/PhotoPicker/PhotoPicker.types';
 import { ScreenFrame } from '@/components/ScreenFrame';
-import { theme } from '@/theme';
 
 export interface NewMemoryScreenProps {
   groupId: string;
@@ -55,9 +54,7 @@ export function NewMemoryScreen({
       }
       testID="new-memory-screen"
     >
-      <Text className={`text-center text-4xl text-wine ${theme.typography.display}`}>
-        Nova memória
-      </Text>
+      <Text className="mb-6 text-center font-poppins text-4xl text-wine">Nova memória</Text>
 
       {error ? (
         <View className="items-center gap-3">
@@ -76,7 +73,7 @@ export function NewMemoryScreen({
         </View>
       ) : null}
 
-      <View className="gap-4 px-4">
+      <View className="gap-4 px-6">
         <NewMemoryCard
           events={events}
           isLoadingEvents={isLoadingEvents}
