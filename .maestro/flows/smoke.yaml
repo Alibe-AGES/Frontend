@@ -7,7 +7,7 @@
 # Run by tag: npm run test:e2e:dev -- --include-tags smoke (dev build) or npm run test:e2e -- --include-tags smoke (release).
 # Run this file only: maestro test -e DEV_CLIENT=true .maestro/flows/smoke.yaml
 appId: com.alibe.app
-tags: [smoke]
+tags: [ci, smoke]
 ---
 - runFlow: ../subflows/launch.yaml
 - extendedWaitUntil:

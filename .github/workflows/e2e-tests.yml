@@ -81,7 +81,7 @@ jobs:
             adb install -r "${{ steps.apk.outputs.path }}"
 
             echo "Starting Maestro E2E tests..."
-            maestro test .maestro/ --include-tags smoke --test-output-dir=./maestro-results
+            maestro test .maestro/ --include-tags ci --test-output-dir=./maestro-results
 
       - name: Upload Maestro results
         if: always()
