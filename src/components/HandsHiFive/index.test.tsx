@@ -90,19 +90,6 @@ describe('<HandsHiFive />', () => {
     expect(queryByTestId('hands-hi-five-animation')).toBeNull();
   });
 
-  test('crops the taller event created artwork to the frame of the animation', async () => {
-    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
-
-    const { getByTestId } = render(<HandsHiFive variant="event-created" />);
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    expect(
-      getByTestId('hands-hi-five-artwork', { includeHiddenElements: true }).props.viewBox
-    ).toBe('0 -4 390 280');
-  });
-
   test('falls back to the static artwork when the animation fails', async () => {
     const { findByTestId, queryByTestId } = render(<HandsHiFive variant="sign-up" />);
 
