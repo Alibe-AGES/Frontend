@@ -4,8 +4,8 @@ import { MemoryCard } from './index';
 const IMAGE_URI = 'https://cdn.alibe.com/memory.jpg';
 
 describe('<MemoryCard />', () => {
-  test('shows the event name and address', async () => {
-    const { getByText } = await render(
+  test('shows the event name and address', () => {
+    const { getByText } = render(
       <MemoryCard
         date={new Date(2026, 4, 8)}
         name="Restaurante Giozakaya"
@@ -18,8 +18,8 @@ describe('<MemoryCard />', () => {
     expect(getByText('Av. Teixeira Mendes 1151')).toBeTruthy();
   });
 
-  test('formats the date as weekday, day and month in Portuguese', async () => {
-    const { getByText } = await render(
+  test('formats the date as weekday, day and month in Portuguese', () => {
+    const { getByText } = render(
       <MemoryCard
         date={new Date(2026, 4, 8)}
         name="Evento"
@@ -31,8 +31,8 @@ describe('<MemoryCard />', () => {
     expect(getByText('Sexta, 8 de maio')).toBeTruthy();
   });
 
-  test('formats dates with accented weekday and month names', async () => {
-    const { getByText } = await render(
+  test('formats dates with accented weekday and month names', () => {
+    const { getByText } = render(
       <MemoryCard
         date={new Date(2026, 2, 17)}
         name="Evento"
@@ -44,8 +44,8 @@ describe('<MemoryCard />', () => {
     expect(getByText('Terça, 17 de março')).toBeTruthy();
   });
 
-  test('loads the photo from the given uri', async () => {
-    const { getByLabelText } = await render(
+  test('loads the photo from the given uri', () => {
+    const { getByLabelText } = render(
       <MemoryCard
         date={new Date(2026, 4, 8)}
         name="Restaurante Giozakaya"
@@ -60,9 +60,9 @@ describe('<MemoryCard />', () => {
     });
   });
 
-  test('forwards imageHeaders to the photo request', async () => {
+  test('forwards imageHeaders to the photo request', () => {
     const headers = { Authorization: 'Bearer token' };
-    const { getByLabelText } = await render(
+    const { getByLabelText } = render(
       <MemoryCard
         date={new Date(2026, 4, 8)}
         name="Evento"
@@ -78,8 +78,8 @@ describe('<MemoryCard />', () => {
     });
   });
 
-  test('truncates name and address to two lines', async () => {
-    const { getByTestId } = await render(
+  test('truncates name and address to two lines', () => {
+    const { getByTestId } = render(
       <MemoryCard
         date={new Date(2026, 4, 8)}
         name="Um nome de evento bem comprido para testar o corte de texto"
@@ -92,8 +92,8 @@ describe('<MemoryCard />', () => {
     expect(getByTestId('memory-card-address').props.numberOfLines).toBe(2);
   });
 
-  test('uses a custom testID as prefix for its parts', async () => {
-    const { getByTestId } = await render(
+  test('uses a custom testID as prefix for its parts', () => {
+    const { getByTestId } = render(
       <MemoryCard
         date={new Date(2026, 4, 8)}
         name="Evento"
