@@ -1,6 +1,7 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
 
+import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
 import { getPlaceDetails, getStoredLocationDetails, PlaceDetails } from '@/server/places';
 import type { ComponentProps } from 'react';
 import { ExperienceDetailsScreen } from '.';
@@ -8,6 +9,14 @@ import { ExperienceDetailsScreen } from '.';
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
 }));
+
+jest.mock('@/hooks/use-authenticated-image-source', () => ({
+  useAuthenticatedImageSource: jest.fn(),
+}));
+
+const { useAuthenticatedImageSource: actualImageSourceHook } = jest.requireActual<
+  typeof import('@/hooks/use-authenticated-image-source')
+>('@/hooks/use-authenticated-image-source');
 
 jest.mock('@/server/places', () => ({
   getPlaceDetails: jest.fn(),
@@ -46,6 +55,7 @@ async function renderDetails(props: ComponentProps<typeof ExperienceDetailsScree
 describe('<ExperienceDetailsScreen />', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.mocked(useAuthenticatedImageSource).mockImplementation(actualImageSourceHook);
     (useRouter as jest.Mock).mockReturnValue({ back: jest.fn(), push: jest.fn() });
     jest.mocked(getPlaceDetails).mockResolvedValue(details);
     jest.mocked(getStoredLocationDetails).mockResolvedValue(details);
@@ -67,6 +77,19 @@ describe('<ExperienceDetailsScreen />', () => {
     expect(getAllByText('--')).toHaveLength(3);
     expect(getByTestId('experience-details-name')).toBeTruthy();
     expect(getPlaceDetails).toHaveBeenCalledWith('cafe-1');
+  });
+
+  test('never flashes the placeholder while the photo source is pending', async () => {
+    jest.mocked(useAuthenticatedImageSource).mockImplementation(() => null);
+
+    const { findByText, getByTestId, queryByText } = await renderDetails({
+      groupId: 'group-1',
+      placeId: 'cafe-1',
+    });
+
+    await findByText('Bloom Café');
+    expect(getByTestId('experience-details-image')).toBeTruthy();
+    expect(queryByText('location-outline')).toBeNull();
   });
 
   test('returns to the previous screen', async () => {
@@ -170,7 +193,7 @@ describe('<ExperienceDetailsScreen />', () => {
       })
     );
 
-    const { findByText, getByTestId } = await Promise.resolve(
+    const { findByText, getByTestId, queryByTestId } = await Promise.resolve(
       render(
         <ExperienceDetailsScreen
           groupId="group-1"
@@ -180,6 +203,7 @@ describe('<ExperienceDetailsScreen />', () => {
     );
 
     expect(getByTestId('experience-details-loading')).toBeTruthy();
+    expect(queryByTestId('experience-details-back')).toBeNull();
     await act(async () => {
       resolveDetails(details);
       await Promise.resolve();
@@ -214,8 +238,25 @@ describe('<ExperienceDetailsScreen />', () => {
     });
 
     expect(await findByText('Não foi possível carregar as informações deste local.')).toBeTruthy();
-    fireEvent.press(getByTestId('experience-details-error-back'));
+    fireEvent.press(getByTestId('experience-details-back'));
     await Promise.resolve();
     expect(back).toHaveBeenCalled();
+  });
+
+  test('loads the details again when the user retries after a failure', async () => {
+    jest.mocked(getPlaceDetails).mockRejectedValueOnce(new Error('network error'));
+
+    const { findByText, getByLabelText, queryByText } = await renderDetails({
+      groupId: 'group-1',
+      placeId: 'flaky-place',
+    });
+
+    await findByText('Não foi possível carregar as informações deste local.');
+
+    fireEvent.press(getByLabelText('Tentar novamente'));
+
+    expect(await findByText('Bloom Café')).toBeTruthy();
+    expect(getPlaceDetails).toHaveBeenCalledTimes(2);
+    expect(queryByText('Não foi possível carregar as informações deste local.')).toBeNull();
   });
 });

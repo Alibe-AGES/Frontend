@@ -11,6 +11,13 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ id: 'group-42' }),
 }));
 
+jest.mock('@/components/HandsHiFive', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    HandsHiFive: ({ variant }: { variant: string }) => <View testID={`hands-hi-five-${variant}`} />,
+  };
+});
+
 describe('<EventCreatedScreen />', () => {
   beforeEach(() => {
     mockDismissTo.mockClear();
@@ -21,6 +28,7 @@ describe('<EventCreatedScreen />', () => {
 
     expect(getByTestId('event-created-screen')).toBeTruthy();
     expect(getByTestId('event-created-illustration')).toBeTruthy();
+    expect(getByTestId('hands-hi-five-event-created')).toBeTruthy();
     expect(getByTestId('event-created-logo')).toBeTruthy();
     expect(getByLabelText('Alibe')).toBeTruthy();
   });

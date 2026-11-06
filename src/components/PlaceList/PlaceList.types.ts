@@ -25,6 +25,7 @@ export interface PlaceListProps {
   onRetry?: () => void;
   onPlacePress?: (id: string) => void;
   header?: ReactElement;
+  footer?: ReactElement;
   contentContainerClassName?: string;
   testID?: string;
 }

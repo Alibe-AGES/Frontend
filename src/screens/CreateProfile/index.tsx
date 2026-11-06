@@ -3,6 +3,7 @@ import { PhotoPicker } from '@/components/PhotoPicker';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
 import { ScreenFrame } from '@/components/ScreenFrame';
 import { TextInput } from '@/components/TextInput';
+import { BackButton } from '@/components/BackButton';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
@@ -32,7 +33,17 @@ export function CreateProfileScreen({
   const trimmedNickname = nickname.trim();
 
   return (
-    <ScreenFrame>
+    <ScreenFrame
+      padding="horizontal"
+      topFade="always"
+      floatingChrome
+      header={
+        <BackButton
+          fallbackHref="/sign-up"
+          className="self-start"
+        />
+      }
+    >
       <View
         accessible={false}
         className="absolute left-[-4.45rem] top-[-2.64rem] h-[12.69rem] w-[12.76rem] rotate-[108deg]"

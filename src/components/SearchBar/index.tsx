@@ -12,7 +12,7 @@ export function SearchBar({
 }: SearchBarProps) {
   return (
     <View
-      className="w-full flex-row items-center gap-3 rounded-full border border-ink bg-canvas px-6 py-3"
+      className="w-full flex-row items-center gap-3 rounded-full border border-ink bg-canvas px-6"
       testID={`${testID}-field`}
     >
       <SearchIcon
@@ -20,7 +20,7 @@ export function SearchBar({
         height={16}
       />
       <TextInput
-        className="flex-1 font-poppins text-base text-ink outline-none"
+        className="flex-1 font-poppins text-base text-ink"
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}

@@ -15,8 +15,10 @@ module.exports = {
         coral: '#EC7448',
         'coral-soft': '#F7B08F',
         pink: '#ECA4D0',
+        'pink-deep': '#E35EB1',
         wine: '#71241A',
         'wine-soft': '#71241A80',
+        error: '#E74C3C',
       },
       fontFamily: {
         'poppins-light': ['Poppins_300Light'],
