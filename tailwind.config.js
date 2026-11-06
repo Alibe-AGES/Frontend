@@ -25,6 +25,7 @@ module.exports = {
         'poppins-semibold': ['Poppins_600SemiBold'],
         'poppins-bold': ['Poppins_700Bold'],
         'poppins-black': ['Poppins_900Black'],
+        'poppins-extrabold': ['Poppins_800ExtraBold'],
       },
     },
   },

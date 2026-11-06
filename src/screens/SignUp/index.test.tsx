@@ -32,10 +32,21 @@ describe('<SignUpScreen />', () => {
     expect(getByText(text)).toBeTruthy();
   });
 
-  test('does not render the Google sign up option', async () => {
-    const { queryByText } = await Promise.resolve(render(<SignUpScreen onContinue={onContinue} />));
+  test('keeps the title on a single line, shrinking it when it does not fit', async () => {
+    const { getByText } = await Promise.resolve(render(<SignUpScreen onContinue={onContinue} />));
+    const title = getByText('Criar conta');
 
-    expect(queryByText('Ou continue com')).toBeNull();
+    expect(title.props.numberOfLines).toBe(1);
+    expect(title.props.adjustsFontSizeToFit).toBe(true);
+  });
+
+  test('renders the Google sign up option', async () => {
+    const { getByText, getByLabelText } = await Promise.resolve(
+      render(<SignUpScreen onContinue={onContinue} />)
+    );
+
+    expect(getByText('Ou continue com')).toBeTruthy();
+    expect(getByLabelText('Continuar com Google')).toBeTruthy();
   });
 
   test.each(['Email', 'Senha', 'Confirmar senha'])('renders the %s input', async (placeholder) => {

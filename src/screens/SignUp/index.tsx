@@ -1,6 +1,7 @@
 import { BackButton } from '@/components/BackButton';
 import { ContinueButton } from '@/components/ContinueButton';
 import { EmailInput } from '@/components/EmailInput';
+import { GoogleButton } from '@/components/GoogleButton';
 import { PasswordInput } from '@/components/PasswordInput';
 import { ScreenFrame } from '@/components/ScreenFrame';
 import { theme } from '@/theme';
@@ -20,10 +21,11 @@ export interface SignUpData {
 
 export interface SignUpScreenProps {
   onContinue: (data: SignUpData) => void;
+  onGoogleSignUp?: () => void;
   emailError?: string;
 }
 
-export function SignUpScreen({ onContinue, emailError }: SignUpScreenProps) {
+export function SignUpScreen({ onContinue, onGoogleSignUp, emailError }: SignUpScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
@@ -45,7 +47,7 @@ export function SignUpScreen({ onContinue, emailError }: SignUpScreenProps) {
     >
       <View
         accessible={false}
-        className="-mx-6 aspect-[390/280]"
+        className="-mx-8 aspect-[390/280]"
       >
         <AuthHandsDecoration
           width="100%"
@@ -55,16 +57,18 @@ export function SignUpScreen({ onContinue, emailError }: SignUpScreenProps) {
 
       <BackButton
         fallbackHref="/auth"
-        className="absolute left-10 top-24"
+        className="absolute top-20"
       />
 
       <Text
-        className={`mt-4 text-center text-5xl leading-tight text-ink ${theme.typography.display}`}
+        adjustsFontSizeToFit
+        numberOfLines={1}
+        className={`mt-4 text-center text-[2.857rem] text-ink ${theme.typography.display}`}
       >
         Criar conta
       </Text>
 
-      <View className="mt-20 flex-1 rounded-t-3xl bg-pink/70 px-6 pb-28 pt-16">
+      <View className="mt-4 flex-grow rounded-t-3xl bg-pink/70 px-6 pb-12 pt-8">
         <View className="gap-4">
           <EmailInput
             value={email}
@@ -118,7 +122,22 @@ export function SignUpScreen({ onContinue, emailError }: SignUpScreenProps) {
           </Text>
         </Pressable>
 
-        <View className="mt-auto pt-6">
+        <View className="mt-12 items-center gap-6 pb-12">
+          <View className="w-full flex-row items-center gap-4">
+            <View className="h-0.5 flex-1 bg-wine" />
+            <Text className="text-center font-poppins-light text-lg text-wine">
+              Ou continue com
+            </Text>
+            <View className="h-0.5 flex-1 bg-wine" />
+          </View>
+
+          <GoogleButton
+            onPress={onGoogleSignUp}
+            testID="sign-up-google"
+          />
+        </View>
+
+        <View className="mt-auto">
           <ContinueButton
             onPress={() => {
               onContinue({ email: trimmedEmail, password });
