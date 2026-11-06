@@ -36,10 +36,11 @@ export function CreateProfileScreen({
     <ScreenFrame
       padding="horizontal"
       topFade="always"
-      overlay={
+      floatingChrome
+      header={
         <BackButton
           fallbackHref="/sign-up"
-          className="absolute left-6 top-20"
+          className="self-start"
         />
       }
     >

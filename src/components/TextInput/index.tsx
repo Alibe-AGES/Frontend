@@ -4,9 +4,20 @@ import { TextInput as RNTextInput, Text, View } from 'react-native';
 
 import { theme } from '@/theme';
 import { isValidEmail } from '@/utils/email';
-import type { TextInputProps, TextInputType } from './TextInput.types';
+import type {
+  TextInputColor,
+  TextInputProps,
+  TextInputSize,
+  TextInputType,
+} from './TextInput.types';
 
-export type { TextInputIconBackground, TextInputProps, TextInputType } from './TextInput.types';
+export type {
+  TextInputColor,
+  TextInputIconBackground,
+  TextInputProps,
+  TextInputSize,
+  TextInputType,
+} from './TextInput.types';
 
 const NUMERIC_DISALLOWED_REGEX = /\D/g;
 const ALPHANUMERIC_DISALLOWED_REGEX = /[^\p{L}\p{N}\s]/gu;
@@ -17,6 +28,16 @@ const ERROR_MESSAGES: Record<TextInputType, string> = {
   numeric: 'Este campo aceita somente números.',
   alphanumeric: 'Este campo não aceita caracteres especiais.',
   password: '',
+};
+
+const SIZE_CLASSES: Record<TextInputSize, string> = {
+  sm: 'py-2',
+  md: 'py-4',
+};
+
+const TEXT_COLOR_CLASSES: Record<TextInputColor, string> = {
+  ink: 'text-ink',
+  wine: 'text-wine',
 };
 
 const KEYBOARD_TYPES: Record<TextInputType, KeyboardTypeOptions> = {
@@ -43,6 +64,8 @@ export function TextInput({
   value,
   onChangeText,
   type = 'all',
+  size = 'md',
+  textColor = 'ink',
   label,
   placeholder,
   error,
@@ -109,7 +132,7 @@ export function TextInput({
           autoCapitalize={type === 'email' || type === 'password' ? 'none' : 'sentences'}
           autoCorrect={type !== 'password'}
           autoFocus={autoFocus}
-          className="flex-1 py-4 font-poppins text-base text-ink outline-none"
+          className={`flex-1 font-poppins text-base outline-none ${SIZE_CLASSES[size]} ${TEXT_COLOR_CLASSES[textColor]}`}
           editable={!disabled}
           keyboardType={KEYBOARD_TYPES[type]}
           maxLength={maxLength}

@@ -4,7 +4,7 @@ import { Animated, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import tw from 'twrnc';
 
-import { TopFade } from './TopFade';
+import { TOP_FADE_TAIL, TopFade } from './TopFade';
 import type {
   ScreenFrameBackground,
   ScreenFrameGap,
@@ -15,6 +15,7 @@ import type {
 export type {
   ScreenFrameBackground,
   ScreenFrameGap,
+  ScreenFrameLayout,
   ScreenFramePadding,
   ScreenFrameProps,
 } from './ScreenFrame.types';
@@ -29,6 +30,9 @@ const HEADER_PADDING_CLASSES: Record<ScreenFramePadding, string> = {
   horizontal: 'px-6 pb-3',
   none: '',
 };
+
+// A floating header sets its own position, because the content may start at the top of the screen.
+const FLOATING_HEADER_PADDING = 'px-6 pb-3 pt-20';
 
 const GAP_CLASSES: Record<ScreenFrameGap, string> = {
   none: '',
@@ -57,25 +61,52 @@ export function ScreenFrame({
   gap = 'none',
   header,
   footer,
-  overlay,
+  floatingChrome = false,
   topFade = false,
   testID,
 }: ScreenFrameProps) {
+  const [headerHeight, setHeaderHeight] = useState(0);
   const [footerHeight, setFooterHeight] = useState(0);
   const [scrollOffset] = useState(() => new Animated.Value(0));
   const hasHeader = header !== undefined && header !== null;
   const hasFooter = footer !== undefined && footer !== null;
+  const isFadeAlwaysOn = topFade === 'always' || topFade === 'header';
+  const topInset = floatingChrome && hasHeader ? headerHeight + TOP_FADE_TAIL : 0;
+  const bottomInset = hasFooter ? footerHeight + FOOTER_SPACING : 0;
+  // A virtualized list scrolls behind the chrome, so it applies the insets to its own content.
+  const insetsBelongToList = floatingChrome && !scrollable;
 
   // The footer floats over the content, so the content reserves its measured height.
   let paddingBottom = 0;
-  if (hasFooter) {
-    paddingBottom = scrollable ? footerHeight + FOOTER_SPACING : footerHeight;
+  if (hasFooter && !insetsBelongToList) {
+    paddingBottom = scrollable ? bottomInset : footerHeight;
   }
-  const contentStyle = [tw`${getContentPadding(padding, hasHeader)}`, { paddingBottom }];
+  const contentStyle = [
+    tw`${getContentPadding(padding, hasHeader && !floatingChrome)}`,
+    { paddingBottom },
+  ];
+  const content = typeof children === 'function' ? children({ topInset, bottomInset }) : children;
+
+  const floatingHeaderClasses = `absolute inset-x-0 top-0 ${
+    padding === 'none' ? '' : FLOATING_HEADER_PADDING
+  }`;
+
+  const headerElement = hasHeader ? (
+    <View
+      className={floatingChrome ? floatingHeaderClasses : HEADER_PADDING_CLASSES[padding]}
+      pointerEvents="box-none"
+      onLayout={(event) => {
+        setHeaderHeight(event.nativeEvent.layout.height);
+      }}
+      testID="screen-frame-header"
+    >
+      {header}
+    </View>
+  ) : null;
 
   return (
     <View className={`flex-1 ${BACKGROUND_CLASSES[background]}`}>
-      {hasHeader ? <View className={HEADER_PADDING_CLASSES[padding]}>{header}</View> : null}
+      {floatingChrome ? null : headerElement}
 
       {scrollable ? (
         <KeyboardAwareScrollView
@@ -92,7 +123,7 @@ export function ScreenFrame({
           }
           testID={testID}
         >
-          <View className={`flex-grow ${GAP_CLASSES[gap]}`}>{children}</View>
+          <View className={`flex-grow ${GAP_CLASSES[gap]}`}>{content}</View>
         </KeyboardAwareScrollView>
       ) : (
         <View
@@ -100,13 +131,14 @@ export function ScreenFrame({
           style={contentStyle}
           testID={testID}
         >
-          {children}
+          {content}
         </View>
       )}
 
       {hasFooter ? (
         <View
           className="absolute inset-x-0 bottom-0"
+          pointerEvents="box-none"
           onLayout={(event) => {
             setFooterHeight(event.nativeEvent.layout.height);
           }}
@@ -116,15 +148,16 @@ export function ScreenFrame({
         </View>
       ) : null}
 
-      {topFade === 'always' || (topFade && scrollable) ? (
+      {isFadeAlwaysOn || (topFade && scrollable) ? (
         <TopFade
-          alwaysVisible={topFade === 'always'}
+          alwaysVisible={isFadeAlwaysOn}
           color={theme.colors[background]}
           scrollOffset={scrollOffset}
+          solidHeight={topFade === 'header' ? headerHeight : undefined}
         />
       ) : null}
 
-      {overlay}
+      {floatingChrome ? headerElement : null}
     </View>
   );
 }

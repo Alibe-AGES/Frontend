@@ -41,9 +41,10 @@ export function LoginScreen({
     <ScreenFrame
       padding="horizontal"
       topFade
-      overlay={
+      floatingChrome
+      header={
         <BackButton
-          className="absolute left-6 top-20"
+          className="self-start"
           fallbackHref="/auth"
         />
       }
@@ -131,7 +132,7 @@ export function LoginScreen({
           {errorMessage ? (
             <Text
               accessibilityRole="alert"
-              className="mb-3 text-center font-poppins text-sm text-wine"
+              className="mb-3 text-center font-poppins text-sm text-error"
             >
               {errorMessage}
             </Text>

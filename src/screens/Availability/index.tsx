@@ -98,7 +98,8 @@ export function AvailabilityScreen({
       gap="lg"
       testID="availability-screen"
       topFade
-      overlay={<BackButton className="absolute left-6 top-20" />}
+      floatingChrome
+      header={<BackButton className="self-start" />}
     >
       <View className="flex-row items-center justify-center gap-10">
         <View

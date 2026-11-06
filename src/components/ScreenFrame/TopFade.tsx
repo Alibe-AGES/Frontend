@@ -13,15 +13,27 @@ const FADE_STOPS = [
   { offset: 0.6, opacity: 0.6 },
   { offset: 1, opacity: 0 },
 ];
+/** How far the fade reaches below a floating header. */
+export const TOP_FADE_TAIL = Number(tw`pb-6`.paddingBottom);
+
+function getStops(solidHeight?: number) {
+  if (solidHeight === undefined) return FADE_STOPS;
+  return [
+    { offset: solidHeight / (solidHeight + TOP_FADE_TAIL), opacity: 1 },
+    { offset: 1, opacity: 0 },
+  ];
+}
 
 export interface TopFadeProps {
   readonly color: string;
   readonly scrollOffset: Animated.Value;
   /** Keeps the fade on at rest, for screens whose content fits without scrolling. */
   readonly alwaysVisible?: boolean;
+  /** Height kept fully opaque behind a floating header; the fade ends just below it. */
+  readonly solidHeight?: number;
 }
 
-export function TopFade({ color, scrollOffset, alwaysVisible = false }: TopFadeProps) {
+export function TopFade({ color, scrollOffset, alwaysVisible = false, solidHeight }: TopFadeProps) {
   // Otherwise hidden at rest so it never covers artwork at the top of the screen.
   const opacity = alwaysVisible
     ? 1
@@ -33,7 +45,11 @@ export function TopFade({ color, scrollOffset, alwaysVisible = false }: TopFadeP
 
   return (
     <Animated.View
-      style={[tw`absolute inset-x-0 top-0 ${HEIGHT_CLASS}`, { opacity, pointerEvents: 'none' }]}
+      style={[
+        tw`absolute inset-x-0 top-0 ${HEIGHT_CLASS}`,
+        solidHeight === undefined ? null : { height: solidHeight + TOP_FADE_TAIL },
+        { opacity, pointerEvents: 'none' },
+      ]}
       testID="screen-frame-top-fade"
     >
       <Svg
@@ -48,7 +64,7 @@ export function TopFade({ color, scrollOffset, alwaysVisible = false }: TopFadeP
             x2="0"
             y2="1"
           >
-            {FADE_STOPS.map((stop) => (
+            {getStops(solidHeight).map((stop) => (
               <Stop
                 key={stop.offset}
                 offset={stop.offset}

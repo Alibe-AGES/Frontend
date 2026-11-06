@@ -21,6 +21,18 @@ export const EMPTY_FILTER_VALUE: FilterSheetValue = {
   selections: {},
 };
 
+/** Whether a value narrows the results. A group left with no selected options does not count. */
+export function hasActiveFilters({ minBudget, maxBudget, selections }: FilterSheetValue) {
+  const hasSelection = Object.values(selections).some((selected) => selected.length > 0);
+  return minBudget !== '' || maxBudget !== '' || hasSelection;
+}
+
+// Checks mark groups that accept several options, radios the ones that accept a single option.
+function getOptionIcon(isSelected: boolean, multiple?: boolean) {
+  if (multiple) return isSelected ? 'checkmark-circle' : 'ellipse-outline';
+  return isSelected ? 'radio-button-on' : 'radio-button-off';
+}
+
 export function FilterSheet({
   visible,
   value,
@@ -68,7 +80,7 @@ export function FilterSheet({
     >
       <View
         className="max-h-[90%] rounded-t-3xl bg-ink px-6 pt-3"
-        style={{ paddingBottom: Math.max(insets.bottom, 24) }}
+        style={{ paddingBottom: Math.max(insets.bottom, 36) }}
       >
         <View className="mb-3 h-1 w-16 self-center rounded-full bg-canvas/60" />
         <View className="mb-4 flex-row items-center justify-between">
@@ -111,6 +123,8 @@ export function FilterSheet({
                 <View className="flex-1">
                   <TextInput
                     type="numeric"
+                    size="sm"
+                    textColor="wine"
                     value={draft.minBudget}
                     onChangeText={(minBudget) => {
                       setDraft((current) => ({ ...current, minBudget }));
@@ -123,6 +137,8 @@ export function FilterSheet({
                 <View className="flex-1">
                   <TextInput
                     type="numeric"
+                    size="sm"
+                    textColor="wine"
                     value={draft.maxBudget}
                     onChangeText={(maxBudget) => {
                       setDraft((current) => ({ ...current, maxBudget }));
@@ -150,18 +166,18 @@ export function FilterSheet({
                     accessibilityRole={group.multiple ? 'checkbox' : 'radio'}
                     accessibilityState={{ checked: isSelected }}
                     accessibilityLabel={option.label}
-                    className="flex-row items-center gap-3 rounded-full bg-surface px-1.5 py-1.5 active:opacity-75"
+                    className="flex-row items-center gap-3 rounded-full bg-surface px-1.5 py-2 active:opacity-75"
                     onPress={() => {
                       toggleOption(group, option.value);
                     }}
                     testID={`${testID}-${group.key}-${option.value}`}
                   >
-                    <View
-                      className={`h-6 w-6 rounded-full border-2 border-ink ${
-                        isSelected ? 'bg-ink' : 'bg-surface'
-                      }`}
+                    <Ionicons
+                      name={getOptionIcon(isSelected, group.multiple)}
+                      size={24}
+                      color={theme.colors.ink}
                     />
-                    <Text className="flex-1 font-poppins text-sm text-wine">{option.label}</Text>
+                    <Text className="text-md flex-1 font-poppins text-wine">{option.label}</Text>
                   </Pressable>
                 );
               })}
@@ -169,14 +185,16 @@ export function FilterSheet({
           ))}
         </ScrollView>
 
-        <Button
-          title="Confirmar"
-          variant="secondary"
-          onPress={() => {
-            onConfirm(draft);
-          }}
-          testID={`${testID}-confirm`}
-        />
+        <View className="pt-4">
+          <Button
+            title="Confirmar"
+            variant="secondary"
+            onPress={() => {
+              onConfirm(draft);
+            }}
+            testID={`${testID}-confirm`}
+          />
+        </View>
       </View>
     </ModalFrame>
   );

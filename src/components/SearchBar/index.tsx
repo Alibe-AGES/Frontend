@@ -20,7 +20,7 @@ export function SearchBar({
         height={16}
       />
       <TextInput
-        className="flex-1 pt-4 font-poppins text-base text-ink outline-none"
+        className="flex-1 font-poppins text-base text-ink"
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
