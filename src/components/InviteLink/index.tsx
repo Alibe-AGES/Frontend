@@ -52,7 +52,7 @@ export function InviteLink({
 
   return (
     <View
-      className={`w-full flex-row items-center rounded-full border-2 border-lime-soft bg-surface py-1 pl-6 pr-1 ${
+      className={`w-full flex-row items-center rounded-full border-2 border-lime-soft bg-canvas py-1 pl-6 pr-1 ${
         isDisabled ? 'opacity-50' : 'opacity-100'
       }`}
       testID={`${testID}-field`}

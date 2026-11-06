@@ -6,6 +6,13 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ back: jest.fn(), canGoBack: jest.fn(), replace: jest.fn() }),
 }));
 
+jest.mock('@/components/HandsHiFive', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    HandsHiFive: ({ variant }: { variant: string }) => <View testID={`hands-hi-five-${variant}`} />,
+  };
+});
+
 describe('<LoginScreen />', () => {
   const onContinue = jest.fn();
   const onForgotPassword = jest.fn();
@@ -30,6 +37,12 @@ describe('<LoginScreen />', () => {
     expect(getByPlaceholderText('Email')).toBeTruthy();
     expect(getByPlaceholderText('Senha')).toBeTruthy();
     expect(getByLabelText('Voltar')).toBeTruthy();
+  });
+
+  test('shows the hi-five animation with the login colors', async () => {
+    const { getByTestId } = await Promise.resolve(renderScreen());
+
+    expect(getByTestId('hands-hi-five-login')).toBeTruthy();
   });
 
   test('keeps the back button fixed outside the scrollable content', async () => {

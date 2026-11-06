@@ -95,12 +95,11 @@ export function AvailabilityScreen({
 
   return (
     <ScreenFrame
-      background="surface"
       gap="lg"
       testID="availability-screen"
+      topFade
+      overlay={<BackButton className="absolute left-6 top-20" />}
     >
-      <BackButton color={theme.colors.black} />
-
       <View className="flex-row items-center justify-center gap-10">
         <View
           className="items-center justify-center rounded-full"
@@ -144,7 +143,7 @@ export function AvailabilityScreen({
           {participants.map((participant, index) => (
             <View
               key={`${participant.id}-${String(index)}`}
-              className="flex-row items-center gap-3 rounded-2xl bg-surface p-3"
+              className="flex-row items-center gap-3 rounded-2xl bg-canvas p-3"
               testID={`availability-participant-${participant.id}`}
             >
               <Avatar

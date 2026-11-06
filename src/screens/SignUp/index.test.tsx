@@ -6,6 +6,13 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ back: jest.fn(), canGoBack: () => true, replace: jest.fn() }),
 }));
 
+jest.mock('@/components/HandsHiFive', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    HandsHiFive: ({ variant }: { variant: string }) => <View testID={`hands-hi-five-${variant}`} />,
+  };
+});
+
 type GetByPlaceholderText = Awaited<ReturnType<typeof render>>['getByPlaceholderText'];
 
 async function fillForm(
@@ -39,6 +46,12 @@ describe('<SignUpScreen />', () => {
 
     expect(title.props.numberOfLines).toBe(1);
     expect(title.props.adjustsFontSizeToFit).toBe(true);
+  });
+
+  test('shows the hi-five animation with the sign up colors', async () => {
+    const { getByTestId } = await Promise.resolve(render(<SignUpScreen onContinue={onContinue} />));
+
+    expect(getByTestId('hands-hi-five-sign-up')).toBeTruthy();
   });
 
   test('keeps the back button fixed outside the scrollable content', async () => {

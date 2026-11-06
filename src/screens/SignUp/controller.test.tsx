@@ -7,6 +7,8 @@ jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
 }));
 
+jest.mock('@/components/HandsHiFive', () => ({ HandsHiFive: () => null }));
+
 jest.mock('@/hooks/useSignUpDraft', () => ({
   useSignUpDraft: jest.fn(),
 }));
