@@ -91,7 +91,7 @@ export function ExperienceDetailsScreen({
       padding="none"
       testID="experience-details-screen"
     >
-      <View className="relative h-72 w-full overflow-hidden bg-surface">
+      <View className="relative h-72 w-full overflow-hidden bg-canvas">
         {imageSource ? (
           <Image
             source={imageSource}
@@ -127,7 +127,7 @@ export function ExperienceDetailsScreen({
         </Pressable>
       </View>
 
-      <View className="mx-5 -mt-5 mb-10 rounded-3xl bg-surface px-5 pb-6 pt-6">
+      <View className="mx-5 -mt-5 mb-10 rounded-3xl bg-canvas px-5 pb-6 pt-6">
         {isLoading ? (
           <View
             className="items-center py-12"

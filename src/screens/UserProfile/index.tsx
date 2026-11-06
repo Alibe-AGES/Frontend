@@ -314,9 +314,9 @@ export const UserProfileScreen = ({
           <TouchableOpacity
             onPress={handleCloseEditModal}
             disabled={isSubmittingProfile}
-            className="flex-1 items-center justify-center rounded-full border-2 border-coral py-3"
+            className="flex-1 items-center justify-center rounded-full border-2 border-coral py-4"
           >
-            <Text className="font-poppins-semibold text-coral">Cancelar</Text>
+            <Text className="font-poppins-semibold leading-none text-coral">Cancelar</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -324,11 +324,11 @@ export const UserProfileScreen = ({
               void handleSaveProfile();
             }}
             disabled={isSubmittingProfile}
-            className={`flex-1 items-center justify-center rounded-full bg-coral py-3 ${
+            className={`flex-1 items-center justify-center rounded-full bg-coral py-4 ${
               isSubmittingProfile ? 'opacity-60' : ''
             }`}
           >
-            <Text className="font-poppins-semibold text-surface">
+            <Text className="font-poppins-semibold leading-none text-surface">
               {isSubmittingProfile ? 'Salvando...' : 'Salvar'}
             </Text>
           </TouchableOpacity>
@@ -365,16 +365,16 @@ export const UserProfileScreen = ({
         <View className="mt-2 flex-row gap-4">
           <TouchableOpacity
             onPress={handleClosePasswordModal}
-            className="flex-1 items-center justify-center rounded-full border-2 border-coral py-3"
+            className="flex-1 items-center justify-center rounded-full border-2 border-coral py-4"
           >
-            <Text className="font-poppins-semibold text-coral">Cancelar</Text>
+            <Text className="font-poppins-semibold leading-none text-coral">Cancelar</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={handleSavePassword}
-            className="flex-1 items-center justify-center rounded-full bg-coral py-3"
+            className="flex-1 items-center justify-center rounded-full bg-coral py-4"
           >
-            <Text className="font-poppins-semibold text-surface">Salvar</Text>
+            <Text className="font-poppins-semibold leading-none text-surface">Salvar</Text>
           </TouchableOpacity>
         </View>
       </ModalFrame>
@@ -393,10 +393,10 @@ export const UserProfileScreen = ({
           <TouchableOpacity
             onPress={handleCloseLogoutModal}
             disabled={isLoggingOut}
-            className="flex-1 items-center justify-center rounded-full border-2 border-coral py-3"
+            className="flex-1 items-center justify-center rounded-full border-2 border-coral py-4"
             testID="user-profile-logout-cancel"
           >
-            <Text className="font-poppins-semibold text-coral">Cancelar</Text>
+            <Text className="font-poppins-semibold leading-none text-coral">Cancelar</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -404,12 +404,12 @@ export const UserProfileScreen = ({
               void handleConfirmLogout();
             }}
             disabled={isLoggingOut}
-            className={`flex-1 items-center justify-center rounded-full bg-coral py-3 ${
+            className={`flex-1 items-center justify-center rounded-full bg-coral py-4 ${
               isLoggingOut ? 'opacity-60' : ''
             }`}
             testID="user-profile-logout-confirm"
           >
-            <Text className="font-poppins-semibold text-surface">
+            <Text className="font-poppins-semibold leading-none text-surface">
               {isLoggingOut ? 'Saindo...' : 'Sair'}
             </Text>
           </TouchableOpacity>

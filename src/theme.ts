@@ -9,6 +9,7 @@ export const theme = {
     coral: '#EC7448',
     coralSoft: '#F7B08F',
     pink: '#FFC9EB',
+    pinkDeep: '#E35EB1',
     wineSoft: '#71241A80',
     white: '#FFFFFF',
     black: '#000000',
@@ -27,7 +28,7 @@ export const theme = {
     card: '1.5rem',
   },
   typography: {
-    display: 'font-poppins-black tracking-tight',
+    display: 'font-poppins-extrabold tracking-[0.4rem]',
     body: 'font-poppins leading-6',
     label: 'font-poppins-semibold text-xs uppercase tracking-wide',
   },
