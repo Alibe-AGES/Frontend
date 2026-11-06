@@ -39,7 +39,16 @@ export function LoginScreen({
   const canContinue = trimmedEmail.length > 0 && password.length > 0;
 
   return (
-    <ScreenFrame padding="horizontal">
+    <ScreenFrame
+      padding="horizontal"
+      topFade
+      overlay={
+        <BackButton
+          className="absolute left-6 top-20"
+          fallbackHref="/auth"
+        />
+      }
+    >
       <View
         accessible={false}
         className="-mx-8 aspect-[390/280]"
@@ -49,11 +58,6 @@ export function LoginScreen({
           height="100%"
         />
       </View>
-
-      <BackButton
-        className="absolute top-20"
-        fallbackHref="/auth"
-      />
 
       <Text
         className={`text-center text-[2.857rem] leading-tight text-ink ${theme.typography.display}`}

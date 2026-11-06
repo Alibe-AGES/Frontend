@@ -41,7 +41,16 @@ export function SignUpScreen({ onContinue, onGoogleSignUp, emailError }: SignUpS
     !passwordsMismatch;
 
   return (
-    <ScreenFrame padding="horizontal">
+    <ScreenFrame
+      padding="horizontal"
+      topFade
+      overlay={
+        <BackButton
+          fallbackHref="/auth"
+          className="absolute left-6 top-20"
+        />
+      }
+    >
       <View
         accessible={false}
         className="-mx-8 aspect-[390/280]"
@@ -51,11 +60,6 @@ export function SignUpScreen({ onContinue, onGoogleSignUp, emailError }: SignUpS
           height="100%"
         />
       </View>
-
-      <BackButton
-        fallbackHref="/auth"
-        className="absolute top-20"
-      />
 
       <Text
         adjustsFontSizeToFit

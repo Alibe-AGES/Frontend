@@ -1,4 +1,5 @@
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, within } from '@testing-library/react-native';
+import { ScrollView } from 'react-native';
 import { SignUpScreen } from '.';
 
 jest.mock('expo-router', () => ({
@@ -38,6 +39,23 @@ describe('<SignUpScreen />', () => {
 
     expect(title.props.numberOfLines).toBe(1);
     expect(title.props.adjustsFontSizeToFit).toBe(true);
+  });
+
+  test('keeps the back button fixed outside the scrollable content', async () => {
+    const { UNSAFE_getByType, getByLabelText } = await Promise.resolve(
+      render(<SignUpScreen onContinue={onContinue} />)
+    );
+    const scrollView = within(UNSAFE_getByType(ScrollView));
+
+    expect(getByLabelText('Voltar')).toBeTruthy();
+    expect(scrollView.queryByText('Criar conta')).toBeTruthy();
+    expect(scrollView.queryByLabelText('Voltar')).toBeNull();
+  });
+
+  test('keeps the top fade hidden until the content scrolls', async () => {
+    const { getByTestId } = await Promise.resolve(render(<SignUpScreen onContinue={onContinue} />));
+
+    expect(getByTestId('screen-frame-top-fade')).toHaveStyle({ opacity: 0 });
   });
 
   test('renders the Google sign up option', async () => {

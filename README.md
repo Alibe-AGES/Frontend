@@ -559,7 +559,7 @@ For UI-only work, use local state and fixture data. Do not add API calls merely 
 
 ### Screen frame
 
-Every page wraps its content in `ScreenFrame` (`src/components/ScreenFrame`). It owns the defaults shared by all screens: background, horizontal gutter, top spacing, an optional fixed `header`, and an optional `footer` pinned to the bottom (usually `NavigationBar`), whose height is reserved below the content automatically.
+Every page wraps its content in `ScreenFrame` (`src/components/ScreenFrame`). It owns the defaults shared by all screens: background, horizontal gutter, top spacing, an optional fixed `header`, and an optional `footer` pinned to the bottom (usually `NavigationBar`), whose height is reserved below the content automatically. An optional `overlay` floats over the content without scrolling or taking up layout space, for controls placed on top of a screen's artwork, such as the back button on Login and Sign Up. Set `topFade` to fade scrolled content out behind that overlay; it stays hidden until the content scrolls, so artwork at the top remains visible. Use `topFade="always"` on screens whose content fits without scrolling.
 
 By default the content is rendered in a `KeyboardAwareScrollView` from `react-native-keyboard-controller`, which scrolls the focused input above the keyboard on iOS and Android. This only works because `KeyboardProvider` wraps the app in `src/app/_layout.tsx`; do not remove it. Inputs do not need any extra wiring.
 

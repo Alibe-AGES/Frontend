@@ -26,6 +26,17 @@ export interface ScreenFrameProps {
   readonly header?: ReactNode;
   /** Content pinned to the bottom of the screen, such as the NavigationBar. */
   readonly footer?: ReactNode;
+  /**
+   * Floats over the content and stays put while it scrolls, without taking up layout space.
+   * The screen positions it, usually with `absolute`.
+   */
+  readonly overlay?: ReactNode;
+  /**
+   * Fades content out at the top of the screen, behind the overlay.
+   * - `true`: stays hidden until the content scrolls; needs `scrollable`.
+   * - `'always'`: visible from the start, for screens whose content fits without scrolling.
+   */
+  readonly topFade?: boolean | 'always';
   /** Applied to the ScrollView, or to the content area when `scrollable` is false. */
   readonly testID?: string;
 }

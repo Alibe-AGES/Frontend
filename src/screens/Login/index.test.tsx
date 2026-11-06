@@ -1,4 +1,5 @@
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, within } from '@testing-library/react-native';
+import { ScrollView } from 'react-native';
 import { LoginScreen } from '.';
 
 jest.mock('expo-router', () => ({
@@ -29,6 +30,21 @@ describe('<LoginScreen />', () => {
     expect(getByPlaceholderText('Email')).toBeTruthy();
     expect(getByPlaceholderText('Senha')).toBeTruthy();
     expect(getByLabelText('Voltar')).toBeTruthy();
+  });
+
+  test('keeps the back button fixed outside the scrollable content', async () => {
+    const { UNSAFE_getByType, getByLabelText } = await Promise.resolve(renderScreen());
+    const scrollView = within(UNSAFE_getByType(ScrollView));
+
+    expect(getByLabelText('Voltar')).toBeTruthy();
+    expect(scrollView.queryByText('Login')).toBeTruthy();
+    expect(scrollView.queryByLabelText('Voltar')).toBeNull();
+  });
+
+  test('keeps the top fade hidden until the content scrolls', async () => {
+    const { getByTestId } = await Promise.resolve(renderScreen());
+
+    expect(getByTestId('screen-frame-top-fade')).toHaveStyle({ opacity: 0 });
   });
 
   test('shows a request error and loading state from the controller', async () => {
