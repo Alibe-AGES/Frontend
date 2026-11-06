@@ -4,7 +4,7 @@ import { API_BASE_URL } from '@/constants';
 import { MemoriesScreen } from '@/screens/Memories';
 import { CalendarDay, getGroupCalendar } from '@/server/calendar';
 import { EventMemoryResponse, getEventMemories } from '@/server/events';
-import { type Href, useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 const LOAD_ERROR = 'Não foi possível carregar as memórias do calendário.';
@@ -134,7 +134,7 @@ export default function MemoriesController() {
     router.push({
       pathname: '/group/[id]/memories/gallery',
       params: { id: groupId, date: dateString },
-    } as unknown as Href);
+    });
   };
 
   const handleSeeAllPress = () => {
@@ -149,7 +149,7 @@ export default function MemoriesController() {
         month: String(visibleMonth.month),
         year: String(visibleMonth.year),
       },
-    } as unknown as Href);
+    });
   };
 
   const handleAddMemory = () => {
