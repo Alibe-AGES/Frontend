@@ -10,17 +10,14 @@ export function ComponentGalleryScreen() {
       className="flex-1 bg-canvas"
       contentContainerClassName="gap-6 px-6 py-16"
     >
-      <View className="gap-2">
-        <Text className="text-3xl font-black text-ink">Component gallery</Text>
-        <Text className="text-base font-medium text-ink-soft">
-          Atalhos de teste para desenvolvimento
-        </Text>
+      <View className="items-center justify-center">
+        <Button title="Simple button" />
       </View>
 
       <View className="gap-4 rounded-3xl bg-surface p-5">
         <Text className="text-xl font-black text-ink">Galeria de Memórias (ALI-123)</Text>
         <Text className="text-sm text-ink-soft">
-          Clique abaixo para abrir a tela da Galeria com dados reais do banco:
+          Atalhos para testar a tela de galeria no emulador/celular:
         </Text>
         <Button
           title="Abrir Galeria (Setembro 2026)"
