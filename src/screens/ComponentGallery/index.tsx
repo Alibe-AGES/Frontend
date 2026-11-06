@@ -23,7 +23,7 @@ export function ComponentGalleryScreen() {
           title="Abrir Galeria (Setembro 2026)"
           onPress={() => {
             router.push({
-              pathname: '/group/[id]/memories/gallery' as never,
+              pathname: '/group/[id]/memories/gallery',
               params: {
                 id: '7cd60fad-d815-41b3-b3bc-567aa63eb666',
                 month: '9',
@@ -37,7 +37,7 @@ export function ComponentGalleryScreen() {
           variant="secondary"
           onPress={() => {
             router.push({
-              pathname: '/group/[id]/memories/gallery' as never,
+              pathname: '/group/[id]/memories/gallery',
               params: {
                 id: '7cd60fad-d815-41b3-b3bc-567aa63eb666',
                 date: '2026-09-05',
