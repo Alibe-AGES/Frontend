@@ -1,6 +1,9 @@
+import { Image } from 'expo-image';
 import { Pressable, Text, View } from 'react-native';
+import tw from 'twrnc';
 
 import { DayMark, DayStatus } from '@/components/Calendar/Calendar.types';
+import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
 
 import { formatCalendarDate } from './calendar.utils';
 
@@ -22,6 +25,7 @@ interface CalendarGridProps {
 interface DayContentProps {
   status: DayStatus;
   day: number;
+  hasImage: boolean;
 }
 
 const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
@@ -111,7 +115,31 @@ function getAccessibilityLabel(
   return details.join(', ');
 }
 
-function DayContent({ status, day }: DayContentProps) {
+function CalendarDayImage({ imageUrl, dateString }: { imageUrl: string; dateString: string }) {
+  const imageSource = useAuthenticatedImageSource(imageUrl);
+
+  if (!imageSource) {
+    return null;
+  }
+
+  return (
+    <>
+      <Image
+        source={imageSource}
+        accessibilityLabel={`Memória do dia ${dateString}`}
+        contentFit="cover"
+        style={tw`absolute inset-0 h-full w-full`}
+        testID={`calendar-day-image-${dateString}`}
+      />
+      <View style={tw`absolute inset-0 bg-black/30`} />
+    </>
+  );
+}
+
+function DayContent({ status, day, hasImage }: DayContentProps) {
+  if (hasImage) {
+    return <Text className="z-10 text-sm font-medium text-white">{String(day)}</Text>;
+  }
   if (status === 'suggested') {
     return <Text className="text-xl text-canvas">☆</Text>;
   }
@@ -157,6 +185,7 @@ function CalendarDayCell({ dateString, day, mark, onPress, onCreatePress }: Cale
   const eventCount = mark.eventIds?.length ?? 0;
   const availableUserCount = getAvailableUserCount(mark);
   const allUsersAvailable = getAllUsersAvailable(mark);
+  const hasImage = Boolean(mark.imageUrl);
   const displayStatus = getDisplayStatus(dateString, eventCount, mark.status);
   const accessibilityLabel = getAccessibilityLabel(
     dateString,
@@ -180,12 +209,20 @@ function CalendarDayCell({ dateString, day, mark, onPress, onCreatePress }: Cale
         }}
       >
         <View
-          className={`h-9 w-9 items-center justify-center rounded-lg ${dayContainerClasses[displayStatus]}`}
+          className={`h-9 w-9 items-center justify-center overflow-hidden rounded-lg ${dayContainerClasses[displayStatus]}`}
           testID={`calendar-day-${dateString}`}
         >
+          {mark.imageUrl ? (
+            <CalendarDayImage
+              imageUrl={mark.imageUrl}
+              dateString={dateString}
+            />
+          ) : null}
+
           <DayContent
             status={displayStatus}
             day={day}
+            hasImage={hasImage}
           />
         </View>
 

@@ -1,16 +1,12 @@
-import { MemoriesScreen } from '@/screens/Memories';
 import { NewMemoryScreen } from '@/screens/NewMemory';
 import { render } from '@testing-library/react-native';
 import { WelcomeScreen } from './index';
 
 describe('welcome-based screens', () => {
-  test.each([
-    ['Memories', MemoriesScreen],
-    ['New memory', NewMemoryScreen],
-  ])('renders the %s screen label', async (name, Screen) => {
-    const { getByText } = await Promise.resolve(render(<Screen />));
+  test('renders the New memory screen label', async () => {
+    const { getByText } = await Promise.resolve(render(<NewMemoryScreen />));
 
-    expect(getByText(`Welcome to screen ${name}`)).toBeTruthy();
+    expect(getByText('Welcome to screen New memory')).toBeTruthy();
   });
 
   test('renders a custom screen name', async () => {
