@@ -328,6 +328,23 @@ describe('MemoriesGalleryController', () => {
     ]);
   });
 
+  test('opens the carousel on the tapped photo keeping the period params', async () => {
+    mockUseLocalSearchParams.mockReturnValue({ id: 'group-1', month: '9', year: '2026' });
+    mockGetGroupCalendar.mockResolvedValue([]);
+
+    render(<MemoriesGalleryController />);
+    await waitFor(() => {
+      expect(screenProps().isLoading).toBe(false);
+    });
+
+    screenProps().onPhotoPress?.('photo-7');
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/group/[id]/memories/carousel',
+      params: { id: 'group-1', photoId: 'photo-7', month: '9', year: '2026' },
+    });
+  });
+
   test('navigates to new memory screen when onAddMemory is triggered', async () => {
     await renderLoaded();
 

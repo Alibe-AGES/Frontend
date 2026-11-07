@@ -49,12 +49,14 @@ export function ComponentGalleryScreen() {
       </View>
 
       <View className="items-center">
-        <MemoryCard
-          date={new Date()}
-          name="Sample Memory"
-          address="123 Main St, City, State 12345"
-          imageUri="https://picsum.photos/600/800"
-        />
+        <View className="w-72 max-w-full">
+          <MemoryCard
+            date={new Date()}
+            name="Sample Memory"
+            address="123 Main St, City, State 12345"
+            imageUri="https://picsum.photos/600/800"
+          />
+        </View>
       </View>
     </ScrollView>
   );
