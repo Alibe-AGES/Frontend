@@ -1,4 +1,5 @@
-import { TextInput, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Pressable, TextInput, View } from 'react-native';
 
 import SearchIcon from '@/assets/images/search.svg';
 import { theme } from '@/theme';
@@ -26,7 +27,26 @@ export function SearchBar({
         placeholder={placeholder}
         placeholderTextColor={theme.colors.ink}
         testID={testID}
+        style={{ includeFontPadding: false, textAlignVertical: 'center' }}
       />
+      {value.length > 0 ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Limpar pesquisa"
+          hitSlop={12}
+          onPress={() => {
+            onChangeText('');
+          }}
+          style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+          testID={`${testID}-clear`}
+        >
+          <Ionicons
+            name="close"
+            size={18}
+            color={theme.colors.ink}
+          />
+        </Pressable>
+      ) : null}
     </View>
   );
 }
