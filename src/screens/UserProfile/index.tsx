@@ -7,6 +7,8 @@ import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
 import { ProfileCard } from '@/components/ProfileCard';
 import { ScreenFrame } from '@/components/ScreenFrame';
 import { TextInput } from '@/components/TextInput';
+import { ApiError } from '@/server/api';
+import type { UpdatePasswordInput } from '@/server/users';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
@@ -14,6 +16,8 @@ import { ActivityIndicator, Pressable, Text, TouchableOpacity, View } from 'reac
 import Toast from 'react-native-toast-message';
 import tw from 'twrnc';
 import { useUserAvatarSource } from '../../../src/hooks/useUserAvatarSource';
+
+const MIN_PASSWORD_LENGTH = 8;
 
 const ProfileMenuButton = ({
   icon,
@@ -112,6 +116,7 @@ export interface UserProfileScreenProps {
   refetch: () => void;
   onLogout?: () => Promise<void> | void;
   onUpdateProfile?: (update: UserProfileUpdate) => Promise<void>;
+  onChangePassword?: (input: UpdatePasswordInput) => Promise<void>;
 }
 
 export const UserProfileScreen = ({
@@ -124,6 +129,7 @@ export const UserProfileScreen = ({
   refetch,
   onLogout,
   onUpdateProfile,
+  onChangePassword,
 }: UserProfileScreenProps) => {
   const networkAvatarSource = useUserAvatarSource(userId);
 
@@ -135,6 +141,15 @@ export const UserProfileScreen = ({
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [arePasswordsVisible, setArePasswordsVisible] = useState(false);
+  const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
+
+  const newPasswordTooShort = newPassword.length > 0 && newPassword.length < MIN_PASSWORD_LENGTH;
+  const passwordsMismatch = confirmPassword.length > 0 && confirmPassword !== newPassword;
+  const canSavePassword =
+    currentPassword.length > 0 &&
+    newPassword.length >= MIN_PASSWORD_LENGTH &&
+    confirmPassword === newPassword &&
+    !isSubmittingPassword;
 
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [editModalKey, setEditModalKey] = useState(0);
@@ -206,7 +221,7 @@ export const UserProfileScreen = ({
     setPasswordModalVisible(true);
   };
 
-  const handleClosePasswordModal = () => {
+  const resetPasswordForm = () => {
     setPasswordModalVisible(false);
     setCurrentPassword('');
     setNewPassword('');
@@ -214,10 +229,38 @@ export const UserProfileScreen = ({
     setArePasswordsVisible(false);
   };
 
-  const handleSavePassword = () => {
-    console.log('Senha atual:', currentPassword);
-    console.log('Nova senha:', newPassword);
-    handleClosePasswordModal();
+  const handleClosePasswordModal = () => {
+    if (isSubmittingPassword) return;
+    resetPasswordForm();
+  };
+
+  const handleSavePassword = async () => {
+    if (!canSavePassword || !onChangePassword) return;
+
+    setIsSubmittingPassword(true);
+
+    try {
+      await onChangePassword({ password: currentPassword, newPassword });
+      resetPasswordForm();
+      Toast.show({
+        type: 'success',
+        text1: 'Sucesso!',
+        text2: 'Senha alterada com sucesso.',
+      });
+    } catch (error) {
+      // O formulário já valida a nova senha, então um 400 aqui indica a senha atual errada.
+      const isWrongCurrentPassword = error instanceof ApiError && error.status === 400;
+
+      Toast.show({
+        type: 'error',
+        text1: 'Erro!',
+        text2: isWrongCurrentPassword
+          ? 'Senha atual incorreta.'
+          : 'Não foi possível alterar a senha. Tente novamente.',
+      });
+    } finally {
+      setIsSubmittingPassword(false);
+    }
   };
 
   const handleOpenLogoutModal = () => {
@@ -379,6 +422,8 @@ export const UserProfileScreen = ({
             value={currentPassword}
             onChangeText={setCurrentPassword}
             visible={arePasswordsVisible}
+            disabled={isSubmittingPassword}
+            testID="user-profile-current-password"
           />
           <PasswordInput
             label="Nova Senha"
@@ -386,6 +431,13 @@ export const UserProfileScreen = ({
             value={newPassword}
             onChangeText={setNewPassword}
             visible={arePasswordsVisible}
+            disabled={isSubmittingPassword}
+            error={
+              newPasswordTooShort
+                ? `A senha deve ter pelo menos ${String(MIN_PASSWORD_LENGTH)} caracteres.`
+                : undefined
+            }
+            testID="user-profile-new-password"
           />
           <PasswordInput
             label="Confirmar Nova Senha"
@@ -393,6 +445,9 @@ export const UserProfileScreen = ({
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             visible={arePasswordsVisible}
+            disabled={isSubmittingPassword}
+            error={passwordsMismatch ? 'As senhas não coincidem.' : undefined}
+            testID="user-profile-confirm-password"
           />
 
           <View className="flex-row px-4">
@@ -422,16 +477,27 @@ export const UserProfileScreen = ({
         <View className="mt-2 flex-row gap-4">
           <TouchableOpacity
             onPress={handleClosePasswordModal}
+            disabled={isSubmittingPassword}
             className="flex-1 items-center justify-center rounded-full border-2 border-coral py-4"
+            testID="user-profile-password-cancel"
           >
             <Text className="font-poppins-semibold leading-none text-coral">Cancelar</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={handleSavePassword}
-            className="flex-1 items-center justify-center rounded-full bg-coral py-4"
+            onPress={() => {
+              void handleSavePassword();
+            }}
+            disabled={!canSavePassword}
+            accessibilityState={{ disabled: !canSavePassword }}
+            className={`flex-1 items-center justify-center rounded-full bg-coral py-4 ${
+              canSavePassword ? '' : 'opacity-60'
+            }`}
+            testID="user-profile-password-save"
           >
-            <Text className="font-poppins-semibold leading-none text-surface">Salvar</Text>
+            <Text className="font-poppins-semibold leading-none text-surface">
+              {isSubmittingPassword ? 'Salvando...' : 'Salvar'}
+            </Text>
           </TouchableOpacity>
         </View>
       </ModalFrame>

@@ -1,5 +1,10 @@
 import { signOut } from '@/server/auth';
-import { getMyProfile, updateMyProfile, updateUserProfilePicture } from '@/server/users';
+import {
+  getMyProfile,
+  updateMyProfile,
+  updatePassword,
+  updateUserProfilePicture,
+} from '@/server/users';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import UserProfileController from './controller';
 
@@ -23,6 +28,7 @@ jest.mock('@/server/users', () => ({
   getMyProfile: jest.fn(),
   updateMyProfile: jest.fn(),
   updateUserProfilePicture: jest.fn(),
+  updatePassword: jest.fn(),
 }));
 
 jest.mock('../../../src/hooks/useUserAvatarSource', () => ({
@@ -81,6 +87,7 @@ const mockUpdateMyProfile = updateMyProfile as jest.MockedFunction<typeof update
 const mockUpdateUserProfilePicture = updateUserProfilePicture as jest.MockedFunction<
   typeof updateUserProfilePicture
 >;
+const mockUpdatePassword = updatePassword as jest.MockedFunction<typeof updatePassword>;
 
 async function renderProfileController() {
   const result = render(<UserProfileController />);
@@ -204,5 +211,29 @@ describe('UserProfileController', () => {
       });
     });
     expect(mockUpdateMyProfile).not.toHaveBeenCalled();
+  });
+
+  test('sends the password change to the backend', async () => {
+    mockUpdatePassword.mockResolvedValue(undefined);
+
+    const { getByTestId, getByText } = await renderProfileController();
+
+    fireEvent.press(getByText('Alterar Senha'));
+    await Promise.resolve();
+    fireEvent.changeText(getByTestId('user-profile-current-password'), 'senha-segura');
+    fireEvent.changeText(getByTestId('user-profile-new-password'), 'nova-senha-segura');
+    fireEvent.changeText(getByTestId('user-profile-confirm-password'), 'nova-senha-segura');
+    await act(async () => {
+      fireEvent.press(getByTestId('user-profile-password-save'));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(mockUpdatePassword).toHaveBeenCalledWith({
+        password: 'senha-segura',
+        newPassword: 'nova-senha-segura',
+      });
+    });
   });
 });
