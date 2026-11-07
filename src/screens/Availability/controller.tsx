@@ -1,6 +1,7 @@
 import type { AvailabilityInterval } from '@/components/AvailabilityCard/Availability.types';
-import { AvailabilityScreen, type AvailabilityParticipant } from '@/screens/Availability';
-import { createAvailability, getAvailabilityStatusesByDate } from '@/server/availabilities';
+import { AvailabilityScreen } from '@/screens/Availability';
+import type { AvailabilityParticipant } from '@/screens/Availability/AvailableParticipants';
+import { createAvailability, getAvailabilitiesByDate } from '@/server/availabilities';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 
@@ -14,28 +15,46 @@ export default function AvailabilityController() {
   const targetDate = date ?? localDate;
 
   const [participants, setParticipants] = useState<AvailabilityParticipant[]>([]);
+  const [isLoadingParticipants, setIsLoadingParticipants] = useState(true);
 
   useEffect(() => {
+    let isActive = true;
+
     async function fetchParticipants() {
+      setIsLoadingParticipants(true);
+
       try {
-        const data = await getAvailabilityStatusesByDate(groupId, targetDate);
+        const { users } = await getAvailabilitiesByDate(groupId, targetDate);
 
-        const mapped = data.map((item) => ({
-          id: item.id,
-          name: item.name,
-          status: item.hasAvailability ? ('available' as const) : ('no-response' as const),
-          avatarUrl:
-            item.profilePic ??
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=random`,
-        }));
-
-        setParticipants(mapped);
+        if (isActive) {
+          setParticipants(
+            // Someone without a full day or any interval has not actually registered availability.
+            users
+              .filter((user) => user.availableAllDay || user.intervals.length > 0)
+              .map((user) => ({
+                id: user.id,
+                name: user.name,
+                photoUri: user.image,
+                isCurrentUser: user.isCurrentUser,
+                availableAllDay: user.availableAllDay,
+                intervals: user.intervals,
+              }))
+          );
+        }
       } catch (error) {
         console.error('Erro ao buscar participantes disponíveis', error);
+      } finally {
+        if (isActive) {
+          setIsLoadingParticipants(false);
+        }
       }
     }
 
     void fetchParticipants();
+
+    return () => {
+      isActive = false;
+    };
   }, [groupId, targetDate]);
 
   const handleConfirm = async (intervals: AvailabilityInterval[]) => {
@@ -66,20 +85,12 @@ export default function AvailabilityController() {
     }
   };
 
-  const handleDecline = () => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace(`/group/${groupId}`);
-    }
-  };
-
   return (
     <AvailabilityScreen
       date={targetDate}
       participants={participants}
+      isLoadingParticipants={isLoadingParticipants}
       onConfirm={handleConfirm}
-      onDecline={handleDecline}
     />
   );
 }
