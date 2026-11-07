@@ -101,6 +101,42 @@ describe('<ScreenFrame />', () => {
     expect(style.paddingBottom).toBe(FOOTER_HEIGHT + FOOTER_SPACING);
   });
 
+  test('keeps the header fade gradient fixed while the header height changes', () => {
+    const { getByTestId, UNSAFE_getAllByType } = render(
+      <ScreenFrame
+        floatingChrome
+        topFade="header"
+        header={<Text>Cabeçalho</Text>}
+      >
+        <Text>Conteúdo</Text>
+      </ScreenFrame>
+    );
+    const stopOffsets = () => UNSAFE_getAllByType(Stop).map((stop) => stop.props.offset as number);
+    const initialOffsets = stopOffsets();
+
+    fireEvent(getByTestId('screen-frame-header'), 'layout', {
+      nativeEvent: { layout: { height: HEADER_HEIGHT } },
+    });
+
+    expect(flattenStyle(getByTestId('screen-frame-top-fade-solid').props.style).height).toBe(
+      HEADER_HEIGHT
+    );
+    expect(stopOffsets()).toEqual(initialOffsets);
+  });
+
+  test('reports every scroll frame while the fade follows the scroll', () => {
+    const { getByTestId } = render(
+      <ScreenFrame
+        topFade
+        testID="frame"
+      >
+        <Text>Conteúdo</Text>
+      </ScreenFrame>
+    );
+
+    expect(getByTestId('frame').props.scrollEventThrottle).toBe(16);
+  });
+
   test('keeps the default fade behind a floating header unless told to fill it', () => {
     const { getByTestId } = render(
       <ScreenFrame

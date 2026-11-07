@@ -169,6 +169,8 @@ function ScreenFrameBody({
       bottomOffset={KEYBOARD_BOTTOM_OFFSET}
       keyboardShouldPersistTaps="handled"
       onScroll={tracksScroll ? handleScroll : undefined}
+      // iOS otherwise reports only the first scroll event, leaving the fade half revealed.
+      scrollEventThrottle={tracksScroll ? 16 : undefined}
       testID={testID}
     >
       <View className={`flex-grow ${GAP_CLASSES[gap]}`}>{children}</View>
