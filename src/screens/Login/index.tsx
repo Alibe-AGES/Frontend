@@ -2,6 +2,7 @@ import { BackButton } from '@/components/BackButton';
 import { ContinueButton } from '@/components/ContinueButton';
 import { EmailInput } from '@/components/EmailInput';
 import { GoogleButton } from '@/components/GoogleButton';
+import { HandsHiFive } from '@/components/HandsHiFive';
 import { PasswordInput } from '@/components/PasswordInput';
 import { ScreenFrame } from '@/components/ScreenFrame';
 import { theme } from '@/theme';
@@ -9,8 +10,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import tw from 'twrnc';
-
-import LoginHandsDecoration from '@/assets/images/login-hands-decoration.svg';
 
 export interface LoginData {
   email: string;
@@ -39,21 +38,22 @@ export function LoginScreen({
   const canContinue = trimmedEmail.length > 0 && password.length > 0;
 
   return (
-    <ScreenFrame padding="horizontal">
+    <ScreenFrame
+      padding="horizontal"
+      topFade
+      overlay={
+        <BackButton
+          className="absolute left-6 top-20"
+          fallbackHref="/auth"
+        />
+      }
+    >
       <View
         accessible={false}
         className="-mx-8 aspect-[390/280]"
       >
-        <LoginHandsDecoration
-          width="100%"
-          height="100%"
-        />
+        <HandsHiFive variant="login" />
       </View>
-
-      <BackButton
-        className="absolute top-20"
-        fallbackHref="/auth"
-      />
 
       <Text
         className={`text-center text-[2.857rem] leading-tight text-ink ${theme.typography.display}`}

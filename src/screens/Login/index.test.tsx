@@ -1,9 +1,17 @@
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, within } from '@testing-library/react-native';
+import { ScrollView } from 'react-native';
 import { LoginScreen } from '.';
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ back: jest.fn(), canGoBack: jest.fn(), replace: jest.fn() }),
 }));
+
+jest.mock('@/components/HandsHiFive', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    HandsHiFive: ({ variant }: { variant: string }) => <View testID={`hands-hi-five-${variant}`} />,
+  };
+});
 
 describe('<LoginScreen />', () => {
   const onContinue = jest.fn();
@@ -29,6 +37,27 @@ describe('<LoginScreen />', () => {
     expect(getByPlaceholderText('Email')).toBeTruthy();
     expect(getByPlaceholderText('Senha')).toBeTruthy();
     expect(getByLabelText('Voltar')).toBeTruthy();
+  });
+
+  test('shows the hi-five animation with the login colors', async () => {
+    const { getByTestId } = await Promise.resolve(renderScreen());
+
+    expect(getByTestId('hands-hi-five-login')).toBeTruthy();
+  });
+
+  test('keeps the back button fixed outside the scrollable content', async () => {
+    const { UNSAFE_getByType, getByLabelText } = await Promise.resolve(renderScreen());
+    const scrollView = within(UNSAFE_getByType(ScrollView));
+
+    expect(getByLabelText('Voltar')).toBeTruthy();
+    expect(scrollView.queryByText('Login')).toBeTruthy();
+    expect(scrollView.queryByLabelText('Voltar')).toBeNull();
+  });
+
+  test('keeps the top fade hidden until the content scrolls', async () => {
+    const { getByTestId } = await Promise.resolve(renderScreen());
+
+    expect(getByTestId('screen-frame-top-fade')).toHaveStyle({ opacity: 0 });
   });
 
   test('shows a request error and loading state from the controller', async () => {

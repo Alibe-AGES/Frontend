@@ -9,6 +9,7 @@ export const theme = {
     coral: '#EC7448',
     coralSoft: '#F7B08F',
     pink: '#FFC9EB',
+    pinkDeep: '#E35EB1',
     wineSoft: '#71241A80',
     white: '#FFFFFF',
     black: '#000000',

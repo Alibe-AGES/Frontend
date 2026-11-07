@@ -4,9 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import tw from 'twrnc';
 
-import HandsDecoration from '@/assets/images/hands-green.svg';
 import Logo from '@/assets/images/Logo.svg';
 import { Button } from '@/components/Button';
+import { HandsHiFive } from '@/components/HandsHiFive';
 import { theme } from '@/theme';
 
 const HEADLINE = 'Evento confirmado, vocês tem um álibi!';
@@ -41,7 +41,7 @@ export function EventCreatedScreen() {
   return (
     <SafeAreaView
       edges={['top', 'left', 'right', 'bottom']}
-      style={[tw`flex-1`, { backgroundColor: theme.colors.surface }]}
+      style={[tw`flex-1`, { backgroundColor: theme.colors.canvas }]}
     >
       <ScrollView
         className="flex-1"
@@ -50,13 +50,10 @@ export function EventCreatedScreen() {
       >
         <View
           accessible={false}
-          className="-mb-24 aspect-[390/381]"
+          className="aspect-[390/280]"
           testID="event-created-illustration"
         >
-          <HandsDecoration
-            width="100%"
-            height="100%"
-          />
+          <HandsHiFive variant="event-created" />
         </View>
 
         <View className="grow items-center justify-center px-8">

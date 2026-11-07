@@ -2,6 +2,7 @@ import { BackButton } from '@/components/BackButton';
 import { ContinueButton } from '@/components/ContinueButton';
 import { EmailInput } from '@/components/EmailInput';
 import { GoogleButton } from '@/components/GoogleButton';
+import { HandsHiFive } from '@/components/HandsHiFive';
 import { PasswordInput } from '@/components/PasswordInput';
 import { ScreenFrame } from '@/components/ScreenFrame';
 import { theme } from '@/theme';
@@ -9,8 +10,6 @@ import { isValidEmail } from '@/utils/email';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-
-import AuthHandsDecoration from '@/assets/images/auth-hands-decoration.svg';
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -41,21 +40,22 @@ export function SignUpScreen({ onContinue, onGoogleSignUp, emailError }: SignUpS
     !passwordsMismatch;
 
   return (
-    <ScreenFrame padding="horizontal">
+    <ScreenFrame
+      padding="horizontal"
+      topFade
+      overlay={
+        <BackButton
+          fallbackHref="/auth"
+          className="absolute left-6 top-20"
+        />
+      }
+    >
       <View
         accessible={false}
         className="-mx-8 aspect-[390/280]"
       >
-        <AuthHandsDecoration
-          width="100%"
-          height="100%"
-        />
+        <HandsHiFive variant="sign-up" />
       </View>
-
-      <BackButton
-        fallbackHref="/auth"
-        className="absolute top-20"
-      />
 
       <Text
         adjustsFontSizeToFit

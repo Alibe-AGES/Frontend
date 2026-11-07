@@ -1,8 +1,10 @@
+import { theme } from '@/theme';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Animated, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import tw from 'twrnc';
 
+import { TopFade } from './TopFade';
 import type {
   ScreenFrameBackground,
   ScreenFrameGap,
@@ -55,9 +57,12 @@ export function ScreenFrame({
   gap = 'none',
   header,
   footer,
+  overlay,
+  topFade = false,
   testID,
 }: ScreenFrameProps) {
   const [footerHeight, setFooterHeight] = useState(0);
+  const [scrollOffset] = useState(() => new Animated.Value(0));
   const hasHeader = header !== undefined && header !== null;
   const hasFooter = footer !== undefined && footer !== null;
 
@@ -78,6 +83,13 @@ export function ScreenFrame({
           contentContainerStyle={[tw`flex-grow`, contentStyle]}
           bottomOffset={KEYBOARD_BOTTOM_OFFSET}
           keyboardShouldPersistTaps="handled"
+          onScroll={
+            topFade
+              ? (event) => {
+                  scrollOffset.setValue(event.nativeEvent.contentOffset.y);
+                }
+              : undefined
+          }
           testID={testID}
         >
           <View className={`flex-grow ${GAP_CLASSES[gap]}`}>{children}</View>
@@ -103,6 +115,16 @@ export function ScreenFrame({
           {footer}
         </View>
       ) : null}
+
+      {topFade === 'always' || (topFade && scrollable) ? (
+        <TopFade
+          alwaysVisible={topFade === 'always'}
+          color={theme.colors[background]}
+          scrollOffset={scrollOffset}
+        />
+      ) : null}
+
+      {overlay}
     </View>
   );
 }
