@@ -142,6 +142,7 @@ export const UserProfileScreen = ({
   const [confirmPassword, setConfirmPassword] = useState('');
   const [arePasswordsVisible, setArePasswordsVisible] = useState(false);
   const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
+  const shouldShowPasswordChangedToast = useRef(false);
 
   const newPasswordTooShort = newPassword.length > 0 && newPassword.length < MIN_PASSWORD_LENGTH;
   const passwordsMismatch = confirmPassword.length > 0 && confirmPassword !== newPassword;
@@ -177,6 +178,17 @@ export const UserProfileScreen = ({
       text2: 'Perfil atualizado com sucesso.',
     });
   }, [isEditModalVisible]);
+
+  useEffect(() => {
+    if (isPasswordModalVisible || !shouldShowPasswordChangedToast.current) return;
+
+    shouldShowPasswordChangedToast.current = false;
+    Toast.show({
+      type: 'success',
+      text1: 'Sucesso!',
+      text2: 'Senha alterada com sucesso.',
+    });
+  }, [isPasswordModalVisible]);
 
   const handleOpenEditModal = () => {
     setEditName(profile?.name ?? '');
@@ -241,14 +253,9 @@ export const UserProfileScreen = ({
 
     try {
       await onChangePassword({ password: currentPassword, newPassword });
+      shouldShowPasswordChangedToast.current = true;
       resetPasswordForm();
-      Toast.show({
-        type: 'success',
-        text1: 'Sucesso!',
-        text2: 'Senha alterada com sucesso.',
-      });
     } catch (error) {
-      // O formulário já valida a nova senha, então um 400 aqui indica a senha atual errada.
       const isWrongCurrentPassword = error instanceof ApiError && error.status === 400;
 
       Toast.show({

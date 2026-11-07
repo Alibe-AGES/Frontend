@@ -455,6 +455,11 @@ describe('UserProfileScreen', () => {
       const toastShowSpy = jest.spyOn(Toast, 'show').mockImplementation(jest.fn());
       mockChangePassword.mockResolvedValue(undefined);
       const { getByTestId, queryByText } = await openPasswordModal();
+      // The success toast must only be shown after the modal (and its own Toast) is gone.
+      let isModalOpenWhenToastShows: boolean | undefined;
+      toastShowSpy.mockImplementation(() => {
+        isModalOpenWhenToastShows = queryByText('Confirmar Nova Senha') !== null;
+      });
 
       fillPasswordForm(getByTestId, {
         current: 'senha-segura',
@@ -475,6 +480,7 @@ describe('UserProfileScreen', () => {
         text2: 'Senha alterada com sucesso.',
       });
       expect(queryByText('Confirmar Nova Senha')).toBeNull();
+      expect(isModalOpenWhenToastShows).toBe(false);
 
       toastShowSpy.mockRestore();
     });
