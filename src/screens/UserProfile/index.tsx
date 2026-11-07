@@ -240,7 +240,16 @@ export const UserProfileScreen = ({
         footer={<NavigationBar groupId={groupId ?? ''} />}
         testID="user-profile-screen"
       >
-        <BackButton color={theme.colors.black} />
+        <View className="flex-row items-center gap-4">
+          <BackButton testID="user-profile-back-button" />
+          <Text
+            accessibilityRole="header"
+            className="flex-1 font-poppins-semibold text-2xl text-ink"
+            testID="user-profile-title"
+          >
+            Perfil
+          </Text>
+        </View>
 
         <View className="flex-row items-center justify-center">
           <ProfileCard

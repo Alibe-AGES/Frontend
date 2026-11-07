@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '@/constants';
+import { resolveApiImageUrl } from '@/utils/apiImageUrl';
 import { ApiError } from './api';
 import { authenticatedFetch } from './auth';
 import type { EventStatus } from './events';
@@ -47,14 +48,6 @@ export async function getMe(): Promise<CurrentUser> {
   return (await response.json()) as CurrentUser;
 }
 
-function resolveGroupPhotoUrl(profilePic: string | null): string | null {
-  if (!profilePic) {
-    return null;
-  }
-
-  return profilePic.startsWith('http') ? profilePic : `${API_BASE_URL}${profilePic}`;
-}
-
 export async function listGroups(): Promise<Group[]> {
   const response = await authenticatedFetch(`${API_BASE_URL}/groups`);
 
@@ -65,7 +58,7 @@ export async function listGroups(): Promise<Group[]> {
 
   const groups = (await response.json()) as Group[];
 
-  return groups.map((group) => ({ ...group, profilePic: resolveGroupPhotoUrl(group.profilePic) }));
+  return groups.map((group) => ({ ...group, profilePic: resolveApiImageUrl(group.profilePic) }));
 }
 
 export async function createGroup(input: CreateGroupInput): Promise<Group> {
@@ -90,7 +83,7 @@ export async function createGroup(input: CreateGroupInput): Promise<Group> {
   }
 
   const group = (await response.json()) as Group;
-  return { ...group, profilePic: resolveGroupPhotoUrl(group.profilePic) };
+  return { ...group, profilePic: resolveApiImageUrl(group.profilePic) };
 }
 
 export interface GroupMember {
@@ -127,10 +120,10 @@ export async function getGroup(groupId: string): Promise<GroupDetails> {
 
   return {
     ...group,
-    profilePic: resolveGroupPhotoUrl(group.profilePic),
+    profilePic: resolveApiImageUrl(group.profilePic),
     participants: group.participants.map((member) => ({
       ...member,
-      profilePic: resolveGroupPhotoUrl(member.profilePic),
+      profilePic: resolveApiImageUrl(member.profilePic),
     })),
   };
 }

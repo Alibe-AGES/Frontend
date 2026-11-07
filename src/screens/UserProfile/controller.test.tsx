@@ -127,4 +127,21 @@ describe('UserProfileController', () => {
 
     expect(mockReplace).not.toHaveBeenCalled();
   });
+
+  test('uses an absolute profile photo URL as it is', async () => {
+    const photoUrl = 'https://tse1.mm.bing.net/th/id/OIP.eV2p-CGFxIff8EmZxacNxgHaFg';
+    mockGetMyProfile.mockResolvedValue({
+      name: 'Ana Beatriz Silva',
+      profilePic: photoUrl,
+      createdAt: '2026-09-30T01:52:41.223Z',
+      completedEvents: 3,
+      eventsInDecision: 1,
+    });
+
+    const { getByLabelText } = await renderProfileController();
+
+    await waitFor(() => {
+      expect(getByLabelText('Foto de perfil')).toHaveProp('source', [{ uri: photoUrl }]);
+    });
+  });
 });
