@@ -5,3 +5,5 @@ build
 coverage
 .next
 .agents
+# Lottie exports, kept as delivered
+assets/animations

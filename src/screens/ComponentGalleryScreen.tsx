@@ -1,4 +1,5 @@
 import { Button } from '@/components/Button';
+import { GoogleButton } from '@/components/GoogleButton';
 import { ScrollView, Text, View } from 'react-native';
 
 export function ComponentGalleryScreen() {
@@ -26,6 +27,16 @@ export function ComponentGalleryScreen() {
           disabled
         />
       </View>
+
+      <View className="gap-4 rounded-3xl bg-surface p-5">
+        <Text className="text-xl font-black text-ink">GoogleButton</Text>
+        <View className="flex-row gap-4">
+          <GoogleButton />
+          <GoogleButton isLoading />
+          <GoogleButton disabled />
+        </View>
+      </View>
+
     </ScrollView>
   );
 }

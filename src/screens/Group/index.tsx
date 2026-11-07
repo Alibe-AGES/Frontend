@@ -1,15 +1,18 @@
-import { BackButton } from '@/components/BackButton';
 import { Calendar } from '@/components/Calendar';
 import { DayMark } from '@/components/Calendar/Calendar.types';
 import { NavigationBar } from '@/components/NavigationBar';
+import { NextEventBanner } from '@/components/NextEventBanner';
+import { ProfileButton } from '@/components/ProfileButton';
+import { ScreenFrame } from '@/components/ScreenFrame';
+import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
 import { CalendarDay, getGroupCalendar } from '@/server/calendar';
-import { getGroup, getGroupMembers, GroupMember } from '@/server/groups';
+import { getGroup, getGroupMembers, GroupMember, GroupNextEvent } from '@/server/groups';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import tw from 'twrnc';
 
 function formatDate(date: Date): string {
@@ -21,11 +24,10 @@ function formatDate(date: Date): string {
 }
 
 function getDayStatus(day: CalendarDay): DayMark['status'] | undefined {
-  if (day.scheduledEventIds.length > 0) return 'suggested';
   if (day.completedEventIds.length > 0) return 'realized';
+  if (day.scheduledEventIds.length > 0) return 'suggested';
   if (day.allUsersAvailable) return 'allAvailable';
   if (day.availableUserIds.length > 0) return 'available';
-  if (day.proposalIds.length > 0) return 'normal';
   return undefined;
 }
 
@@ -35,10 +37,15 @@ function buildDayMarks(days: CalendarDay[], today: string): Record<string, DayMa
   for (const day of days) {
     const status = getDayStatus(day);
 
-    if (status !== undefined) {
+    const eventIds = [...new Set([...day.scheduledEventIds, ...day.completedEventIds])];
+    if (status !== undefined || eventIds.length > 0 || day.proposalIds.length > 0) {
       marks[day.date] = {
-        status,
+        status: status ?? 'normal',
         dot: day.proposalIds.length > 0 ? 'pink' : undefined,
+        eventIds,
+        proposalIds: day.proposalIds,
+        availableUserCount: day.availableUserIds.length,
+        allUsersAvailable: day.allUsersAvailable,
       };
     }
   }
@@ -62,6 +69,8 @@ export function GroupScreen() {
   const [groupName, setGroupName] = useState('');
   const [groupPhoto, setGroupPhoto] = useState<string | null>(null);
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
+  const [nextEvent, setNextEvent] = useState<GroupNextEvent | null | undefined>(undefined);
+  const groupPhotoSource = useAuthenticatedImageSource(groupPhoto);
   const [visibleMonth, setVisibleMonth] = useState(() => {
     const now = new Date();
     return { month: now.getMonth() + 1, year: now.getFullYear() };
@@ -93,6 +102,7 @@ export function GroupScreen() {
       const data = await getGroup(groupId);
       setGroupName(data.name);
       setGroupPhoto(data.profilePic);
+      setNextEvent(data.nextEvent ?? null);
     } catch (error) {
       console.error('Erro ao buscar o grupo', error);
     }
@@ -133,8 +143,33 @@ export function GroupScreen() {
       return;
     }
 
+    const day = calendarDays.find((calendarDay) => calendarDay.date === dateString);
+    if (
+      day &&
+      (day.scheduledEventIds.length > 0 ||
+        day.completedEventIds.length > 0 ||
+        day.proposalIds.length > 0)
+    ) {
+      router.push({
+        pathname: '/group/[id]/day/[date]',
+        params: { id: groupId, date: dateString },
+      });
+      return;
+    }
+
     router.push({
       pathname: '/group/[id]/day/[date]/availability',
+      params: { id: groupId, date: dateString },
+    });
+  };
+
+  const handleDayCreatePress = (dateString: string) => {
+    if (!groupId) {
+      return;
+    }
+
+    router.push({
+      pathname: '/group/[id]/create-event',
       params: { id: groupId, date: dateString },
     });
   };
@@ -157,92 +192,103 @@ export function GroupScreen() {
     router.push({ pathname: '/group/[id]/info', params: { id: groupId } });
   };
 
+  const handleOpenNotifications = () => {
+    if (!groupId) {
+      return;
+    }
+
+    router.push({ pathname: '/group/[id]/notifications', params: { id: groupId } });
+  };
+
   const membersText = members.map((member) => member.name).join(', ');
 
   return (
-    <View className="flex-1 bg-canvas">
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="gap-6 px-6 pb-32 pt-16"
-        testID="group-screen"
-      >
-        <View className="flex-row items-center">
-          <BackButton
-            fallbackHref="/groups"
-            accessibilityLabel="Voltar para meus grupos"
-          />
-
-          <Text className="flex-1 pr-10 text-center text-3xl font-black text-ink">
-            Calendário do grupo
-          </Text>
-        </View>
-
+    <ScreenFrame
+      gap="lg"
+      footer={groupId ? <NavigationBar groupId={groupId} /> : undefined}
+      testID="group-screen"
+    >
+      <View className="flex-row items-center justify-between">
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Ver informações do grupo"
-          onPress={handleOpenInfo}
-          className="flex-row items-center gap-3 rounded-2xl bg-surface p-3"
-          testID="group-screen-members"
+          accessibilityLabel="Ver notificações do grupo"
+          hitSlop={12}
+          onPress={handleOpenNotifications}
+          testID="group-screen-notifications"
         >
-          <View className="h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-coral">
-            {groupPhoto ? (
-              <Image
-                source={{ uri: groupPhoto }}
-                accessibilityLabel={`Foto do grupo ${groupName}`}
-                contentFit="cover"
-                style={tw`h-14 w-14 rounded-full`}
-                testID="group-screen-photo"
-              />
-            ) : (
-              <Ionicons
-                name="people-outline"
-                size={26}
-                color={theme.colors.coral}
-                testID="group-screen-photo-placeholder"
-              />
-            )}
-          </View>
-
-          <View className="flex-1">
-            <Text
-              className="text-wine font-poppins-semibold text-lg"
-              numberOfLines={1}
-            >
-              {groupName}
-            </Text>
-
-            {members.length > 0 ? (
-              <Text
-                className="text-wine font-poppins text-sm"
-                numberOfLines={1}
-                testID="group-screen-members-names"
-              >
-                {membersText}
-              </Text>
-            ) : (
-              <Text className="text-inkSoft text-sm font-medium">
-                Nenhum membro encontrado neste grupo.
-              </Text>
-            )}
-          </View>
+          <Ionicons
+            name="notifications-outline"
+            size={24}
+            color={theme.colors.ink}
+          />
         </Pressable>
 
-        <View className="rounded-3xl bg-surface p-4">
-          <Calendar
-            initialDate={today}
-            dayMarks={dayMarks}
-            onDayPress={handleDayPress}
-            onMonthChange={handleMonthChange}
-            showLegend
-          />
-        </View>
-      </ScrollView>
+        <ProfileButton
+          groupId={groupId}
+          testID="group-screen-profile"
+        />
+      </View>
 
-      {groupId ? (
-        <View className="absolute inset-x-0 bottom-0">
-          <NavigationBar groupId={groupId} />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Ver informações do grupo"
+        onPress={handleOpenInfo}
+        className="flex-row items-center gap-3"
+        testID="group-screen-members"
+      >
+        <View className="h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-coral">
+          {groupPhotoSource ? (
+            <Image
+              source={groupPhotoSource}
+              accessibilityLabel={`Foto do grupo ${groupName}`}
+              contentFit="cover"
+              style={tw`h-16 w-16 rounded-full`}
+              testID="group-screen-photo"
+            />
+          ) : (
+            <Ionicons
+              name="people-outline"
+              size={26}
+              color={theme.colors.coral}
+              testID="group-screen-photo-placeholder"
+            />
+          )}
         </View>
-      ) : null}
-    </View>
+
+        <View className="flex-1">
+          <Text
+            className="font-poppins-light text-xl text-wine"
+            numberOfLines={1}
+          >
+            {groupName}
+          </Text>
+
+          {members.length > 0 ? (
+            <Text
+              className="font-poppins-semibold text-base text-wine"
+              numberOfLines={1}
+              testID="group-screen-members-names"
+            >
+              {membersText}
+            </Text>
+          ) : (
+            <Text className="text-inkSoft text-sm font-medium">
+              Nenhum membro encontrado neste grupo.
+            </Text>
+          )}
+        </View>
+      </Pressable>
+
+      {nextEvent !== undefined ? <NextEventBanner event={nextEvent} /> : null}
+
+      <Calendar
+        initialDate={today}
+        dayMarks={dayMarks}
+        onDayPress={handleDayPress}
+        onDayCreatePress={handleDayCreatePress}
+        onMonthChange={handleMonthChange}
+        showLegend
+      />
+    </ScreenFrame>
   );
 }

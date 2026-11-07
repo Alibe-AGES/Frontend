@@ -21,13 +21,17 @@ export interface UsePhotoPickerParams {
 
 export type UsePhotoPickerHook = (params?: UsePhotoPickerParams) => PhotoPickerStrategy;
 
+export type PhotoPickerPlaceholder = 'group' | 'camera';
+
 export interface PhotoPickerProps extends Omit<PressableProps, 'children'> {
   useController?: UsePhotoPickerHook;
   label?: string;
+  labelClassName?: string;
+  placeholder?: PhotoPickerPlaceholder;
   uploadUrl?: string;
+  initialPhotoUri?: string | null;
   onUploadSuccess?: (photo: SelectedPhoto) => void;
   onUploadError?: (error: unknown) => void;
   className?: string;
-  imageClassName?: string;
   testID?: string;
 }

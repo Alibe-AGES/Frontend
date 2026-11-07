@@ -1,3 +1,1 @@
-import { MemoriesScreen } from '.';
-
-export default MemoriesScreen;
+export { MemoriesScreen as default } from '.';

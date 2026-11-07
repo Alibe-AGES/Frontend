@@ -1,6 +1,6 @@
 import type { AvailabilityInterval } from '@/components/AvailabilityCard/Availability.types';
 import { AvailabilityScreen, type AvailabilityParticipant } from '@/screens/Availability';
-import { createAvailability, getAvailabilitiesByDate } from '@/server/availabilities';
+import { createAvailability, getAvailabilityStatusesByDate } from '@/server/availabilities';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 
@@ -18,11 +18,12 @@ export default function AvailabilityController() {
   useEffect(() => {
     async function fetchParticipants() {
       try {
-        const data = await getAvailabilitiesByDate(groupId, targetDate);
+        const data = await getAvailabilityStatusesByDate(groupId, targetDate);
 
         const mapped = data.map((item) => ({
           id: item.id,
           name: item.name,
+          status: item.hasAvailability ? ('available' as const) : ('no-response' as const),
           avatarUrl:
             item.profilePic ??
             `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=random`,

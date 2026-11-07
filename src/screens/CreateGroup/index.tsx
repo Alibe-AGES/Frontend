@@ -2,12 +2,13 @@ import { BackButton } from '@/components/BackButton';
 import { ContinueButton } from '@/components/ContinueButton';
 import { PhotoPicker } from '@/components/PhotoPicker';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
+import { ScreenFrame } from '@/components/ScreenFrame';
 import { TextInput } from '@/components/TextInput';
 import { createGroup } from '@/server/groups';
 import { theme } from '@/theme';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import tw from 'twrnc';
 
@@ -50,11 +51,7 @@ export function CreateGroupScreen() {
   };
 
   return (
-    <ScrollView
-      className="flex-1 bg-canvas"
-      contentContainerClassName="flex-grow px-6 pt-16"
-      keyboardShouldPersistTaps="handled"
-    >
+    <ScreenFrame>
       <View
         accessible={false}
         style={tw`absolute -right-2 top-0 h-40 w-40`}
@@ -82,7 +79,6 @@ export function CreateGroupScreen() {
 
       <View className="mt-20 flex-1 rounded-t-3xl bg-lime-soft px-6 pb-28 pt-16">
         <PhotoPicker
-          imageClassName="h-44 w-44"
           onUploadSuccess={(photo) => {
             setGroupPhoto(photo);
           }}
@@ -117,6 +113,6 @@ export function CreateGroupScreen() {
           />
         </View>
       </View>
-    </ScrollView>
+    </ScreenFrame>
   );
 }

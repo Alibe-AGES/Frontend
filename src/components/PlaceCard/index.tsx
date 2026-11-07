@@ -1,0 +1,61 @@
+import { Image, Pressable, Text, View } from 'react-native';
+import { PlaceCardColor, PlaceCardProps } from './PlaceCard.types';
+
+export type { PlaceCardProps } from './PlaceCard.types';
+
+const COLOR_CLASS: Record<PlaceCardColor, string> = {
+  coral: 'bg-coral',
+  lime: 'bg-lime',
+  pink: 'bg-pink',
+  wine: 'bg-wine',
+};
+
+export function PlaceCard({
+  name,
+  address,
+  imageUri,
+  imageHeaders,
+  color = 'coral',
+  onClickCard,
+  testID = 'place-card',
+}: PlaceCardProps) {
+  return (
+    <View className="w-full rounded-3xl bg-white shadow-md">
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Abrir ${name}`}
+        onPress={() => onClickCard?.(name)}
+        className="w-full overflow-hidden rounded-3xl active:opacity-75"
+        testID={testID}
+      >
+        <View className={`aspect-square w-full ${COLOR_CLASS[color]}`}>
+          {imageUri ? (
+            <Image
+              source={{ uri: imageUri, headers: imageHeaders }}
+              accessibilityLabel={`Foto de ${name}`}
+              className="h-full w-full"
+              resizeMode="cover"
+            />
+          ) : null}
+        </View>
+
+        <View className="min-h-24 gap-1 px-3 pb-3 pt-3">
+          <Text
+            className="font-poppins-bold text-sm text-wine"
+            numberOfLines={2}
+            testID={`${testID}-name`}
+          >
+            {name}
+          </Text>
+          <Text
+            className="font-poppins text-sm text-wine-soft"
+            numberOfLines={2}
+            testID={`${testID}-address`}
+          >
+            {address}
+          </Text>
+        </View>
+      </Pressable>
+    </View>
+  );
+}

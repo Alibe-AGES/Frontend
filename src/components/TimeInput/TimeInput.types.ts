@@ -6,5 +6,6 @@ export interface TimeInputProps {
   error?: string;
   disabled?: boolean;
   onBlur?: () => void;
+  onFocus?: () => void;
   testID?: string;
 }

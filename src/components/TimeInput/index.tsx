@@ -18,6 +18,7 @@ export function TimeInput({
   error,
   disabled = false,
   onBlur,
+  onFocus,
   testID = 'alibe-time-input',
 }: TimeInputProps) {
   const [formatError, setFormatError] = useState<string | null>(null);
@@ -30,6 +31,7 @@ export function TimeInput({
 
   const handleFocus = () => {
     setIsFocused(true);
+    onFocus?.();
   };
 
   const handleBlur = () => {
