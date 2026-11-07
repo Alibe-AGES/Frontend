@@ -94,15 +94,38 @@ describe('getEventDetails', () => {
     jest.clearAllMocks();
   });
 
-  test('fetches event details using the authenticated event endpoint', async () => {
+  test('fetches event details and resolves the event and user image paths', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ id: 'event-1', name: 'Bloom Café' }),
+      json: () =>
+        Promise.resolve({
+          id: 'event-1',
+          name: 'Bloom Café',
+          image: '/events/event-1/image',
+          proposal: {
+            id: 'proposal-1',
+            owner: { id: 'user-1', name: 'Ana', image: '/users/user-1/profile-picture' },
+            responses: [
+              {
+                id: 'response-1',
+                answer: 'yes',
+                createdAt: '2026-11-07T18:43:49.605Z',
+                user: { id: 'user-2', name: 'Bia', image: null },
+              },
+            ],
+            createdAt: '2026-11-07T18:43:49.605Z',
+          },
+        }),
     });
 
     await expect(getEventDetails('event-1')).resolves.toMatchObject({
       id: 'event-1',
       name: 'Bloom Café',
+      image: `${API_BASE_URL}/events/event-1/image`,
+      proposal: {
+        owner: { image: `${API_BASE_URL}/users/user-1/profile-picture` },
+        responses: [{ user: { image: null } }],
+      },
     });
     expect(global.fetch).toHaveBeenCalledWith(`${API_BASE_URL}/api/events/event-1`, undefined);
   });
