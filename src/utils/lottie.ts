@@ -28,7 +28,7 @@ function toHex(rgba: number[]) {
 }
 
 function toRgb(hex: string) {
-  return [1, 3, 5].map((start) => parseInt(hex.slice(start, start + 2), 16) / 255);
+  return [1, 3, 5].map((start) => Number.parseInt(hex.slice(start, start + 2), 16) / 255);
 }
 
 /**
