@@ -1,4 +1,4 @@
-const PAINT_TYPES = ['fl', 'st'];
+const PAINT_TYPES = new Set(['fl', 'st']);
 
 interface LottiePaint {
   ty: string;
@@ -10,7 +10,7 @@ function isPaint(node: object): node is LottiePaint {
   const { ty, c } = node;
   return (
     typeof ty === 'string' &&
-    PAINT_TYPES.includes(ty) &&
+    PAINT_TYPES.has(ty) &&
     typeof c === 'object' &&
     c !== null &&
     'k' in c &&
