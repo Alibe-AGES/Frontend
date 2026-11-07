@@ -216,11 +216,13 @@ export function GroupScreen() {
           onPress={handleOpenNotifications}
           testID="group-screen-notifications"
         >
-          <Ionicons
-            name="notifications-outline"
-            size={24}
-            color={theme.colors.ink}
-          />
+          <View className="rounded-full bg-surface p-2">
+            <Ionicons
+              name="notifications-outline"
+              size={24}
+              color={theme.colors.ink}
+            />
+          </View>
         </Pressable>
 
         <ProfileButton

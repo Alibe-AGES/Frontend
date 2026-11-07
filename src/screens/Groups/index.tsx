@@ -106,7 +106,6 @@ export function GroupsScreen() {
   return (
     <View className="relative flex-1 overflow-hidden bg-canvas px-12">
       <ProfileButton
-        size={34}
         className="absolute right-6 top-16 z-10 h-12 w-12 items-center justify-center"
         testID="groups-user-profile"
       />
