@@ -11,8 +11,9 @@ import { updateUserProfile } from '@/server/mock/userProfile';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
+import tw from 'twrnc';
 import { useUserAvatarSource } from '../../../src/hooks/useUserAvatarSource';
 
 const ProfileMenuButton = ({
@@ -127,6 +128,7 @@ export const UserProfileScreen = ({
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [arePasswordsVisible, setArePasswordsVisible] = useState(false);
 
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [editModalKey, setEditModalKey] = useState(0);
@@ -193,6 +195,7 @@ export const UserProfileScreen = ({
     setCurrentPassword('');
     setNewPassword('');
     setConfirmPassword('');
+    setArePasswordsVisible(false);
   };
 
   const handleSavePassword = () => {
@@ -347,19 +350,45 @@ export const UserProfileScreen = ({
             variant="password"
             value={currentPassword}
             onChangeText={setCurrentPassword}
+            visible={arePasswordsVisible}
           />
           <PasswordInput
             label="Nova Senha"
             variant="password"
             value={newPassword}
             onChangeText={setNewPassword}
+            visible={arePasswordsVisible}
           />
           <PasswordInput
             label="Confirmar Nova Senha"
             variant="confirm"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
+            visible={arePasswordsVisible}
           />
+
+          <View className="flex-row px-4">
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={arePasswordsVisible ? 'Ocultar senha' : 'Mostrar senha'}
+              className="flex-row items-center gap-2"
+              hitSlop={8}
+              style={({ pressed }) => tw`${pressed ? 'opacity-60' : 'opacity-100'}`}
+              onPress={() => {
+                setArePasswordsVisible((current) => !current);
+              }}
+              testID="user-profile-toggle-password"
+            >
+              <Ionicons
+                name={arePasswordsVisible ? 'eye-outline' : 'eye-off-outline'}
+                size={18}
+                color={theme.colors.wine}
+              />
+              <Text className="font-poppins text-sm text-wine">
+                {arePasswordsVisible ? 'Ocultar' : 'Mostrar'}
+              </Text>
+            </Pressable>
+          </View>
         </View>
 
         <View className="mt-2 flex-row gap-4">
