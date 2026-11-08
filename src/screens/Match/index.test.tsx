@@ -29,7 +29,7 @@ describe('<MatchScreen />', () => {
     expect(getByText('Kata')).toBeTruthy();
     expect(getByText('Manu')).toBeTruthy();
     expect(getByText('May')).toBeTruthy();
-    fireEvent.press(getByTestId('match-create-event'));
+    await fireEvent.press(getByTestId('match-create-event'));
     await Promise.resolve();
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });

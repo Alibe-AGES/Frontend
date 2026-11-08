@@ -6,7 +6,7 @@ import { AnimatedSplash } from '.';
 jest.useFakeTimers();
 
 const finishCycle = async () => {
-  fireEvent(await screen.findByTestId('splash-logo'), 'animationFinish', false);
+  await fireEvent(await screen.findByTestId('splash-logo'), 'animationFinish', false);
   await Promise.resolve();
 };
 
@@ -64,7 +64,7 @@ describe('<AnimatedSplash />', () => {
 
     await finishCycle();
     await advance(1000);
-    screen.rerender(
+    await screen.rerender(
       <AnimatedSplash
         isReady
         onFinish={onFinish}
@@ -114,7 +114,7 @@ describe('<AnimatedSplash />', () => {
     expect(screen.queryByTestId('splash-logo')).toBeNull();
     expect(onFinish).not.toHaveBeenCalled();
 
-    screen.rerender(
+    await screen.rerender(
       <AnimatedSplash
         isReady
         onFinish={onFinish}
@@ -136,7 +136,7 @@ describe('<AnimatedSplash />', () => {
         />
       )
     );
-    fireEvent(await screen.findByTestId('splash-ribbon-top'), 'animationFailure', 'error');
+    await fireEvent(await screen.findByTestId('splash-ribbon-top'), 'animationFailure', 'error');
     await Promise.resolve();
     await advance(1000);
 

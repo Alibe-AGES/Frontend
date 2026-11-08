@@ -140,7 +140,7 @@ describe('AvailabilityScreen', () => {
     );
 
     const btnConfirm = getByTestId('button-Confirmar!');
-    fireEvent.press(btnConfirm);
+    await fireEvent.press(btnConfirm);
 
     await waitFor(() => {
       expect(onConfirm).toHaveBeenCalledTimes(1);
@@ -164,7 +164,7 @@ describe('AvailabilityScreen', () => {
     );
 
     const btnConfirm = getByTestId('button-Confirmar!');
-    fireEvent.press(btnConfirm);
+    await fireEvent.press(btnConfirm);
 
     await waitFor(() => {
       expect(Toast.show).toHaveBeenCalledWith(
@@ -185,7 +185,7 @@ describe('AvailabilityScreen', () => {
     );
 
     const btnDecline = getByTestId('button-Sair sem informar disponibilidade');
-    fireEvent.press(btnDecline);
+    await fireEvent.press(btnDecline);
 
     await waitFor(() => {
       expect(onDecline).toHaveBeenCalledTimes(1);
@@ -208,7 +208,7 @@ describe('AvailabilityScreen', () => {
     );
 
     const btnDecline = getByTestId('button-Sair sem informar disponibilidade');
-    fireEvent.press(btnDecline);
+    await fireEvent.press(btnDecline);
 
     await waitFor(() => {
       expect(Toast.show).toHaveBeenCalledWith(

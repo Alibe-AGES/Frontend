@@ -21,9 +21,9 @@ describe('<FilterCarousel />', () => {
       )
     );
 
-    fireEvent.press(getByLabelText('Tag B'));
+    await fireEvent.press(getByLabelText('Tag B'));
     await Promise.resolve();
-    fireEvent.press(getByLabelText('Abrir filtros'));
+    await fireEvent.press(getByLabelText('Abrir filtros'));
     await Promise.resolve();
 
     expect(onToggleTag).toHaveBeenCalledWith('b');

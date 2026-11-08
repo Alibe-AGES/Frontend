@@ -65,7 +65,7 @@ describe('<NewMemoryController />', () => {
       Promise.resolve(eventDetails(eventId, eventId === 'event-1' ? 'Churrasco' : 'Jantar'))
     );
 
-    render(<NewMemoryController />);
+    await render(<NewMemoryController />);
 
     await waitFor(() => {
       expect(mockScreenProps?.isLoadingEvents).toBe(false);
@@ -84,7 +84,7 @@ describe('<NewMemoryController />', () => {
     mockedCalendar.mockResolvedValue([calendarDay(['event-1'])]);
     mockedEventDetails.mockResolvedValue(eventDetails('event-1', null));
 
-    render(<NewMemoryController />);
+    await render(<NewMemoryController />);
 
     await waitFor(() => {
       expect(mockScreenProps?.events).toEqual([{ label: 'Evento sem nome', value: 'event-1' }]);
@@ -95,7 +95,7 @@ describe('<NewMemoryController />', () => {
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
     mockedCalendar.mockRejectedValue(new Error('offline'));
 
-    render(<NewMemoryController />);
+    await render(<NewMemoryController />);
 
     await waitFor(() => {
       expect(mockScreenProps?.error).toBe('Não foi possível carregar os eventos.');
@@ -107,7 +107,7 @@ describe('<NewMemoryController />', () => {
     mockedCalendar.mockResolvedValue([calendarDay(['event-1'])]);
     mockedEventDetails.mockResolvedValue(eventDetails('event-1', 'Churrasco'));
 
-    act(() => {
+    await act(() => {
       mockScreenProps?.onRetry();
     });
 
@@ -121,13 +121,13 @@ describe('<NewMemoryController />', () => {
     mockedCalendar.mockResolvedValue([calendarDay(['event-1'])]);
     mockedEventDetails.mockResolvedValue(eventDetails('event-1', 'Churrasco'));
 
-    render(<NewMemoryController />);
+    await render(<NewMemoryController />);
 
     await waitFor(() => {
       expect(mockScreenProps?.isLoadingEvents).toBe(false);
     });
 
-    act(() => {
+    await act(() => {
       mockScreenProps?.onSelectEvent('event-1');
       mockScreenProps?.onPhotoSelected(PHOTO);
     });
@@ -137,7 +137,7 @@ describe('<NewMemoryController />', () => {
     jest.mocked(createMemory).mockResolvedValue();
     await fillForm();
 
-    act(() => {
+    await act(() => {
       mockScreenProps?.onCreate();
     });
 
@@ -155,7 +155,7 @@ describe('<NewMemoryController />', () => {
     jest.mocked(createMemory).mockRejectedValue(new Error('offline'));
     await fillForm();
 
-    act(() => {
+    await act(() => {
       mockScreenProps?.onCreate();
     });
 

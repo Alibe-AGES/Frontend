@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { type HostInstance, Pressable, Text } from 'react-native';
 import tw from 'twrnc';
 
 import ChevronUpIcon from '@/assets/images/chevron-up.svg';
@@ -19,7 +19,7 @@ export function Dropdown({
   disabled = false,
   testID = 'alibe-dropdown',
 }: Readonly<DropdownProps>) {
-  const triggerRef = useRef<View>(null);
+  const triggerRef = useRef<HostInstance>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [triggerFrame, setTriggerFrame] = useState<TriggerFrame | null>(null);
   const selectedOption = options.find((option) => option.value === value);

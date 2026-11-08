@@ -33,7 +33,7 @@ describe('<MemoryCreatedScreen />', () => {
   test('returns to the memories gallery when the back button is pressed', async () => {
     const { getByTestId } = await Promise.resolve(render(<MemoryCreatedScreen />));
 
-    fireEvent.press(getByTestId('memory-created-back'));
+    await fireEvent.press(getByTestId('memory-created-back'));
     await Promise.resolve();
 
     expect(mockDismissTo).toHaveBeenCalledWith({

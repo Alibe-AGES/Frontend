@@ -91,7 +91,7 @@ describe('<GroupsScreen />', () => {
 
     const { getByTestId } = await Promise.resolve(render(<GroupsScreen />));
 
-    fireEvent.press(getByTestId('groups-user-profile'));
+    await fireEvent.press(getByTestId('groups-user-profile'));
     await Promise.resolve();
 
     expect(push).toHaveBeenCalledWith({
@@ -128,7 +128,7 @@ describe('<GroupsScreen />', () => {
 
     expect(getByText('Não foi possível carregar os grupos.')).toBeTruthy();
 
-    fireEvent.press(getByLabelText('Tentar novamente'));
+    await fireEvent.press(getByLabelText('Tentar novamente'));
     await Promise.resolve();
 
     expect(refetch).toHaveBeenCalledTimes(1);
@@ -180,7 +180,7 @@ describe('<GroupsScreen />', () => {
       expect(getByTestId('alibe-groups-list-item-1')).toBeTruthy();
     });
 
-    fireEvent.press(getByTestId('alibe-groups-list-item-1'));
+    await fireEvent.press(getByTestId('alibe-groups-list-item-1'));
     await Promise.resolve();
 
     expect(push).toHaveBeenCalledWith({ pathname: '/group/[id]', params: { id: '1' } });
@@ -197,7 +197,7 @@ describe('<GroupsScreen />', () => {
 
     const { getByTestId } = await Promise.resolve(render(<GroupsScreen />));
 
-    fireEvent.press(getByTestId('create-group-button'));
+    await fireEvent.press(getByTestId('create-group-button'));
     await Promise.resolve();
 
     expect(push).toHaveBeenCalledWith('/create-group');

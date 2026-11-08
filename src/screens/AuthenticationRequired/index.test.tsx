@@ -10,7 +10,7 @@ describe('<AuthenticationRequiredScreen />', () => {
 
     expect(getByText('Acesso restrito')).toBeTruthy();
     expect(getByText('Entre na sua conta para acessar esta página.')).toBeTruthy();
-    fireEvent.press(getByTestId('authentication-required-login'));
+    await fireEvent.press(getByTestId('authentication-required-login'));
     await Promise.resolve();
     expect(onLogin).toHaveBeenCalledTimes(1);
   });

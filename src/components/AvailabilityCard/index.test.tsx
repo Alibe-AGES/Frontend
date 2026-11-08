@@ -37,7 +37,7 @@ describe('<AvailabilityCard />', () => {
   test('adds a new interval with a remove button, while the first stays without one', async () => {
     const { getByTestId, queryByTestId } = await Promise.resolve(render(<AvailabilityCard />));
 
-    fireEvent.press(getByTestId('alibe-availability-card-add-interval'));
+    await fireEvent.press(getByTestId('alibe-availability-card-add-interval'));
     await Promise.resolve();
 
     expect(queryByTestId('alibe-availability-card-remove-0')).toBeNull();
@@ -53,11 +53,11 @@ describe('<AvailabilityCard />', () => {
   test('removes an additional interval, keeping the first one intact', async () => {
     const { getByTestId, queryByTestId } = await Promise.resolve(render(<AvailabilityCard />));
 
-    fireEvent.press(getByTestId('alibe-availability-card-add-interval'));
+    await fireEvent.press(getByTestId('alibe-availability-card-add-interval'));
     await Promise.resolve();
-    fireEvent.changeText(getByTestId('alibe-availability-card-start-0'), '0800');
+    await fireEvent.changeText(getByTestId('alibe-availability-card-start-0'), '0800');
     await Promise.resolve();
-    fireEvent.press(getByTestId('alibe-availability-card-remove-1'));
+    await fireEvent.press(getByTestId('alibe-availability-card-remove-1'));
     await Promise.resolve();
 
     expect(queryByTestId('alibe-availability-card-interval-1')).toBeNull();
@@ -67,16 +67,16 @@ describe('<AvailabilityCard />', () => {
   test('removes the middle interval out of three, keeping the others', async () => {
     const { getByTestId, queryByTestId } = await Promise.resolve(render(<AvailabilityCard />));
 
-    fireEvent.press(getByTestId('alibe-availability-card-add-interval'));
+    await fireEvent.press(getByTestId('alibe-availability-card-add-interval'));
     await Promise.resolve();
-    fireEvent.press(getByTestId('alibe-availability-card-add-interval'));
+    await fireEvent.press(getByTestId('alibe-availability-card-add-interval'));
     await Promise.resolve();
-    fireEvent.changeText(getByTestId('alibe-availability-card-start-1'), '1200');
+    await fireEvent.changeText(getByTestId('alibe-availability-card-start-1'), '1200');
     await Promise.resolve();
-    fireEvent.changeText(getByTestId('alibe-availability-card-start-2'), '1800');
+    await fireEvent.changeText(getByTestId('alibe-availability-card-start-2'), '1800');
     await Promise.resolve();
 
-    fireEvent.press(getByTestId('alibe-availability-card-remove-1'));
+    await fireEvent.press(getByTestId('alibe-availability-card-remove-1'));
     await Promise.resolve();
 
     expect(queryByTestId('alibe-availability-card-interval-2')).toBeNull();
@@ -93,9 +93,9 @@ describe('<AvailabilityCard />', () => {
   test('signals an error when the end time is before the start time', async () => {
     const { getByTestId } = await Promise.resolve(render(<AvailabilityCard />));
 
-    fireEvent.changeText(getByTestId('alibe-availability-card-start-0'), '1000');
+    await fireEvent.changeText(getByTestId('alibe-availability-card-start-0'), '1000');
     await Promise.resolve();
-    fireEvent.changeText(getByTestId('alibe-availability-card-end-0'), '0900');
+    await fireEvent.changeText(getByTestId('alibe-availability-card-end-0'), '0900');
     await Promise.resolve();
 
     await waitFor(() => {
@@ -111,7 +111,7 @@ describe('<AvailabilityCard />', () => {
       render(<AvailabilityCard onIntervalsChange={onIntervalsChange} />)
     );
 
-    fireEvent.changeText(getByTestId('alibe-availability-card-start-0'), '0900');
+    await fireEvent.changeText(getByTestId('alibe-availability-card-start-0'), '0900');
     await Promise.resolve();
 
     await waitFor(() => {
@@ -124,7 +124,7 @@ describe('<AvailabilityCard />', () => {
   test('navigates back without saving when the close button is pressed', async () => {
     const { getByTestId } = await Promise.resolve(render(<AvailabilityCard />));
 
-    fireEvent.press(getByTestId('alibe-availability-card-close'));
+    await fireEvent.press(getByTestId('alibe-availability-card-close'));
     await Promise.resolve();
 
     expect(mockBack).toHaveBeenCalledTimes(1);
@@ -147,7 +147,7 @@ describe('<AvailabilityCard />', () => {
     expect(getByDisplayValue('08:00')).toBeTruthy();
     expect(getByDisplayValue('12:00')).toBeTruthy();
 
-    fireEvent.press(getByTestId('alibe-availability-card-add-interval'));
+    await fireEvent.press(getByTestId('alibe-availability-card-add-interval'));
     await Promise.resolve();
     expect(addInterval).toHaveBeenCalledTimes(1);
   });
@@ -160,7 +160,7 @@ describe('<AvailabilityCard />', () => {
       render(<AvailabilityCard useCloseController={useCustomCloseController} />)
     );
 
-    fireEvent.press(getByTestId('alibe-availability-card-close'));
+    await fireEvent.press(getByTestId('alibe-availability-card-close'));
     await Promise.resolve();
 
     expect(handleBack).toHaveBeenCalledTimes(1);

@@ -41,6 +41,7 @@ export function LoginScreen({
     <ScreenFrame
       padding="horizontal"
       topFade
+      testID="login-screen"
       overlay={
         <BackButton
           className="absolute left-6 top-20"

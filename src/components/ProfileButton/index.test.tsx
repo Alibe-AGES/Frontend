@@ -20,7 +20,7 @@ describe('<ProfileButton />', () => {
   test('opens the profile of the authenticated user', async () => {
     const { getByTestId } = await Promise.resolve(render(<ProfileButton />));
 
-    fireEvent.press(getByTestId('alibe-profile-button'));
+    await fireEvent.press(getByTestId('alibe-profile-button'));
     await Promise.resolve();
 
     expect(mockPush).toHaveBeenCalledWith({
@@ -32,7 +32,7 @@ describe('<ProfileButton />', () => {
   test('keeps the group context when a group is given', async () => {
     const { getByTestId } = await Promise.resolve(render(<ProfileButton groupId="g1" />));
 
-    fireEvent.press(getByTestId('alibe-profile-button'));
+    await fireEvent.press(getByTestId('alibe-profile-button'));
     await Promise.resolve();
 
     expect(mockPush).toHaveBeenCalledWith({

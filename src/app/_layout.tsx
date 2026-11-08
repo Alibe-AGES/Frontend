@@ -22,7 +22,6 @@ import { PendingInviteProvider } from '@/hooks/usePendingInvite';
 import { SignUpDraftProvider } from '@/hooks/useSignUpDraft';
 import { PushNotifications } from '@/notifications/PushNotifications';
 import { AnimatedSplash } from '@/screens/AnimatedSplash';
-import { theme } from '@/theme';
 import { StatusBar } from 'react-native';
 
 polyfillWebCrypto();
@@ -78,10 +77,8 @@ export default function RootLayout() {
             />
           ) : null}
           <PushNotifications />
-          <StatusBar
-            barStyle="dark-content"
-            backgroundColor={theme.colors.canvas}
-          />
+          {/* Android draws edge-to-edge, so the status bar shows the screen behind it. */}
+          <StatusBar barStyle="dark-content" />
           <Toast />
         </PendingInviteProvider>
       </SignUpDraftProvider>

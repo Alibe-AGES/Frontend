@@ -39,7 +39,7 @@ describe('<HandsHiFive />', () => {
   });
 
   test('plays the animation once', async () => {
-    const { findByTestId } = render(<HandsHiFive variant="login" />);
+    const { findByTestId } = await render(<HandsHiFive variant="login" />);
     const animation = await findByTestId('hands-hi-five-animation');
 
     expect(animation.props.autoPlay).toBe(true);
@@ -48,7 +48,7 @@ describe('<HandsHiFive />', () => {
   });
 
   test('reuses the same animation with another palette on sign up', async () => {
-    const { findByTestId } = render(<HandsHiFive variant="sign-up" />);
+    const { findByTestId } = await render(<HandsHiFive variant="sign-up" />);
     const { source } = (await findByTestId('hands-hi-five-animation')).props as {
       source: typeof loginAnimation;
     };
@@ -59,7 +59,7 @@ describe('<HandsHiFive />', () => {
   });
 
   test('paints every hand and arm with two colors on event created', async () => {
-    const { findByTestId } = render(<HandsHiFive variant="event-created" />);
+    const { findByTestId } = await render(<HandsHiFive variant="event-created" />);
     const { source } = (await findByTestId('hands-hi-five-animation')).props as {
       source: typeof loginAnimation;
     };
@@ -68,11 +68,11 @@ describe('<HandsHiFive />', () => {
   });
 
   test('replays when the screen gains focus again', async () => {
-    const { findByTestId } = render(<HandsHiFive variant="login" />);
+    const { findByTestId } = await render(<HandsHiFive variant="login" />);
     await findByTestId('hands-hi-five-animation');
     expect(mockMount).toHaveBeenCalledTimes(1);
 
-    act(() => {
+    await act(() => {
       mockFocus.current();
     });
 
@@ -82,7 +82,7 @@ describe('<HandsHiFive />', () => {
   test('shows the static artwork when the user prefers reduced motion', async () => {
     jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
 
-    const { queryByTestId } = render(<HandsHiFive variant="login" />);
+    const { queryByTestId } = await render(<HandsHiFive variant="login" />);
     await act(async () => {
       await Promise.resolve();
     });
@@ -91,9 +91,9 @@ describe('<HandsHiFive />', () => {
   });
 
   test('falls back to the static artwork when the animation fails', async () => {
-    const { findByTestId, queryByTestId } = render(<HandsHiFive variant="sign-up" />);
+    const { findByTestId, queryByTestId } = await render(<HandsHiFive variant="sign-up" />);
 
-    fireEvent(await findByTestId('hands-hi-five-animation'), 'animationFailure');
+    await fireEvent(await findByTestId('hands-hi-five-animation'), 'animationFailure');
 
     expect(queryByTestId('hands-hi-five-animation')).toBeNull();
   });

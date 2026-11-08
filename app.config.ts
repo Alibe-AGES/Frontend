@@ -1,55 +1,13 @@
-import { ExpoConfig } from 'expo/config';
+import { ConfigContext, ExpoConfig } from 'expo/config';
 import 'tsx/cjs';
 
-const config: ExpoConfig = {
-  name: 'Alibe',
-  slug: 'alibe',
-  version: '1.0.0',
-  orientation: 'portrait',
-  scheme: 'alibe',
-  userInterfaceStyle: 'automatic',
+// Static settings live in app.json; this file only adds values that come from the environment.
+export default ({ config }: ConfigContext): ExpoConfig => ({
+  ...config,
+  name: config.name ?? 'Alibe',
+  slug: config.slug ?? 'alibe',
   extra: {
+    ...config.extra,
     apiBaseUrl: process.env.EXPO_PUBLIC_API_URL ?? process.env.ENV_API_BASE_URL,
-    eas: {
-      projectId: '0fe4c9c6-8bca-4a1e-8506-7dca9c7901e7',
-    },
   },
-  ios: {
-    bundleIdentifier: 'com.alibe.app',
-  },
-  android: {
-    package: 'com.alibe.app',
-    googleServicesFile: './google-services.json',
-    adaptiveIcon: {
-      backgroundColor: '#F7F2E9',
-      foregroundImage: './assets/images/android-icon-foreground.png',
-      backgroundImage: './assets/images/android-icon-background.png',
-      monochromeImage: './assets/images/android-icon-monochrome.png',
-    },
-    predictiveBackGestureEnabled: false,
-  },
-  web: {
-    output: 'static',
-    favicon: './assets/images/favicon.png',
-    bundler: 'metro',
-  },
-  plugins: [
-    'expo-router',
-    'expo-secure-store',
-    [
-      'expo-splash-screen',
-      {
-        backgroundColor: '#F7F2E9',
-        // Blank on purpose: AnimatedSplash draws the logo in as soon as JavaScript loads.
-        image: './assets/images/splash-blank.png',
-        imageWidth: 276,
-      },
-    ],
-  ],
-  experiments: {
-    typedRoutes: true,
-    reactCompiler: true,
-  },
-};
-
-export default config;
+});

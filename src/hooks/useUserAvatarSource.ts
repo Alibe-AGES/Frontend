@@ -1,5 +1,5 @@
 import { ImageSource } from 'expo-image';
-import { useLocalSearchParams } from 'expo-router/build/hooks';
+import { useLocalSearchParams } from 'expo-router';
 import { useMemo } from 'react';
 import { API_BASE_URL } from '../constants';
 

@@ -116,7 +116,7 @@ describe('<GroupCard />', () => {
       )
     );
 
-    fireEvent.press(getByTestId('alibe-group-card'));
+    await fireEvent.press(getByTestId('alibe-group-card'));
     await Promise.resolve();
 
     expect(onPress).toHaveBeenCalledWith('group-42');
@@ -133,8 +133,8 @@ describe('<GroupCard />', () => {
       )
     );
 
-    expect(() => {
-      fireEvent.press(getByTestId('alibe-group-card'));
+    expect(async () => {
+      await fireEvent.press(getByTestId('alibe-group-card'));
     }).not.toThrow();
   });
 

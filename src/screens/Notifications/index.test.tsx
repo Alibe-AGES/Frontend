@@ -60,13 +60,13 @@ describe('<NotificationsScreen />', () => {
   test('forwards card presses, dismissals and clear to the controller', async () => {
     const { props, getByTestId } = await renderScreen();
 
-    fireEvent.press(getByTestId('notifications-card-notification-3'));
+    await fireEvent.press(getByTestId('notifications-card-notification-3'));
     await Promise.resolve();
-    fireEvent.press(getByTestId('notifications-card-notification-2-action'));
+    await fireEvent.press(getByTestId('notifications-card-notification-2-action'));
     await Promise.resolve();
-    fireEvent.press(getByTestId('notifications-card-notification-3-dismiss'));
+    await fireEvent.press(getByTestId('notifications-card-notification-3-dismiss'));
     await Promise.resolve();
-    fireEvent.press(getByTestId('notifications-clear'));
+    await fireEvent.press(getByTestId('notifications-clear'));
     await Promise.resolve();
 
     expect(props.onPressNotification).toHaveBeenCalledWith(mockNotifications[2]);
@@ -78,7 +78,7 @@ describe('<NotificationsScreen />', () => {
   test('shows the load more button only when there are more pages', async () => {
     const { queryByTestId, getByTestId, props } = await renderScreen({ hasMore: true });
 
-    fireEvent.press(getByTestId('notifications-load-more'));
+    await fireEvent.press(getByTestId('notifications-load-more'));
     await Promise.resolve();
 
     expect(props.onLoadMore).toHaveBeenCalledTimes(1);
@@ -113,7 +113,7 @@ describe('<NotificationsScreen />', () => {
     expect(getByText('Não foi possível carregar as notificações.')).toBeTruthy();
     expect(queryByTestId('notifications-empty')).toBeNull();
 
-    fireEvent.press(getByTestId('notifications-retry'));
+    await fireEvent.press(getByTestId('notifications-retry'));
     await Promise.resolve();
 
     expect(props.onRetry).toHaveBeenCalledTimes(1);
