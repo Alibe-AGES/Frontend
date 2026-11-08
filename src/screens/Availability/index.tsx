@@ -3,7 +3,7 @@ import { AvailabilityInterval } from '@/components/AvailabilityCard/Availability
 import { Avatar } from '@/components/Avatar';
 import { BackButton } from '@/components/BackButton';
 import { Button } from '@/components/Button';
-import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
+import { ScreenFrame } from '@/components/ScreenFrame';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
@@ -94,15 +94,12 @@ export function AvailabilityScreen({
   };
 
   return (
-    <KeyboardAvoidingScrollView
-      className="flex-1"
-      style={{ backgroundColor: '#FFFBF6' }}
-      contentContainerClassName="gap-6 px-6 pb-36 pt-16"
-      keyboardShouldPersistTaps="handled"
+    <ScreenFrame
+      gap="lg"
       testID="availability-screen"
+      topFade
+      overlay={<BackButton className="absolute left-6 top-20" />}
     >
-      <BackButton color={theme.colors.black} />
-
       <View className="flex-row items-center justify-center gap-10">
         <View
           className="items-center justify-center rounded-full"
@@ -146,7 +143,7 @@ export function AvailabilityScreen({
           {participants.map((participant, index) => (
             <View
               key={`${participant.id}-${String(index)}`}
-              className="flex-row items-center gap-3 rounded-2xl bg-surface p-3"
+              className="flex-row items-center gap-3 rounded-2xl bg-canvas p-3"
               testID={`availability-participant-${participant.id}`}
             >
               <Avatar
@@ -173,7 +170,7 @@ export function AvailabilityScreen({
 
       <AvailabilityCard onIntervalsChange={setIntervals} />
 
-      <View className="gap-3 pt-2">
+      <View className="gap-3 pb-10 pt-2">
         <Button
           title="Confirmar!"
           variant="tertiary"
@@ -188,6 +185,6 @@ export function AvailabilityScreen({
           disabled={isSubmitting}
         />
       </View>
-    </KeyboardAvoidingScrollView>
+    </ScreenFrame>
   );
 }

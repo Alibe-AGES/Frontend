@@ -8,6 +8,8 @@ jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
 }));
 
+jest.mock('@/components/HandsHiFive', () => ({ HandsHiFive: () => null }));
+
 jest.mock('@/server/auth', () => ({
   authClient: { signIn: { email: jest.fn() } },
 }));

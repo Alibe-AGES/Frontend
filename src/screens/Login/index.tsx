@@ -1,15 +1,15 @@
 import { BackButton } from '@/components/BackButton';
 import { ContinueButton } from '@/components/ContinueButton';
 import { EmailInput } from '@/components/EmailInput';
+import { GoogleButton } from '@/components/GoogleButton';
+import { HandsHiFive } from '@/components/HandsHiFive';
 import { PasswordInput } from '@/components/PasswordInput';
+import { ScreenFrame } from '@/components/ScreenFrame';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import tw from 'twrnc';
-import { KeyboardAvoidingScrollView } from '@/components/KeyboardAvoidingScrollView';
-
-import LoginHandsDecoration from '@/assets/images/login-hands-decoration.svg';
 
 export interface LoginData {
   email: string;
@@ -19,6 +19,7 @@ export interface LoginData {
 export interface LoginScreenProps {
   onContinue: (credentials: LoginData) => void | Promise<void>;
   onForgotPassword?: () => void;
+  onGoogleSignIn?: () => void;
   errorMessage?: string;
   isLoading?: boolean;
 }
@@ -26,6 +27,7 @@ export interface LoginScreenProps {
 export function LoginScreen({
   onContinue,
   onForgotPassword,
+  onGoogleSignIn,
   errorMessage,
   isLoading = false,
 }: LoginScreenProps) {
@@ -36,31 +38,30 @@ export function LoginScreen({
   const canContinue = trimmedEmail.length > 0 && password.length > 0;
 
   return (
-    <KeyboardAvoidingScrollView
-      className="flex-1 bg-canvas"
-      contentContainerClassName="flex-grow px-6"
-      keyboardShouldPersistTaps="handled"
+    <ScreenFrame
+      padding="horizontal"
+      topFade
+      overlay={
+        <BackButton
+          className="absolute left-6 top-20"
+          fallbackHref="/auth"
+        />
+      }
     >
       <View
         accessible={false}
-        className="-mx-6 aspect-[390/280]"
+        className="-mx-8 aspect-[390/280]"
       >
-        <LoginHandsDecoration
-          width="100%"
-          height="100%"
-        />
+        <HandsHiFive variant="login" />
       </View>
 
-      <BackButton
-        className="absolute left-10 top-24"
-        fallbackHref="/auth"
-      />
-
-      <Text className="mt-4 text-center font-poppins-black text-5xl leading-tight tracking-[0.3rem] text-ink">
+      <Text
+        className={`text-center text-[2.857rem] leading-tight text-ink ${theme.typography.display}`}
+      >
         Login
       </Text>
 
-      <View className="mt-20 flex-1 rounded-t-3xl bg-lime-soft px-6 pb-28 pt-16">
+      <View className="mt-10 flex-grow rounded-t-3xl bg-lime-soft px-6 pb-12 pt-8">
         <View className="gap-4">
           <EmailInput
             value={email}
@@ -110,7 +111,23 @@ export function LoginScreen({
           </Pressable>
         </View>
 
-        <View className="mt-auto pt-6">
+        <View className="mt-12 items-center gap-6 pb-12">
+          <View className="w-full flex-row items-center gap-4">
+            <View className="h-0.5 flex-1 bg-wine" />
+            <Text className="text-center font-poppins-light text-lg text-wine">
+              Ou continue com
+            </Text>
+            <View className="h-0.5 flex-1 bg-wine" />
+          </View>
+
+          <GoogleButton
+            onPress={onGoogleSignIn}
+            disabled={isLoading}
+            testID="login-google"
+          />
+        </View>
+
+        <View className="mt-auto">
           {errorMessage ? (
             <Text
               accessibilityRole="alert"
@@ -129,6 +146,6 @@ export function LoginScreen({
           />
         </View>
       </View>
-    </KeyboardAvoidingScrollView>
+    </ScreenFrame>
   );
 }

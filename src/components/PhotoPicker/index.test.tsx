@@ -16,6 +16,7 @@ jest.mock('@/theme', () => ({
 interface MockAvatarProps {
   photoUri?: string | null;
   fallbackIconName?: string;
+  imageClassName?: string;
   testID?: string;
 }
 
@@ -24,13 +25,19 @@ jest.mock('../Avatar', () => {
   const RN = jest.requireActual<typeof import('react-native')>('react-native');
 
   return {
-    Avatar: ({ photoUri, fallbackIconName, testID = 'avatar' }: MockAvatarProps) => {
+    Avatar: ({
+      photoUri,
+      fallbackIconName,
+      imageClassName,
+      testID = 'avatar',
+    }: MockAvatarProps) => {
       const avatarTestID = `${testID}-${photoUri ? 'photo' : 'placeholder'}`;
 
       return (
         <RN.View testID={avatarTestID}>
           <RN.Text testID={`${avatarTestID}-uri`}>{photoUri ?? 'null'}</RN.Text>
           <RN.Text testID={`${avatarTestID}-icon`}>{fallbackIconName ?? 'none'}</RN.Text>
+          <RN.Text testID={`${avatarTestID}-image-class`}>{imageClassName ?? 'none'}</RN.Text>
         </RN.View>
       );
     },
@@ -72,6 +79,26 @@ describe('<PhotoPicker />', () => {
 
     expect(getByText('Adicionar foto (opcional)')).toBeTruthy();
     expect(getByTestId('alibe-photo-picker-placeholder-icon')).toHaveTextContent('people-outline');
+  });
+
+  test('uses a black label by default and accepts a custom label color', async () => {
+    const label = 'Adicionar foto (opcional)';
+    const { getByText, rerender } = await Promise.resolve(
+      render(<PhotoPicker {...defaultProps} />)
+    );
+
+    expect(getByText(label).props.className).toContain('text-black');
+
+    rerender(
+      <PhotoPicker
+        {...defaultProps}
+        labelClassName="text-wine"
+      />
+    );
+    await Promise.resolve();
+
+    expect(getByText(label).props.className).toContain('text-wine');
+    expect(getByText(label).props.className).not.toContain('text-black');
   });
 
   test('renders with a custom label', async () => {
@@ -152,6 +179,22 @@ describe('<PhotoPicker />', () => {
     fireEvent.press(getByTestId('alibe-photo-picker'));
 
     expect(mockPickImage).not.toHaveBeenCalled();
+  });
+
+  test('makes the photo fill the circle so its diameter never changes', async () => {
+    const useController: UsePhotoPickerHook = () => ({
+      photoUri: 'file://photo.jpg',
+      isLoading: false,
+      pickImage: jest.fn(),
+    });
+
+    const { getByTestId } = await Promise.resolve(
+      render(<PhotoPicker useController={useController} />)
+    );
+
+    expect(getByTestId('alibe-photo-picker-photo-image-class')).toHaveTextContent(
+      'h-full w-full rounded-full'
+    );
   });
 
   test('passes the current photoUri to the Avatar', async () => {

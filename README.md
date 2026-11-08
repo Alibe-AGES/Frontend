@@ -557,6 +557,41 @@ For UI-only work, use local state and fixture data. Do not add API calls merely 
 5. Add route and component tests for important states.
 6. Connect `src/server/api.ts` only when real data is required.
 
+### Screen frame
+
+Every page wraps its content in `ScreenFrame` (`src/components/ScreenFrame`). It owns the defaults shared by all screens: background, horizontal gutter, top spacing, an optional fixed `header`, and an optional `footer` pinned to the bottom (usually `NavigationBar`), whose height is reserved below the content automatically. An optional `overlay` floats over the content without scrolling or taking up layout space, for controls placed on top of a screen's artwork, such as the back button on Login and Sign Up. Set `topFade` to fade scrolled content out behind that overlay; it stays hidden until the content scrolls, so artwork at the top remains visible. Use `topFade="always"` on screens whose content fits without scrolling.
+
+By default the content is rendered in a `KeyboardAwareScrollView` from `react-native-keyboard-controller`, which scrolls the focused input above the keyboard on iOS and Android. This only works because `KeyboardProvider` wraps the app in `src/app/_layout.tsx`; do not remove it. Inputs do not need any extra wiring.
+
+```tsx
+<ScreenFrame
+  gap="lg"
+  header={<BackButton fallbackHref="/groups" />}
+  footer={<NavigationBar groupId={groupId} />}
+>
+  {/* screen content */}
+</ScreenFrame>
+```
+
+Use `scrollable={false}` for screens that render their own `FlatList`, and `padding="horizontal"` or `padding="none"` for full-bleed artwork. Render modals as siblings of the frame, not inside it.
+
+### Modal frame
+
+A React Native `Modal` is a separate native window, so `ScreenFrame` cannot keep its inputs visible. Any modal with inputs uses `ModalFrame` (`src/components/ModalFrame`) instead of `Modal` directly. It renders the backdrop and lifts its content above the keyboard with the library's `KeyboardAvoidingView` (`automaticOffset` measures the real position inside the modal window).
+
+```tsx
+<ModalFrame
+  visible={isVisible}
+  onRequestClose={close}
+  title="Alterar Senha"
+  testID="change-password-modal"
+>
+  {/* inputs and buttons; placed in the standard dialog panel */}
+</ModalFrame>
+```
+
+`placement="center"` (default) wraps the children in the standard dialog panel inside a scroll view. `placement="bottom"` anchors the children as a sheet that provides its own surface; add `closeOnBackdropPress` to dismiss it from the backdrop.
+
 ### NativeWind and twrnc
 
 Use `className` for styles that do not change and `twrnc` when a class string depends on state or props. Keep the visual vocabulary in `src/theme.ts` and mirror its colors in `tailwind.config.js` so components use semantic names such as `bg-coral` and `text-ink`.
