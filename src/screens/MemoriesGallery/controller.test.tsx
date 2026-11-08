@@ -9,7 +9,7 @@ import {
 } from '@/server/events';
 import { act, render, waitFor } from '@testing-library/react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import MemoriesGalleryController, { resolveMemoryImageUrl, sortMemorySections } from './controller';
+import MemoriesGalleryController, { sortMemorySections } from './controller';
 
 let mockScreenProps: MemoriesGalleryScreenProps | null = null;
 
@@ -22,10 +22,19 @@ jest.mock('@/server/calendar', () => ({
   getGroupCalendar: jest.fn(),
 }));
 
-jest.mock('@/server/events', () => ({
-  getEventDetails: jest.fn(),
-  getEventMemories: jest.fn(),
+jest.mock('@/server/auth', () => ({
+  authenticatedFetch: jest.fn(),
 }));
+
+jest.mock('@/server/events', () => {
+  const { getMemoryImageUrl } =
+    jest.requireActual<typeof import('@/server/events')>('@/server/events');
+  return {
+    getEventDetails: jest.fn(),
+    getEventMemories: jest.fn(),
+    getMemoryImageUrl,
+  };
+});
 
 jest.mock('@/screens/MemoriesGallery', () => ({
   MemoriesGalleryScreen: (props: MemoriesGalleryScreenProps) => {
@@ -152,19 +161,19 @@ const MEMORIES_BY_EVENT_ID: Record<string, EventMemoryResponse[]> = {
   'event-same-day-early': [
     {
       id: 'mem-1',
-      picture: 'api/events/event-same-day-early/memories/mem-1/image',
+      picture: '/memories/mem-1/images/photo-1.jpg',
       eventId: 'event-same-day-early',
     },
   ],
   'event-same-day-late': [
     {
       id: 'mem-2',
-      picture: '/api/events/event-same-day-late/memories/mem-2/image',
+      picture: '/memories/mem-2/images/photo-2.jpg',
       eventId: 'event-same-day-late',
     },
     {
       id: 'mem-3',
-      picture: 'https://cdn.alibe.com/mem-3.jpg',
+      picture: '/memories/mem-3/images/photo-3.png',
       eventId: 'event-same-day-late',
     },
   ],
@@ -172,7 +181,7 @@ const MEMORIES_BY_EVENT_ID: Record<string, EventMemoryResponse[]> = {
   'event-most-recent': [
     {
       id: 'mem-4',
-      picture: 'api/events/event-most-recent/memories/mem-4/image',
+      picture: '/memories/mem-4/images/photo-4.jpg',
       eventId: 'event-most-recent',
     },
   ],
@@ -184,20 +193,6 @@ async function renderLoaded() {
     expect(screenProps().isLoading).toBe(false);
   });
 }
-
-describe('resolveMemoryImageUrl', () => {
-  test('prefixes relative paths with API_BASE_URL and preserves absolute URLs', () => {
-    expect(resolveMemoryImageUrl('api/events/e1/memories/m1/image')).toBe(
-      `${API_BASE_URL}/api/events/e1/memories/m1/image`
-    );
-    expect(resolveMemoryImageUrl('/api/events/e1/memories/m1/image')).toBe(
-      `${API_BASE_URL}/api/events/e1/memories/m1/image`
-    );
-    expect(resolveMemoryImageUrl('https://cdn.alibe.com/photo.jpg')).toBe(
-      'https://cdn.alibe.com/photo.jpg'
-    );
-  });
-});
 
 describe('sortMemorySections', () => {
   test('orders events from most recent to oldest by default', () => {
@@ -301,7 +296,7 @@ describe('MemoriesGalleryController', () => {
       },
       {
         id: 'mem-3',
-        imageUrl: 'https://cdn.alibe.com/mem-3.jpg',
+        imageUrl: `${API_BASE_URL}/api/events/event-same-day-late/memories/mem-3/image`,
       },
     ]);
     expect(sections[2]?.photos).toEqual([
@@ -358,5 +353,31 @@ describe('MemoriesGalleryController', () => {
       expect(screenProps().errorMessage).toBeNull();
       expect(screenProps().sections).toHaveLength(3);
     });
+  });
+
+  test('keeps the other events when one of them fails to load', async () => {
+    mockGetEventMemories.mockImplementation((eventId: string) =>
+      eventId === 'event-same-day-late'
+        ? Promise.reject(new Error('Network error'))
+        : Promise.resolve(MEMORIES_BY_EVENT_ID[eventId] ?? [])
+    );
+
+    await renderLoaded();
+
+    expect(screenProps().errorMessage).toBeNull();
+    expect(screenProps().sections.map((section) => section.eventId)).toEqual([
+      'event-most-recent',
+      'event-same-day-early',
+    ]);
+  });
+
+  test('sets an error message when every event fails to load', async () => {
+    mockGetEventMemories.mockRejectedValue(new Error('Network error'));
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    await renderLoaded();
+
+    expect(screenProps().errorMessage).toBe('Não foi possível carregar as memórias do grupo.');
+    expect(screenProps().sections).toEqual([]);
   });
 });

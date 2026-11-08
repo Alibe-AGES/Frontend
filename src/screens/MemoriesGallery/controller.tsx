@@ -1,29 +1,10 @@
-import { API_BASE_URL } from '@/constants';
 import { MemoriesGalleryScreen, type MemoryEventSection } from '@/screens/MemoriesGallery';
 import { CalendarDay, getGroupCalendar } from '@/server/calendar';
-import { getEventDetails, getEventMemories } from '@/server/events';
+import { getEventDetails, getEventMemories, getMemoryImageUrl } from '@/server/events';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 const LOAD_ERROR = 'Não foi possível carregar as memórias do grupo.';
-
-export function resolveMemoryImageUrl(picture: string): string {
-  if (
-    picture.startsWith('http://') ||
-    picture.startsWith('https://') ||
-    picture.startsWith('file://') ||
-    picture.startsWith('data:') ||
-    picture.startsWith(API_BASE_URL)
-  ) {
-    return picture;
-  }
-
-  if (picture.startsWith('/')) {
-    return `${API_BASE_URL}${picture}`;
-  }
-
-  return `${API_BASE_URL}/${picture}`;
-}
 
 function getDayEventIds(day: CalendarDay): string[] {
   return [
@@ -127,7 +108,7 @@ export default function MemoriesGalleryController() {
         }
       }
 
-      const loadedSections = await Promise.all(
+      const results = await Promise.allSettled(
         eventDayEntries.map(
           async ({ calendarDate, eventId }): Promise<MemoryEventSection | null> => {
             const [eventDetails, memories] = await Promise.all([
@@ -154,7 +135,7 @@ export default function MemoriesGalleryController() {
               eventName,
               photos: memories.map((memory) => ({
                 id: memory.id,
-                imageUrl: resolveMemoryImageUrl(memory.picture),
+                imageUrl: getMemoryImageUrl(memory),
               })),
             };
           }
@@ -165,8 +146,12 @@ export default function MemoriesGalleryController() {
         return;
       }
 
-      const validSections = loadedSections.filter(
-        (section): section is MemoryEventSection => section !== null
+      if (results.length > 0 && results.every((result) => result.status === 'rejected')) {
+        throw results[0].reason;
+      }
+
+      const validSections = results.flatMap((result) =>
+        result.status === 'fulfilled' && result.value !== null ? [result.value] : []
       );
 
       setSections(sortMemorySections(validSections, selectedDate));

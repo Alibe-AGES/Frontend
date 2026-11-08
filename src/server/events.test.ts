@@ -8,6 +8,7 @@ import {
   getActiveProposals,
   getEventDetails,
   getEventMemories,
+  getMemoryImageUrl,
   respondToEventProposal,
   respondToSuggestion,
 } from './events';
@@ -455,5 +456,17 @@ describe('getEventMemories', () => {
       status: 500,
       message: 'Não foi possível carregar as memórias do evento',
     });
+  });
+});
+
+describe('getMemoryImageUrl', () => {
+  test('builds the authenticated memory image route from the event and memory ids', () => {
+    expect(
+      getMemoryImageUrl({
+        id: 'memory-1',
+        eventId: 'event-1',
+        picture: '/memories/memory-1/images/photo.jpg',
+      })
+    ).toBe(`${API_BASE_URL}/api/events/event-1/memories/memory-1/image`);
   });
 });
