@@ -76,13 +76,13 @@ describe('<GroupDayCarousel />', () => {
       )
     );
 
-    fireEvent.press(getByTestId('group-day-carousel-presence-yes-event-1'));
+    await fireEvent.press(getByTestId('group-day-carousel-presence-yes-event-1'));
     await Promise.resolve();
     await waitFor(() => {
       expect(onPresenceResponse).toHaveBeenCalledWith('event-1', 'yes');
     });
 
-    fireEvent.press(getByTestId('group-day-carousel-presence-no-event-1'));
+    await fireEvent.press(getByTestId('group-day-carousel-presence-no-event-1'));
     await Promise.resolve();
     await waitFor(() => {
       expect(onPresenceResponse).toHaveBeenCalledWith('event-1', 'no');
@@ -103,7 +103,7 @@ describe('<GroupDayCarousel />', () => {
       )
     );
 
-    fireEvent.press(getByTestId('group-day-carousel-availability'));
+    await fireEvent.press(getByTestId('group-day-carousel-availability'));
     await Promise.resolve();
     expect(onAvailabilityPress).toHaveBeenCalledTimes(1);
   });

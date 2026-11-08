@@ -54,7 +54,7 @@ describe('<SearchBar />', () => {
       )
     );
 
-    fireEvent.changeText(getByTestId('alibe-search-bar'), 'Rest');
+    await fireEvent.changeText(getByTestId('alibe-search-bar'), 'Rest');
     await Promise.resolve();
 
     expect(onChangeText).toHaveBeenCalledTimes(1);

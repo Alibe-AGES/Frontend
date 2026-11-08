@@ -72,7 +72,7 @@ describe('<NewMemoryCard />', () => {
       render(<ControlledCard usePhotoController={createController({ pickImage })} />)
     );
 
-    fireEvent.press(getByRole('button', { name: 'Adicionar imagem do evento' }));
+    await fireEvent.press(getByRole('button', { name: 'Adicionar imagem do evento' }));
 
     expect(pickImage).toHaveBeenCalledTimes(1);
   });
@@ -100,7 +100,7 @@ describe('<NewMemoryCard />', () => {
     expect(getByTestId('new-memory-card-photo-loading')).toBeTruthy();
     expect(getByTestId('new-memory-card-photo')).toBeDisabled();
 
-    fireEvent.press(getByTestId('new-memory-card-photo'));
+    await fireEvent.press(getByTestId('new-memory-card-photo'));
 
     expect(pickImage).not.toHaveBeenCalled();
   });
@@ -134,8 +134,8 @@ describe('<NewMemoryCard />', () => {
       )
     );
 
-    fireEvent.press(getByTestId('new-memory-card-event'));
-    fireEvent.press(getByText('Churrasco'));
+    await fireEvent.press(getByTestId('new-memory-card-event'));
+    await fireEvent.press(getByText('Churrasco'));
 
     expect(onSelectEvent).toHaveBeenCalledWith('barbecue');
   });
@@ -145,8 +145,8 @@ describe('<NewMemoryCard />', () => {
       render(<ControlledCard />)
     );
 
-    fireEvent.press(getByTestId('new-memory-card-event'));
-    fireEvent.press(getByText('Jantar de sexta'));
+    await fireEvent.press(getByTestId('new-memory-card-event'));
+    await fireEvent.press(getByText('Jantar de sexta'));
 
     expect(getByText('Jantar de sexta')).toBeTruthy();
     expect(queryByText('Selecionar evento')).toBeNull();
@@ -157,7 +157,7 @@ describe('<NewMemoryCard />', () => {
       render(<ControlledCard events={[]} />)
     );
 
-    fireEvent.press(getByTestId('new-memory-card-event'));
+    await fireEvent.press(getByTestId('new-memory-card-event'));
 
     expect(getByText('Nenhum evento disponível')).toBeTruthy();
   });
@@ -166,7 +166,7 @@ describe('<NewMemoryCard />', () => {
     const onClose = jest.fn();
     const { getByRole } = await Promise.resolve(render(<ControlledCard onClose={onClose} />));
 
-    fireEvent.press(getByRole('button', { name: 'Fechar' }));
+    await fireEvent.press(getByRole('button', { name: 'Fechar' }));
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });

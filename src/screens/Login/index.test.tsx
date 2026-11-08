@@ -1,5 +1,4 @@
 import { fireEvent, render, within } from '@testing-library/react-native';
-import { ScrollView } from 'react-native';
 import { LoginScreen } from '.';
 
 jest.mock('expo-router', () => ({
@@ -46,8 +45,8 @@ describe('<LoginScreen />', () => {
   });
 
   test('keeps the back button fixed outside the scrollable content', async () => {
-    const { UNSAFE_getByType, getByLabelText } = await Promise.resolve(renderScreen());
-    const scrollView = within(UNSAFE_getByType(ScrollView));
+    const { getByTestId, getByLabelText } = await Promise.resolve(renderScreen());
+    const scrollView = within(getByTestId('login-screen'));
 
     expect(getByLabelText('Voltar')).toBeTruthy();
     expect(scrollView.queryByText('Login')).toBeTruthy();
@@ -90,7 +89,7 @@ describe('<LoginScreen />', () => {
 
     expect(getByTestId('login-password').props.secureTextEntry).toBe(true);
 
-    fireEvent.press(getByText('Mostrar'));
+    await fireEvent.press(getByText('Mostrar'));
     await Promise.resolve();
 
     expect(getByTestId('login-password').props.secureTextEntry).toBe(false);
@@ -100,7 +99,7 @@ describe('<LoginScreen />', () => {
   test('calls onForgotPassword', async () => {
     const { getByText } = await Promise.resolve(renderScreen());
 
-    fireEvent.press(getByText('Esqueci minha senha'));
+    await fireEvent.press(getByText('Esqueci minha senha'));
     await Promise.resolve();
 
     expect(onForgotPassword).toHaveBeenCalledTimes(1);
@@ -114,11 +113,11 @@ describe('<LoginScreen />', () => {
   ])('keeps continue disabled for email "%s" and password "%s"', async (email, password) => {
     const { getByPlaceholderText, getByTestId } = await Promise.resolve(renderScreen());
 
-    fireEvent.changeText(getByPlaceholderText('Email'), email);
+    await fireEvent.changeText(getByPlaceholderText('Email'), email);
     await Promise.resolve();
-    fireEvent.changeText(getByPlaceholderText('Senha'), password);
+    await fireEvent.changeText(getByPlaceholderText('Senha'), password);
     await Promise.resolve();
-    fireEvent.press(getByTestId('login-continue'));
+    await fireEvent.press(getByTestId('login-continue'));
     await Promise.resolve();
 
     expect(getByTestId('login-continue').props.accessibilityState).toMatchObject({
@@ -130,11 +129,11 @@ describe('<LoginScreen />', () => {
   test('continues with the trimmed email and the password', async () => {
     const { getByPlaceholderText, getByTestId } = await Promise.resolve(renderScreen());
 
-    fireEvent.changeText(getByPlaceholderText('Email'), '  user@example.com ');
+    await fireEvent.changeText(getByPlaceholderText('Email'), '  user@example.com ');
     await Promise.resolve();
-    fireEvent.changeText(getByPlaceholderText('Senha'), 'secret');
+    await fireEvent.changeText(getByPlaceholderText('Senha'), 'secret');
     await Promise.resolve();
-    fireEvent.press(getByTestId('login-continue'));
+    await fireEvent.press(getByTestId('login-continue'));
     await Promise.resolve();
 
     expect(onContinue).toHaveBeenCalledWith({ email: 'user@example.com', password: 'secret' });

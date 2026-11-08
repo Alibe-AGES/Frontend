@@ -36,6 +36,7 @@ export function CreateProfileScreen({
     <ScreenFrame
       padding="horizontal"
       topFade="always"
+      testID="create-profile-screen"
       overlay={
         <BackButton
           fallbackHref="/sign-up"

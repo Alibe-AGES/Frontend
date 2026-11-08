@@ -162,7 +162,7 @@ describe('<EventCard />', () => {
       )
     );
 
-    fireEvent.press(getByLabelText('Editar evento'));
+    await fireEvent.press(getByLabelText('Editar evento'));
     await Promise.resolve();
 
     expect(onEditPress).toHaveBeenCalledTimes(1);
@@ -211,13 +211,13 @@ describe('<EventCard mode="create" />', () => {
       )
     );
 
-    fireEvent.changeText(getByTestId('alibe-event-card-name-input'), 'Bloom Café');
+    await fireEvent.changeText(getByTestId('alibe-event-card-name-input'), 'Bloom Café');
     await Promise.resolve();
-    fireEvent.changeText(getByTestId('alibe-event-card-address-input'), 'Av. João Wallig');
+    await fireEvent.changeText(getByTestId('alibe-event-card-address-input'), 'Av. João Wallig');
     await Promise.resolve();
-    fireEvent.press(getByTestId('alibe-event-card-date-button'));
+    await fireEvent.press(getByTestId('alibe-event-card-date-button'));
     await Promise.resolve();
-    fireEvent.changeText(getByTestId('alibe-event-card-time-input'), '1000');
+    await fireEvent.changeText(getByTestId('alibe-event-card-time-input'), '1000');
     await Promise.resolve();
 
     expect(onChangeDraft).toHaveBeenNthCalledWith(1, { ...draft, name: 'Bloom Café' });
@@ -264,7 +264,7 @@ describe('<EventCard mode="create" />', () => {
       )
     );
 
-    fireEvent.press(getByLabelText('Adicionar imagem do evento'));
+    await fireEvent.press(getByLabelText('Adicionar imagem do evento'));
     await Promise.resolve();
 
     await waitFor(() => {
@@ -289,7 +289,7 @@ describe('<EventCard mode="create" />', () => {
       )
     );
 
-    fireEvent.press(getByLabelText('Adicionar imagem do evento'));
+    await fireEvent.press(getByLabelText('Adicionar imagem do evento'));
     await Promise.resolve();
 
     await waitFor(() => {
@@ -328,11 +328,11 @@ describe('<EventCard mode="create" />', () => {
       )
     );
 
-    fireEvent.press(getByTestId('alibe-event-card-confirm'));
+    await fireEvent.press(getByTestId('alibe-event-card-confirm'));
     await Promise.resolve();
     expect(onConfirm).not.toHaveBeenCalled();
 
-    rerender(
+    await rerender(
       <EventCard
         mode="create"
         draft={emptyDraft}
@@ -341,7 +341,7 @@ describe('<EventCard mode="create" />', () => {
       />
     );
     await Promise.resolve();
-    fireEvent.press(getByTestId('alibe-event-card-confirm'));
+    await fireEvent.press(getByTestId('alibe-event-card-confirm'));
     await Promise.resolve();
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
@@ -401,7 +401,7 @@ describe('<EventCard mode="create" /> submitting', () => {
     );
 
     const confirm = getByTestId('alibe-event-card-confirm');
-    fireEvent.press(confirm);
+    await fireEvent.press(confirm);
     await Promise.resolve();
 
     expect(confirm.props.accessibilityState).toEqual(

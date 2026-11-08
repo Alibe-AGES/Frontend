@@ -98,7 +98,7 @@ describe('<EmailInput />', () => {
       render(<ControlledEmailInput testID="email-input" />)
     );
 
-    fireEvent.changeText(getByTestId('email-input'), 'user@example.com');
+    await fireEvent.changeText(getByTestId('email-input'), 'user@example.com');
     await Promise.resolve();
 
     expect(getByDisplayValue('user@example.com')).toBeTruthy();
@@ -114,7 +114,7 @@ describe('<EmailInput />', () => {
       )
     );
 
-    fireEvent(getByTestId('email-input'), 'blur');
+    await fireEvent(getByTestId('email-input'), 'blur');
     await Promise.resolve();
 
     expect(getByText('Informe um e-mail válido.')).toBeTruthy();
@@ -130,7 +130,7 @@ describe('<EmailInput />', () => {
       )
     );
 
-    fireEvent(getByTestId('email-input'), 'blur');
+    await fireEvent(getByTestId('email-input'), 'blur');
     await Promise.resolve();
 
     expect(queryByTestId('email-input-error')).toBeNull();
@@ -141,7 +141,7 @@ describe('<EmailInput />', () => {
       render(<ControlledEmailInput testID="email-input" />)
     );
 
-    fireEvent(getByTestId('email-input'), 'blur');
+    await fireEvent(getByTestId('email-input'), 'blur');
     await Promise.resolve();
 
     expect(queryByTestId('email-input-error')).toBeNull();
@@ -190,7 +190,7 @@ describe('<EmailInput />', () => {
       )
     );
 
-    fireEvent(getByTestId('email-input'), 'blur');
+    await fireEvent(getByTestId('email-input'), 'blur');
     await Promise.resolve();
 
     expect(onBlur).toHaveBeenCalledTimes(1);

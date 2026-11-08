@@ -1,7 +1,7 @@
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef } from 'react';
-import { Pressable, ScrollView, Text } from 'react-native';
+import { Pressable, ScrollView, type ScrollViewInstance, Text } from 'react-native';
 import type { FilterCarouselProps } from './FilterCarousel.types';
 
 export type { FilterCarouselProps, FilterTag } from './FilterCarousel.types';
@@ -14,7 +14,7 @@ export function FilterCarousel({
   hasActiveFilters = false,
   testID = 'filter-carousel',
 }: FilterCarouselProps) {
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   // Selected tags come first, keeping the original order within each group.
   const orderedTags = [
     ...tags.filter((tag) => selectedTagIds.includes(tag.id)),

@@ -43,6 +43,7 @@ export function SignUpScreen({ onContinue, onGoogleSignUp, emailError }: SignUpS
     <ScreenFrame
       padding="horizontal"
       topFade
+      testID="sign-up-screen"
       overlay={
         <BackButton
           fallbackHref="/auth"

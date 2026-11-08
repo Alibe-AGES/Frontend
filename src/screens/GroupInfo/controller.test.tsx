@@ -44,7 +44,7 @@ const mockGetMe = getMe as jest.MockedFunction<typeof getMe>;
 const mockCreateURL = createURL as jest.MockedFunction<typeof createURL>;
 
 async function renderController() {
-  render(<GroupInfoController />);
+  await render(<GroupInfoController />);
   await waitFor(() => {
     expect(mockGroupInfoProps.isLoading).toBe(false);
   });

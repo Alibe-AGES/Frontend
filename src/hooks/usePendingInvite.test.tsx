@@ -26,10 +26,10 @@ describe('usePendingInvite', () => {
     expect(result.current.getPendingInvite()).toBeNull();
   });
 
-  test('throws when used outside the provider', () => {
+  test('throws when used outside the provider', async () => {
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
 
-    expect(() => renderHook(() => usePendingInvite())).toThrow(
+    await expect(renderHook(() => usePendingInvite())).rejects.toThrow(
       'usePendingInvite must be used within PendingInviteProvider'
     );
   });

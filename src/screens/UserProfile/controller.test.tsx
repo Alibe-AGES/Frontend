@@ -65,7 +65,7 @@ const mockSignOut = signOut as jest.MockedFunction<typeof signOut>;
 const mockGetMyProfile = getMyProfile as jest.MockedFunction<typeof getMyProfile>;
 
 async function renderProfileController() {
-  const result = render(<UserProfileController />);
+  const result = await render(<UserProfileController />);
   const request = mockGetMyProfile.mock.results.at(-1)?.value as Promise<unknown> | undefined;
   await act(async () => {
     await request;
@@ -96,9 +96,9 @@ describe('UserProfileController', () => {
       expect(mockGetMyProfile).toHaveBeenCalledTimes(1);
     });
 
-    fireEvent.press(getByTestId('user-profile-logout-button'));
+    await fireEvent.press(getByTestId('user-profile-logout-button'));
     await Promise.resolve();
-    fireEvent.press(getByTestId('user-profile-logout-confirm'));
+    await fireEvent.press(getByTestId('user-profile-logout-confirm'));
     await Promise.resolve();
 
     await waitFor(() => {
@@ -116,9 +116,9 @@ describe('UserProfileController', () => {
       expect(mockGetMyProfile).toHaveBeenCalledTimes(1);
     });
 
-    fireEvent.press(getByTestId('user-profile-logout-button'));
+    await fireEvent.press(getByTestId('user-profile-logout-button'));
     await Promise.resolve();
-    fireEvent.press(getByTestId('user-profile-logout-confirm'));
+    await fireEvent.press(getByTestId('user-profile-logout-confirm'));
     await Promise.resolve();
 
     await waitFor(() => {

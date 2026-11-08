@@ -47,7 +47,7 @@ describe('<GroupsList />', () => {
 
     expect(getByText('Não foi possível carregar os grupos.')).toBeTruthy();
 
-    fireEvent.press(getByLabelText('Tentar novamente'));
+    await fireEvent.press(getByLabelText('Tentar novamente'));
     await Promise.resolve();
 
     expect(refetch).toHaveBeenCalledTimes(1);
@@ -102,7 +102,7 @@ describe('<GroupsList />', () => {
       expect(getByTestId('alibe-groups-list-item-1')).toBeTruthy();
     });
 
-    fireEvent.press(getByTestId('alibe-groups-list-item-1'));
+    await fireEvent.press(getByTestId('alibe-groups-list-item-1'));
     await Promise.resolve();
 
     expect(onGroupPress).toHaveBeenCalledWith('1');

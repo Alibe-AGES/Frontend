@@ -112,7 +112,7 @@ describe('UserProfileScreen', () => {
       )
     );
 
-    fireEvent.press(getByText('Editar perfil'));
+    await fireEvent.press(getByText('Editar perfil'));
     await Promise.resolve();
 
     const editModalScroll = getByTestId('user-profile-edit-modal-scroll');
@@ -133,7 +133,7 @@ describe('UserProfileScreen', () => {
       render(<UserProfileScreen {...defaultProps} />)
     );
 
-    fireEvent.press(getByText('Alterar Senha'));
+    await fireEvent.press(getByText('Alterar Senha'));
     await Promise.resolve();
 
     const passwordModalScroll = getByTestId('user-profile-password-modal-scroll');
@@ -202,13 +202,13 @@ describe('UserProfileScreen', () => {
       )
     );
 
-    fireEvent.press(getByTestId('user-profile-logout-button'));
+    await fireEvent.press(getByTestId('user-profile-logout-button'));
     await Promise.resolve();
 
     expect(getByText('Sair da conta')).toBeTruthy();
     expect(getByText('Tem certeza de que deseja sair da sua conta?')).toBeTruthy();
 
-    fireEvent.press(getByTestId('user-profile-logout-cancel'));
+    await fireEvent.press(getByTestId('user-profile-logout-cancel'));
     await Promise.resolve();
 
     expect(queryByText('Tem certeza de que deseja sair da sua conta?')).toBeNull();
@@ -226,10 +226,10 @@ describe('UserProfileScreen', () => {
       )
     );
 
-    fireEvent.press(getByTestId('user-profile-logout-button'));
+    await fireEvent.press(getByTestId('user-profile-logout-button'));
     await Promise.resolve();
     await act(async () => {
-      fireEvent.press(getByTestId('user-profile-logout-confirm'));
+      await fireEvent.press(getByTestId('user-profile-logout-confirm'));
       await Promise.resolve();
       await Promise.resolve();
     });
@@ -252,10 +252,10 @@ describe('UserProfileScreen', () => {
       )
     );
 
-    fireEvent.press(getByTestId('user-profile-logout-button'));
+    await fireEvent.press(getByTestId('user-profile-logout-button'));
     await Promise.resolve();
     await act(async () => {
-      fireEvent.press(getByTestId('user-profile-logout-confirm'));
+      await fireEvent.press(getByTestId('user-profile-logout-confirm'));
       await Promise.resolve();
       await Promise.resolve();
     });

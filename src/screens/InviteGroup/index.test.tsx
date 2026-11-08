@@ -42,7 +42,7 @@ const inviteResponse: InviteResponse = {
 };
 
 async function renderInviteGroup({ shouldFail = false }: { shouldFail?: boolean } = {}) {
-  const result = render(<InviteGroupScreen />);
+  const result = await render(<InviteGroupScreen />);
   await waitFor(() => {
     expect(mockGetGroupInviteLink).toHaveBeenCalledWith(mockGroupId);
   });
@@ -107,7 +107,7 @@ describe('<InviteGroupScreen />', () => {
       expect(getByTestId('alibe-invite-link-url')).toHaveTextContent(mockInviteUrl);
     });
     await act(async () => {
-      fireEvent.press(getByTestId('alibe-invite-link'));
+      await fireEvent.press(getByTestId('alibe-invite-link'));
       await Promise.resolve();
     });
 
@@ -140,7 +140,7 @@ describe('<InviteGroupScreen />', () => {
   test('leaves the creation flow when the user continues', async () => {
     const { getByText } = await Promise.resolve(render(<InviteGroupScreen />));
 
-    fireEvent.press(getByText('Continuar'));
+    await fireEvent.press(getByText('Continuar'));
     await Promise.resolve();
 
     expect(mockReplace).toHaveBeenCalledWith('/groups');

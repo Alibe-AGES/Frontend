@@ -781,7 +781,7 @@ Select elements by visible text when it is unique, and by `id:` with the compone
 | File                                  | Purpose                                                                       |
 | ------------------------------------- | ----------------------------------------------------------------------------- |
 | `app.json`                            | Expo app metadata, platform settings, plugins, splash screen, and experiments |
-| `app.config.ts`                       | Dynamic Expo configuration; keep it consistent with `app.json`                |
+| `app.config.ts`                       | Extends `app.json` with environment values such as `extra.apiBaseUrl`         |
 | `babel.config.js`                     | Babel and NativeWind 4 transformation                                         |
 | `metro.config.js` / `metro.config.ts` | Expo Metro and NativeWind bundling                                            |
 | `tsconfig.json`                       | Strict TypeScript settings and import aliases                                 |
