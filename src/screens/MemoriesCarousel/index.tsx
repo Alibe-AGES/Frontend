@@ -7,7 +7,7 @@ import {
   Text,
   View,
   useWindowDimensions,
-  type ViewToken,
+  type FlatListProps,
 } from 'react-native';
 import tw from 'twrnc';
 
@@ -29,6 +29,11 @@ export interface MemoriesCarouselScreenProps {
   onAddMemory: () => void;
   onRetry: () => void;
 }
+
+// react-native no longer exports `ViewToken`, so the type comes from the list props.
+type ViewableItemsChange = Parameters<
+  NonNullable<FlatListProps<CarouselMemory>['onViewableItemsChanged']>
+>[0];
 
 // Share of the screen taken by one card; the rest lets neighbours peek in.
 const ITEM_WIDTH_RATIO = 0.7;
@@ -125,9 +130,9 @@ export function MemoriesCarouselScreen({
   };
 
   // Tracks the card nearest to the center, so swipes keep the arrows in sync.
-  const handleViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
-    const centered = viewableItems.find((item) => item.isViewable && item.index !== null);
-    if (centered?.index != null) {
+  const handleViewableItemsChanged = useRef(({ viewableItems }: ViewableItemsChange) => {
+    const centered = viewableItems.find((item) => item.isViewable);
+    if (typeof centered?.index === 'number') {
       setCurrentIndex(centered.index);
     }
   }).current;

@@ -36,7 +36,7 @@ const MEMORIES: CarouselMemory[] = [
   },
 ];
 
-function renderScreen(overrides: Partial<MemoriesCarouselScreenProps> = {}) {
+async function renderScreen(overrides: Partial<MemoriesCarouselScreenProps> = {}) {
   const props: MemoriesCarouselScreenProps = {
     groupId: 'group-1',
     memories: MEMORIES,
@@ -48,68 +48,70 @@ function renderScreen(overrides: Partial<MemoriesCarouselScreenProps> = {}) {
     ...overrides,
   };
 
-  return { props, ...render(<MemoriesCarouselScreen {...props} />) };
+  const screen = await render(<MemoriesCarouselScreen {...props} />);
+
+  return { props, ...screen };
 }
 
 describe('<MemoriesCarouselScreen />', () => {
-  test('renders the title and the memory cards', () => {
-    const { getByText, getByTestId } = renderScreen();
+  test('renders the title and the memory cards', async () => {
+    const { getByText, getByTestId } = await renderScreen();
 
     expect(getByText('Suas memórias')).toBeTruthy();
     expect(getByTestId('memories-carousel-card-photo-1')).toBeTruthy();
     expect(getByText('Restaurante Giozakaya')).toBeTruthy();
   });
 
-  test('hides the previous arrow on the first memory', () => {
-    const { queryByTestId } = renderScreen({ initialIndex: 0 });
+  test('hides the previous arrow on the first memory', async () => {
+    const { queryByTestId } = await renderScreen({ initialIndex: 0 });
 
     expect(queryByTestId('memories-carousel-previous')).toBeNull();
     expect(queryByTestId('memories-carousel-next')).toBeTruthy();
   });
 
-  test('hides the next arrow on the last memory, where the gallery ends', () => {
-    const { queryByTestId } = renderScreen({ initialIndex: 2 });
+  test('hides the next arrow on the last memory, where the gallery ends', async () => {
+    const { queryByTestId } = await renderScreen({ initialIndex: 2 });
 
     expect(queryByTestId('memories-carousel-next')).toBeNull();
     expect(queryByTestId('memories-carousel-previous')).toBeTruthy();
   });
 
-  test('moves between memories with the arrows', () => {
-    const { getByTestId, queryByTestId } = renderScreen({ initialIndex: 1 });
+  test('moves between memories with the arrows', async () => {
+    const { getByTestId, queryByTestId } = await renderScreen({ initialIndex: 1 });
 
-    fireEvent.press(getByTestId('memories-carousel-next'));
+    await fireEvent.press(getByTestId('memories-carousel-next'));
 
     expect(queryByTestId('memories-carousel-next')).toBeNull();
   });
 
-  test('opens the new memory flow from the add button', () => {
-    const { getByTestId, props } = renderScreen();
+  test('opens the new memory flow from the add button', async () => {
+    const { getByTestId, props } = await renderScreen();
 
-    fireEvent.press(getByTestId('memories-carousel-add'));
+    await fireEvent.press(getByTestId('memories-carousel-add'));
 
     expect(props.onAddMemory).toHaveBeenCalledTimes(1);
   });
 
-  test('shows the loading state', () => {
-    const { getByTestId, queryByTestId } = renderScreen({ isLoading: true, memories: [] });
+  test('shows the loading state', async () => {
+    const { getByTestId, queryByTestId } = await renderScreen({ isLoading: true, memories: [] });
 
     expect(getByTestId('memories-carousel-loading')).toBeTruthy();
     expect(queryByTestId('memories-carousel-list')).toBeNull();
   });
 
-  test('shows the empty state', () => {
-    const { getByTestId } = renderScreen({ memories: [] });
+  test('shows the empty state', async () => {
+    const { getByTestId } = await renderScreen({ memories: [] });
 
     expect(getByTestId('memories-carousel-empty')).toBeTruthy();
   });
 
-  test('shows the error state and retries', () => {
-    const { getByTestId, props } = renderScreen({
+  test('shows the error state and retries', async () => {
+    const { getByTestId, props } = await renderScreen({
       errorMessage: 'Não foi possível carregar as memórias do grupo.',
       memories: [],
     });
 
-    fireEvent.press(getByTestId('memories-carousel-retry'));
+    await fireEvent.press(getByTestId('memories-carousel-retry'));
 
     expect(props.onRetry).toHaveBeenCalledTimes(1);
   });

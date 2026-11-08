@@ -332,7 +332,7 @@ describe('MemoriesGalleryController', () => {
     mockUseLocalSearchParams.mockReturnValue({ id: 'group-1', month: '9', year: '2026' });
     mockGetGroupCalendar.mockResolvedValue([]);
 
-    render(<MemoriesGalleryController />);
+    await render(<MemoriesGalleryController />);
     await waitFor(() => {
       expect(screenProps().isLoading).toBe(false);
     });
