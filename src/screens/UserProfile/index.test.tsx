@@ -148,6 +148,46 @@ describe('UserProfileScreen', () => {
     expect(getByText('Confirmar Nova Senha')).toBeTruthy();
   });
 
+  test('shows and hides the three password fields with the "Mostrar" toggle', async () => {
+    const { getByText, getByLabelText, getByRole } = await Promise.resolve(
+      render(<UserProfileScreen {...defaultProps} />)
+    );
+
+    fireEvent.press(getByText('Alterar Senha'));
+    await Promise.resolve();
+
+    const passwordLabels = ['Senha Atual', 'Nova Senha', 'Confirmar Nova Senha'];
+
+    passwordLabels.forEach((label) => {
+      expect(getByLabelText(label).props.secureTextEntry).toBe(true);
+    });
+
+    fireEvent.press(getByRole('button', { name: 'Mostrar senha' }));
+
+    expect(getByRole('button', { name: 'Ocultar senha' })).toBeTruthy();
+    passwordLabels.forEach((label) => {
+      expect(getByLabelText(label).props.secureTextEntry).toBe(false);
+    });
+  });
+
+  test('hides the passwords again when the change-password modal is reopened', async () => {
+    const { getByText, getByLabelText, getByRole } = await Promise.resolve(
+      render(<UserProfileScreen {...defaultProps} />)
+    );
+
+    fireEvent.press(getByText('Alterar Senha'));
+    await Promise.resolve();
+    fireEvent.press(getByRole('button', { name: 'Mostrar senha' }));
+    fireEvent.press(getByText('Cancelar'));
+    await Promise.resolve();
+
+    fireEvent.press(getByText('Alterar Senha'));
+    await Promise.resolve();
+
+    expect(getByRole('button', { name: 'Mostrar senha' })).toBeTruthy();
+    expect(getByLabelText('Senha Atual').props.secureTextEntry).toBe(true);
+  });
+
   test('uses the loaded profile photo for the avatar', async () => {
     const profilePhotoUrl = 'https://api.alibe.test/users/user-123/profile-picture';
     const { getByTestId } = await Promise.resolve(
