@@ -43,11 +43,11 @@ export function SignUpScreen({ onContinue, onGoogleSignUp, emailError }: SignUpS
     <ScreenFrame
       padding="horizontal"
       topFade
-      testID="sign-up-screen"
-      overlay={
+      floatingChrome
+      header={
         <BackButton
           fallbackHref="/auth"
-          className="absolute left-6 top-20"
+          className="self-start"
         />
       }
     >

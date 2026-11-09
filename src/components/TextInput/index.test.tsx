@@ -19,6 +19,56 @@ function ControlledTextInput(
 }
 
 describe('<TextInput />', () => {
+  test('keeps the default height unless a smaller size is requested', async () => {
+    const { getByPlaceholderText, rerender } = await Promise.resolve(
+      render(
+        <TextInput
+          value=""
+          onChangeText={jest.fn()}
+          placeholder="Valor"
+        />
+      )
+    );
+    expect(getByPlaceholderText('Valor').props.className).toContain('py-4');
+
+    rerender(
+      <TextInput
+        value=""
+        onChangeText={jest.fn()}
+        placeholder="Valor"
+        size="sm"
+      />
+    );
+    await Promise.resolve();
+
+    expect(getByPlaceholderText('Valor').props.className).toContain('py-2');
+  });
+
+  test('uses ink text by default and accepts wine', async () => {
+    const { getByPlaceholderText, rerender } = await Promise.resolve(
+      render(
+        <TextInput
+          value=""
+          onChangeText={jest.fn()}
+          placeholder="Valor"
+        />
+      )
+    );
+    expect(getByPlaceholderText('Valor').props.className).toContain('text-ink');
+
+    rerender(
+      <TextInput
+        value=""
+        onChangeText={jest.fn()}
+        placeholder="Valor"
+        textColor="wine"
+      />
+    );
+    await Promise.resolve();
+
+    expect(getByPlaceholderText('Valor').props.className).toContain('text-wine');
+  });
+
   test('renders label and placeholder', async () => {
     const { getByText, getByPlaceholderText } = await Promise.resolve(
       render(

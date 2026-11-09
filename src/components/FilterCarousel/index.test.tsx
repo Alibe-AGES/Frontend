@@ -7,6 +7,25 @@ const tags = [
 ];
 
 describe('<FilterCarousel />', () => {
+  test('reaches the screen edges and keeps the first tag on the gutter when full bleed', async () => {
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <FilterCarousel
+          tags={tags}
+          selectedTagIds={[]}
+          onToggleTag={jest.fn()}
+          onOpenFilters={jest.fn()}
+          fullBleed
+          testID="carousel"
+        />
+      )
+    );
+    const carousel = getByTestId('carousel');
+
+    expect(carousel.props.className).toContain('-mx-6');
+    expect(carousel.props.contentContainerClassName).toContain('px-6');
+  });
+
   test('toggles tags and opens filters', async () => {
     const onToggleTag = jest.fn();
     const onOpenFilters = jest.fn();

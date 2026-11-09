@@ -5,8 +5,12 @@ import { theme } from '@/theme';
 
 import { ScreenFrame } from './index';
 
+const HEADER_HEIGHT = 200;
 const FOOTER_HEIGHT = 100;
 const FOOTER_SPACING = 32;
+const TOP_FADE_TAIL = 24;
+const DEFAULT_FADE_HEIGHT = 160;
+const FLOATING_CONTENT_TOP = 64;
 
 const flattenStyle = (style: unknown): Record<string, unknown> =>
   Object.assign({}, ...[style].flat(Infinity).filter(Boolean)) as Record<string, unknown>;
@@ -38,22 +42,122 @@ describe('<ScreenFrame />', () => {
     expect(getByTestId('frame')).toContainElement(getByText('Conteúdo'));
   });
 
-  test('renders the overlay outside the scrollable content', async () => {
-    const { getByTestId, getByText } = await render(
+  test('floats the chrome over a list and hands it the measured insets', () => {
+    const renderList = jest.fn(() => <Text>Lista</Text>);
+    const { getByTestId } = render(
       <ScreenFrame
-        overlay={<Text>Sobreposição</Text>}
+        scrollable={false}
+        floatingChrome
+        topFade="header"
+        header={<Text>Cabeçalho</Text>}
+        footer={<Text>Rodapé</Text>}
+        testID="frame"
+      >
+        {renderList}
+      </ScreenFrame>
+    );
+
+    fireEvent(getByTestId('screen-frame-header'), 'layout', {
+      nativeEvent: { layout: { height: HEADER_HEIGHT } },
+    });
+    fireEvent(getByTestId('screen-frame-footer'), 'layout', {
+      nativeEvent: { layout: { height: FOOTER_HEIGHT } },
+    });
+
+    expect(renderList).toHaveBeenLastCalledWith({
+      topInset: HEADER_HEIGHT + TOP_FADE_TAIL,
+      bottomInset: FOOTER_HEIGHT + FOOTER_SPACING,
+    });
+    expect(flattenStyle(getByTestId('frame').props.style).paddingBottom).toBe(0);
+    expect(getByTestId('screen-frame-header').props.className).toContain('absolute');
+    expect(flattenStyle(getByTestId('screen-frame-top-fade').props.style).height).toBe(
+      HEADER_HEIGHT + TOP_FADE_TAIL
+    );
+  });
+
+  test('starts scrollable content at the top, behind a floating header', () => {
+    const { getByTestId } = render(
+      <ScreenFrame
+        floatingChrome
+        header={<Text>Cabeçalho</Text>}
+        footer={<Text>Rodapé</Text>}
         testID="frame"
       >
         <Text>Conteúdo</Text>
       </ScreenFrame>
     );
 
-    expect(getByText('Sobreposição')).toBeTruthy();
-    expect(getByTestId('frame')).not.toContainElement(getByText('Sobreposição'));
+    fireEvent(getByTestId('screen-frame-header'), 'layout', {
+      nativeEvent: { layout: { height: HEADER_HEIGHT } },
+    });
+    fireEvent(getByTestId('screen-frame-footer'), 'layout', {
+      nativeEvent: { layout: { height: FOOTER_HEIGHT } },
+    });
+
+    const style = flattenStyle(getByTestId('frame').props.contentContainerStyle);
+
+    expect(style.paddingTop).toBe(FLOATING_CONTENT_TOP);
+    expect(style.paddingBottom).toBe(FOOTER_HEIGHT + FOOTER_SPACING);
   });
 
-  test('hides the top fade at rest and reveals it as the content scrolls', async () => {
-    const { getByTestId } = await render(
+  test('keeps the header fade gradient fixed while the header height changes', () => {
+    const { getByTestId, UNSAFE_getAllByType } = render(
+      <ScreenFrame
+        floatingChrome
+        topFade="header"
+        header={<Text>Cabeçalho</Text>}
+      >
+        <Text>Conteúdo</Text>
+      </ScreenFrame>
+    );
+    const stopOffsets = () => UNSAFE_getAllByType(Stop).map((stop) => stop.props.offset as number);
+    const initialOffsets = stopOffsets();
+
+    fireEvent(getByTestId('screen-frame-header'), 'layout', {
+      nativeEvent: { layout: { height: HEADER_HEIGHT } },
+    });
+
+    expect(flattenStyle(getByTestId('screen-frame-top-fade-solid').props.style).height).toBe(
+      HEADER_HEIGHT
+    );
+    expect(stopOffsets()).toEqual(initialOffsets);
+  });
+
+  test('reports every scroll frame while the fade follows the scroll', () => {
+    const { getByTestId } = render(
+      <ScreenFrame
+        topFade
+        testID="frame"
+      >
+        <Text>Conteúdo</Text>
+      </ScreenFrame>
+    );
+
+    expect(getByTestId('frame').props.scrollEventThrottle).toBe(16);
+  });
+
+  test('keeps the default fade behind a floating header unless told to fill it', () => {
+    const { getByTestId } = render(
+      <ScreenFrame
+        floatingChrome
+        topFade
+        header={<Text>Cabeçalho</Text>}
+      >
+        <Text>Conteúdo</Text>
+      </ScreenFrame>
+    );
+
+    fireEvent(getByTestId('screen-frame-header'), 'layout', {
+      nativeEvent: { layout: { height: HEADER_HEIGHT } },
+    });
+
+    expect(flattenStyle(getByTestId('screen-frame-top-fade').props.style).height).toBe(
+      DEFAULT_FADE_HEIGHT
+    );
+  });
+
+  test('hides the top fade at rest and reveals it as the content scrolls', () => {
+    const { getByTestId } = render(
       <ScreenFrame
         topFade
         testID="frame"

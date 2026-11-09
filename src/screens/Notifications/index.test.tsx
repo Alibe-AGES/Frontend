@@ -41,11 +41,16 @@ async function renderScreen(overrides: Partial<NotificationsScreenProps> = {}) {
 }
 
 describe('<NotificationsScreen />', () => {
-  test('shows the group header', async () => {
-    const { getByText } = await renderScreen();
+  test('shows the title and the group in the floating header', async () => {
+    const { getByText, getByTestId } = await renderScreen();
 
     expect(getByText('Hermanas')).toBeTruthy();
     expect(getByText('Eu, Kata, Manu e May')).toBeTruthy();
+    expect(getByText('Notificações')).toBeTruthy();
+    // The title and the group stay in the floating header while the list scrolls behind it.
+    expect(getByTestId('screen-frame-header')).toContainElement(getByTestId('notifications-title'));
+    expect(getByTestId('screen-frame-header')).toContainElement(getByTestId('notifications-group'));
+    expect(getByTestId('screen-frame-top-fade')).toBeTruthy();
   });
 
   test('lists every notification with the clear button', async () => {
@@ -55,6 +60,8 @@ describe('<NotificationsScreen />', () => {
       expect(getByTestId(`notifications-card-${notification.id}`)).toBeTruthy();
     }
     expect(getByTestId('notifications-clear')).toBeTruthy();
+    // Fixed in the header, above the list, instead of scrolling with it.
+    expect(getByTestId('screen-frame-header')).toContainElement(getByTestId('notifications-clear'));
   });
 
   test('forwards card presses, dismissals and clear to the controller', async () => {

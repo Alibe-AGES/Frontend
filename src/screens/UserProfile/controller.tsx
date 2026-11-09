@@ -1,12 +1,12 @@
-import { API_BASE_URL } from '@/constants';
 import { signOut } from '@/server/auth';
 import { useAuth } from '@/server/mock/useAuth';
 import { getUserProfile as getMockUserProfile } from '@/server/mock/userProfile';
+import { resolveApiImageUrl } from '@/utils/apiImageUrl';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import Toast from 'react-native-toast-message';
-import { UserProfileScreen } from '.';
-import { getMyProfile } from '../../server/users';
+import { UserProfileScreen, type UserProfileUpdate } from '.';
+import { getMyProfile, updateMyProfile, updateUserProfilePicture } from '../../server/users';
 
 export interface ProfileData {
   name: string;
@@ -39,7 +39,7 @@ export default function UserProfileController() {
 
         setProfile({
           name: apiData.name,
-          photoUri: apiData.profilePic ? `${API_BASE_URL}${apiData.profilePic}` : null,
+          photoUri: resolveApiImageUrl(apiData.profilePic),
           created_at: new Date(apiData.createdAt).toLocaleDateString('pt-BR', {
             month: 'long',
             year: 'numeric',
@@ -54,7 +54,6 @@ export default function UserProfileController() {
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Erro ao buscar perfil'));
 
-      // Feedback visual para o utilizador
       Toast.show({
         type: 'error',
         text1: 'Erro!',
@@ -68,6 +67,18 @@ export default function UserProfileController() {
   useEffect(() => {
     void fetchProfile();
   }, [fetchProfile]);
+
+  const handleUpdateProfile = async ({ name, photo }: UserProfileUpdate) => {
+    const trimmedName = name.trim();
+
+    if (trimmedName !== profile?.name) {
+      await updateMyProfile({ name: trimmedName });
+    }
+
+    if (photo) {
+      await updateUserProfilePicture(photo);
+    }
+  };
 
   const handleLogout = async () => {
     await signOut();
@@ -86,6 +97,7 @@ export default function UserProfileController() {
         void fetchProfile();
       }}
       onLogout={handleLogout}
+      onUpdateProfile={handleUpdateProfile}
     />
   );
 }

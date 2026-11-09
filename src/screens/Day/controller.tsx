@@ -1,5 +1,4 @@
 import { type GroupDayCarouselItem } from '@/components/GroupDayCarousel';
-import { API_BASE_URL } from '@/constants';
 import { CalendarDay, getGroupCalendar } from '@/server/calendar';
 import {
   EventDetailsResponse,
@@ -25,15 +24,13 @@ function getEventIds(day: CalendarDay): string[] {
 
 function mapEventToCarouselItem(
   event: EventDetailsResponse,
-  kind: GroupDayCarouselItem['kind'],
   currentUserId: string | null,
   groupMembers: GroupMember[]
 ): GroupDayCarouselItem {
-  const imageUrl = event.image ? `${API_BASE_URL}${event.image}` : null;
   const timeslot = event.date && event.time ? `${event.date}T${event.time}:00` : null;
+  const { owner, responses } = event.proposal;
 
   return {
-    kind,
     event: {
       id: event.id,
       name: event.name,
@@ -42,31 +39,31 @@ function mapEventToCarouselItem(
       budgetEnd: event.budgetEnd,
       status: event.status,
       location: { address: event.location?.description },
-      imageUrl,
+      imageUrl: event.image,
     },
-    proposal: {
-      ownerName: event.proposal.owner.name,
-      currentUserAnswer: event.proposal.responses.find(
-        (response) => response.user.id === currentUserId
-      )?.answer,
-      responses: groupMembers.map((member) => {
-        const response = event.proposal.responses.find((item) => item.user.id === member.id);
-        return {
-          userId: member.id,
-          name: member.name,
-          profilePic: member.profilePic,
-          answer: response?.answer ?? 'pending',
-        };
-      }),
-    },
+    owner: { id: owner.id, name: owner.name, photoUri: owner.image },
+    currentUserAnswer: responses.find((response) => response.user.id === currentUserId)?.answer,
+    responses: groupMembers.map((member) => {
+      const response = responses.find((item) => item.user.id === member.id);
+      return {
+        userId: member.id,
+        name: member.name,
+        profilePic: member.profilePic,
+        answer: response?.answer ?? 'pending',
+      };
+    }),
   };
+}
+
+// Events of the day in chronological order; those without a time go last.
+function compareByTime(first: EventDetailsResponse, second: EventDetailsResponse) {
+  return (first.time ?? '99:99').localeCompare(second.time ?? '99:99');
 }
 
 export default function DayController() {
   const router = useRouter();
   const { id: groupId, date } = useLocalSearchParams<{ id: string; date: string }>();
   const requestIdRef = useRef(0);
-  const [calendarDay, setCalendarDay] = useState<CalendarDay | null>(null);
   const [eventDetails, setEventDetails] = useState<EventDetailsResponse[]>([]);
   const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -81,7 +78,6 @@ export default function DayController() {
 
     async function loadDayDetails() {
       if (!groupId || !year || !month || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        setCalendarDay(null);
         setEventDetails([]);
         setError('Data inválida para carregar os detalhes do dia.');
         setIsLoading(false);
@@ -102,7 +98,6 @@ export default function DayController() {
           return;
         }
 
-        setCalendarDay(selectedDay);
         setCurrentUserId(user?.id ?? null);
         setGroupMembers(members);
         if (!selectedDay) {
@@ -167,26 +162,9 @@ export default function DayController() {
     }
   };
 
-  const items: GroupDayCarouselItem[] = calendarDay
-    ? [
-        ...calendarDay.scheduledEventIds.flatMap((eventId) => {
-          const event = eventDetails.find((detail) => detail.id === eventId);
-          return event ? [mapEventToCarouselItem(event, 'event', currentUserId, groupMembers)] : [];
-        }),
-        ...calendarDay.completedEventIds.flatMap((eventId) => {
-          const event = eventDetails.find((detail) => detail.id === eventId);
-          return event ? [mapEventToCarouselItem(event, 'event', currentUserId, groupMembers)] : [];
-        }),
-        ...(calendarDay.proposalEventIds ?? []).flatMap(({ proposalId, eventId }) => {
-          const event = eventDetails.find(
-            (detail) => detail.id === eventId && detail.proposal.id === proposalId
-          );
-          return event
-            ? [mapEventToCarouselItem(event, 'proposal', currentUserId, groupMembers)]
-            : [];
-        }),
-      ]
-    : [];
+  const items: GroupDayCarouselItem[] = [...eventDetails]
+    .sort(compareByTime)
+    .map((event) => mapEventToCarouselItem(event, currentUserId, groupMembers));
 
   return (
     <DayScreen

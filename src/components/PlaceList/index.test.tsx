@@ -102,6 +102,29 @@ describe('<PlaceList />', () => {
     expect(onRetry).toHaveBeenCalled();
   });
 
+  test('keeps the footer with places and with the empty state', async () => {
+    const footer = <Text>Rodapé</Text>;
+    const { getByText, rerender } = await Promise.resolve(
+      render(
+        <PlaceList
+          places={places}
+          footer={footer}
+        />
+      )
+    );
+    expect(getByText('Rodapé')).toBeTruthy();
+
+    rerender(
+      <PlaceList
+        places={[]}
+        footer={footer}
+      />
+    );
+    await Promise.resolve();
+    expect(getByText('Rodapé')).toBeTruthy();
+    expect(getByText('Nenhum local encontrado.')).toBeTruthy();
+  });
+
   test('keeps the header visible with places, empty and loading states', async () => {
     const header = <Text>Cabeçalho</Text>;
     const { getByText, rerender } = await Promise.resolve(

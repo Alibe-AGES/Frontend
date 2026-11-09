@@ -1,9 +1,9 @@
 import { BackButton } from '@/components/BackButton';
 import { GroupDayCarousel, type GroupDayCarouselItem } from '@/components/GroupDayCarousel';
-import { NavigationBar } from '@/components/NavigationBar';
 import { ScreenFrame } from '@/components/ScreenFrame';
 import type { EventPresenceAnswer } from '@/server/events';
-import { Text, View } from 'react-native';
+import { theme } from '@/theme';
+import { ActivityIndicator, Text, View } from 'react-native';
 
 interface DayScreenProps {
   groupId?: string;
@@ -28,30 +28,46 @@ export function DayScreen({
   pendingEventId,
   currentUserId,
 }: DayScreenProps) {
+  const dateLabel = date.split('-').reverse().join('/');
+
   return (
     <ScreenFrame
-      gap="lg"
-      footer={groupId ? <NavigationBar groupId={groupId} /> : undefined}
       testID="group-day-screen"
+      floatingChrome
+      topFade="header"
+      header={
+        <View className="flex-row items-center gap-4">
+          <BackButton
+            fallbackHref={groupId ? `/group/${groupId}` : '/groups'}
+            accessibilityLabel="Voltar para o calendário do grupo"
+          />
+          <Text className="flex-1 font-poppins-semibold text-2xl text-ink">{dateLabel}</Text>
+        </View>
+      }
     >
-      <View className="flex-row items-center gap-4">
-        <BackButton
-          fallbackHref={groupId ? `/group/${groupId}` : '/groups'}
-          accessibilityLabel="Voltar para o calendário do grupo"
-        />
-        <Text className="flex-1 font-poppins-semibold text-2xl text-ink">Detalhes do dia</Text>
-      </View>
-
-      <GroupDayCarousel
-        date={date}
-        items={items}
-        isLoading={isLoading}
-        error={error}
-        onAvailabilityPress={onAvailabilityPress}
-        onPresenceResponse={onPresenceResponse}
-        pendingEventId={pendingEventId}
-        currentUserId={currentUserId}
-      />
+      {isLoading ? (
+        <View
+          className="flex-1 items-center justify-center"
+          testID="group-day-loading"
+        >
+          <ActivityIndicator
+            size="large"
+            color={theme.colors.ink}
+            accessibilityLabel="Carregando informações do dia"
+          />
+        </View>
+      ) : (
+        <View className="mb-8 mt-16">
+          <GroupDayCarousel
+            items={items}
+            error={error}
+            onAvailabilityPress={onAvailabilityPress}
+            onPresenceResponse={onPresenceResponse}
+            pendingEventId={pendingEventId}
+            currentUserId={currentUserId}
+          />
+        </View>
+      )}
     </ScreenFrame>
   );
 }

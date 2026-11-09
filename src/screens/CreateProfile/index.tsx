@@ -1,9 +1,9 @@
+import { BackButton } from '@/components/BackButton';
 import { ContinueButton } from '@/components/ContinueButton';
 import { PhotoPicker } from '@/components/PhotoPicker';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
 import { ScreenFrame } from '@/components/ScreenFrame';
 import { TextInput } from '@/components/TextInput';
-import { BackButton } from '@/components/BackButton';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
@@ -36,11 +36,11 @@ export function CreateProfileScreen({
     <ScreenFrame
       padding="horizontal"
       topFade="always"
-      testID="create-profile-screen"
-      overlay={
+      floatingChrome
+      header={
         <BackButton
           fallbackHref="/sign-up"
-          className="absolute left-6 top-20"
+          className="self-start"
         />
       }
     >

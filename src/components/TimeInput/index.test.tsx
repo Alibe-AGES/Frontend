@@ -179,6 +179,24 @@ describe('<TimeInput />', () => {
     );
   });
 
+  test('highlights the field without a message when marked invalid', async () => {
+    const { getByTestId, queryByTestId } = await Promise.resolve(
+      render(
+        <TimeInput
+          invalid
+          value="20:00"
+          onChangeTime={jest.fn()}
+        />
+      )
+    );
+
+    expect(getByTestId('alibe-time-input-field')).toHaveProp(
+      'className',
+      expect.stringContaining('border-coral')
+    );
+    expect(queryByTestId('alibe-time-input-error')).toBeNull();
+  });
+
   test('does not accept edits while disabled', async () => {
     const { getByTestId } = await Promise.resolve(
       render(

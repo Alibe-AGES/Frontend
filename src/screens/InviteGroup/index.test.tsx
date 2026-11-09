@@ -84,7 +84,7 @@ describe('<InviteGroupScreen />', () => {
     const { getByText } = await renderInviteGroup();
 
     expect(
-      getByText('Agora é só compartilhar o link para convidar seus amigos para o grupo.')
+      getByText(/Agora é só compartilhar\s+o link para convidar seus\s+amigos para o grupo\./)
     ).toBeTruthy();
   });
 

@@ -9,7 +9,7 @@ describe('NextEventBanner', () => {
       render(<NextEventBanner event={{ name: 'Cinema', timeslot }} />)
     );
 
-    expect(getByText('• Sexta-feira, 22 de maio, às 16h')).toBeTruthy();
+    expect(getByText('Sexta-feira, 22 de maio, às 16h')).toBeTruthy();
     expect(getByText('• Cinema')).toBeTruthy();
   });
 
