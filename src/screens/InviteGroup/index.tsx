@@ -61,8 +61,8 @@ export function InviteGroupScreen() {
           Tudo{'\n'}pronto!
         </Text>
 
-        <Text className="mt-3 text-center font-poppins text-sm text-coral">
-          Agora é só compartilhar o link para convidar seus amigos para o grupo.
+        <Text className="mt-5 text-center font-poppins text-xl leading-7 text-wine">
+          Agora é só compartilhar{'\n'}o link para convidar seus{'\n'}amigos para o grupo.
         </Text>
 
         <View className="mt-8 min-h-16 justify-center">
