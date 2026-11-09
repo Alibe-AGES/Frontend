@@ -42,7 +42,6 @@ export function LoginScreen({
       padding="horizontal"
       topFade
       floatingChrome
-      testID="login-screen"
       header={
         <BackButton
           className="self-start"

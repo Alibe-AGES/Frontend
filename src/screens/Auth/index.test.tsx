@@ -44,7 +44,7 @@ describe('<AuthScreen />', () => {
   test('navigates to the login screen when Login is pressed', async () => {
     const { getByText } = await Promise.resolve(render(<AuthScreen />));
 
-    fireEvent.press(getByText('Login'));
+    await fireEvent.press(getByText('Login'));
     await Promise.resolve();
 
     expect(mockPush).toHaveBeenCalledTimes(1);
@@ -54,7 +54,7 @@ describe('<AuthScreen />', () => {
   test('navigates to the sign-up screen when Criar conta is pressed', async () => {
     const { getByText } = await Promise.resolve(render(<AuthScreen />));
 
-    fireEvent.press(getByText('Criar conta'));
+    await fireEvent.press(getByText('Criar conta'));
     await Promise.resolve();
 
     expect(mockPush).toHaveBeenCalledTimes(1);

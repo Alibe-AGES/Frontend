@@ -35,7 +35,7 @@ describe('<PlaceList />', () => {
       )
     );
 
-    fireEvent(getByTestId('alibe-place-list'), 'endReached');
+    await fireEvent(getByTestId('alibe-place-list'), 'endReached');
     await Promise.resolve();
 
     expect(getByText('Local 2')).toBeTruthy();
@@ -67,7 +67,7 @@ describe('<PlaceList />', () => {
       )
     );
 
-    fireEvent.press(getByLabelText('Abrir Local 1'));
+    await fireEvent.press(getByLabelText('Abrir Local 1'));
     await Promise.resolve();
 
     expect(onPlacePress).toHaveBeenCalledWith('place-1');
@@ -97,7 +97,7 @@ describe('<PlaceList />', () => {
         />
       )
     );
-    fireEvent.press(failed.getByLabelText('Tentar novamente'));
+    await fireEvent.press(failed.getByLabelText('Tentar novamente'));
     await Promise.resolve();
     expect(onRetry).toHaveBeenCalled();
   });
@@ -137,7 +137,7 @@ describe('<PlaceList />', () => {
     );
     expect(getByText('Cabeçalho')).toBeTruthy();
 
-    rerender(
+    await rerender(
       <PlaceList
         places={places}
         filter={() => false}
@@ -148,7 +148,7 @@ describe('<PlaceList />', () => {
     expect(getByText('Cabeçalho')).toBeTruthy();
     expect(getByText('Nenhum local encontrado.')).toBeTruthy();
 
-    rerender(
+    await rerender(
       <PlaceList
         places={places}
         isLoading

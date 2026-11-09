@@ -18,11 +18,11 @@ async function fillForm(
   getByPlaceholderText: GetByPlaceholderText,
   { email = 'rica@alibe.com', password = 'segredo123', confirmation = 'segredo123' } = {}
 ) {
-  fireEvent.changeText(getByPlaceholderText('Email'), email);
+  await fireEvent.changeText(getByPlaceholderText('Email'), email);
   await Promise.resolve();
-  fireEvent.changeText(getByPlaceholderText('Senha'), password);
+  await fireEvent.changeText(getByPlaceholderText('Senha'), password);
   await Promise.resolve();
-  fireEvent.changeText(getByPlaceholderText('Confirmar senha'), confirmation);
+  await fireEvent.changeText(getByPlaceholderText('Confirmar senha'), confirmation);
   await Promise.resolve();
 }
 
@@ -94,7 +94,7 @@ describe('<SignUpScreen />', () => {
       disabled: true,
     });
 
-    fireEvent.press(getByTestId('sign-up-continue'));
+    await fireEvent.press(getByTestId('sign-up-continue'));
     await Promise.resolve();
 
     expect(onContinue).not.toHaveBeenCalled();
@@ -143,7 +143,7 @@ describe('<SignUpScreen />', () => {
       render(<SignUpScreen onContinue={onContinue} />)
     );
 
-    fireEvent.changeText(getByPlaceholderText('Senha'), 'segredo123');
+    await fireEvent.changeText(getByPlaceholderText('Senha'), 'segredo123');
     await Promise.resolve();
 
     expect(queryByText('As senhas não coincidem.')).toBeNull();
@@ -155,7 +155,7 @@ describe('<SignUpScreen />', () => {
     );
 
     await fillForm(getByPlaceholderText, { email: '  rica@alibe.com  ' });
-    fireEvent.press(getByTestId('sign-up-continue'));
+    await fireEvent.press(getByTestId('sign-up-continue'));
     await Promise.resolve();
 
     expect(onContinue).toHaveBeenCalledWith({ email: 'rica@alibe.com', password: 'segredo123' });
@@ -169,7 +169,7 @@ describe('<SignUpScreen />', () => {
     expect(getByPlaceholderText('Senha').props.secureTextEntry).toBe(true);
     expect(getByPlaceholderText('Confirmar senha').props.secureTextEntry).toBe(true);
 
-    fireEvent.press(getByTestId('sign-up-show-passwords'));
+    await fireEvent.press(getByTestId('sign-up-show-passwords'));
     await Promise.resolve();
 
     expect(getByPlaceholderText('Senha').props.secureTextEntry).toBe(false);

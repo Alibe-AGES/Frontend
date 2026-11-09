@@ -90,7 +90,7 @@ describe('<TextInput />', () => {
       render(<ControlledTextInput testID="name-input" />)
     );
 
-    fireEvent.changeText(getByTestId('name-input'), 'Alibe');
+    await fireEvent.changeText(getByTestId('name-input'), 'Alibe');
     await Promise.resolve();
 
     expect(getByDisplayValue('Alibe')).toBeTruthy();
@@ -109,7 +109,7 @@ describe('<TextInput />', () => {
       )
     );
 
-    fireEvent.changeText(getByTestId('all-input'), 'Rua 123, ap° 4 - #casa!');
+    await fireEvent.changeText(getByTestId('all-input'), 'Rua 123, ap° 4 - #casa!');
     await Promise.resolve();
 
     expect(onChangeText).toHaveBeenLastCalledWith('Rua 123, ap° 4 - #casa!');
@@ -129,7 +129,7 @@ describe('<TextInput />', () => {
       )
     );
 
-    fireEvent.changeText(getByTestId('numeric-input'), '12a3b');
+    await fireEvent.changeText(getByTestId('numeric-input'), '12a3b');
     await Promise.resolve();
 
     expect(onChangeText).toHaveBeenLastCalledWith('123');
@@ -149,7 +149,7 @@ describe('<TextInput />', () => {
       )
     );
 
-    fireEvent.changeText(getByTestId('numeric-input'), '2026');
+    await fireEvent.changeText(getByTestId('numeric-input'), '2026');
     await Promise.resolve();
 
     expect(onChangeText).toHaveBeenLastCalledWith('2026');
@@ -169,7 +169,7 @@ describe('<TextInput />', () => {
       )
     );
 
-    fireEvent.changeText(getByTestId('alphanumeric-input'), 'Alibe#2026!');
+    await fireEvent.changeText(getByTestId('alphanumeric-input'), 'Alibe#2026!');
     await Promise.resolve();
 
     expect(onChangeText).toHaveBeenLastCalledWith('Alibe2026');
@@ -189,7 +189,7 @@ describe('<TextInput />', () => {
       )
     );
 
-    fireEvent.changeText(getByTestId('alphanumeric-input'), 'Grupo Familia 2026');
+    await fireEvent.changeText(getByTestId('alphanumeric-input'), 'Grupo Familia 2026');
     await Promise.resolve();
 
     expect(onChangeText).toHaveBeenLastCalledWith('Grupo Familia 2026');
@@ -208,7 +208,7 @@ describe('<TextInput />', () => {
       )
     );
 
-    fireEvent(getByTestId('email-input'), 'blur');
+    await fireEvent(getByTestId('email-input'), 'blur');
     await Promise.resolve();
 
     expect(getByText('Informe um e-mail válido.')).toBeTruthy();
@@ -226,7 +226,7 @@ describe('<TextInput />', () => {
       )
     );
 
-    fireEvent(getByTestId('email-input'), 'blur');
+    await fireEvent(getByTestId('email-input'), 'blur');
     await Promise.resolve();
 
     expect(queryByTestId('email-input-error')).toBeNull();
@@ -244,7 +244,7 @@ describe('<TextInput />', () => {
       )
     );
 
-    fireEvent(getByTestId('email-input'), 'blur');
+    await fireEvent(getByTestId('email-input'), 'blur');
     await Promise.resolve();
 
     expect(queryByTestId('email-input-error')).toBeNull();
@@ -294,7 +294,7 @@ describe('<TextInput />', () => {
       )
     );
 
-    fireEvent(getByTestId('blur-input'), 'blur');
+    await fireEvent(getByTestId('blur-input'), 'blur');
     await Promise.resolve();
 
     expect(onBlur).toHaveBeenCalledTimes(1);
@@ -314,11 +314,11 @@ describe('<TextInput />', () => {
     const field = getByTestId('focus-input-field');
     expect(field.props.className).toContain('border-transparent');
 
-    fireEvent(getByTestId('focus-input'), 'focus');
+    await fireEvent(getByTestId('focus-input'), 'focus');
     await Promise.resolve();
     expect(field.props.className).toContain('border-ink');
 
-    fireEvent(getByTestId('focus-input'), 'blur');
+    await fireEvent(getByTestId('focus-input'), 'blur');
     await Promise.resolve();
     expect(field.props.className).toContain('border-transparent');
   });
@@ -335,7 +335,7 @@ describe('<TextInput />', () => {
       )
     );
 
-    fireEvent(getByTestId('focus-error-input'), 'focus');
+    await fireEvent(getByTestId('focus-error-input'), 'focus');
     await Promise.resolve();
 
     expect(getByTestId('focus-error-input-field').props.className).toContain('border-coral');
@@ -450,7 +450,7 @@ describe('<TextInput />', () => {
       )
     );
 
-    fireEvent(getByTestId('focused-input'), 'focus');
+    await fireEvent(getByTestId('focused-input'), 'focus');
     await Promise.resolve();
 
     expect(handleFocus).toHaveBeenCalled();

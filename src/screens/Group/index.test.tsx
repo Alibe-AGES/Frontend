@@ -55,7 +55,7 @@ const mockGetGroup = getGroup as jest.MockedFunction<typeof getGroup>;
 const mockGetGroupMembers = getGroupMembers as jest.MockedFunction<typeof getGroupMembers>;
 
 async function renderGroup() {
-  const result = render(<GroupScreen />);
+  const result = await render(<GroupScreen />);
   const requests = [
     mockGetGroup.mock.results.at(-1)?.value,
     mockGetGroupMembers.mock.results.at(-1)?.value,
@@ -123,7 +123,7 @@ describe('GroupScreen', () => {
     });
 
     mockDayPress?.('2026-09-22');
-    fireEvent.press(getByTestId('group-screen-members'));
+    await fireEvent.press(getByTestId('group-screen-members'));
     await Promise.resolve();
 
     expect(push).toHaveBeenCalledWith({
@@ -143,7 +143,7 @@ describe('GroupScreen', () => {
       expect(getByTestId('group-screen')).toBeTruthy();
     });
 
-    fireEvent.press(getByTestId('group-screen-profile'));
+    await fireEvent.press(getByTestId('group-screen-profile'));
     await Promise.resolve();
 
     expect(push).toHaveBeenCalledWith({

@@ -37,7 +37,7 @@ const details: PlaceDetails = {
 };
 
 async function renderDetails(props: ComponentProps<typeof ExperienceDetailsScreen>) {
-  const result = render(<ExperienceDetailsScreen {...props} />);
+  const result = await render(<ExperienceDetailsScreen {...props} />);
   const request: unknown = props.isStoredLocation
     ? jest.mocked(getStoredLocationDetails).mock.results.at(-1)?.value
     : jest.mocked(getPlaceDetails).mock.results.at(-1)?.value;
@@ -97,7 +97,7 @@ describe('<ExperienceDetailsScreen />', () => {
     (useRouter as jest.Mock).mockReturnValue({ back, push: jest.fn() });
     const { getByTestId } = await renderDetails({ groupId: 'group-1', placeId: 'cafe-1' });
 
-    fireEvent.press(getByTestId('experience-details-back'));
+    await fireEvent.press(getByTestId('experience-details-back'));
     await Promise.resolve();
     expect(back).toHaveBeenCalled();
   });
@@ -139,7 +139,7 @@ describe('<ExperienceDetailsScreen />', () => {
     });
     const { findByTestId } = await renderDetails({ groupId: 'group-1', placeId: 'cafe-1' });
 
-    fireEvent.press(await findByTestId('experience-suggest-location'));
+    await fireEvent.press(await findByTestId('experience-suggest-location'));
     await Promise.resolve();
     expect(push).toHaveBeenCalledWith({
       pathname: '/group/[id]/create-event',
@@ -168,7 +168,7 @@ describe('<ExperienceDetailsScreen />', () => {
       isStoredLocation: true,
     });
 
-    fireEvent.press(await findByTestId('experience-suggest-location'));
+    await fireEvent.press(await findByTestId('experience-suggest-location'));
     await Promise.resolve();
 
     expect(getStoredLocationDetails).toHaveBeenCalledWith('location-1');

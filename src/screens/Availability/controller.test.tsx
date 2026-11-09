@@ -32,7 +32,7 @@ const mockGetAvailabilitiesByDate = getAvailabilitiesByDate as jest.MockedFuncti
 const mockCreateAvailability = createAvailability as jest.MockedFunction<typeof createAvailability>;
 
 async function renderController() {
-  render(<AvailabilityController />);
+  await render(<AvailabilityController />);
   await waitFor(() => {
     expect(mockAvailabilityProps.participants).toHaveLength(2);
   });

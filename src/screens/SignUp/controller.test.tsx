@@ -39,13 +39,13 @@ describe('SignUpController', () => {
       render(<SignUpController />)
     );
 
-    fireEvent.changeText(getByPlaceholderText('Email'), 'rica@alibe.com');
+    await fireEvent.changeText(getByPlaceholderText('Email'), 'rica@alibe.com');
     await Promise.resolve();
-    fireEvent.changeText(getByPlaceholderText('Senha'), 'segredo123');
+    await fireEvent.changeText(getByPlaceholderText('Senha'), 'segredo123');
     await Promise.resolve();
-    fireEvent.changeText(getByPlaceholderText('Confirmar senha'), 'segredo123');
+    await fireEvent.changeText(getByPlaceholderText('Confirmar senha'), 'segredo123');
     await Promise.resolve();
-    fireEvent.press(getByTestId('sign-up-continue'));
+    await fireEvent.press(getByTestId('sign-up-continue'));
     await Promise.resolve();
 
     expect(setDraft).toHaveBeenCalledWith({ email: 'rica@alibe.com', password: 'segredo123' });

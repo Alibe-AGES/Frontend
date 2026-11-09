@@ -1,6 +1,5 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import { processColor, Text } from 'react-native';
-import { Stop } from 'react-native-svg';
 
 import { theme } from '@/theme';
 
@@ -17,8 +16,8 @@ const flattenStyle = (style: unknown): Record<string, unknown> =>
   Object.assign({}, ...[style].flat(Infinity).filter(Boolean)) as Record<string, unknown>;
 
 describe('<ScreenFrame />', () => {
-  test('renders its children inside a scroll view by default', () => {
-    const { getByTestId, getByText } = render(
+  test('renders its children inside a scroll view by default', async () => {
+    const { getByTestId, getByText } = await render(
       <ScreenFrame testID="frame">
         <Text>Conteúdo</Text>
       </ScreenFrame>
@@ -28,8 +27,8 @@ describe('<ScreenFrame />', () => {
     expect(getByTestId('frame').props.keyboardShouldPersistTaps).toBe('handled');
   });
 
-  test('renders the header outside the scrollable content', () => {
-    const { getByTestId, getByText } = render(
+  test('renders the header outside the scrollable content', async () => {
+    const { getByTestId, getByText } = await render(
       <ScreenFrame
         header={<Text>Cabeçalho</Text>}
         testID="frame"
@@ -171,7 +170,7 @@ describe('<ScreenFrame />', () => {
     expect(getFadeStyle().opacity).toBe(0);
     expect(getFadeStyle().pointerEvents).toBe('none');
 
-    fireEvent.scroll(getByTestId('frame'), {
+    await fireEvent.scroll(getByTestId('frame'), {
       nativeEvent: {
         contentOffset: { x: 0, y: 48 },
         contentSize: { width: 400, height: 1000 },
@@ -182,8 +181,8 @@ describe('<ScreenFrame />', () => {
     expect(getFadeStyle().opacity).toBe(1);
   });
 
-  test('shows the top fade at rest when set to always, even without scrolling', () => {
-    const { getByTestId } = render(
+  test('shows the top fade at rest when set to always, even without scrolling', async () => {
+    const { getByTestId } = await render(
       <ScreenFrame
         topFade="always"
         scrollable={false}
@@ -195,8 +194,8 @@ describe('<ScreenFrame />', () => {
     expect(flattenStyle(getByTestId('screen-frame-top-fade').props.style).opacity).toBe(1);
   });
 
-  test('hides the top fade again when the content returns to the top', () => {
-    const { getByTestId } = render(
+  test('hides the top fade again when the content returns to the top', async () => {
+    const { getByTestId } = await render(
       <ScreenFrame
         topFade
         testID="frame"
@@ -204,8 +203,8 @@ describe('<ScreenFrame />', () => {
         <Text>Conteúdo</Text>
       </ScreenFrame>
     );
-    const scrollTo = (y: number) => {
-      fireEvent.scroll(getByTestId('frame'), {
+    const scrollTo = async (y: number) => {
+      await fireEvent.scroll(getByTestId('frame'), {
         nativeEvent: {
           contentOffset: { x: 0, y },
           contentSize: { width: 400, height: 1000 },
@@ -214,14 +213,14 @@ describe('<ScreenFrame />', () => {
       });
     };
 
-    scrollTo(48);
-    scrollTo(0);
+    await scrollTo(48);
+    await scrollTo(0);
 
     expect(flattenStyle(getByTestId('screen-frame-top-fade').props.style).opacity).toBe(0);
   });
 
-  test.each(['canvas', 'surface'] as const)('fades into the %s background', (background) => {
-    const { UNSAFE_getAllByType } = render(
+  test.each(['canvas', 'surface'] as const)('fades into the %s background', async (background) => {
+    const { container } = await render(
       <ScreenFrame
         background={background}
         topFade="always"
@@ -230,10 +229,11 @@ describe('<ScreenFrame />', () => {
       </ScreenFrame>
     );
 
+    // Test Renderer only keeps host elements: the native gradient lists [offset, color, ...],
+    // with each stop's opacity folded into the color's alpha, so compare the RGB part.
     const toRgb = (color: unknown) => (Number(color) >>> 0) & 0xffffff;
-    const stopColors = UNSAFE_getAllByType(Stop).map((stop) =>
-      processColor(stop.props.stopColor as string)
-    );
+    const [gradient] = container.queryAll((node) => node.type === 'RNSVGLinearGradient');
+    const stopColors = (gradient.props.gradient as number[]).filter((_, index) => index % 2 === 1);
 
     expect(stopColors.length).toBeGreaterThan(0);
     expect(new Set(stopColors.map(toRgb))).toEqual(
@@ -241,8 +241,8 @@ describe('<ScreenFrame />', () => {
     );
   });
 
-  test('renders no top fade unless requested on a scrollable frame', () => {
-    const { queryByTestId, rerender } = render(
+  test('renders no top fade unless requested on a scrollable frame', async () => {
+    const { queryByTestId, rerender } = await render(
       <ScreenFrame>
         <Text>Conteúdo</Text>
       </ScreenFrame>
@@ -250,7 +250,7 @@ describe('<ScreenFrame />', () => {
 
     expect(queryByTestId('screen-frame-top-fade')).toBeNull();
 
-    rerender(
+    await rerender(
       <ScreenFrame
         topFade
         scrollable={false}
@@ -262,8 +262,8 @@ describe('<ScreenFrame />', () => {
     expect(queryByTestId('screen-frame-top-fade')).toBeNull();
   });
 
-  test('reserves the measured footer height below the scrollable content', () => {
-    const { getByTestId, getByText } = render(
+  test('reserves the measured footer height below the scrollable content', async () => {
+    const { getByTestId, getByText } = await render(
       <ScreenFrame
         footer={<Text>Rodapé</Text>}
         testID="frame"
@@ -277,15 +277,15 @@ describe('<ScreenFrame />', () => {
     expect(getByText('Rodapé')).toBeTruthy();
     expect(getPaddingBottom()).toBe(FOOTER_SPACING);
 
-    fireEvent(getByTestId('screen-frame-footer'), 'layout', {
+    await fireEvent(getByTestId('screen-frame-footer'), 'layout', {
       nativeEvent: { layout: { height: FOOTER_HEIGHT } },
     });
 
     expect(getPaddingBottom()).toBe(FOOTER_HEIGHT + FOOTER_SPACING);
   });
 
-  test('renders a static content area when scrolling is disabled', () => {
-    const { getByTestId } = render(
+  test('renders a static content area when scrolling is disabled', async () => {
+    const { getByTestId } = await render(
       <ScreenFrame
         scrollable={false}
         footer={<Text>Rodapé</Text>}
@@ -297,15 +297,15 @@ describe('<ScreenFrame />', () => {
 
     expect(getByTestId('frame').props.contentContainerStyle).toBeUndefined();
 
-    fireEvent(getByTestId('screen-frame-footer'), 'layout', {
+    await fireEvent(getByTestId('screen-frame-footer'), 'layout', {
       nativeEvent: { layout: { height: FOOTER_HEIGHT } },
     });
 
     expect(flattenStyle(getByTestId('frame').props.style).paddingBottom).toBe(FOOTER_HEIGHT);
   });
 
-  test('does not reserve footer space when there is no footer', () => {
-    const { getByTestId, queryByTestId } = render(
+  test('does not reserve footer space when there is no footer', async () => {
+    const { getByTestId, queryByTestId } = await render(
       <ScreenFrame testID="frame">
         <Text>Conteúdo</Text>
       </ScreenFrame>

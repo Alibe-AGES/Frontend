@@ -18,7 +18,7 @@ describe('<ContinueButton />', () => {
     const onPress = jest.fn();
     const { getByText } = await Promise.resolve(render(<ContinueButton onPress={onPress} />));
 
-    fireEvent.press(getByText('Continuar'));
+    await fireEvent.press(getByText('Continuar'));
     await Promise.resolve();
 
     expect(onPress).toHaveBeenCalledTimes(1);
@@ -35,7 +35,7 @@ describe('<ContinueButton />', () => {
       )
     );
 
-    fireEvent.press(getByText('Continuar'));
+    await fireEvent.press(getByText('Continuar'));
     await Promise.resolve();
 
     expect(onPress).not.toHaveBeenCalled();

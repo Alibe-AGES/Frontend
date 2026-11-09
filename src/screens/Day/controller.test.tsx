@@ -128,11 +128,11 @@ describe('DayController', () => {
       expect(getByText('1 / 2')).toBeTruthy();
     });
 
-    fireEvent.press(getByTestId('group-day-carousel-next'));
+    await fireEvent.press(getByTestId('group-day-carousel-next'));
     await Promise.resolve();
     expect(getByText('2 / 2')).toBeTruthy();
 
-    fireEvent.press(getByTestId('group-day-carousel-presence-yes-event-2'));
+    await fireEvent.press(getByTestId('group-day-carousel-presence-yes-event-2'));
     await Promise.resolve();
     await waitFor(() => {
       expect(mockRespondToEventProposal).toHaveBeenCalledWith('event-2', 'yes', false);

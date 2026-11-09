@@ -52,7 +52,7 @@ describe('<InviteLink />', () => {
     );
 
     await act(async () => {
-      fireEvent.press(getByTestId('alibe-invite-link'));
+      await fireEvent.press(getByTestId('alibe-invite-link'));
       await Promise.resolve();
     });
 
@@ -68,7 +68,7 @@ describe('<InviteLink />', () => {
     const { getByTestId } = await Promise.resolve(render(<InviteLink onCopy={onCopy} />));
 
     await act(async () => {
-      fireEvent.press(getByTestId('alibe-invite-link'));
+      await fireEvent.press(getByTestId('alibe-invite-link'));
       await Promise.resolve();
     });
 
@@ -92,7 +92,7 @@ describe('<InviteLink />', () => {
     );
 
     await act(async () => {
-      fireEvent.press(getByTestId('alibe-invite-link'));
+      await fireEvent.press(getByTestId('alibe-invite-link'));
       await Promise.resolve();
     });
 
@@ -115,7 +115,7 @@ describe('<InviteLink />', () => {
     );
 
     await act(async () => {
-      fireEvent.press(getByTestId('alibe-invite-link'));
+      await fireEvent.press(getByTestId('alibe-invite-link'));
       await Promise.resolve();
     });
 
@@ -141,7 +141,7 @@ describe('<InviteLink />', () => {
     );
 
     await act(async () => {
-      fireEvent.press(getByTestId('alibe-invite-link'));
+      await fireEvent.press(getByTestId('alibe-invite-link'));
       await Promise.resolve();
     });
 
@@ -158,14 +158,14 @@ describe('<InviteLink />', () => {
     );
 
     await act(async () => {
-      fireEvent.press(getByTestId('alibe-invite-link'));
+      await fireEvent.press(getByTestId('alibe-invite-link'));
       await Promise.resolve();
     });
     await waitFor(() => {
       expect(getByText('Copiado')).toBeTruthy();
     });
 
-    rerender(<InviteLink link="https://alibe.app/invite/outro-link" />);
+    await rerender(<InviteLink link="https://alibe.app/invite/outro-link" />);
     await Promise.resolve();
 
     expect(getByText('Copiar')).toBeTruthy();

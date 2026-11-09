@@ -141,7 +141,7 @@ describe('<PasswordInput />', () => {
       render(<ControlledPasswordInput testID="password-input" />)
     );
 
-    fireEvent.changeText(getByTestId('password-input'), 'Alibe#2026!');
+    await fireEvent.changeText(getByTestId('password-input'), 'Alibe#2026!');
     await Promise.resolve();
 
     expect(getByDisplayValue('Alibe#2026!')).toBeTruthy();
@@ -190,7 +190,7 @@ describe('<PasswordInput />', () => {
       )
     );
 
-    fireEvent(getByTestId('password-input'), 'blur');
+    await fireEvent(getByTestId('password-input'), 'blur');
     await Promise.resolve();
 
     expect(onBlur).toHaveBeenCalledTimes(1);

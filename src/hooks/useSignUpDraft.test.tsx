@@ -29,10 +29,10 @@ describe('useSignUpDraft', () => {
     expect(result.current.getDraft()).toBeNull();
   });
 
-  test('throws when used outside the provider', () => {
+  test('throws when used outside the provider', async () => {
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
 
-    expect(() => renderHook(() => useSignUpDraft())).toThrow(
+    await expect(renderHook(() => useSignUpDraft())).rejects.toThrow(
       'useSignUpDraft must be used within SignUpDraftProvider'
     );
   });

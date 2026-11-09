@@ -43,7 +43,7 @@ describe('<PushNotifications />', () => {
   test('opens the notification screen for the group in the push payload', async () => {
     await Promise.resolve(render(<PushNotifications />));
 
-    act(() => {
+    await act(() => {
       mockResponseListener?.(pushResponse({ groupId: 'group-1' }));
     });
     await Promise.resolve();
@@ -58,7 +58,7 @@ describe('<PushNotifications />', () => {
   test('ignores pushes that do not identify a group', async () => {
     await Promise.resolve(render(<PushNotifications />));
 
-    act(() => {
+    await act(() => {
       mockResponseListener?.(pushResponse({ type: 'test' }));
     });
     await Promise.resolve();

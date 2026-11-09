@@ -38,7 +38,7 @@ describe('LeaveGroupController', () => {
   test('goes back when navigation history is available', async () => {
     const { getByTestId } = await Promise.resolve(render(<LeaveGroupController />));
 
-    fireEvent.press(getByTestId('leave-group-cancel'));
+    await fireEvent.press(getByTestId('leave-group-cancel'));
     await Promise.resolve();
 
     expect(back).toHaveBeenCalledTimes(1);
@@ -49,7 +49,7 @@ describe('LeaveGroupController', () => {
     canGoBack.mockReturnValue(false);
     const { getByTestId } = await Promise.resolve(render(<LeaveGroupController />));
 
-    fireEvent.press(getByTestId('leave-group-cancel'));
+    await fireEvent.press(getByTestId('leave-group-cancel'));
     await Promise.resolve();
 
     expect(replace).toHaveBeenCalledWith({ pathname: '/group/[id]', params: { id: 'group-1' } });
@@ -58,7 +58,7 @@ describe('LeaveGroupController', () => {
   test('shows the not implemented message when confirming', async () => {
     const { getByTestId } = await Promise.resolve(render(<LeaveGroupController />));
 
-    fireEvent.press(getByTestId('leave-group-confirm'));
+    await fireEvent.press(getByTestId('leave-group-confirm'));
     await Promise.resolve();
 
     expect(Toast.show).toHaveBeenCalledWith({

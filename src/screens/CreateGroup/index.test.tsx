@@ -38,7 +38,7 @@ describe('<CreateGroupScreen />', () => {
       render(<CreateGroupScreen />)
     );
 
-    fireEvent.changeText(getByPlaceholderText('Nome do grupo'), 'Amigos da faculdade');
+    await fireEvent.changeText(getByPlaceholderText('Nome do grupo'), 'Amigos da faculdade');
     await Promise.resolve();
 
     expect(getByDisplayValue('Amigos da faculdade')).toBeTruthy();
@@ -55,10 +55,10 @@ describe('<CreateGroupScreen />', () => {
       render(<CreateGroupScreen />)
     );
 
-    fireEvent.changeText(getByPlaceholderText('Nome do grupo'), 'Amigos da faculdade');
+    await fireEvent.changeText(getByPlaceholderText('Nome do grupo'), 'Amigos da faculdade');
     await Promise.resolve();
     await act(async () => {
-      fireEvent.press(getByText('Continuar'));
+      await fireEvent.press(getByText('Continuar'));
       await Promise.resolve();
       await Promise.resolve();
     });
@@ -78,7 +78,7 @@ describe('<CreateGroupScreen />', () => {
   test('does not call the backend when the group name is invalid', async () => {
     const { getByText } = await Promise.resolve(render(<CreateGroupScreen />));
 
-    fireEvent.press(getByText('Continuar'));
+    await fireEvent.press(getByText('Continuar'));
     await Promise.resolve();
 
     expect(getByText('O nome deve conter entre 2 e 100 caracteres.')).toBeTruthy();

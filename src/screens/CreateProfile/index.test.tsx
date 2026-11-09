@@ -58,7 +58,7 @@ describe('<CreateProfileScreen />', () => {
       render(<CreateProfileScreen onContinue={onContinue} />)
     );
 
-    fireEvent.press(getByLabelText('Voltar'));
+    await fireEvent.press(getByLabelText('Voltar'));
     await Promise.resolve();
 
     expect(mockReplace).toHaveBeenCalledWith('/sign-up');
@@ -97,7 +97,7 @@ describe('<CreateProfileScreen />', () => {
       disabled: true,
     });
 
-    fireEvent.press(getByTestId('create-profile-continue'));
+    await fireEvent.press(getByTestId('create-profile-continue'));
     await Promise.resolve();
 
     expect(onContinue).not.toHaveBeenCalled();
@@ -108,9 +108,9 @@ describe('<CreateProfileScreen />', () => {
       render(<CreateProfileScreen onContinue={onContinue} />)
     );
 
-    fireEvent.changeText(getByPlaceholderText('Nome de usuário'), '   ');
+    await fireEvent.changeText(getByPlaceholderText('Nome de usuário'), '   ');
     await Promise.resolve();
-    fireEvent.press(getByTestId('create-profile-continue'));
+    await fireEvent.press(getByTestId('create-profile-continue'));
     await Promise.resolve();
 
     expect(getByTestId('create-profile-continue').props.accessibilityState).toMatchObject({
@@ -124,7 +124,7 @@ describe('<CreateProfileScreen />', () => {
       render(<CreateProfileScreen onContinue={onContinue} />)
     );
 
-    fireEvent.changeText(getByPlaceholderText('Nome de usuário'), 'Rica');
+    await fireEvent.changeText(getByPlaceholderText('Nome de usuário'), 'Rica');
     await Promise.resolve();
 
     expect(getByTestId('create-profile-continue').props.accessibilityState).toMatchObject({
@@ -142,9 +142,9 @@ describe('<CreateProfileScreen />', () => {
       )
     );
 
-    fireEvent.changeText(getByPlaceholderText('Nome de usuário'), 'Rica');
+    await fireEvent.changeText(getByPlaceholderText('Nome de usuário'), 'Rica');
     await Promise.resolve();
-    fireEvent.press(getByTestId('create-profile-continue'));
+    await fireEvent.press(getByTestId('create-profile-continue'));
     await Promise.resolve();
 
     expect(getByTestId('create-profile-continue').props.accessibilityState).toMatchObject({
@@ -161,9 +161,9 @@ describe('<CreateProfileScreen />', () => {
       render(<CreateProfileScreen onContinue={onContinue} />)
     );
 
-    fireEvent.changeText(getByPlaceholderText('Nome de usuário'), '  Rica  ');
+    await fireEvent.changeText(getByPlaceholderText('Nome de usuário'), '  Rica  ');
     await Promise.resolve();
-    fireEvent.press(getByTestId('create-profile-continue'));
+    await fireEvent.press(getByTestId('create-profile-continue'));
     await Promise.resolve();
 
     expect(onContinue).toHaveBeenCalledWith({ nickname: 'Rica', photo: null });
