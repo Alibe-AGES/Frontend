@@ -7,7 +7,6 @@ import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
 import { ProfileCard } from '@/components/ProfileCard';
 import { ScreenFrame } from '@/components/ScreenFrame';
 import { TextInput } from '@/components/TextInput';
-import { updateUserProfile } from '@/server/mock/userProfile';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
@@ -98,6 +97,11 @@ export interface ProfileData {
   pendingEventsCount: number;
 }
 
+export interface UserProfileUpdate {
+  name: string;
+  photo: SelectedPhoto | null;
+}
+
 export interface UserProfileScreenProps {
   userId?: string;
   groupId?: string;
@@ -107,6 +111,7 @@ export interface UserProfileScreenProps {
   error: Error | null;
   refetch: () => void;
   onLogout?: () => Promise<void> | void;
+  onUpdateProfile?: (update: UserProfileUpdate) => Promise<void>;
 }
 
 export const UserProfileScreen = ({
@@ -118,6 +123,7 @@ export const UserProfileScreen = ({
   error,
   refetch,
   onLogout,
+  onUpdateProfile,
 }: UserProfileScreenProps) => {
   const networkAvatarSource = useUserAvatarSource(userId);
 
@@ -159,18 +165,15 @@ export const UserProfileScreen = ({
   };
 
   const handleSaveProfile = async () => {
-    if (!userId) return;
+    if (!onUpdateProfile) return;
 
     setIsSubmittingProfile(true);
 
     try {
-      const updated = await updateUserProfile(userId, {
-        name: editName,
-        photo: editPhoto,
-      });
+      await onUpdateProfile({ name: editName, photo: editPhoto });
 
-      if (updated.photoUri) {
-        setLocalAvatarOverride(updated.photoUri);
+      if (editPhoto) {
+        setLocalAvatarOverride(editPhoto.uri);
       }
 
       refetch();
@@ -319,6 +322,7 @@ export const UserProfileScreen = ({
             onChangeText={setEditName}
             placeholder="Seu nome"
             disabled={isSubmittingProfile}
+            testID="user-profile-edit-name"
           />
         </View>
 
@@ -327,6 +331,7 @@ export const UserProfileScreen = ({
             onPress={handleCloseEditModal}
             disabled={isSubmittingProfile}
             className="flex-1 items-center justify-center rounded-full border-2 border-coral py-4"
+            testID="user-profile-edit-cancel"
           >
             <Text className="font-poppins-semibold leading-none text-coral">Cancelar</Text>
           </TouchableOpacity>
@@ -339,6 +344,7 @@ export const UserProfileScreen = ({
             className={`flex-1 items-center justify-center rounded-full bg-coral py-4 ${
               isSubmittingProfile ? 'opacity-60' : ''
             }`}
+            testID="user-profile-edit-save"
           >
             <Text className="font-poppins-semibold leading-none text-surface">
               {isSubmittingProfile ? 'Salvando...' : 'Salvar'}

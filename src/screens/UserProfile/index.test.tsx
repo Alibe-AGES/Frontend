@@ -6,6 +6,18 @@ jest.mock('../../../src/hooks/useUserAvatarSource', () => ({
   useUserAvatarSource: jest.fn(() => null),
 }));
 
+jest.mock('@/components/PhotoPicker', () => {
+  const RN = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    PhotoPicker: ({ onUploadSuccess }: { onUploadSuccess?: (photo: object) => void }) => (
+      <RN.Pressable
+        testID="mock-photo-picker"
+        onPress={() => onUploadSuccess?.({ uri: 'file://nova-foto.jpg', mimeType: 'image/jpeg' })}
+      />
+    ),
+  };
+});
+
 jest.mock('@/components/BackButton', () => {
   const RN = jest.requireActual<typeof import('react-native')>('react-native');
   return {
@@ -55,6 +67,7 @@ describe('UserProfileScreen', () => {
     error: null,
     refetch: jest.fn(),
     onLogout: jest.fn(),
+    onUpdateProfile: jest.fn(),
   };
 
   beforeEach(() => {
@@ -309,5 +322,88 @@ describe('UserProfileScreen', () => {
     });
 
     toastShowSpy.mockRestore();
+  });
+
+  describe('edit profile', () => {
+    const profile = {
+      name: 'Ellen Miranda',
+      created_at: '21 de Setembro de 2026',
+      completedEventsCount: 0,
+      pendingEventsCount: 0,
+      photoUri: null,
+    };
+
+    async function openEditModal(props: Partial<UserProfileScreenProps> = {}) {
+      const screen = await Promise.resolve(
+        render(
+          <UserProfileScreen
+            {...defaultProps}
+            profile={profile}
+            {...props}
+          />
+        )
+      );
+
+      fireEvent.press(screen.getByText('Editar perfil'));
+      await Promise.resolve();
+
+      return screen;
+    }
+
+    async function pressSave(getByTestId: ReturnType<typeof render>['getByTestId']) {
+      await act(async () => {
+        fireEvent.press(getByTestId('user-profile-edit-save'));
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+    }
+
+    test('saves the new name and photo, refreshes the profile and closes the modal', async () => {
+      const onUpdateProfile = jest.fn().mockResolvedValue(undefined);
+      const refetch = jest.fn();
+      const { getByTestId, queryByPlaceholderText } = await openEditModal({
+        onUpdateProfile,
+        refetch,
+      });
+
+      fireEvent.press(getByTestId('mock-photo-picker'));
+      fireEvent.changeText(getByTestId('user-profile-edit-name'), 'Ellen M.');
+      await pressSave(getByTestId);
+
+      await waitFor(() => {
+        expect(onUpdateProfile).toHaveBeenCalledWith({
+          name: 'Ellen M.',
+          photo: { uri: 'file://nova-foto.jpg', mimeType: 'image/jpeg' },
+        });
+      });
+      expect(refetch).toHaveBeenCalledTimes(1);
+      expect(queryByPlaceholderText('Seu nome')).toBeNull();
+      expect(getByTestId('profile-card-avatar-source')).toHaveTextContent('file://nova-foto.jpg');
+    });
+
+    test('shows an error toast and keeps the modal open when saving fails', async () => {
+      const toastShowSpy = jest.spyOn(Toast, 'show').mockImplementation(jest.fn());
+      const onUpdateProfile = jest.fn().mockRejectedValue(new Error('Network error'));
+      const refetch = jest.fn();
+      const { getByTestId, getByPlaceholderText } = await openEditModal({
+        onUpdateProfile,
+        refetch,
+      });
+
+      fireEvent.changeText(getByTestId('user-profile-edit-name'), 'Ellen M.');
+      await pressSave(getByTestId);
+
+      await waitFor(() => {
+        expect(toastShowSpy).toHaveBeenCalledWith({
+          type: 'error',
+          text1: 'Erro!',
+          text2: 'Não foi possível salvar o perfil. Tente novamente.',
+        });
+      });
+      expect(refetch).not.toHaveBeenCalled();
+      expect(getByPlaceholderText('Seu nome')).toBeTruthy();
+
+      toastShowSpy.mockRestore();
+    });
   });
 });

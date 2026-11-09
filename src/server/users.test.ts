@@ -2,7 +2,7 @@ import { API_BASE_URL } from '@/constants';
 import { File } from 'expo-file-system';
 import { Platform } from 'react-native';
 import { ApiError } from './api';
-import { getMyProfile, updateUserProfilePicture } from './users';
+import { getMyProfile, updateMyProfile, updateUserProfilePicture } from './users';
 
 declare const global: { fetch: jest.Mock };
 
@@ -122,4 +122,37 @@ test('throws an ApiError when the profile picture cannot be saved', async () => 
       mimeType: 'text/plain',
     })
   ).rejects.toBeInstanceOf(ApiError);
+});
+
+test('sends the new name as JSON to the authenticated current-user endpoint', async () => {
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: true,
+    json: () => Promise.resolve({ name: 'Ana Silva' }),
+  });
+
+  await expect(updateMyProfile({ name: 'Ana Silva' })).resolves.toEqual({ name: 'Ana Silva' });
+
+  expect(global.fetch).toHaveBeenCalledWith(
+    API_BASE_URL + '/api/users/me',
+    expect.objectContaining({
+      method: 'PUT',
+      body: JSON.stringify({ name: 'Ana Silva' }),
+    })
+  );
+  const [, init] = global.fetch.mock.calls[0] as [string, RequestInit];
+  expect(new Headers(init.headers).get('Content-Type')).toBe('application/json');
+});
+
+test('throws an ApiError with the status when the name cannot be saved', async () => {
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: false,
+    status: 400,
+    statusText: 'Bad Request',
+    text: () => Promise.resolve('{"message":"Validation failed"}'),
+  });
+
+  await expect(updateMyProfile({ name: '' })).rejects.toMatchObject({
+    name: 'ApiError',
+    status: 400,
+  });
 });
