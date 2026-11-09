@@ -15,6 +15,8 @@ export const theme = {
     black: '#000000',
     success: '#2F9E44',
     wine: '#71241A',
+    error: '#E74C3C',
+    grey: '#C9CBD1',
   },
   spacing: {
     xs: '0.5rem',

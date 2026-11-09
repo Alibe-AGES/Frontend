@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '@/constants';
+import { resolveApiImageUrl } from '@/utils/apiImageUrl';
 import { ApiError } from './api';
 import { authenticatedFetch } from './auth';
 import { appendImage, UploadImage } from './images';
@@ -167,7 +168,20 @@ export async function getEventDetails(eventId: string): Promise<EventDetailsResp
     );
   }
 
-  return (await response.json()) as EventDetailsResponse;
+  const event = (await response.json()) as EventDetailsResponse;
+
+  return {
+    ...event,
+    image: resolveApiImageUrl(event.image),
+    proposal: {
+      ...event.proposal,
+      owner: { ...event.proposal.owner, image: resolveApiImageUrl(event.proposal.owner.image) },
+      responses: event.proposal.responses.map((response) => ({
+        ...response,
+        user: { ...response.user, image: resolveApiImageUrl(response.user.image) },
+      })),
+    },
+  };
 }
 
 export interface CreateProposalFields {

@@ -1,3 +1,5 @@
+import { theme } from '@/theme';
+import { Ionicons } from '@expo/vector-icons';
 import { Text, View } from 'react-native';
 
 type LegendSymbol = 'event' | 'suggestion' | 'available' | 'allAvailable' | 'realized';
@@ -19,7 +21,15 @@ function LegendItem({ label, symbol }: LegendItemProps) {
   return (
     <View className="flex-row items-center gap-2">
       <View className={`h-4 w-4 items-center justify-center ${symbolClass}`}>
-        {symbol === 'event' ? <Text className="text-xs text-canvas">☆</Text> : null}
+        {/* An icon is centered by its box, unlike a ☆ character, which sits on the font baseline. */}
+        {symbol === 'event' ? (
+          <Ionicons
+            name="star-outline"
+            size={12}
+            color={theme.colors.canvas}
+            testID="calendar-legend-event-icon"
+          />
+        ) : null}
       </View>
       <Text className="text-inkSoft text-sm font-medium">{label}</Text>
     </View>

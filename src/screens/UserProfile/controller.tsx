@@ -1,7 +1,7 @@
-import { API_BASE_URL } from '@/constants';
 import { signOut } from '@/server/auth';
 import { useAuth } from '@/server/mock/useAuth';
 import { getUserProfile as getMockUserProfile } from '@/server/mock/userProfile';
+import { resolveApiImageUrl } from '@/utils/apiImageUrl';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import Toast from 'react-native-toast-message';
@@ -39,7 +39,7 @@ export default function UserProfileController() {
 
         setProfile({
           name: apiData.name,
-          photoUri: apiData.profilePic ? `${API_BASE_URL}${apiData.profilePic}` : null,
+          photoUri: resolveApiImageUrl(apiData.profilePic),
           created_at: new Date(apiData.createdAt).toLocaleDateString('pt-BR', {
             month: 'long',
             year: 'numeric',

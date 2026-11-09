@@ -75,4 +75,33 @@ describe('<SearchBar />', () => {
     expect(getByTestId('experiences-search-bar')).toBeTruthy();
     expect(getByTestId('experiences-search-bar-field')).toBeTruthy();
   });
+
+  test('hides the clear button while the field is empty', async () => {
+    const { queryByTestId } = await Promise.resolve(
+      render(
+        <SearchBar
+          value=""
+          onChangeText={jest.fn()}
+        />
+      )
+    );
+
+    expect(queryByTestId('alibe-search-bar-clear')).toBeNull();
+  });
+
+  test('clears the field when the clear button is pressed', async () => {
+    const onChangeText = jest.fn();
+    const { getByLabelText } = await Promise.resolve(
+      render(
+        <SearchBar
+          value="Bloom"
+          onChangeText={onChangeText}
+        />
+      )
+    );
+
+    fireEvent.press(getByLabelText('Limpar pesquisa'));
+
+    expect(onChangeText).toHaveBeenCalledWith('');
+  });
 });

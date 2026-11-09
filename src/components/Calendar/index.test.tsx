@@ -99,7 +99,7 @@ describe('Calendar', () => {
   });
 
   test('preserves realized and suggested styles for past event days without IDs', async () => {
-    const { getByTestId, getByText } = await Promise.resolve(
+    const { getByTestId } = await Promise.resolve(
       render(
         <Calendar
           initialDate="2025-05-01"
@@ -111,7 +111,7 @@ describe('Calendar', () => {
       )
     );
 
-    expect(getByText('☆')).toBeTruthy();
+    expect(getByTestId('calendar-day-icon-suggested')).toBeTruthy();
     expect(getByTestId('calendar-day-2025-05-08').props.className).toContain('bg-ink');
   });
 
@@ -150,6 +150,29 @@ describe('Calendar', () => {
     expect(getAllByText('3')).toHaveLength(1);
   });
 
+  test('keeps the day background when someone is available and adds a coral dot', async () => {
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <Calendar
+          initialDate="2099-12-01"
+          dayMarks={{
+            '2099-12-10': { status: 'available', availableUserCount: 1 },
+          }}
+        />
+      )
+    );
+
+    expect(getByTestId('calendar-day-2099-12-10')).toHaveProp(
+      'className',
+      expect.stringContaining('bg-transparent')
+    );
+    expect(getByTestId('calendar-day-2099-12-10')).not.toHaveProp(
+      'className',
+      expect.stringContaining('bg-lime')
+    );
+    expect(getByTestId('calendar-availability-indicator-2099-12-10')).toBeTruthy();
+  });
+
   test('does not show a member count when everyone is available', async () => {
     const { getByLabelText, queryByText } = await Promise.resolve(
       render(
@@ -174,5 +197,18 @@ describe('Calendar', () => {
     const { getByTestId } = await Promise.resolve(render(<Calendar initialDate="2026-06-01" />));
 
     expect(getByTestId('calendar-week-4').children).toHaveLength(7);
+  });
+
+  test('shows the scheduled event star in the legend as an icon', async () => {
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <Calendar
+          initialDate="2026-05-01"
+          showLegend
+        />
+      )
+    );
+
+    expect(getByTestId('calendar-legend-event-icon')).toBeTruthy();
   });
 });

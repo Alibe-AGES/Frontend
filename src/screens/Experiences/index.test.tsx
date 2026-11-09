@@ -1,9 +1,10 @@
 import type { Place } from '@/components/PlaceList/PlaceList.types';
 import type { PlacesSearchInput } from '@/server/places';
 import { searchPlaces } from '@/server/places';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, waitFor, within } from '@testing-library/react-native';
 import * as Location from 'expo-location';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ScrollView } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ExperiencesScreen } from '.';
@@ -106,6 +107,24 @@ describe('<ExperiencesScreen />', () => {
     expect(mockPush).toHaveBeenCalledWith('/group/group-1/experiences/bloom');
   });
 
+  test('scrolls only the list and keeps the header fixed outside it', async () => {
+    const { UNSAFE_getAllByType, findByText, getByTestId, getByText } =
+      await Promise.resolve(renderScreen());
+    await findByText('Bloom Café');
+    const list = within(getByTestId('experiences-places'));
+    const verticalScrollViews = UNSAFE_getAllByType(ScrollView).filter(
+      (scrollView) => scrollView.props.horizontal !== true
+    );
+
+    expect(verticalScrollViews).toHaveLength(1);
+    expect(getByTestId('screen-frame-top-fade')).toBeTruthy();
+    expect(list.queryByText('Bloom Café')).toBeTruthy();
+    expect(getByText('Experiências')).toBeTruthy();
+    expect(list.queryByText('Experiências')).toBeNull();
+    expect(list.queryByTestId('experiences-search')).toBeNull();
+    expect(list.queryByTestId('experiences-filters')).toBeNull();
+  });
+
   test('filters places by search text', async () => {
     const { findByText, getByTestId, queryByText } = await Promise.resolve(renderScreen());
 
@@ -130,6 +149,36 @@ describe('<ExperiencesScreen />', () => {
     });
     expect(queryByText('Arena Kart')).toBeNull();
     expect(queryByText('Bloom Café')).toBeTruthy();
+  });
+
+  test('marks the filter button only while an option stays selected', async () => {
+    const { findByText, getByTestId } = await Promise.resolve(renderScreen());
+    const confirmSelection = async () => {
+      fireEvent.press(getByTestId('experiences-filters-open-filters'));
+      await Promise.resolve();
+      fireEvent.press(getByTestId('experiences-filter-sheet-environment-outdoor'));
+      await Promise.resolve();
+      fireEvent.press(getByTestId('experiences-filter-sheet-confirm'));
+      await waitFor(() => {
+        expect(searchPlaces).toHaveBeenCalled();
+      });
+    };
+
+    await findByText('Bloom Café');
+
+    await confirmSelection();
+    await waitFor(() => {
+      expect(
+        getByTestId('experiences-filters-open-filters').props.accessibilityState
+      ).toMatchObject({ selected: true });
+    });
+
+    await confirmSelection();
+    await waitFor(() => {
+      expect(
+        getByTestId('experiences-filters-open-filters').props.accessibilityState
+      ).toMatchObject({ selected: false });
+    });
   });
 
   test('applies sheet filters on confirm', async () => {

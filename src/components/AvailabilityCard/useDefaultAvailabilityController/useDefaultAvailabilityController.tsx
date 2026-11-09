@@ -1,11 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AvailabilityCardStrategy,
   AvailabilityInterval,
+  RegisteredInterval,
   UseAvailabilityControllerParams,
 } from '../Availability.types';
 
 const END_BEFORE_START_ERROR = 'O horário de fim deve ser depois do início.';
+const OVERLAPS_REGISTERED_ERROR = 'Este horário coincide com um já registrado.';
+const OVERLAPS_INTERVAL_ERROR = 'Este horário coincide com outro intervalo.';
+
+const NO_REGISTERED_INTERVALS: readonly RegisteredInterval[] = [];
 
 const toMinutes = (time: string): number | null => {
   const match = /^(\d{2}):(\d{2})$/.exec(time);
@@ -27,68 +32,98 @@ const createInterval = (id: string): AvailabilityInterval => ({
   error: null,
 });
 
+interface MinuteRange {
+  readonly start: number;
+  readonly end: number;
+}
+
+const toRange = (startTime: string, endTime: string): MinuteRange | null => {
+  const start = toMinutes(startTime);
+  const end = toMinutes(endTime);
+
+  return start === null || end === null ? null : { start, end };
+};
+
+// Ranges that only touch (14:00–20:00 and 20:00–22:00) do not overlap.
+const overlaps = (first: MinuteRange, second: MinuteRange) =>
+  first.start < second.end && second.start < first.end;
+
+// Each interval is a separate slot of the day, so it must not share any time with a saved
+// interval or with an interval listed before it; the later one carries the error.
+const validateAll = (
+  drafts: AvailabilityInterval[],
+  registeredIntervals: readonly RegisteredInterval[]
+): AvailabilityInterval[] => {
+  const registered = registeredIntervals
+    .map(([start, end]) => toRange(start, end))
+    .filter((range): range is MinuteRange => range !== null);
+  const previous: MinuteRange[] = [];
+
+  return drafts.map((interval) => {
+    const range = toRange(interval.startTime, interval.endTime);
+    let error: string | null = null;
+
+    if (range && range.end <= range.start) {
+      error = END_BEFORE_START_ERROR;
+    } else if (range && registered.some((saved) => overlaps(range, saved))) {
+      error = OVERLAPS_REGISTERED_ERROR;
+    } else if (range && previous.some((earlier) => overlaps(range, earlier))) {
+      error = OVERLAPS_INTERVAL_ERROR;
+    }
+
+    if (range && range.end > range.start) {
+      previous.push(range);
+    }
+
+    return { ...interval, error };
+  });
+};
+
 export const useDefaultAvailabilityController = ({
   onIntervalsChange,
+  registeredIntervals = NO_REGISTERED_INTERVALS,
 }: UseAvailabilityControllerParams = {}): AvailabilityCardStrategy => {
   const nextId = useRef(0);
-  const [intervals, setIntervals] = useState<AvailabilityInterval[]>(() => [
+  const [drafts, setDrafts] = useState<AvailabilityInterval[]>(() => [
     createInterval('interval-0'),
   ]);
+
+  // Callers often pass a fresh array on every render, so the memo follows its contents instead.
+  const registeredKey = JSON.stringify(registeredIntervals);
+
+  // Errors are derived on every change, so they also update when the registered intervals arrive.
+  const intervals = useMemo(() => {
+    const registered = JSON.parse(registeredKey) as RegisteredInterval[];
+
+    return validateAll(drafts, registered);
+  }, [drafts, registeredKey]);
 
   useEffect(() => {
     onIntervalsChange?.(intervals);
   }, [intervals, onIntervalsChange]);
 
-  const validate = useCallback((startTime: string, endTime: string): string | null => {
-    const start = toMinutes(startTime);
-    const end = toMinutes(endTime);
-
-    if (start === null || end === null) {
-      return null;
-    }
-
-    return end < start ? END_BEFORE_START_ERROR : null;
-  }, []);
-
   const addInterval = useCallback(() => {
     nextId.current += 1;
-    setIntervals((current) => [
-      ...current,
-      createInterval(`interval-${nextId.current.toString()}`),
-    ]);
+    setDrafts((current) => [...current, createInterval(`interval-${nextId.current.toString()}`)]);
   }, []);
 
   const removeInterval = useCallback((id: string) => {
-    setIntervals((current) =>
+    setDrafts((current) =>
       current.length > 1 ? current.filter((interval) => interval.id !== id) : current
     );
   }, []);
 
-  const updateStartTime = useCallback(
-    (id: string, value: string) => {
-      setIntervals((current) =>
-        current.map((interval) =>
-          interval.id === id
-            ? { ...interval, startTime: value, error: validate(value, interval.endTime) }
-            : interval
-        )
-      );
-    },
-    [validate]
-  );
+  const updateStartTime = useCallback((id: string, value: string) => {
+    setDrafts((current) =>
+      current.map((interval) => (interval.id === id ? { ...interval, startTime: value } : interval))
+    );
+  }, []);
 
-  const updateEndTime = useCallback(
-    (id: string, value: string) => {
-      setIntervals((current) =>
-        current.map((interval) =>
-          interval.id === id
-            ? { ...interval, endTime: value, error: validate(interval.startTime, value) }
-            : interval
-        )
-      );
-    },
-    [validate]
-  );
+  const updateEndTime = useCallback((id: string, value: string) => {
+    setDrafts((current) =>
+      current.map((interval) => (interval.id === id ? { ...interval, endTime: value } : interval))
+    );
+  }, []);
 
   return { intervals, addInterval, removeInterval, updateStartTime, updateEndTime };
 };

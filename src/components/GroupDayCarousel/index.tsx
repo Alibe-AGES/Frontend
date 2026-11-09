@@ -1,3 +1,4 @@
+import { Avatar } from '@/components/Avatar';
 import { EventCard, type EventCardEvent } from '@/components/EventCard';
 import { ParticipantAvatars, type ParticipantAnswer } from '@/components/ParticipantAvatars';
 import type { EventPresenceAnswer } from '@/server/events';
@@ -13,25 +14,30 @@ import {
   View,
 } from 'react-native';
 
+export interface GroupDayCarouselPerson {
+  id: string;
+  name: string;
+  /** Full URL of the user photo, or null to show the placeholder. */
+  photoUri: string | null;
+}
+
+export interface GroupDayCarouselResponse {
+  userId: string;
+  name: string;
+  answer: ParticipantAnswer;
+  profilePic?: string | null;
+}
+
+/** An event of the day, with who proposed it and how each member answered. */
 export interface GroupDayCarouselItem {
-  kind: 'event' | 'proposal';
   event: EventCardEvent;
-  proposal?: {
-    ownerName: string;
-    responses: {
-      userId: string;
-      name: string;
-      answer: ParticipantAnswer;
-      profilePic?: string | null;
-    }[];
-    currentUserAnswer?: string;
-  };
+  owner: GroupDayCarouselPerson;
+  responses: GroupDayCarouselResponse[];
+  currentUserAnswer?: string;
 }
 
 interface GroupDayCarouselProps {
-  date: string;
   items: GroupDayCarouselItem[];
-  isLoading: boolean;
   error: string | null;
   onAvailabilityPress: () => void;
   onPresenceResponse: (eventId: string, answer: EventPresenceAnswer) => Promise<void>;
@@ -40,11 +46,8 @@ interface GroupDayCarouselProps {
   testID?: string;
 }
 
-type GroupDayCarouselProposal = NonNullable<GroupDayCarouselItem['proposal']>;
-
 interface GroupDayCarouselPageProps {
   item: GroupDayCarouselItem;
-  index: number;
   pageWidth: number;
   testID: string;
   currentUserId: string | null;
@@ -52,42 +55,44 @@ interface GroupDayCarouselPageProps {
   onPresenceResponse: GroupDayCarouselProps['onPresenceResponse'];
 }
 
-function getItemTitle(kind: GroupDayCarouselItem['kind']): string {
-  return kind === 'proposal' ? 'Proposta' : 'Encontro';
+interface OwnerHighlightProps {
+  owner: GroupDayCarouselPerson;
+  isCurrentUser: boolean;
+  testID: string;
 }
 
-function getResponseTargetId(item: GroupDayCarouselItem): string {
-  return item.event.id;
-}
-
-function getYesResponseLabel(isPending: boolean): string {
-  if (isPending) return 'Salvando...';
-  return 'Confirmar!';
-}
-
-function getYesAccessibilityLabel(kind: GroupDayCarouselItem['kind']): string {
-  return kind === 'proposal' ? 'Confirmar presença na proposta' : 'Confirmar presença no evento';
-}
-
-function getNoResponseLabel(): string {
-  return 'Não estarei disponível neste dia';
-}
-
-function getNoAccessibilityLabel(kind: GroupDayCarouselItem['kind']): string {
-  return kind === 'proposal' ? 'Não participar da proposta' : 'Não participar do evento';
-}
-
-function respondToItem(
-  item: GroupDayCarouselItem,
-  answer: EventPresenceAnswer,
-  onPresenceResponse: GroupDayCarouselProps['onPresenceResponse']
-): void {
-  void onPresenceResponse(item.event.id, answer);
+function OwnerHighlight({ owner, isCurrentUser, testID }: OwnerHighlightProps) {
+  return (
+    <View
+      className="flex-row items-center gap-3 self-center rounded-full bg-pink py-1 pl-1 pr-5"
+      testID={testID}
+    >
+      <View className="h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-surface">
+        <Avatar
+          photoUri={owner.photoUri}
+          accessibilityLabel={`Foto de ${owner.name}`}
+          imageClassName="h-10 w-10 rounded-full"
+          iconSize={20}
+          fallbackIconName="person-outline"
+          fallbackIconColor={theme.colors.wine}
+          testID={`${testID}-avatar`}
+        />
+      </View>
+      <View className="shrink">
+        <Text className="font-poppins text-xs text-wine">Proposto por</Text>
+        <Text
+          className="font-poppins-semibold text-sm text-ink"
+          numberOfLines={1}
+        >
+          {isCurrentUser ? 'Você' : owner.name}
+        </Text>
+      </View>
+    </View>
+  );
 }
 
 function GroupDayCarouselPage({
   item,
-  index,
   pageWidth,
   testID,
   currentUserId,
@@ -96,34 +101,63 @@ function GroupDayCarouselPage({
 }: GroupDayCarouselPageProps) {
   return (
     <View
-      key={`${item.kind}-${item.event.id}-${String(index)}`}
       className="gap-3 px-1"
       style={{ width: pageWidth }}
     >
-      <Text className="text-center font-poppins-semibold text-sm text-wine">
-        {getItemTitle(item.kind)}
-      </Text>
+      <OwnerHighlight
+        owner={item.owner}
+        isCurrentUser={item.owner.id === currentUserId}
+        testID={`${testID}-owner-${item.event.id}`}
+      />
       <EventCard
         event={item.event}
-        testID={`${testID}-${item.kind}-${item.event.id}`}
+        testID={`${testID}-event-${item.event.id}`}
       />
-      {item.proposal ? (
-        <ParticipantResponseSection
-          item={item}
-          proposal={item.proposal}
-          currentUserId={currentUserId}
-          pendingEventId={pendingEventId}
-          onPresenceResponse={onPresenceResponse}
-          testID={testID}
-        />
-      ) : null}
+      <ParticipantResponseSection
+        item={item}
+        currentUserId={currentUserId}
+        pendingEventId={pendingEventId}
+        onPresenceResponse={onPresenceResponse}
+        testID={testID}
+      />
     </View>
   );
 }
 
+interface PresenceButtonOption {
+  answer: EventPresenceAnswer;
+  label: string;
+  accessibilityLabel: string;
+}
+
+const CONFIRM_PRESENCE: PresenceButtonOption = {
+  answer: 'yes',
+  label: 'Confirmar presença',
+  accessibilityLabel: 'Confirmar presença no evento',
+};
+
+const CANCEL_PRESENCE: PresenceButtonOption = {
+  answer: 'no',
+  label: 'Cancelar presença',
+  accessibilityLabel: 'Não participar do evento',
+};
+
+// Only the action that changes the current answer is offered. The owner starts with "yes", so
+// they only see "Cancelar presença"; someone who has not answered yet sees both.
+function getPresenceOptions(currentUserAnswer: string | undefined): PresenceButtonOption[] {
+  if (currentUserAnswer === 'yes') {
+    return [CANCEL_PRESENCE];
+  }
+
+  if (currentUserAnswer === 'no') {
+    return [CONFIRM_PRESENCE];
+  }
+
+  return [CONFIRM_PRESENCE, CANCEL_PRESENCE];
+}
+
 interface ParticipantResponseSectionProps {
   item: GroupDayCarouselItem;
-  proposal: GroupDayCarouselProposal;
   currentUserId: string | null;
   pendingEventId: string | null;
   onPresenceResponse: GroupDayCarouselProps['onPresenceResponse'];
@@ -132,14 +166,14 @@ interface ParticipantResponseSectionProps {
 
 function ParticipantResponseSection({
   item,
-  proposal,
   currentUserId,
   pendingEventId,
   onPresenceResponse,
   testID,
 }: ParticipantResponseSectionProps) {
-  const responseTargetId = getResponseTargetId(item);
-  const isPending = pendingEventId === responseTargetId;
+  const eventId = item.event.id;
+  const isPending = pendingEventId === eventId;
+  const [pressedAnswer, setPressedAnswer] = useState<EventPresenceAnswer | null>(null);
   const buttonClassName = `w-full items-center justify-center rounded-full bg-ink py-4 ${
     isPending ? 'opacity-60' : 'opacity-100'
   }`;
@@ -150,59 +184,42 @@ function ParticipantResponseSection({
         Status dos participantes
       </Text>
       <ParticipantAvatars
-        participants={proposal.responses.map((response) => ({
+        participants={item.responses.map((response) => ({
           id: response.userId,
           name: response.name,
           profilePic: response.profilePic ?? null,
           answer: response.answer,
         }))}
         currentUserId={currentUserId ?? undefined}
-        testID={`${testID}-participants-${item.event.id}`}
+        testID={`${testID}-participants-${eventId}`}
       />
-      <View className="gap-3 pt-2">
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={getYesAccessibilityLabel(item.kind)}
-          accessibilityState={{
-            selected: proposal.currentUserAnswer === 'yes',
-            disabled: isPending,
-          }}
-          className={buttonClassName}
-          disabled={isPending}
-          onPress={() => {
-            respondToItem(item, 'yes', onPresenceResponse);
-          }}
-          testID={`${testID}-presence-yes-${responseTargetId}`}
-        >
-          <Text className="font-poppins text-base text-canvas">
-            {getYesResponseLabel(isPending)}
-          </Text>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={getNoAccessibilityLabel(item.kind)}
-          accessibilityState={{
-            selected: proposal.currentUserAnswer === 'no',
-            disabled: isPending,
-          }}
-          className={buttonClassName}
-          disabled={isPending}
-          onPress={() => {
-            respondToItem(item, 'no', onPresenceResponse);
-          }}
-          testID={`${testID}-presence-no-${responseTargetId}`}
-        >
-          <Text className="font-poppins text-base text-canvas">{getNoResponseLabel()}</Text>
-        </Pressable>
+      <View className="gap-3 pt-6">
+        {getPresenceOptions(item.currentUserAnswer).map((option) => (
+          <Pressable
+            key={option.answer}
+            accessibilityRole="button"
+            accessibilityLabel={option.accessibilityLabel}
+            accessibilityState={{ disabled: isPending, busy: isPending }}
+            className={buttonClassName}
+            disabled={isPending}
+            onPress={() => {
+              setPressedAnswer(option.answer);
+              void onPresenceResponse(eventId, option.answer);
+            }}
+            testID={`${testID}-presence-${option.answer}-${eventId}`}
+          >
+            <Text className="font-poppins text-base text-canvas">
+              {isPending && pressedAnswer === option.answer ? 'Salvando...' : option.label}
+            </Text>
+          </Pressable>
+        ))}
       </View>
     </View>
   );
 }
 
 export function GroupDayCarousel({
-  date,
   items,
-  isLoading,
   error,
   onAvailabilityPress,
   onPresenceResponse,
@@ -213,7 +230,6 @@ export function GroupDayCarousel({
   const scrollRef = useRef<ScrollView>(null);
   const [pageWidth, setPageWidth] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
-  const dateLabel = date.split('-').reverse().join('/');
 
   const changePage = (nextIndex: number) => {
     setActiveIndex(nextIndex);
@@ -227,16 +243,7 @@ export function GroupDayCarousel({
   };
 
   let carouselContent: ReactNode;
-  if (isLoading) {
-    carouselContent = (
-      <Text
-        className="text-inkSoft py-8 text-center font-poppins"
-        testID={`${testID}-loading`}
-      >
-        Carregando informações do dia...
-      </Text>
-    );
-  } else if (error) {
+  if (error) {
     carouselContent = (
       <Text
         accessibilityRole="alert"
@@ -259,7 +266,7 @@ export function GroupDayCarousel({
           <View className="flex-row items-center justify-between">
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Item anterior"
+              accessibilityLabel="Evento anterior"
               accessibilityState={{ disabled: activeIndex === 0 }}
               className="h-10 w-10 items-center justify-center rounded-full bg-lime"
               disabled={activeIndex === 0}
@@ -282,7 +289,7 @@ export function GroupDayCarousel({
             </Text>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Próximo item"
+              accessibilityLabel="Próximo evento"
               accessibilityState={{ disabled: activeIndex === items.length - 1 }}
               className="h-10 w-10 items-center justify-center rounded-full bg-lime"
               disabled={activeIndex === items.length - 1}
@@ -316,11 +323,10 @@ export function GroupDayCarousel({
             onMomentumScrollEnd={handleMomentumScrollEnd}
             testID={`${testID}-pages`}
           >
-            {items.map((item, index) => (
+            {items.map((item) => (
               <GroupDayCarouselPage
-                key={`${item.kind}-${item.event.id}-${String(index)}`}
+                key={item.event.id}
                 item={item}
-                index={index}
                 pageWidth={pageWidth}
                 testID={testID}
                 currentUserId={currentUserId}
@@ -336,16 +342,13 @@ export function GroupDayCarousel({
 
   return (
     <View
-      className="gap-3 rounded-3xl bg-canvas p-4"
+      className="gap-3 rounded-3xl bg-canvas"
       testID={testID}
     >
-      <View className="flex-row items-center justify-between gap-3">
-        <View>
-          <Text className="font-poppins-semibold text-lg text-ink">{dateLabel}</Text>
-          <Text className="text-inkSoft font-poppins text-sm">
-            {items.length > 1 ? `${String(items.length)} itens` : 'Detalhes do dia'}
-          </Text>
-        </View>
+      <View className="mb-2 flex-row items-center">
+        <Text className="font-poppins-semibold text-lg text-wine">
+          {items.length > 1 ? `${String(items.length)} eventos` : 'Detalhes do dia'}
+        </Text>
       </View>
 
       {carouselContent}

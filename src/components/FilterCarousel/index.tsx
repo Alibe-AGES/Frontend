@@ -12,6 +12,7 @@ export function FilterCarousel({
   onToggleTag,
   onOpenFilters,
   hasActiveFilters = false,
+  fullBleed = false,
   testID = 'filter-carousel',
 }: FilterCarouselProps) {
   const scrollRef = useRef<ScrollView>(null);
@@ -30,7 +31,8 @@ export function FilterCarousel({
       ref={scrollRef}
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerClassName="items-center gap-2"
+      className={fullBleed ? '-mx-6' : ''}
+      contentContainerClassName={`items-center gap-2 ${fullBleed ? 'px-6' : ''}`}
       testID={testID}
     >
       <Pressable
@@ -66,7 +68,7 @@ export function FilterCarousel({
             }}
             testID={`${testID}-tag-${tag.id}`}
           >
-            <Text className={`font-poppins text-xs ${isSelected ? 'text-lime' : 'text-ink'}`}>
+            <Text className={`font-poppins text-sm ${isSelected ? 'text-lime' : 'text-ink'}`}>
               {tag.label}
             </Text>
           </Pressable>

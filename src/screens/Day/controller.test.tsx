@@ -28,10 +28,6 @@ jest.mock('@/components/BackButton', () => ({
   BackButton: () => null,
 }));
 
-jest.mock('@/components/NavigationBar', () => ({
-  NavigationBar: () => null,
-}));
-
 const mockUseLocalSearchParams = useLocalSearchParams as jest.MockedFunction<
   typeof useLocalSearchParams
 >;
@@ -106,10 +102,14 @@ describe('DayController', () => {
     jest.clearAllMocks();
   });
 
-  test('loads event and proposal details in the standalone carousel screen', async () => {
-    const { getAllByText, getByText, getByTestId } = await Promise.resolve(
+  test('loads the events of the day in the carousel', async () => {
+    const { getAllByText, getByText, getByTestId, queryByTestId } = await Promise.resolve(
       render(<DayController />)
     );
+
+    // Only a centered spinner while the day loads, without the carousel.
+    expect(getByTestId('group-day-loading')).toBeTruthy();
+    expect(queryByTestId('group-day-carousel')).toBeNull();
 
     await waitFor(() => {
       expect(mockGetGroupCalendar).toHaveBeenCalledWith('group-1', 10, 2026);
@@ -120,9 +120,11 @@ describe('DayController', () => {
       expect(getAllByText('Status dos participantes')).toHaveLength(2);
       expect(getAllByText('Eu')).toHaveLength(2);
       expect(getAllByText('Bia')).toHaveLength(2);
-      expect(getAllByText('Ana')).toHaveLength(2);
-      expect(getAllByText('Confirmar!')).toHaveLength(2);
-      expect(getAllByText('Não estarei disponível neste dia')).toHaveLength(2);
+      // Ana proposed both events: once in the owner highlight and once among the avatars.
+      expect(getAllByText('Proposto por')).toHaveLength(2);
+      expect(getAllByText('Ana')).toHaveLength(4);
+      expect(getAllByText('Confirmar presença')).toHaveLength(2);
+      expect(getAllByText('Cancelar presença')).toHaveLength(2);
       expect(getByText('1 / 2')).toBeTruthy();
     });
 
@@ -136,11 +138,63 @@ describe('DayController', () => {
       expect(mockRespondToEventProposal).toHaveBeenCalledWith('event-2', 'yes', false);
     });
 
+    expect(queryByTestId('screen-frame-footer')).toBeNull();
+    expect(queryByTestId('group-day-loading')).toBeNull();
+
     fireEvent.press(getByTestId('group-day-carousel-availability'));
     await Promise.resolve();
     expect(push).toHaveBeenCalledWith({
       pathname: '/group/[id]/day/[date]/availability',
       params: { id: 'group-1', date: '2026-10-12' },
     });
+  });
+
+  test('orders the events by time and shows the photos each request returns', async () => {
+    mockGetGroupMembers.mockResolvedValue([
+      { id: 'user-1', name: 'Ana', profilePic: null },
+      { id: 'user-2', name: 'Bia', profilePic: 'https://cdn.alibe.com/bia.jpg' },
+    ]);
+    mockGetEventDetails.mockImplementation((eventId) =>
+      Promise.resolve({
+        id: eventId,
+        name: eventId === 'event-1' ? 'Bloom Café' : 'Cinema',
+        date: '2026-10-12',
+        time: eventId === 'event-1' ? '20:00' : '15:00',
+        image: null,
+        budgetStart: null,
+        budgetEnd: null,
+        status: 'pending',
+        groupId: 'group-1',
+        location: null,
+        proposal: {
+          id: eventId === 'event-1' ? 'proposal-1' : 'proposal-2',
+          owner: { id: 'user-1', name: 'Ana', image: 'https://cdn.alibe.com/ana.jpg' },
+          responses: [],
+          createdAt: '2026-10-01T12:00:00.000Z',
+        },
+        createdAt: '2026-10-01T12:00:00.000Z',
+        updatedAt: '2026-10-01T12:00:00.000Z',
+      } satisfies EventDetailsResponse)
+    );
+
+    const { getAllByTestId, getByTestId } = await Promise.resolve(render(<DayController />));
+
+    await waitFor(() => {
+      expect(
+        getAllByTestId(/^group-day-carousel-owner-event-\d$/).map(
+          (node) => (node.props as { testID: string }).testID
+        )
+      ).toEqual(['group-day-carousel-owner-event-2', 'group-day-carousel-owner-event-1']);
+    });
+
+    // The owner photo comes from the event details; the participant photos from the members list.
+    expect(getByTestId('group-day-carousel-owner-event-1-avatar-photo')).toHaveProp('source', [
+      { uri: 'https://cdn.alibe.com/ana.jpg' },
+    ]);
+    expect(getByTestId('group-day-carousel-participants-event-1-user-1-placeholder')).toBeTruthy();
+    expect(getByTestId('group-day-carousel-participants-event-1-user-2-photo')).toHaveProp(
+      'source',
+      [{ uri: 'https://cdn.alibe.com/bia.jpg' }]
+    );
   });
 });
