@@ -359,11 +359,16 @@ describe('UserProfileScreen', () => {
     }
 
     test('saves the new name and photo, refreshes the profile and closes the modal', async () => {
+      const toastShowSpy = jest.spyOn(Toast, 'show').mockImplementation(jest.fn());
       const onUpdateProfile = jest.fn().mockResolvedValue(undefined);
       const refetch = jest.fn();
       const { getByTestId, queryByPlaceholderText } = await openEditModal({
         onUpdateProfile,
         refetch,
+      });
+      let isModalOpenWhenToastShows: boolean | undefined;
+      toastShowSpy.mockImplementation(() => {
+        isModalOpenWhenToastShows = queryByPlaceholderText('Seu nome') !== null;
       });
 
       fireEvent.press(getByTestId('mock-photo-picker'));
@@ -379,6 +384,14 @@ describe('UserProfileScreen', () => {
       expect(refetch).toHaveBeenCalledTimes(1);
       expect(queryByPlaceholderText('Seu nome')).toBeNull();
       expect(getByTestId('profile-card-avatar-source')).toHaveTextContent('file://nova-foto.jpg');
+      expect(toastShowSpy).toHaveBeenCalledWith({
+        type: 'success',
+        text1: 'Sucesso!',
+        text2: 'Perfil atualizado com sucesso.',
+      });
+      expect(isModalOpenWhenToastShows).toBe(false);
+
+      toastShowSpy.mockRestore();
     });
 
     test('shows an error toast and keeps the modal open when saving fails', async () => {

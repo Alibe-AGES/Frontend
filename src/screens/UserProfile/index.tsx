@@ -9,7 +9,7 @@ import { ScreenFrame } from '@/components/ScreenFrame';
 import { TextInput } from '@/components/TextInput';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import tw from 'twrnc';
@@ -141,6 +141,7 @@ export const UserProfileScreen = ({
   const [editName, setEditName] = useState('');
   const [editPhoto, setEditPhoto] = useState<SelectedPhoto | null>(null);
   const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
+  const shouldShowProfileUpdatedToast = useRef(false);
 
   const [isLogoutModalVisible, setLogoutModalVisible] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -150,6 +151,17 @@ export const UserProfileScreen = ({
       setEditName(profile.name);
     }
   }, [profile]);
+
+  useEffect(() => {
+    if (isEditModalVisible || !shouldShowProfileUpdatedToast.current) return;
+
+    shouldShowProfileUpdatedToast.current = false;
+    Toast.show({
+      type: 'success',
+      text1: 'Sucesso!',
+      text2: 'Perfil atualizado com sucesso.',
+    });
+  }, [isEditModalVisible]);
 
   const handleOpenEditModal = () => {
     setEditName(profile?.name ?? '');
@@ -177,6 +189,7 @@ export const UserProfileScreen = ({
       }
 
       refetch();
+      shouldShowProfileUpdatedToast.current = true;
       setEditModalVisible(false);
     } catch {
       Toast.show({
