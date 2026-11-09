@@ -39,7 +39,7 @@ describe('<AuthenticatedRoute />', () => {
   test('renders protected content after the current user is confirmed', async () => {
     mockGetMe.mockResolvedValue({ id: 'user-1', name: 'User', profilePic: null });
 
-    const { getByText } = await render(
+    const { getByText } = render(
       <AuthenticatedRoute>
         <Text>Protected page</Text>
       </AuthenticatedRoute>
@@ -68,7 +68,7 @@ describe('<AuthenticatedRoute />', () => {
       return <Text>Protected page</Text>;
     }
 
-    const { getByTestId, queryByTestId } = await render(
+    const { getByTestId, queryByTestId } = render(
       <AuthenticatedRoute>
         <ProtectedPage />
       </AuthenticatedRoute>
@@ -95,7 +95,7 @@ describe('<AuthenticatedRoute />', () => {
       return <Text>Current page</Text>;
     }
 
-    const { getByText, rerender } = await render(
+    const { getByText, rerender } = render(
       <AuthenticatedRoute enabled={false}>
         <CurrentPage />
       </AuthenticatedRoute>
@@ -104,7 +104,7 @@ describe('<AuthenticatedRoute />', () => {
     expect(getByText('Current page')).toBeTruthy();
     expect(mockGetMe).not.toHaveBeenCalled();
 
-    await rerender(
+    rerender(
       <AuthenticatedRoute enabled>
         <CurrentPage />
       </AuthenticatedRoute>
@@ -121,7 +121,7 @@ describe('<AuthenticatedRoute />', () => {
   test('shows the access error and routes to login when the session is rejected', async () => {
     mockGetMe.mockRejectedValue(new Error('Unauthorized'));
 
-    const { getByText, getByTestId, queryByText } = await render(
+    const { getByText, getByTestId, queryByText } = render(
       <AuthenticatedRoute>
         <Text>Protected page</Text>
       </AuthenticatedRoute>
@@ -133,7 +133,7 @@ describe('<AuthenticatedRoute />', () => {
     });
     expect(queryByText('Protected page')).toBeNull();
 
-    await fireEvent.press(getByTestId('authentication-required-login'));
+    fireEvent.press(getByTestId('authentication-required-login'));
     await Promise.resolve();
     expect(replace).toHaveBeenCalledWith('/login');
   });

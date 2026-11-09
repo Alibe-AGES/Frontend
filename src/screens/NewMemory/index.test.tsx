@@ -96,7 +96,7 @@ describe('<NewMemoryScreen />', () => {
 
     expect(submit).toBeEnabled();
 
-    await fireEvent.press(submit);
+    fireEvent.press(submit);
 
     expect(props.onCreate).toHaveBeenCalledTimes(1);
   });
@@ -104,7 +104,7 @@ describe('<NewMemoryScreen />', () => {
   test('closes the flow from the card close button', async () => {
     const { getByTestId, props } = await renderScreen();
 
-    await fireEvent.press(getByTestId('new-memory-card-close'));
+    fireEvent.press(getByTestId('new-memory-card-close'));
 
     expect(props.onClose).toHaveBeenCalledTimes(1);
   });
@@ -112,8 +112,8 @@ describe('<NewMemoryScreen />', () => {
   test('selects an event from the dropdown', async () => {
     const { getByTestId, getByText, props } = await renderScreen();
 
-    await fireEvent.press(getByTestId('new-memory-card-event'));
-    await fireEvent.press(getByText('Churrasco'));
+    fireEvent.press(getByTestId('new-memory-card-event'));
+    fireEvent.press(getByText('Churrasco'));
 
     expect(props.onSelectEvent).toHaveBeenCalledWith('barbecue');
   });
@@ -125,7 +125,7 @@ describe('<NewMemoryScreen />', () => {
 
     expect(getByText('Não foi possível carregar os eventos.')).toBeTruthy();
 
-    await fireEvent.press(getByTestId('new-memory-retry'));
+    fireEvent.press(getByTestId('new-memory-retry'));
 
     expect(props.onRetry).toHaveBeenCalledTimes(1);
   });

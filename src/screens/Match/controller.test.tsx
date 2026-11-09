@@ -29,7 +29,7 @@ const mockGetGroup = jest.mocked(getGroup);
 const mockGetMe = jest.mocked(getMe);
 
 async function renderController() {
-  const result = await render(<MatchController />);
+  const result = render(<MatchController />);
   await act(async () => {
     await Promise.resolve();
     await Promise.resolve();
@@ -76,7 +76,7 @@ describe('MatchController', () => {
       expect(mockScreenProps.isLoadingParticipants).toBe(false);
     });
 
-    await act(() => {
+    act(() => {
       mockScreenProps.onConfirm();
     });
     await Promise.resolve();
@@ -98,7 +98,7 @@ describe('MatchController', () => {
     await renderController();
 
     expect(mockScreenProps.isConfirmDisabled).toBe(true);
-    await act(() => {
+    act(() => {
       mockScreenProps.onConfirm();
     });
     await Promise.resolve();

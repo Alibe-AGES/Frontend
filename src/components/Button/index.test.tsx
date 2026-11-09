@@ -13,7 +13,7 @@ describe('<Button />', () => {
       )
     );
 
-    await fireEvent.press(getByText('Entrar'));
+    fireEvent.press(getByText('Entrar'));
     await Promise.resolve();
 
     expect(onPress).toHaveBeenCalledTimes(1);
@@ -31,7 +31,7 @@ describe('<Button />', () => {
       )
     );
 
-    await fireEvent.press(getByText('Entrar'));
+    fireEvent.press(getByText('Entrar'));
     await Promise.resolve();
 
     expect(onPress).not.toHaveBeenCalled();
@@ -42,7 +42,7 @@ describe('<Button />', () => {
 
     expect(getByTestId('alibe-button').props.className).toContain('bg-coral');
 
-    await fireEvent.press(getByText('Entrar'));
+    fireEvent.press(getByText('Entrar'));
     await Promise.resolve();
 
     expect(getByTestId('alibe-button').props.className).toContain('bg-coral');
@@ -86,7 +86,7 @@ describe('<Button />', () => {
       busy: true,
     });
 
-    await fireEvent.press(getByTestId('alibe-button'));
+    fireEvent.press(getByTestId('alibe-button'));
     await Promise.resolve();
 
     expect(onPress).not.toHaveBeenCalled();

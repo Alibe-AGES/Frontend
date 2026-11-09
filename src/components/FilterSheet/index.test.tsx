@@ -91,19 +91,19 @@ describe('<FilterSheet />', () => {
   test('confirms budget, single and multiple selections', async () => {
     const { onConfirm, getByTestId, getByLabelText } = await setup();
 
-    await fireEvent.changeText(getByTestId('filter-sheet-min-budget'), '10a');
+    fireEvent.changeText(getByTestId('filter-sheet-min-budget'), '10a');
     await Promise.resolve();
-    await fireEvent.changeText(getByTestId('filter-sheet-max-budget'), '50');
+    fireEvent.changeText(getByTestId('filter-sheet-max-budget'), '50');
     await Promise.resolve();
-    await fireEvent.press(getByLabelText('Até 5 km'));
+    fireEvent.press(getByLabelText('Até 5 km'));
     await Promise.resolve();
-    await fireEvent.press(getByLabelText('Até 10 km'));
+    fireEvent.press(getByLabelText('Até 10 km'));
     await Promise.resolve();
-    await fireEvent.press(getByLabelText('Manhã'));
+    fireEvent.press(getByLabelText('Manhã'));
     await Promise.resolve();
-    await fireEvent.press(getByLabelText('Noite'));
+    fireEvent.press(getByLabelText('Noite'));
     await Promise.resolve();
-    await fireEvent.press(getByLabelText('Confirmar'));
+    fireEvent.press(getByLabelText('Confirmar'));
     await Promise.resolve();
 
     expect(onConfirm).toHaveBeenCalledWith({
@@ -116,15 +116,15 @@ describe('<FilterSheet />', () => {
   test('deselects an option and resets the draft', async () => {
     const { onConfirm, getByLabelText } = await setup();
 
-    await fireEvent.press(getByLabelText('Manhã'));
+    fireEvent.press(getByLabelText('Manhã'));
     await Promise.resolve();
-    await fireEvent.press(getByLabelText('Manhã'));
+    fireEvent.press(getByLabelText('Manhã'));
     await Promise.resolve();
-    await fireEvent.press(getByLabelText('Noite'));
+    fireEvent.press(getByLabelText('Noite'));
     await Promise.resolve();
-    await fireEvent.press(getByLabelText('Limpar filtros'));
+    fireEvent.press(getByLabelText('Limpar filtros'));
     await Promise.resolve();
-    await fireEvent.press(getByLabelText('Confirmar'));
+    fireEvent.press(getByLabelText('Confirmar'));
     await Promise.resolve();
 
     expect(onConfirm).toHaveBeenCalledWith(EMPTY_FILTER_VALUE);
@@ -133,7 +133,7 @@ describe('<FilterSheet />', () => {
   test('closes without confirming', async () => {
     const { onConfirm, onClose, getByTestId } = await setup();
 
-    await fireEvent.press(getByTestId('filter-sheet-close'));
+    fireEvent.press(getByTestId('filter-sheet-close'));
     await Promise.resolve();
 
     expect(onClose).toHaveBeenCalled();

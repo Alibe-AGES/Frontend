@@ -65,7 +65,7 @@ describe('<TimeInput />', () => {
       )
     );
 
-    await fireEvent.changeText(getByTestId('alibe-time-input'), typed);
+    fireEvent.changeText(getByTestId('alibe-time-input'), typed);
     await Promise.resolve();
 
     expect(onChangeTime).toHaveBeenLastCalledWith(formatted);
@@ -77,7 +77,7 @@ describe('<TimeInput />', () => {
     );
     const input = getByTestId('alibe-time-input');
 
-    await fireEvent.changeText(input, '09:');
+    fireEvent.changeText(input, '09:');
     await Promise.resolve();
 
     expect(getByDisplayValue('09')).toBeTruthy();
@@ -88,7 +88,7 @@ describe('<TimeInput />', () => {
       render(<ControlledTimeInput initialValue="99:99" />)
     );
 
-    await fireEvent(getByTestId('alibe-time-input'), 'blur');
+    fireEvent(getByTestId('alibe-time-input'), 'blur');
     await Promise.resolve();
 
     expect(getByTestId('alibe-time-input-error')).toHaveTextContent(
@@ -101,7 +101,7 @@ describe('<TimeInput />', () => {
       render(<ControlledTimeInput initialValue="9" />)
     );
 
-    await fireEvent(getByTestId('alibe-time-input'), 'blur');
+    fireEvent(getByTestId('alibe-time-input'), 'blur');
     await Promise.resolve();
 
     expect(queryByTestId('alibe-time-input-error')).not.toBeNull();
@@ -117,18 +117,18 @@ describe('<TimeInput />', () => {
       )
     );
 
-    await fireEvent(getByTestId('alibe-time-input'), 'blur');
+    fireEvent(getByTestId('alibe-time-input'), 'blur');
     await Promise.resolve();
     expect(queryByTestId('alibe-time-input-error')).toBeNull();
 
-    await rerender(
+    rerender(
       <TimeInput
         value="23:59"
         onChangeTime={jest.fn()}
       />
     );
     await Promise.resolve();
-    await fireEvent(getByTestId('alibe-time-input'), 'blur');
+    fireEvent(getByTestId('alibe-time-input'), 'blur');
     await Promise.resolve();
 
     expect(queryByTestId('alibe-time-input-error')).toBeNull();
@@ -140,7 +140,7 @@ describe('<TimeInput />', () => {
       render(<ControlledTimeInput onBlur={onBlur} />)
     );
 
-    await fireEvent(getByTestId('alibe-time-input'), 'blur');
+    fireEvent(getByTestId('alibe-time-input'), 'blur');
     await Promise.resolve();
 
     expect(queryByTestId('alibe-time-input-error')).toBeNull();
@@ -153,11 +153,11 @@ describe('<TimeInput />', () => {
     );
     const input = getByTestId('alibe-time-input');
 
-    await fireEvent(input, 'blur');
+    fireEvent(input, 'blur');
     await Promise.resolve();
     expect(queryByTestId('alibe-time-input-error')).not.toBeNull();
 
-    await fireEvent.changeText(input, '0930');
+    fireEvent.changeText(input, '0930');
     await Promise.resolve();
 
     expect(queryByTestId('alibe-time-input-error')).toBeNull();
@@ -246,7 +246,7 @@ describe('<TimeInput />', () => {
       )
     );
 
-    await fireEvent(getByTestId('focused-time-input'), 'focus');
+    fireEvent(getByTestId('focused-time-input'), 'focus');
     await Promise.resolve();
 
     expect(handleFocus).toHaveBeenCalled();

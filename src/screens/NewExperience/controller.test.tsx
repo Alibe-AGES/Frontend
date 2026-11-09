@@ -64,7 +64,7 @@ const proposal = {
 };
 
 async function renderController() {
-  await render(<NewExperienceController />);
+  render(<NewExperienceController />);
   await act(async () => {
     await Promise.resolve();
   });
@@ -107,7 +107,7 @@ describe('NewExperienceController', () => {
       expect(mockScreenProps.proposal?.myAnswer).toBe('yes');
     });
 
-    await act(() => {
+    act(() => {
       mockScreenProps.onAnswer('yes');
     });
     await Promise.resolve();

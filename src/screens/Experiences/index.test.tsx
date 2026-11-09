@@ -101,7 +101,7 @@ describe('<ExperiencesScreen />', () => {
 
     expect(getByTestId('experiences-back').props.accessibilityLabel).toBe('Voltar para o grupo');
     await findByText('Bloom Café');
-    await fireEvent.press(getByTestId('experiences-places-item-bloom'));
+    fireEvent.press(getByTestId('experiences-places-item-bloom'));
     await Promise.resolve();
 
     expect(mockPush).toHaveBeenCalledWith('/group/group-1/experiences/bloom');
@@ -129,7 +129,7 @@ describe('<ExperiencesScreen />', () => {
     const { findByText, getByTestId, queryByText } = await Promise.resolve(renderScreen());
 
     expect(await findByText('Bloom Café')).toBeTruthy();
-    await fireEvent.changeText(getByTestId('experiences-search'), 'arena');
+    fireEvent.changeText(getByTestId('experiences-search'), 'arena');
     await waitFor(() => {
       expect(searchPlaces).toHaveBeenLastCalledWith(expect.objectContaining({ query: 'arena' }));
     });
@@ -141,7 +141,7 @@ describe('<ExperiencesScreen />', () => {
     const { findByText, getByTestId, queryByText } = await Promise.resolve(renderScreen());
 
     await findByText('Bloom Café');
-    await fireEvent.press(getByTestId('experiences-filters-tag-restaurant'));
+    fireEvent.press(getByTestId('experiences-filters-tag-restaurant'));
     await waitFor(() => {
       expect(searchPlaces).toHaveBeenLastCalledWith(
         expect.objectContaining({ tagIds: ['restaurant'] })
@@ -185,11 +185,11 @@ describe('<ExperiencesScreen />', () => {
     const { findByText, getByTestId, queryByText } = await Promise.resolve(renderScreen());
 
     await findByText('Bloom Café');
-    await fireEvent.press(getByTestId('experiences-filters-open-filters'));
+    fireEvent.press(getByTestId('experiences-filters-open-filters'));
     await Promise.resolve();
-    await fireEvent.press(getByTestId('experiences-filter-sheet-environment-outdoor'));
+    fireEvent.press(getByTestId('experiences-filter-sheet-environment-outdoor'));
     await Promise.resolve();
-    await fireEvent.press(getByTestId('experiences-filter-sheet-confirm'));
+    fireEvent.press(getByTestId('experiences-filter-sheet-confirm'));
     await waitFor(() => {
       expect(searchPlaces).toHaveBeenLastCalledWith(
         expect.objectContaining({

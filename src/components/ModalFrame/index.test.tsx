@@ -4,8 +4,8 @@ import { Text, View } from 'react-native';
 import { ModalFrame } from './index';
 
 describe('<ModalFrame />', () => {
-  test('renders a centered dialog panel with title inside a keyboard-avoiding scroll', async () => {
-    const { getByTestId, getByText } = await render(
+  test('renders a centered dialog panel with title inside a keyboard-avoiding scroll', () => {
+    const { getByTestId, getByText } = render(
       <ModalFrame
         visible
         onRequestClose={jest.fn()}
@@ -27,9 +27,9 @@ describe('<ModalFrame />', () => {
     expect(getByTestId('dialog-panel')).toContainElement(getByText('Conteúdo'));
   });
 
-  test('does not close from the backdrop unless enabled', async () => {
+  test('does not close from the backdrop unless enabled', () => {
     const onRequestClose = jest.fn();
-    const { getByTestId } = await render(
+    const { getByTestId } = render(
       <ModalFrame
         visible
         onRequestClose={onRequestClose}
@@ -39,14 +39,14 @@ describe('<ModalFrame />', () => {
       </ModalFrame>
     );
 
-    await fireEvent.press(getByTestId('dialog-backdrop'));
+    fireEvent.press(getByTestId('dialog-backdrop'));
 
     expect(onRequestClose).not.toHaveBeenCalled();
   });
 
-  test('renders a bottom sheet that closes from the backdrop', async () => {
+  test('renders a bottom sheet that closes from the backdrop', () => {
     const onRequestClose = jest.fn();
-    const { getByLabelText, getByTestId, queryByTestId } = await render(
+    const { getByLabelText, getByTestId, queryByTestId } = render(
       <ModalFrame
         visible
         onRequestClose={onRequestClose}
@@ -62,13 +62,13 @@ describe('<ModalFrame />', () => {
     expect(queryByTestId('sheet-scroll')).toBeNull();
     expect(getByTestId('sheet-keyboard-container')).toContainElement(getByTestId('sheet-surface'));
 
-    await fireEvent.press(getByLabelText('Fechar filtros'));
+    fireEvent.press(getByLabelText('Fechar filtros'));
 
     expect(onRequestClose).toHaveBeenCalledTimes(1);
   });
 
-  test('renders nothing while hidden', async () => {
-    const { queryByText } = await render(
+  test('renders nothing while hidden', () => {
+    const { queryByText } = render(
       <ModalFrame
         visible={false}
         onRequestClose={jest.fn()}

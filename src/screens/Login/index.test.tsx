@@ -89,7 +89,7 @@ describe('<LoginScreen />', () => {
 
     expect(getByTestId('login-password').props.secureTextEntry).toBe(true);
 
-    await fireEvent.press(getByText('Mostrar'));
+    fireEvent.press(getByText('Mostrar'));
     await Promise.resolve();
 
     expect(getByTestId('login-password').props.secureTextEntry).toBe(false);
@@ -99,7 +99,7 @@ describe('<LoginScreen />', () => {
   test('calls onForgotPassword', async () => {
     const { getByText } = await Promise.resolve(renderScreen());
 
-    await fireEvent.press(getByText('Esqueci minha senha'));
+    fireEvent.press(getByText('Esqueci minha senha'));
     await Promise.resolve();
 
     expect(onForgotPassword).toHaveBeenCalledTimes(1);
@@ -113,11 +113,11 @@ describe('<LoginScreen />', () => {
   ])('keeps continue disabled for email "%s" and password "%s"', async (email, password) => {
     const { getByPlaceholderText, getByTestId } = await Promise.resolve(renderScreen());
 
-    await fireEvent.changeText(getByPlaceholderText('Email'), email);
+    fireEvent.changeText(getByPlaceholderText('Email'), email);
     await Promise.resolve();
-    await fireEvent.changeText(getByPlaceholderText('Senha'), password);
+    fireEvent.changeText(getByPlaceholderText('Senha'), password);
     await Promise.resolve();
-    await fireEvent.press(getByTestId('login-continue'));
+    fireEvent.press(getByTestId('login-continue'));
     await Promise.resolve();
 
     expect(getByTestId('login-continue').props.accessibilityState).toMatchObject({
@@ -129,11 +129,11 @@ describe('<LoginScreen />', () => {
   test('continues with the trimmed email and the password', async () => {
     const { getByPlaceholderText, getByTestId } = await Promise.resolve(renderScreen());
 
-    await fireEvent.changeText(getByPlaceholderText('Email'), '  user@example.com ');
+    fireEvent.changeText(getByPlaceholderText('Email'), '  user@example.com ');
     await Promise.resolve();
-    await fireEvent.changeText(getByPlaceholderText('Senha'), 'secret');
+    fireEvent.changeText(getByPlaceholderText('Senha'), 'secret');
     await Promise.resolve();
-    await fireEvent.press(getByTestId('login-continue'));
+    fireEvent.press(getByTestId('login-continue'));
     await Promise.resolve();
 
     expect(onContinue).toHaveBeenCalledWith({ email: 'user@example.com', password: 'secret' });

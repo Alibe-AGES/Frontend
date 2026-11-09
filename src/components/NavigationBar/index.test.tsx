@@ -24,7 +24,7 @@ describe('<NavigationBar />', () => {
   ])('%s navigates to its group screen', async (testId, href) => {
     const { getByTestId } = await Promise.resolve(render(<NavigationBar groupId="g1" />));
 
-    await fireEvent.press(getByTestId(testId));
+    fireEvent.press(getByTestId(testId));
     await Promise.resolve();
 
     expect(mockNavigate).toHaveBeenCalledWith(href);
@@ -33,7 +33,7 @@ describe('<NavigationBar />', () => {
   test('groups button navigates to the groups screen', async () => {
     const { getByTestId } = await Promise.resolve(render(<NavigationBar groupId="g1" />));
 
-    await fireEvent.press(getByTestId('alibe-navigation-bar-groups'));
+    fireEvent.press(getByTestId('alibe-navigation-bar-groups'));
     await Promise.resolve();
 
     expect(mockNavigate).toHaveBeenCalledWith('/groups');

@@ -88,9 +88,9 @@ describe('<NewExperienceScreen />', () => {
       render(<NewExperienceScreen {...buildProps({ onAnswer })} />)
     );
 
-    await fireEvent.press(getByTestId('new-experience-dislike'));
+    fireEvent.press(getByTestId('new-experience-dislike'));
     await Promise.resolve();
-    await fireEvent.press(getByTestId('new-experience-like'));
+    fireEvent.press(getByTestId('new-experience-like'));
     await Promise.resolve();
 
     expect(onAnswer).toHaveBeenNthCalledWith(1, 'no');
@@ -108,9 +108,9 @@ describe('<NewExperienceScreen />', () => {
     );
 
     expect(getByText('Você já sugeriu este local')).toBeTruthy();
-    await fireEvent.press(getByTestId('new-experience-like'));
+    fireEvent.press(getByTestId('new-experience-like'));
     await Promise.resolve();
-    await fireEvent.press(getByTestId('new-experience-dislike'));
+    fireEvent.press(getByTestId('new-experience-dislike'));
     await Promise.resolve();
     expect(onAnswer).not.toHaveBeenCalled();
   });
@@ -125,7 +125,7 @@ describe('<NewExperienceScreen />', () => {
       )
     );
 
-    await fireEvent.press(getByTestId('new-experience-like'));
+    fireEvent.press(getByTestId('new-experience-like'));
     await Promise.resolve();
 
     expect(onAnswer).toHaveBeenCalledWith('yes');
@@ -171,7 +171,7 @@ describe('<NewExperienceScreen />', () => {
     const failed = await Promise.resolve(
       render(<NewExperienceScreen {...buildProps({ proposal: null, error: 'offline', onRetry })} />)
     );
-    await fireEvent.press(failed.getByTestId('new-experience-retry'));
+    fireEvent.press(failed.getByTestId('new-experience-retry'));
     await Promise.resolve();
     expect(onRetry).toHaveBeenCalledTimes(1);
   });

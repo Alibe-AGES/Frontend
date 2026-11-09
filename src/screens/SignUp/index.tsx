@@ -44,6 +44,7 @@ export function SignUpScreen({ onContinue, onGoogleSignUp, emailError }: SignUpS
       padding="horizontal"
       topFade
       floatingChrome
+      testID="sign-up-screen"
       header={
         <BackButton
           fallbackHref="/auth"

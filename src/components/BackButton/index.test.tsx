@@ -19,7 +19,7 @@ describe('<BackButton />', () => {
   test('navigates to the previous screen by default', async () => {
     const { getByTestId } = await Promise.resolve(render(<BackButton />));
 
-    await fireEvent.press(getByTestId('alibe-back-button'));
+    fireEvent.press(getByTestId('alibe-back-button'));
     await Promise.resolve();
 
     expect(mockBack).toHaveBeenCalledTimes(1);
@@ -30,7 +30,7 @@ describe('<BackButton />', () => {
       render(<BackButton accessibilityLabel="Fechar" />)
     );
 
-    await fireEvent.press(getByTestId('alibe-back-button'));
+    fireEvent.press(getByTestId('alibe-back-button'));
     await Promise.resolve();
 
     expect(mockBack).toHaveBeenCalledTimes(1);
@@ -47,7 +47,7 @@ describe('<BackButton />', () => {
       )
     );
 
-    await fireEvent.press(getByTestId('alibe-back-button'));
+    fireEvent.press(getByTestId('alibe-back-button'));
     await Promise.resolve();
 
     expect(onPress).toHaveBeenCalledTimes(1);
@@ -80,7 +80,7 @@ describe('<BackButton />', () => {
       )
     );
 
-    await fireEvent.press(getByTestId('alibe-back-button'));
+    fireEvent.press(getByTestId('alibe-back-button'));
     await Promise.resolve();
 
     expect(onPress).not.toHaveBeenCalled();

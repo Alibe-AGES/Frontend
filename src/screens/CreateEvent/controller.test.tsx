@@ -70,14 +70,14 @@ const COMPLETE_DRAFT: EventCardDraft = {
 };
 
 async function fillDraft(draft: EventCardDraft): Promise<void> {
-  await act(() => {
+  act(() => {
     mockScreenProps.onChangeDraft(draft);
   });
   await Promise.resolve();
 }
 
 async function renderController() {
-  const result = await render(<CreateEventController />);
+  const result = render(<CreateEventController />);
   await act(async () => {
     await Promise.resolve();
     await Promise.resolve();
@@ -177,7 +177,7 @@ describe('CreateEventController', () => {
   test('does not submit an incomplete draft', async () => {
     await renderController();
 
-    await act(() => {
+    act(() => {
       mockScreenProps.onConfirm();
     });
     await Promise.resolve();
@@ -189,7 +189,7 @@ describe('CreateEventController', () => {
     const photo = { uri: 'file:///bloom.jpg', fileName: 'bloom.jpg', mimeType: 'image/jpeg' };
     await Promise.resolve(render(<CreateEventController />));
 
-    await act(() => {
+    act(() => {
       mockScreenProps.onImageSelected(photo);
     });
     await Promise.resolve();
@@ -233,7 +233,7 @@ describe('CreateEventController', () => {
       date: '2026-10-15',
       time: '20:00',
     });
-    await act(() => {
+    act(() => {
       mockScreenProps.onConfirm();
     });
     await Promise.resolve();
@@ -273,7 +273,7 @@ describe('CreateEventController', () => {
     await Promise.resolve(render(<CreateEventController />));
 
     await fillDraft(COMPLETE_DRAFT);
-    await act(() => {
+    act(() => {
       mockScreenProps.onConfirm();
     });
     await Promise.resolve();
@@ -288,7 +288,7 @@ describe('CreateEventController', () => {
 
     expect(mockScreenProps.activeTab).toBe('event');
 
-    await act(() => {
+    act(() => {
       mockScreenProps.onSelectTab?.('suggestion');
     });
     await Promise.resolve();
@@ -296,7 +296,7 @@ describe('CreateEventController', () => {
     expect(mockScreenProps.activeTab).toBe('suggestion');
 
     await fillDraft(COMPLETE_DRAFT);
-    await act(() => {
+    act(() => {
       mockScreenProps.onConfirm();
     });
     await Promise.resolve();
@@ -333,7 +333,7 @@ describe('CreateEventController', () => {
       address: 'Rua das Flores, 123',
     });
     expect(mockScreenProps.isConfirmDisabled).toBe(false);
-    await act(() => {
+    act(() => {
       mockScreenProps.onConfirm();
     });
     await Promise.resolve();
@@ -370,7 +370,7 @@ describe('CreateEventController', () => {
       date: '2026-10-15',
       time: '20:00',
     });
-    await act(() => {
+    act(() => {
       mockScreenProps.onConfirm();
     });
     await Promise.resolve();
@@ -384,7 +384,7 @@ describe('CreateEventController', () => {
 
   test('includes user-entered location details when creating a suggestion', async () => {
     await Promise.resolve(render(<CreateEventController />));
-    await act(() => {
+    act(() => {
       mockScreenProps.onSelectTab?.('suggestion');
     });
     await Promise.resolve();
@@ -397,7 +397,7 @@ describe('CreateEventController', () => {
       website: 'www.coolturebr.net',
     });
 
-    await act(() => {
+    act(() => {
       mockScreenProps.onConfirm();
     });
     await Promise.resolve();
@@ -430,7 +430,7 @@ describe('CreateEventController', () => {
       name: 'Bloom Café',
     });
 
-    await act(() => {
+    act(() => {
       mockScreenProps.onConfirm();
     });
     await Promise.resolve();
@@ -457,13 +457,13 @@ describe('CreateEventController', () => {
       },
     } as Awaited<ReturnType<typeof createProposal>>);
     await Promise.resolve(render(<CreateEventController />));
-    await act(() => {
+    act(() => {
       mockScreenProps.onSelectTab?.('suggestion');
     });
     await Promise.resolve();
     await fillDraft(COMPLETE_DRAFT);
 
-    await act(() => {
+    act(() => {
       mockScreenProps.onConfirm();
     });
     await Promise.resolve();
@@ -486,7 +486,7 @@ describe('CreateEventController', () => {
     mockCreateProposal.mockRejectedValue(new Error('Location not found'));
     await Promise.resolve(render(<CreateEventController />));
 
-    await act(() => {
+    act(() => {
       mockScreenProps.onSelectTab?.('suggestion');
     });
     await Promise.resolve();

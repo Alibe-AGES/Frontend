@@ -57,7 +57,7 @@ describe('<EventCreatedScreen />', () => {
   test('returns to the group main page when the back button is pressed', async () => {
     const { getByTestId } = await Promise.resolve(render(<EventCreatedScreen />));
 
-    await fireEvent.press(getByTestId('event-created-back-home'));
+    fireEvent.press(getByTestId('event-created-back-home'));
     await Promise.resolve();
 
     expect(mockDismissTo).toHaveBeenCalledTimes(1);
