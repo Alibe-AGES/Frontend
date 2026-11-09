@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable } from 'react-native';
+import { Pressable, View } from 'react-native';
 import tw from 'twrnc';
 
 import { ProfileButtonProps } from '@/components/ProfileButton/ProfileButton.types';
@@ -24,12 +24,14 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({
       style={({ pressed }) => tw`${pressed ? 'opacity-60' : ''}`}
       testID={testID}
     >
-      <Ionicons
-        name="person-outline"
-        size={size}
-        color={theme.colors.ink}
-        style={{ includeFontPadding: false }}
-      />
+      <View className="rounded-full bg-surface p-2">
+        <Ionicons
+          name="person-outline"
+          size={size}
+          color={theme.colors.ink}
+          style={{ includeFontPadding: false }}
+        />
+      </View>
     </Pressable>
   );
 };
