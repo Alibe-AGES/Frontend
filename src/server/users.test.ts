@@ -2,7 +2,7 @@ import { API_BASE_URL } from '@/constants';
 import { File } from 'expo-file-system';
 import { Platform } from 'react-native';
 import { ApiError } from './api';
-import { getMyProfile, updateMyProfile, updateUserProfilePicture } from './users';
+import { getMyProfile, updateMyProfile, updatePassword, updateUserProfilePicture } from './users';
 
 declare const global: { fetch: jest.Mock };
 
@@ -155,4 +155,35 @@ test('throws an ApiError with the status when the name cannot be saved', async (
     name: 'ApiError',
     status: 400,
   });
+});
+
+test('sends the current and new password as JSON to the authenticated endpoint', async () => {
+  global.fetch = jest.fn().mockResolvedValue({ ok: true });
+
+  await expect(
+    updatePassword({ password: 'senha-segura', newPassword: 'nova-senha-segura' })
+  ).resolves.toBeUndefined();
+
+  expect(global.fetch).toHaveBeenCalledWith(
+    API_BASE_URL + '/users/me/update-password',
+    expect.objectContaining({
+      method: 'PUT',
+      body: JSON.stringify({ password: 'senha-segura', newPassword: 'nova-senha-segura' }),
+    })
+  );
+  const [, init] = global.fetch.mock.calls[0] as [string, RequestInit];
+  expect(new Headers(init.headers).get('Content-Type')).toBe('application/json');
+});
+
+test('throws an ApiError with the status when the password cannot be changed', async () => {
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: false,
+    status: 400,
+    statusText: 'Bad Request',
+    text: () => Promise.resolve('{"message":"Senha atual incorreta","statusCode":400}'),
+  });
+
+  await expect(
+    updatePassword({ password: 'senha-errada', newPassword: 'nova-senha-segura' })
+  ).rejects.toMatchObject({ name: 'ApiError', status: 400 });
 });
