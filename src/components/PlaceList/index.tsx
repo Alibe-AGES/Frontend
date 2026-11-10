@@ -1,8 +1,9 @@
+import { ErrorCard } from '@/components/ErrorCard';
 import { PlaceCard } from '@/components/PlaceCard';
 import { PlaceCardColor } from '@/components/PlaceCard/PlaceCard.types';
 import { theme } from '@/theme';
 import { FC, ReactElement, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, ScrollView, Text, View } from 'react-native';
 import { Place, PlaceListProps } from './PlaceList.types';
 
 export type { Place, PlaceListProps } from './PlaceList.types';
@@ -26,20 +27,22 @@ export const PlaceList: FC<PlaceListProps> = ({
   onRetry,
   onPlacePress,
   header,
+  footer,
   contentContainerClassName = DEFAULT_CONTENT_CLASS_NAME,
   testID = 'alibe-place-list',
 }) => {
   const [pageCount, setPageCount] = useState(1);
 
-  // Loading, error and empty states keep the header and share the list's scrolling layout.
+  // Loading, error and empty states keep the header and footer and the list's scrolling layout.
   const renderState = (state: ReactElement) =>
-    header ? (
+    header || footer ? (
       <ScrollView
         contentContainerClassName={contentContainerClassName}
         keyboardShouldPersistTaps="handled"
       >
         {header}
         {state}
+        {footer}
       </ScrollView>
     ) : (
       state
@@ -58,23 +61,11 @@ export const PlaceList: FC<PlaceListProps> = ({
 
   if (error) {
     return renderState(
-      <View
-        className="items-center justify-center gap-3 rounded-3xl bg-surface p-6"
+      <ErrorCard
+        message={error}
+        onRetry={onRetry}
         testID={`${testID}-error`}
-      >
-        <Text className="text-center font-poppins text-sm text-ink-soft">{error}</Text>
-        {onRetry ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Tentar novamente"
-            onPress={onRetry}
-            className="rounded-full bg-ink px-5 py-2 active:opacity-75"
-            testID={`${testID}-retry`}
-          >
-            <Text className="font-poppins-semibold text-sm text-white">Tentar novamente</Text>
-          </Pressable>
-        ) : null}
-      </View>
+      />
     );
   }
 
@@ -124,6 +115,7 @@ export const PlaceList: FC<PlaceListProps> = ({
       columnWrapperClassName="gap-4"
       contentContainerClassName={contentContainerClassName}
       ListHeaderComponent={header}
+      ListFooterComponent={footer}
       keyboardShouldPersistTaps="handled"
       onEndReached={() => {
         if (hasMore) {

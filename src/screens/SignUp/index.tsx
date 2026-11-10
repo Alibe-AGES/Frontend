@@ -2,6 +2,7 @@ import { BackButton } from '@/components/BackButton';
 import { ContinueButton } from '@/components/ContinueButton';
 import { EmailInput } from '@/components/EmailInput';
 import { GoogleButton } from '@/components/GoogleButton';
+import { HandsHiFive } from '@/components/HandsHiFive';
 import { PasswordInput } from '@/components/PasswordInput';
 import { ScreenFrame } from '@/components/ScreenFrame';
 import { theme } from '@/theme';
@@ -9,8 +10,6 @@ import { isValidEmail } from '@/utils/email';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-
-import AuthHandsDecoration from '@/assets/images/auth-hands-decoration.svg';
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -23,9 +22,17 @@ export interface SignUpScreenProps {
   onContinue: (data: SignUpData) => void;
   onGoogleSignUp?: () => void;
   emailError?: string;
+  errorMessage?: string;
+  isGoogleLoading?: boolean;
 }
 
-export function SignUpScreen({ onContinue, onGoogleSignUp, emailError }: SignUpScreenProps) {
+export function SignUpScreen({
+  onContinue,
+  onGoogleSignUp,
+  emailError,
+  errorMessage,
+  isGoogleLoading = false,
+}: SignUpScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
@@ -43,22 +50,22 @@ export function SignUpScreen({ onContinue, onGoogleSignUp, emailError }: SignUpS
   return (
     <ScreenFrame
       padding="horizontal"
+      topFade
       testID="sign-up-screen"
+      floatingChrome
+      header={
+        <BackButton
+          fallbackHref="/auth"
+          className="self-start"
+        />
+      }
     >
       <View
         accessible={false}
         className="-mx-8 aspect-[390/280]"
       >
-        <AuthHandsDecoration
-          width="100%"
-          height="100%"
-        />
+        <HandsHiFive variant="sign-up" />
       </View>
-
-      <BackButton
-        fallbackHref="/auth"
-        className="absolute top-20"
-      />
 
       <Text
         adjustsFontSizeToFit
@@ -133,16 +140,25 @@ export function SignUpScreen({ onContinue, onGoogleSignUp, emailError }: SignUpS
 
           <GoogleButton
             onPress={onGoogleSignUp}
+            isLoading={isGoogleLoading}
             testID="sign-up-google"
           />
         </View>
 
         <View className="mt-auto">
+          {errorMessage ? (
+            <Text
+              accessibilityRole="alert"
+              className="mb-3 text-center font-poppins text-sm text-error"
+            >
+              {errorMessage}
+            </Text>
+          ) : null}
           <ContinueButton
             onPress={() => {
               onContinue({ email: trimmedEmail, password });
             }}
-            disabled={!canContinue}
+            disabled={!canContinue || isGoogleLoading}
             testID="sign-up-continue"
           />
         </View>

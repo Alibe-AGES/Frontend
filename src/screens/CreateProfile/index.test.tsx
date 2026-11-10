@@ -1,10 +1,17 @@
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, within } from '@testing-library/react-native';
+import { ScrollView } from 'react-native';
 import { CreateProfileScreen } from '.';
 
 jest.mock('@/assets/images/create-group-decoration.svg', () => {
   const RN = jest.requireActual<typeof import('react-native')>('react-native');
   return () => <RN.View testID="mock-decoration-svg" />;
 });
+
+const mockReplace = jest.fn();
+
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ back: jest.fn(), canGoBack: () => false, replace: mockReplace }),
+}));
 
 describe('<CreateProfileScreen />', () => {
   const onContinue = jest.fn();
@@ -34,6 +41,36 @@ describe('<CreateProfileScreen />', () => {
 
     expect(title.props.numberOfLines).toBe(2);
     expect(title.props.adjustsFontSizeToFit).toBe(true);
+  });
+
+  test('keeps the back button fixed outside the scrollable content', async () => {
+    const { UNSAFE_getByType, getByLabelText } = await Promise.resolve(
+      render(<CreateProfileScreen onContinue={onContinue} />)
+    );
+    const scrollView = within(UNSAFE_getByType(ScrollView));
+
+    expect(getByLabelText('Voltar')).toBeTruthy();
+    expect(scrollView.queryByText('Como seus amigos te chamam?')).toBeTruthy();
+    expect(scrollView.queryByLabelText('Voltar')).toBeNull();
+  });
+
+  test('returns to sign up from the back button when there is no history', async () => {
+    const { getByLabelText } = await Promise.resolve(
+      render(<CreateProfileScreen onContinue={onContinue} />)
+    );
+
+    fireEvent.press(getByLabelText('Voltar'));
+    await Promise.resolve();
+
+    expect(mockReplace).toHaveBeenCalledWith('/sign-up');
+  });
+
+  test('shows the top fade at rest because the content fits without scrolling', async () => {
+    const { getByTestId } = await Promise.resolve(
+      render(<CreateProfileScreen onContinue={onContinue} />)
+    );
+
+    expect(getByTestId('screen-frame-top-fade')).toHaveStyle({ opacity: 1 });
   });
 
   test('shows the camera placeholder while no photo is selected', async () => {

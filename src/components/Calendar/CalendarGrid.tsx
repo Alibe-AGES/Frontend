@@ -1,6 +1,11 @@
+import { theme } from '@/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { Pressable, Text, View } from 'react-native';
+import tw from 'twrnc';
 
 import { DayMark, DayStatus } from '@/components/Calendar/Calendar.types';
+import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
 
 import { formatCalendarDate } from './calendar.utils';
 
@@ -22,13 +27,15 @@ interface CalendarGridProps {
 interface DayContentProps {
   status: DayStatus;
   day: number;
+  hasImage: boolean;
 }
 
 const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
 
 const dayContainerClasses: Record<DayStatus, string> = {
   normal: 'bg-transparent',
-  available: 'bg-lime',
+  // Availability is shown by the coral dot below the day, not by the background.
+  available: 'bg-transparent',
   realized: 'bg-ink',
   suggested: 'bg-pink',
   matched: 'bg-ink',
@@ -111,12 +118,51 @@ function getAccessibilityLabel(
   return details.join(', ');
 }
 
-function DayContent({ status, day }: DayContentProps) {
+function CalendarDayImage({ imageUrl, dateString }: { imageUrl: string; dateString: string }) {
+  const imageSource = useAuthenticatedImageSource(imageUrl);
+
+  if (!imageSource) {
+    return null;
+  }
+
+  return (
+    <>
+      <Image
+        source={imageSource}
+        accessibilityLabel={`Memória do dia ${dateString}`}
+        contentFit="cover"
+        style={tw`absolute inset-0 h-full w-full`}
+        testID={`calendar-day-image-${dateString}`}
+      />
+      <View style={tw`absolute inset-0 bg-black/30`} />
+    </>
+  );
+}
+
+function DayContent({ status, day, hasImage }: DayContentProps) {
+  if (hasImage) {
+    return <Text className="z-10 text-sm font-medium text-white">{String(day)}</Text>;
+  }
   if (status === 'suggested') {
-    return <Text className="text-xl text-canvas">☆</Text>;
+    // An icon is centered by its box, unlike a ☆ character, which sits on the font baseline.
+    return (
+      <Ionicons
+        name="star-outline"
+        size={20}
+        color={theme.colors.canvas}
+        testID="calendar-day-icon-suggested"
+      />
+    );
   }
   if (status === 'matched') {
-    return <Text className="text-xl text-lime">★</Text>;
+    return (
+      <Ionicons
+        name="star"
+        size={20}
+        color={theme.colors.lime}
+        testID="calendar-day-icon-matched"
+      />
+    );
   }
 
   return <Text className={`text-sm font-medium ${dayTextClasses[status]}`}>{String(day)}</Text>;
@@ -157,6 +203,7 @@ function CalendarDayCell({ dateString, day, mark, onPress, onCreatePress }: Cale
   const eventCount = mark.eventIds?.length ?? 0;
   const availableUserCount = getAvailableUserCount(mark);
   const allUsersAvailable = getAllUsersAvailable(mark);
+  const hasImage = Boolean(mark.imageUrl);
   const displayStatus = getDisplayStatus(dateString, eventCount, mark.status);
   const accessibilityLabel = getAccessibilityLabel(
     dateString,
@@ -181,12 +228,20 @@ function CalendarDayCell({ dateString, day, mark, onPress, onCreatePress }: Cale
         testID={`calendar-day-button-${dateString}`}
       >
         <View
-          className={`h-9 w-9 items-center justify-center rounded-lg ${dayContainerClasses[displayStatus]}`}
+          className={`h-9 w-9 items-center justify-center overflow-hidden rounded-lg ${dayContainerClasses[displayStatus]}`}
           testID={`calendar-day-${dateString}`}
         >
+          {mark.imageUrl ? (
+            <CalendarDayImage
+              imageUrl={mark.imageUrl}
+              dateString={dateString}
+            />
+          ) : null}
+
           <DayContent
             status={displayStatus}
             day={day}
+            hasImage={hasImage}
           />
         </View>
 

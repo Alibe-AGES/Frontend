@@ -14,6 +14,19 @@ export interface UpdateUserProfilePictureResponse {
   profilePic: string;
 }
 
+export interface UpdateMyProfileInput {
+  name: string;
+}
+
+export interface UpdateMyProfileResponse {
+  name: string;
+}
+
+export interface UpdatePasswordInput {
+  password: string;
+  newPassword: string;
+}
+
 export interface MyProfile {
   name: string;
   profilePic: string | null;
@@ -93,4 +106,40 @@ export async function updateUserProfilePicture(
   }
 
   return (await response.json()) as UpdateUserProfilePictureResponse;
+}
+
+export async function updateMyProfile(
+  input: UpdateMyProfileInput
+): Promise<UpdateMyProfileResponse> {
+  const response = await authenticatedFetch(API_BASE_URL + '/api/users/me', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new ApiError(
+      text || response.statusText || 'Não foi possível salvar o perfil',
+      response.status
+    );
+  }
+
+  return (await response.json()) as UpdateMyProfileResponse;
+}
+
+export async function updatePassword(input: UpdatePasswordInput): Promise<void> {
+  const response = await authenticatedFetch(API_BASE_URL + '/users/me/update-password', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new ApiError(
+      text || response.statusText || 'Não foi possível alterar a senha',
+      response.status
+    );
+  }
 }

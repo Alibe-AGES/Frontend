@@ -7,6 +7,8 @@ import {
   createProposal,
   getActiveProposals,
   getEventDetails,
+  getEventMemories,
+  getMemoryImageUrl,
   respondToEventProposal,
   respondToSuggestion,
 } from './events';
@@ -94,15 +96,38 @@ describe('getEventDetails', () => {
     jest.clearAllMocks();
   });
 
-  test('fetches event details using the authenticated event endpoint', async () => {
+  test('fetches event details and resolves the event and user image paths', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ id: 'event-1', name: 'Bloom Café' }),
+      json: () =>
+        Promise.resolve({
+          id: 'event-1',
+          name: 'Bloom Café',
+          image: '/events/event-1/image',
+          proposal: {
+            id: 'proposal-1',
+            owner: { id: 'user-1', name: 'Ana', image: '/users/user-1/profile-picture' },
+            responses: [
+              {
+                id: 'response-1',
+                answer: 'yes',
+                createdAt: '2026-11-07T18:43:49.605Z',
+                user: { id: 'user-2', name: 'Bia', image: null },
+              },
+            ],
+            createdAt: '2026-11-07T18:43:49.605Z',
+          },
+        }),
     });
 
     await expect(getEventDetails('event-1')).resolves.toMatchObject({
       id: 'event-1',
       name: 'Bloom Café',
+      image: `${API_BASE_URL}/events/event-1/image`,
+      proposal: {
+        owner: { image: `${API_BASE_URL}/users/user-1/profile-picture` },
+        responses: [{ user: { image: null } }],
+      },
     });
     expect(global.fetch).toHaveBeenCalledWith(`${API_BASE_URL}/api/events/event-1`, undefined);
   });
@@ -400,5 +425,71 @@ describe('getActiveProposals', () => {
       status: 403,
       message: 'O usuário não pertence ao grupo',
     });
+  });
+});
+
+describe('getEventMemories', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.clearAllMocks();
+  });
+
+  test('loads memories for an event using the authenticated endpoint', async () => {
+    const memories = [
+      {
+        id: 'memory-1',
+        picture: 'api/events/event-1/memories/memory-1/image',
+        eventId: 'event-1',
+      },
+    ];
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(memories),
+    });
+
+    await expect(getEventMemories('event-1')).resolves.toEqual(memories);
+    expect(mockAuthenticatedFetch).toHaveBeenCalledWith(
+      `${API_BASE_URL}/api/events/event-1/memories`
+    );
+  });
+
+  test('surfaces backend errors when event memories cannot be loaded', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found',
+      text: () => Promise.resolve('Evento não encontrado'),
+    });
+
+    await expect(getEventMemories('missing-event')).rejects.toMatchObject({
+      status: 404,
+      message: 'Evento não encontrado',
+    });
+  });
+
+  test('falls back to a default message when the memories error body is empty', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: '',
+      text: () => Promise.resolve(''),
+    });
+
+    await expect(getEventMemories('event-1')).rejects.toMatchObject({
+      status: 500,
+      message: 'Não foi possível carregar as memórias do evento',
+    });
+  });
+});
+
+describe('getMemoryImageUrl', () => {
+  test('builds the authenticated memory image route from the event and memory ids', () => {
+    expect(
+      getMemoryImageUrl({
+        id: 'memory-1',
+        eventId: 'event-1',
+        picture: '/memories/memory-1/images/photo.jpg',
+      })
+    ).toBe(`${API_BASE_URL}/api/events/event-1/memories/memory-1/image`);
   });
 });

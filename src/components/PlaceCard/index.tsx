@@ -1,4 +1,6 @@
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image } from 'expo-image';
+import { Pressable, Text, View } from 'react-native';
+import tw from 'twrnc';
 import { PlaceCardColor, PlaceCardProps } from './PlaceCard.types';
 
 export type { PlaceCardProps } from './PlaceCard.types';
@@ -32,9 +34,10 @@ export function PlaceCard({
           {imageUri ? (
             <Image
               source={{ uri: imageUri, headers: imageHeaders }}
+              accessible
               accessibilityLabel={`Foto de ${name}`}
-              className="h-full w-full"
-              resizeMode="cover"
+              contentFit="cover"
+              style={tw`absolute inset-0`}
             />
           ) : null}
         </View>

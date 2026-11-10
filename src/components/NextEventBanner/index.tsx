@@ -20,13 +20,13 @@ export const NextEventBanner: FC<NextEventBannerProps> = ({
 
       {event ? (
         <View>
-          {dateLabel ? (
-            <Text className="font-poppins text-sm text-surface">{`• ${dateLabel}`}</Text>
-          ) : null}
           <Text
-            className="font-poppins text-sm text-surface"
+            className="text-md font-poppins text-surface"
             numberOfLines={1}
           >{`• ${event.name}`}</Text>
+          {dateLabel ? (
+            <Text className="pl-3 font-poppins text-sm text-grey">{dateLabel}</Text>
+          ) : null}
         </View>
       ) : (
         <View testID={`${testID}-empty`}>

@@ -1,12 +1,12 @@
-import { UseBackStrategyHook } from '@/components/BackButton/BackButton.types';
-import { Href } from 'expo-router';
-
 export interface AvailabilityInterval {
   id: string;
   startTime: string;
   endTime: string;
   error?: string | null;
 }
+
+/** An `HH:MM` start and end pair the user already saved for the day. */
+export type RegisteredInterval = readonly [string, string];
 
 export interface AvailabilityCardStrategy {
   intervals: AvailabilityInterval[];
@@ -18,6 +18,8 @@ export interface AvailabilityCardStrategy {
 
 export interface UseAvailabilityControllerParams {
   onIntervalsChange?: (intervals: AvailabilityInterval[]) => void;
+  /** Intervals inside these ranges are flagged with an error, since they are already saved. */
+  registeredIntervals?: readonly RegisteredInterval[];
 }
 
 export type UseAvailabilityControllerHook = (
@@ -28,9 +30,12 @@ export interface AvailabilityCardProps {
   title?: string;
   label?: string;
   useController?: UseAvailabilityControllerHook;
-  useCloseController?: UseBackStrategyHook;
-  fallbackHref?: Href;
   onIntervalsChange?: (intervals: AvailabilityInterval[]) => void;
+  registeredIntervals?: readonly RegisteredInterval[];
+  /** Shows the "all day" checkbox; while checked, the interval fields are hidden. */
+  allDay?: boolean;
+  onAllDayChange?: (allDay: boolean) => void;
+  allDayDisabled?: boolean;
   className?: string;
   testID?: string;
 }

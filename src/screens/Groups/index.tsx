@@ -109,7 +109,6 @@ export function GroupsScreen() {
       testID="groups-screen"
     >
       <ProfileButton
-        size={34}
         className="absolute right-6 top-16 z-10 h-12 w-12 items-center justify-center"
         testID="groups-user-profile"
       />

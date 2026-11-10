@@ -8,8 +8,10 @@ jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
 }));
 
+jest.mock('@/components/HandsHiFive', () => ({ HandsHiFive: () => null }));
+
 jest.mock('@/server/auth', () => ({
-  authClient: { signIn: { email: jest.fn() } },
+  authClient: { signIn: { email: jest.fn(), social: jest.fn() }, getSession: jest.fn() },
 }));
 
 jest.mock('@/notifications/synchronize-push-token', () => ({
@@ -18,6 +20,8 @@ jest.mock('@/notifications/synchronize-push-token', () => ({
 
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
 const mockSignInEmail = authClient.signIn.email as jest.Mock;
+const mockSignInSocial = authClient.signIn.social as jest.Mock;
+const mockGetSession = authClient.getSession as jest.Mock;
 const mockSynchronizePushToken = synchronizePushToken as jest.MockedFunction<
   typeof synchronizePushToken
 >;
@@ -85,6 +89,40 @@ describe('LoginController', () => {
 
     expect(await findByRole('alert')).toHaveTextContent(/Não foi possível entrar/);
     expect(mockSynchronizePushToken).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  test('signs in with Google and routes to groups', async () => {
+    mockSignInSocial.mockResolvedValueOnce({ data: { redirect: true }, error: null });
+    mockGetSession.mockResolvedValueOnce({ data: { session: { id: 'session-id' } }, error: null });
+    const { getByTestId } = await Promise.resolve(render(<LoginController />));
+
+    await act(async () => {
+      fireEvent.press(getByTestId('login-google'));
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockSignInSocial).toHaveBeenCalledWith(
+      expect.objectContaining({ provider: 'google', callbackURL: '/login' })
+    );
+    await waitFor(() => {
+      expect(replace).toHaveBeenCalledWith('/groups');
+    });
+  });
+
+  test('shows the Google error when the sign-in is not completed', async () => {
+    mockSignInSocial.mockResolvedValueOnce({ data: { redirect: true }, error: null });
+    mockGetSession.mockResolvedValueOnce({ data: null, error: null });
+    const { getByTestId, findByRole } = await Promise.resolve(render(<LoginController />));
+
+    await act(async () => {
+      fireEvent.press(getByTestId('login-google'));
+      await Promise.resolve();
+    });
+
+    expect(await findByRole('alert')).toHaveTextContent(/Não foi possível entrar com o Google/);
     expect(replace).not.toHaveBeenCalled();
   });
 

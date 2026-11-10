@@ -1,3 +1,4 @@
+import { useGoogleSignIn } from '@/hooks/useGoogleSignIn';
 import { LoginScreen, type LoginData } from '@/screens/Login';
 import { synchronizePushToken } from '@/notifications/synchronize-push-token';
 import { authClient } from '@/server/auth';
@@ -8,6 +9,7 @@ export default function LoginController() {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const google = useGoogleSignIn('/login');
 
   const handleContinue = async ({ email, password }: LoginData) => {
     setErrorMessage(undefined);
@@ -36,8 +38,13 @@ export default function LoginController() {
   return (
     <LoginScreen
       onContinue={handleContinue}
-      errorMessage={errorMessage}
+      onGoogleSignIn={() => {
+        setErrorMessage(undefined);
+        void google.signInWithGoogle();
+      }}
+      errorMessage={errorMessage ?? google.errorMessage}
       isLoading={isSubmitting}
+      isGoogleLoading={google.isLoading}
     />
   );
 }

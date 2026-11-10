@@ -7,13 +7,17 @@ import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
 import { ProfileCard } from '@/components/ProfileCard';
 import { ScreenFrame } from '@/components/ScreenFrame';
 import { TextInput } from '@/components/TextInput';
-import { updateUserProfile } from '@/server/mock/userProfile';
+import { ApiError } from '@/server/api';
+import type { UpdatePasswordInput } from '@/server/users';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Pressable, Text, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
+import tw from 'twrnc';
 import { useUserAvatarSource } from '../../../src/hooks/useUserAvatarSource';
+
+const MIN_PASSWORD_LENGTH = 8;
 
 const ProfileMenuButton = ({
   icon,
@@ -97,6 +101,11 @@ export interface ProfileData {
   pendingEventsCount: number;
 }
 
+export interface UserProfileUpdate {
+  name: string;
+  photo: SelectedPhoto | null;
+}
+
 export interface UserProfileScreenProps {
   userId?: string;
   groupId?: string;
@@ -106,6 +115,8 @@ export interface UserProfileScreenProps {
   error: Error | null;
   refetch: () => void;
   onLogout?: () => Promise<void> | void;
+  onUpdateProfile?: (update: UserProfileUpdate) => Promise<void>;
+  onChangePassword?: (input: UpdatePasswordInput) => Promise<void>;
 }
 
 export const UserProfileScreen = ({
@@ -117,6 +128,8 @@ export const UserProfileScreen = ({
   error,
   refetch,
   onLogout,
+  onUpdateProfile,
+  onChangePassword,
 }: UserProfileScreenProps) => {
   const networkAvatarSource = useUserAvatarSource(userId);
 
@@ -127,12 +140,24 @@ export const UserProfileScreen = ({
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [arePasswordsVisible, setArePasswordsVisible] = useState(false);
+  const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
+  const shouldShowPasswordChangedToast = useRef(false);
+
+  const newPasswordTooShort = newPassword.length > 0 && newPassword.length < MIN_PASSWORD_LENGTH;
+  const passwordsMismatch = confirmPassword.length > 0 && confirmPassword !== newPassword;
+  const canSavePassword =
+    currentPassword.length > 0 &&
+    newPassword.length >= MIN_PASSWORD_LENGTH &&
+    confirmPassword === newPassword &&
+    !isSubmittingPassword;
 
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [editModalKey, setEditModalKey] = useState(0);
   const [editName, setEditName] = useState('');
   const [editPhoto, setEditPhoto] = useState<SelectedPhoto | null>(null);
   const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
+  const shouldShowProfileUpdatedToast = useRef(false);
 
   const [isLogoutModalVisible, setLogoutModalVisible] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -142,6 +167,28 @@ export const UserProfileScreen = ({
       setEditName(profile.name);
     }
   }, [profile]);
+
+  useEffect(() => {
+    if (isEditModalVisible || !shouldShowProfileUpdatedToast.current) return;
+
+    shouldShowProfileUpdatedToast.current = false;
+    Toast.show({
+      type: 'success',
+      text1: 'Sucesso!',
+      text2: 'Perfil atualizado com sucesso.',
+    });
+  }, [isEditModalVisible]);
+
+  useEffect(() => {
+    if (isPasswordModalVisible || !shouldShowPasswordChangedToast.current) return;
+
+    shouldShowPasswordChangedToast.current = false;
+    Toast.show({
+      type: 'success',
+      text1: 'Sucesso!',
+      text2: 'Senha alterada com sucesso.',
+    });
+  }, [isPasswordModalVisible]);
 
   const handleOpenEditModal = () => {
     setEditName(profile?.name ?? '');
@@ -157,21 +204,19 @@ export const UserProfileScreen = ({
   };
 
   const handleSaveProfile = async () => {
-    if (!userId) return;
+    if (!onUpdateProfile) return;
 
     setIsSubmittingProfile(true);
 
     try {
-      const updated = await updateUserProfile(userId, {
-        name: editName,
-        photo: editPhoto,
-      });
+      await onUpdateProfile({ name: editName, photo: editPhoto });
 
-      if (updated.photoUri) {
-        setLocalAvatarOverride(updated.photoUri);
+      if (editPhoto) {
+        setLocalAvatarOverride(editPhoto.uri);
       }
 
       refetch();
+      shouldShowProfileUpdatedToast.current = true;
       setEditModalVisible(false);
     } catch {
       Toast.show({
@@ -188,17 +233,41 @@ export const UserProfileScreen = ({
     setPasswordModalVisible(true);
   };
 
-  const handleClosePasswordModal = () => {
+  const resetPasswordForm = () => {
     setPasswordModalVisible(false);
     setCurrentPassword('');
     setNewPassword('');
     setConfirmPassword('');
+    setArePasswordsVisible(false);
   };
 
-  const handleSavePassword = () => {
-    console.log('Senha atual:', currentPassword);
-    console.log('Nova senha:', newPassword);
-    handleClosePasswordModal();
+  const handleClosePasswordModal = () => {
+    if (isSubmittingPassword) return;
+    resetPasswordForm();
+  };
+
+  const handleSavePassword = async () => {
+    if (!canSavePassword || !onChangePassword) return;
+
+    setIsSubmittingPassword(true);
+
+    try {
+      await onChangePassword({ password: currentPassword, newPassword });
+      shouldShowPasswordChangedToast.current = true;
+      resetPasswordForm();
+    } catch (error) {
+      const isWrongCurrentPassword = error instanceof ApiError && error.status === 400;
+
+      Toast.show({
+        type: 'error',
+        text1: 'Erro!',
+        text2: isWrongCurrentPassword
+          ? 'Senha atual incorreta.'
+          : 'Não foi possível alterar a senha. Tente novamente.',
+      });
+    } finally {
+      setIsSubmittingPassword(false);
+    }
   };
 
   const handleOpenLogoutModal = () => {
@@ -240,7 +309,16 @@ export const UserProfileScreen = ({
         footer={<NavigationBar groupId={groupId ?? ''} />}
         testID="user-profile-screen"
       >
-        <BackButton color={theme.colors.black} />
+        <View className="flex-row items-center gap-4">
+          <BackButton testID="user-profile-back-button" />
+          <Text
+            accessibilityRole="header"
+            className="flex-1 font-poppins-semibold text-2xl text-ink"
+            testID="user-profile-title"
+          >
+            Perfil
+          </Text>
+        </View>
 
         <View className="flex-row items-center justify-center">
           <ProfileCard
@@ -318,10 +396,10 @@ export const UserProfileScreen = ({
           <TouchableOpacity
             onPress={handleCloseEditModal}
             disabled={isSubmittingProfile}
-            className="flex-1 items-center justify-center rounded-full border-2 border-coral py-3"
+            className="flex-1 items-center justify-center rounded-full border-2 border-coral py-4"
             testID="user-profile-edit-cancel"
           >
-            <Text className="font-poppins-semibold text-coral">Cancelar</Text>
+            <Text className="font-poppins-semibold leading-none text-coral">Cancelar</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -329,12 +407,12 @@ export const UserProfileScreen = ({
               void handleSaveProfile();
             }}
             disabled={isSubmittingProfile}
-            className={`flex-1 items-center justify-center rounded-full bg-coral py-3 ${
+            className={`flex-1 items-center justify-center rounded-full bg-coral py-4 ${
               isSubmittingProfile ? 'opacity-60' : ''
             }`}
             testID="user-profile-edit-save"
           >
-            <Text className="font-poppins-semibold text-surface">
+            <Text className="font-poppins-semibold leading-none text-surface">
               {isSubmittingProfile ? 'Salvando...' : 'Salvar'}
             </Text>
           </TouchableOpacity>
@@ -353,39 +431,83 @@ export const UserProfileScreen = ({
             variant="password"
             value={currentPassword}
             onChangeText={setCurrentPassword}
-            testID="user-profile-password-current"
+            visible={arePasswordsVisible}
+            disabled={isSubmittingPassword}
+            testID="user-profile-current-password"
           />
           <PasswordInput
             label="Nova Senha"
             variant="password"
             value={newPassword}
             onChangeText={setNewPassword}
-            testID="user-profile-password-new"
+            visible={arePasswordsVisible}
+            disabled={isSubmittingPassword}
+            error={
+              newPasswordTooShort
+                ? `A senha deve ter pelo menos ${String(MIN_PASSWORD_LENGTH)} caracteres.`
+                : undefined
+            }
+            testID="user-profile-new-password"
           />
           <PasswordInput
             label="Confirmar Nova Senha"
             variant="confirm"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
-            testID="user-profile-password-confirm"
+            visible={arePasswordsVisible}
+            disabled={isSubmittingPassword}
+            error={passwordsMismatch ? 'As senhas não coincidem.' : undefined}
+            testID="user-profile-confirm-password"
           />
+
+          <View className="flex-row px-4">
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={arePasswordsVisible ? 'Ocultar senha' : 'Mostrar senha'}
+              className="flex-row items-center gap-2"
+              hitSlop={8}
+              style={({ pressed }) => tw`${pressed ? 'opacity-60' : 'opacity-100'}`}
+              onPress={() => {
+                setArePasswordsVisible((current) => !current);
+              }}
+              testID="user-profile-toggle-password"
+            >
+              <Ionicons
+                name={arePasswordsVisible ? 'eye-outline' : 'eye-off-outline'}
+                size={18}
+                color={theme.colors.wine}
+              />
+              <Text className="font-poppins text-sm text-wine">
+                {arePasswordsVisible ? 'Ocultar' : 'Mostrar'}
+              </Text>
+            </Pressable>
+          </View>
         </View>
 
         <View className="mt-2 flex-row gap-4">
           <TouchableOpacity
             onPress={handleClosePasswordModal}
-            className="flex-1 items-center justify-center rounded-full border-2 border-coral py-3"
+            disabled={isSubmittingPassword}
+            className="flex-1 items-center justify-center rounded-full border-2 border-coral py-4"
             testID="user-profile-password-cancel"
           >
-            <Text className="font-poppins-semibold text-coral">Cancelar</Text>
+            <Text className="font-poppins-semibold leading-none text-coral">Cancelar</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={handleSavePassword}
-            className="flex-1 items-center justify-center rounded-full bg-coral py-3"
+            onPress={() => {
+              void handleSavePassword();
+            }}
+            disabled={!canSavePassword}
+            accessibilityState={{ disabled: !canSavePassword }}
+            className={`flex-1 items-center justify-center rounded-full bg-coral py-4 ${
+              canSavePassword ? '' : 'opacity-60'
+            }`}
             testID="user-profile-password-save"
           >
-            <Text className="font-poppins-semibold text-surface">Salvar</Text>
+            <Text className="font-poppins-semibold leading-none text-surface">
+              {isSubmittingPassword ? 'Salvando...' : 'Salvar'}
+            </Text>
           </TouchableOpacity>
         </View>
       </ModalFrame>
@@ -404,10 +526,10 @@ export const UserProfileScreen = ({
           <TouchableOpacity
             onPress={handleCloseLogoutModal}
             disabled={isLoggingOut}
-            className="flex-1 items-center justify-center rounded-full border-2 border-coral py-3"
+            className="flex-1 items-center justify-center rounded-full border-2 border-coral py-4"
             testID="user-profile-logout-cancel"
           >
-            <Text className="font-poppins-semibold text-coral">Cancelar</Text>
+            <Text className="font-poppins-semibold leading-none text-coral">Cancelar</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -415,12 +537,12 @@ export const UserProfileScreen = ({
               void handleConfirmLogout();
             }}
             disabled={isLoggingOut}
-            className={`flex-1 items-center justify-center rounded-full bg-coral py-3 ${
+            className={`flex-1 items-center justify-center rounded-full bg-coral py-4 ${
               isLoggingOut ? 'opacity-60' : ''
             }`}
             testID="user-profile-logout-confirm"
           >
-            <Text className="font-poppins-semibold text-surface">
+            <Text className="font-poppins-semibold leading-none text-surface">
               {isLoggingOut ? 'Saindo...' : 'Sair'}
             </Text>
           </TouchableOpacity>

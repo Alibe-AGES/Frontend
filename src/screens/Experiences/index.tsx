@@ -1,9 +1,9 @@
 import { FilterCarousel } from '@/components/FilterCarousel';
-import { EMPTY_FILTER_VALUE, FilterSheet } from '@/components/FilterSheet';
+import { EMPTY_FILTER_VALUE, FilterSheet, hasActiveFilters } from '@/components/FilterSheet';
 import { BackButton } from '@/components/BackButton';
 import { NavigationBar } from '@/components/NavigationBar';
 import { PlaceList } from '@/components/PlaceList';
-import { ScreenFrame } from '@/components/ScreenFrame';
+import { ScreenFrame, type ScreenFrameLayout } from '@/components/ScreenFrame';
 import { SearchBar } from '@/components/SearchBar';
 import { usePlaces } from '@/hooks/usePlaces';
 import { theme } from '@/theme';
@@ -26,8 +26,6 @@ export function ExperiencesScreen() {
     filters,
   });
 
-  const hasActiveFilters = JSON.stringify(filters) !== JSON.stringify(EMPTY_FILTER_VALUE);
-
   const handleToggleTag = (id: string) => {
     setSelectedTagIds((current) =>
       current.includes(id) ? current.filter((tagId) => tagId !== id) : [...current, id]
@@ -38,11 +36,52 @@ export function ExperiencesScreen() {
     <>
       <ScreenFrame
         scrollable={false}
-        padding="none"
+        padding="horizontal"
+        floatingChrome
+        topFade="header"
+        header={
+          <View>
+            <View className="flex-row items-center gap-4">
+              <BackButton
+                fallbackHref={groupId ? `/group/${groupId}` : '/groups'}
+                accessibilityLabel="Voltar para o grupo"
+                testID="experiences-back"
+              />
+              <View className="flex-1">
+                <SearchBar
+                  value={query}
+                  onChangeText={setQuery}
+                  testID="experiences-search"
+                />
+              </View>
+            </View>
+
+            <View className="mb-8 mt-8 items-center gap-2">
+              <Text className={`text-center font-poppins-medium text-4xl tracking-wide text-wine`}>
+                Experiências
+              </Text>
+              <Text className={`text-md text-center text-wine ${theme.typography.body}`}>
+                Toque nas sugestões para saber mais
+              </Text>
+            </View>
+
+            <FilterCarousel
+              tags={CATEGORY_TAGS}
+              selectedTagIds={selectedTagIds}
+              onToggleTag={handleToggleTag}
+              onOpenFilters={() => {
+                setIsFilterSheetVisible(true);
+              }}
+              hasActiveFilters={hasActiveFilters(filters)}
+              fullBleed
+              testID="experiences-filters"
+            />
+          </View>
+        }
         footer={<NavigationBar groupId={groupId} />}
         testID="experiences-screen"
       >
-        <View className="w-full max-w-2xl flex-1 self-center">
+        {({ topInset, bottomInset }: ScreenFrameLayout) => (
           <PlaceList
             places={places}
             isLoading={isLoading}
@@ -53,47 +92,17 @@ export function ExperiencesScreen() {
             onPlacePress={(placeId) => {
               router.push(`/group/${groupId}/experiences/${encodeURIComponent(placeId)}`);
             }}
-            contentContainerClassName="gap-4 px-6 pb-32 pt-6"
+            contentContainerClassName="gap-4"
             header={
-              <View className="gap-4">
-                <BackButton
-                  fallbackHref={groupId ? `/group/${groupId}` : '/groups'}
-                  accessibilityLabel="Voltar para o grupo"
-                />
-                <SearchBar
-                  value={query}
-                  onChangeText={setQuery}
-                  testID="experiences-search"
-                />
-
-                <View className="items-center gap-1">
-                  <Text
-                    className={`pt-3 text-center text-4xl text-ink ${theme.typography.display}`}
-                  >
-                    Experiências
-                  </Text>
-                  <Text className={`text-center text-sm text-wine ${theme.typography.body}`}>
-                    Toque nas sugestões para saber mais
-                  </Text>
-                </View>
-
-                <View>
-                  <FilterCarousel
-                    tags={CATEGORY_TAGS}
-                    selectedTagIds={selectedTagIds}
-                    onToggleTag={handleToggleTag}
-                    onOpenFilters={() => {
-                      setIsFilterSheetVisible(true);
-                    }}
-                    hasActiveFilters={hasActiveFilters}
-                    testID="experiences-filters"
-                  />
-                </View>
-              </View>
+              <View
+                className="-mb-4"
+                style={{ height: topInset }}
+              />
             }
+            footer={<View style={{ height: bottomInset }} />}
             testID="experiences-places"
           />
-        </View>
+        )}
       </ScreenFrame>
 
       <FilterSheet

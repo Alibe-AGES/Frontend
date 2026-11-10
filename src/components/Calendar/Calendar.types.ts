@@ -24,9 +24,11 @@ export interface DayMark {
   status: DayStatus;
   dot?: DayDot;
   eventIds?: string[];
+  memoryIds?: string[];
   proposalIds?: string[];
   availableUserCount?: number;
   allUsersAvailable?: boolean;
+  imageUrl?: string;
 }
 
 export interface CalendarProps {
