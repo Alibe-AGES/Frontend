@@ -768,6 +768,8 @@ npm run test:e2e:dev
 
 To run without Metro, use a release app (`npm run build:android`, or the `app-release` artifact from the _Android APK - Local Build_ workflow) and `npm run test:e2e`.
 
+CI runs every flow tagged `ci` in releases. The _E2E Tests (Maestro)_ workflow starts the minimal Backend stack (`infra/e2e/docker-compose.yml` from `Alibe-AGES/Backend`) with its seed data, installs the release APK on an Android emulator, and points the emulator's `localhost:3000` at the Backend with `adb reverse`. Log in with the seeded users (password `senha-segura`). Results and Backend logs are uploaded as the `maestro-e2e-results-<run number>` artifact.
+
 To add a test, copy `.maestro/flows/smoke.yaml`, set its `tags`, and replace the steps after `runFlow`. Run a single test with:
 
 ```bash

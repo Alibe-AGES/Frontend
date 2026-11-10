@@ -45,6 +45,7 @@ const config: ExpoConfig = {
         imageWidth: 276,
       },
     ],
+    ['expo-build-properties', { android: { usesCleartextTraffic: true } }],
   ],
   experiments: {
     typedRoutes: true,

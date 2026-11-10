@@ -1,0 +1,77 @@
+# Event flow: creates an event on a future day of a new group, sees it on the calendar and the day details, and finds its notification.
+appId: com.alibe.app
+tags: [ci, events]
+---
+- runFlow: ../subflows/launch.yaml
+- runFlow: ../subflows/login.yaml
+- runFlow: ../subflows/create-group.yaml
+
+# Past days cannot get events, so the flow uses the 20th of next month, which is always in the future.
+- evalScript: ${output.calendarDay = new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth() + 1, 20)).toISOString().slice(0, 10)}
+- evalScript: ${output.eventName = 'Evento E2E ' + Date.now()}
+- tapOn:
+    id: calendar-next-month
+- scrollUntilVisible:
+    element:
+      id: calendar-create-${output.calendarDay}
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: calendar-create-${output.calendarDay}
+
+- extendedWaitUntil:
+    visible:
+      id: create-event-card-name-input
+    timeout: 10000
+- tapOn:
+    id: create-event-card-name-input
+- inputText: ${output.eventName}
+- tapOn:
+    id: create-event-card-address-input
+- inputText: Rua dos Testes, 123
+- tapOn:
+    id: create-event-card-time-input
+- inputText: '2000'
+# The confirm button stays above the keyboard, so there is no need to close it.
+- tapOn:
+    id: create-event-card-confirm
+
+- extendedWaitUntil:
+    visible:
+      id: event-created-screen
+    timeout: 30000
+- tapOn:
+    id: event-created-back-home
+
+# The new event is pending answers: it shows as the next event and as a suggestion on its day.
+- extendedWaitUntil:
+    visible: '• ${output.eventName}'
+    timeout: 30000
+- assertVisible:
+    id: calendar-proposal-indicator-${output.calendarDay}
+- tapOn:
+    id: calendar-day-button-${output.calendarDay}
+- extendedWaitUntil:
+    visible:
+      id: group-day-screen
+    timeout: 10000
+- extendedWaitUntil:
+    visible: ${output.eventName}
+    timeout: 30000
+
+# Creating an event adds a notification to the group.
+- tapOn:
+    id: alibe-back-button
+- extendedWaitUntil:
+    visible:
+      id: group-screen
+    timeout: 10000
+- tapOn:
+    id: group-screen-notifications
+- extendedWaitUntil:
+    visible:
+      id: notifications-screen
+    timeout: 10000
+- extendedWaitUntil:
+    visible: '.*criou o evento "${output.eventName}".*'
+    timeout: 30000

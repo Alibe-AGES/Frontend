@@ -1,0 +1,41 @@
+#Login flow: the button starts disabled, a wrong password shows an error and the right one opens the groups screen.
+appId: com.alibe.app
+tags: [ci, auth]
+---
+- runFlow: ../subflows/launch.yaml
+- extendedWaitUntil:
+    visible:
+      id: auth-screen
+    timeout: 60000
+- tapOn:
+    id: auth-login
+
+- assertVisible:
+    id: login-continue
+    enabled: false
+
+- tapOn:
+    id: login-email
+- inputText: ana.silva@example.com
+- tapOn:
+    id: login-password
+- inputText: senha-errada
+# hideKeyboard presses back on these screens and leaves them, so tap a static text to close the keyboard.
+- tapOn: 'Login'
+- tapOn:
+    id: login-continue
+- extendedWaitUntil:
+    visible: 'Não foi possível entrar. Confira seu e-mail e senha.'
+    timeout: 30000
+
+- tapOn:
+    id: login-password
+- eraseText
+- inputText: senha-segura
+- tapOn: 'Login'
+- tapOn:
+    id: login-continue
+- extendedWaitUntil:
+    visible:
+      id: groups-screen
+    timeout: 30000

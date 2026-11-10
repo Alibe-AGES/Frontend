@@ -1,0 +1,43 @@
+# Creates a group and opens it. Start it from the groups screen, after using login.yaml.
+appId: com.alibe.app
+---
+- evalScript: ${output.groupName = 'Grupo E2E ' + Date.now()}
+- tapOn:
+    id: create-group-button
+- extendedWaitUntil:
+    visible:
+      id: create-group-screen
+    timeout: 10000
+- tapOn:
+    id: create-group-name
+- inputText: ${output.groupName}
+# hideKeyboard presses back on these screens and leaves them, so tap a static text to close the keyboard.
+- tapOn: 'Seu próximo encontro nasce aqui.'
+- tapOn:
+    id: create-group-continue
+
+- extendedWaitUntil:
+    visible:
+      id: invite-group-screen
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: alibe-invite-link
+    timeout: 30000
+- tapOn:
+    id: invite-group-continue
+
+- extendedWaitUntil:
+    visible:
+      id: groups-screen
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: ${output.groupName}
+    direction: DOWN
+    timeout: 30000
+- tapOn: ${output.groupName}
+- extendedWaitUntil:
+    visible:
+      id: group-screen
+    timeout: 30000

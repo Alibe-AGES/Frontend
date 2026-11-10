@@ -1,0 +1,58 @@
+# Memories flow: opens the memories calendar of a seeded group, taps a day with a memory and sees it in the gallery.
+appId: com.alibe.app
+tags: [ci, memories]
+---
+- runFlow: ../subflows/launch.yaml
+- runFlow: ../subflows/login.yaml
+
+# Seeded group of ana.silva. Its event "Jantar da turma" (2026-12-05) has a seeded memory.
+- scrollUntilVisible:
+    element:
+      text: 'Turma da Faculdade'
+    direction: DOWN
+    timeout: 30000
+- tapOn: 'Turma da Faculdade'
+- extendedWaitUntil:
+    visible:
+      id: group-screen
+    timeout: 30000
+- tapOn:
+    id: alibe-navigation-bar-memories
+- extendedWaitUntil:
+    visible:
+      id: memories-screen
+    timeout: 30000
+
+# The seeded dates are fixed, so move from the current month to December 2026 in either direction.
+- evalScript: ${output.monthOffset = (2026 - new Date().getFullYear()) * 12 + (11 - new Date().getMonth())}
+- repeat:
+    while:
+      true: ${output.monthOffset > 0}
+    commands:
+      - tapOn:
+          id: calendar-next-month
+      - evalScript: ${output.monthOffset = output.monthOffset - 1}
+- repeat:
+    while:
+      true: ${output.monthOffset < 0}
+    commands:
+      - tapOn:
+          id: calendar-previous-month
+      - evalScript: ${output.monthOffset = output.monthOffset + 1}
+- scrollUntilVisible:
+    element:
+      id: calendar-day-button-2026-12-05
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: calendar-day-button-2026-12-05
+
+- extendedWaitUntil:
+    visible:
+      id: memories-gallery-screen
+    timeout: 30000
+- extendedWaitUntil:
+    visible: 'Jantar da turma'
+    timeout: 30000
+- assertVisible:
+    id: 'memories-gallery-photo-.*'

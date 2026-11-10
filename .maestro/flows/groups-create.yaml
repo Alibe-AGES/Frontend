@@ -1,0 +1,33 @@
+# Create group flow: rejects a short name, then creates a group and opens it.
+appId: com.alibe.app
+tags: [ci, groups]
+---
+- runFlow: ../subflows/launch.yaml
+- runFlow: ../subflows/login.yaml
+
+- tapOn:
+    id: create-group-button
+- extendedWaitUntil:
+    visible:
+      id: create-group-screen
+    timeout: 10000
+- tapOn:
+    id: create-group-name
+- inputText: A
+# hideKeyboard presses back on these screens and leaves them, so tap a static text to close the keyboard.
+- tapOn: 'Seu próximo encontro nasce aqui.'
+- tapOn:
+    id: create-group-continue
+- assertVisible: 'O nome deve conter entre 2 e 100 caracteres.'
+
+- tapOn:
+    id: alibe-back-button
+- extendedWaitUntil:
+    visible:
+      id: groups-screen
+    timeout: 10000
+
+- runFlow: ../subflows/create-group.yaml
+- extendedWaitUntil:
+    visible: ${output.groupName}
+    timeout: 30000

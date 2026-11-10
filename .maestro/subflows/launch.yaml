@@ -20,4 +20,11 @@ appId: com.alibe.app
       - extendedWaitUntil:
           visible: 'Reload'
           timeout: 10000
+      # Hides the floating dev Tools button, which sits on top of the profile buttons.
+      - scrollUntilVisible:
+          element:
+            text: 'Tools button'
+          direction: DOWN
+          timeout: 10000
+      - tapOn: 'Tools button'
       - back

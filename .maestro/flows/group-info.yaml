@@ -1,0 +1,29 @@
+# Group info flow: opens the information of a seeded group and sees its members.
+appId: com.alibe.app
+tags: [ci, groups]
+---
+- runFlow: ../subflows/launch.yaml
+- runFlow: ../subflows/login.yaml
+
+# Seeded group of ana.silva, with members from prisma/seed.ts in the Backend.
+- scrollUntilVisible:
+    element:
+      text: 'Amigos do Colégio'
+    direction: DOWN
+    timeout: 30000
+- tapOn: 'Amigos do Colégio'
+- extendedWaitUntil:
+    visible:
+      id: group-screen
+    timeout: 30000
+- tapOn:
+    id: group-screen-members
+
+- extendedWaitUntil:
+    visible:
+      id: group-info-members
+    timeout: 30000
+- assertVisible: 'Amigos do Colégio'
+- assertVisible: 'Ana Beatriz Silva'
+- assertVisible: '(você)'
+- assertVisible: 'Camila Oliveira'

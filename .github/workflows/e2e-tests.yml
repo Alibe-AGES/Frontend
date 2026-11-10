@@ -7,6 +7,8 @@ jobs:
   maestro:
     name: Maestro
     runs-on: ubuntu-latest
+    # Stops a stuck run instead of waiting for GitHub's 6-hour job limit.
+    timeout-minutes: 60
     env:
       ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: 10
 
@@ -59,6 +61,17 @@ jobs:
             echo "KVM is not available on this runner. Continuing without it."
           fi
 
+      - name: Checkout backend
+        uses: actions/checkout@v4
+        with:
+          repository: Alibe-AGES/Backend
+          ref: develop
+          path: backend
+
+      - name: Start backend
+        working-directory: backend
+        run: docker compose -f infra/e2e/docker-compose.yml up -d --build --wait
+
       - name: Run Maestro E2E on Android Emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -80,6 +93,8 @@ jobs:
             echo "Installing APK on emulator..."
             adb install -r "${{ steps.apk.outputs.path }}"
 
+            adb reverse tcp:3000 tcp:3000
+
             echo "Starting Maestro E2E tests..."
             maestro test .maestro/ --include-tags ci --test-output-dir=./maestro-results
 
@@ -91,3 +106,8 @@ jobs:
           path: ./maestro-results
           if-no-files-found: warn
           retention-days: 7
+
+      - name: Backend logs
+        if: failure()
+        working-directory: backend
+        run: docker compose -f infra/e2e/docker-compose.yml logs

@@ -1,0 +1,46 @@
+# Suggestion flow: suggests a place in a new group and reaches the match screen.
+appId: com.alibe.app
+tags: [ci, events]
+---
+- runFlow: ../subflows/launch.yaml
+- runFlow: ../subflows/login.yaml
+# A new group has only the logged user, whose own "yes" already matches everyone.
+- runFlow: ../subflows/create-group.yaml
+
+- evalScript: ${output.suggestionName = 'Sugestão E2E ' + Date.now()}
+- tapOn:
+    id: alibe-navigation-bar-create
+- extendedWaitUntil:
+    visible:
+      id: create-event-tab-suggestion
+    timeout: 10000
+- tapOn:
+    id: create-event-tab-suggestion
+- tapOn:
+    id: create-event-card-name-input
+- inputText: ${output.suggestionName}
+# The suggestion card is taller, so typing the name scrolls the address field out of view.
+- scrollUntilVisible:
+    element:
+      id: create-event-card-address-input
+    direction: UP
+    timeout: 10000
+- tapOn:
+    id: create-event-card-address-input
+- inputText: Rua dos Testes, 123
+- scrollUntilVisible:
+    element:
+      id: create-event-card-confirm
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: create-event-card-confirm
+
+- extendedWaitUntil:
+    visible:
+      id: match-screen
+    timeout: 30000
+- assertVisible:
+    id: match-headline
+- assertVisible:
+    id: match-create-event

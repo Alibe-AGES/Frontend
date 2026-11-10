@@ -1,0 +1,68 @@
+#Sign up flow: shows the password errors, creates an account and lands on an empty groups screen.
+appId: com.alibe.app
+tags: [ci, auth]
+---
+- runFlow: ../subflows/launch.yaml
+- extendedWaitUntil:
+    visible:
+      id: auth-screen
+    timeout: 60000
+- tapOn:
+    id: auth-sign-up
+
+- assertVisible:
+    id: sign-up-continue
+    enabled: false
+
+- tapOn:
+    id: sign-up-email
+- inputRandomEmail
+
+- tapOn:
+    id: sign-up-password
+- inputText: curta
+- assertVisible: 'A senha deve ter pelo menos 8 caracteres.'
+- eraseText
+- inputText: senha-segura
+# hideKeyboard presses back on these screens and leaves them, so tap a static text to close the keyboard.
+- tapOn: 'Criar conta'
+
+- tapOn:
+    id: sign-up-password-confirmation
+- inputText: outra-senha
+- tapOn: 'Criar conta'
+- assertVisible: 'As senhas não coincidem.'
+- assertVisible:
+    id: sign-up-continue
+    enabled: false
+- tapOn:
+    id: sign-up-password-confirmation
+- eraseText
+- inputText: senha-segura
+- tapOn: 'Criar conta'
+
+- tapOn:
+    id: sign-up-continue
+- extendedWaitUntil:
+    visible:
+      id: create-profile-screen
+    timeout: 10000
+
+- assertVisible:
+    id: create-profile-continue
+    enabled: false
+- tapOn:
+    id: create-profile-nickname
+- inputText: Teste E2E
+- tapOn: 'Como seus amigos te chamam\?'
+- tapOn:
+    id: create-profile-continue
+
+- extendedWaitUntil:
+    visible:
+      id: groups-screen
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: alibe-groups-list-empty
+    timeout: 30000

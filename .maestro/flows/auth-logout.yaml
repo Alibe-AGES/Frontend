@@ -1,0 +1,26 @@
+# Logout flow: signs out from the profile screen and returns to the auth screen.
+appId: com.alibe.app
+tags: [ci, auth]
+---
+- runFlow: ../subflows/launch.yaml
+- runFlow: ../subflows/login.yaml
+
+- tapOn:
+    id: groups-user-profile
+- extendedWaitUntil:
+    visible:
+      id: user-profile-screen
+    timeout: 10000
+- tapOn:
+    id: user-profile-logout-button
+- extendedWaitUntil:
+    visible:
+      id: user-profile-logout-modal
+    timeout: 10000
+- tapOn:
+    id: user-profile-logout-confirm
+
+- extendedWaitUntil:
+    visible:
+      id: auth-screen
+    timeout: 30000
