@@ -1,6 +1,7 @@
 import { MemoriesGalleryScreen, type MemoryEventSection } from '@/screens/MemoriesGallery';
 import { CalendarDay, getGroupCalendar } from '@/server/calendar';
 import { getEventDetails, getEventMemories, getMemoryImageUrl } from '@/server/events';
+import { resolveCalendarMonth } from '@/utils/calendarMonth';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -24,13 +25,7 @@ function resolveCalendarPeriod(date?: string, monthParam?: string, yearParam?: s
     }
   }
 
-  const now = new Date();
-  const parsedMonth = Number(monthParam);
-  const parsedYear = Number(yearParam);
-  const month = parsedMonth >= 1 && parsedMonth <= 12 ? parsedMonth : now.getMonth() + 1;
-  const year = parsedYear >= 1000 && parsedYear <= 9999 ? parsedYear : now.getFullYear();
-
-  return { month, year, selectedDate: undefined };
+  return { ...resolveCalendarMonth(monthParam, yearParam), selectedDate: undefined };
 }
 
 export function sortMemorySections(
@@ -98,8 +93,11 @@ export default function MemoriesGalleryController() {
 
       const eventDayEntries: { calendarDate: string; eventId: string }[] = [];
       const seenEventIds = new Set<string>();
+      const visibleDays = selectedDate
+        ? calendarDays.filter((day) => day.date === selectedDate)
+        : calendarDays;
 
-      for (const day of calendarDays) {
+      for (const day of visibleDays) {
         for (const eventId of getDayEventIds(day)) {
           if (!seenEventIds.has(eventId)) {
             seenEventIds.add(eventId);
@@ -181,7 +179,12 @@ export default function MemoriesGalleryController() {
       return;
     }
 
-    router.push({ pathname: '/group/[id]/memories/new', params: { id: groupId } });
+    const { month, year } = resolveCalendarPeriod(date, monthParam, yearParam);
+
+    router.push({
+      pathname: '/group/[id]/memories/new',
+      params: { id: groupId, month: String(month), year: String(year) },
+    });
   };
 
   if (!groupId) {

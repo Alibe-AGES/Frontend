@@ -1,21 +1,12 @@
 import { DayMark } from '@/components/Calendar/Calendar.types';
 import { formatCalendarDate } from '@/components/Calendar/calendar.utils';
-import { API_BASE_URL } from '@/constants';
 import { MemoriesScreen } from '@/screens/Memories';
 import { CalendarDay, getGroupCalendar } from '@/server/calendar';
-import { EventMemoryResponse, getEventMemories } from '@/server/events';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { EventMemoryResponse, getEventMemories, getMemoryImageUrl } from '@/server/events';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 
 const LOAD_ERROR = 'Não foi possível carregar as memórias do calendário.';
-
-export function resolveMemoryImageUrl(picture: string): string {
-  if (picture.startsWith('http')) {
-    return picture;
-  }
-
-  return `${API_BASE_URL}${picture.startsWith('/') ? '' : '/'}${picture}`;
-}
 
 export function getDayEventIds(day: CalendarDay): string[] {
   return [
@@ -90,7 +81,7 @@ export default function MemoriesController() {
             status: 'realized',
             eventIds,
             memoryIds: dayMemories.map((memory) => memory.id),
-            imageUrl: resolveMemoryImageUrl(dayMemories[0].picture),
+            imageUrl: getMemoryImageUrl(dayMemories[0]),
           };
         }
       }
@@ -108,13 +99,15 @@ export default function MemoriesController() {
     }
   }, [groupId, visibleMonth.month, visibleMonth.year]);
 
-  useEffect(() => {
-    void loadCalendarMemories();
+  useFocusEffect(
+    useCallback(() => {
+      void loadCalendarMemories();
 
-    return () => {
-      requestIdRef.current += 1;
-    };
-  }, [loadCalendarMemories]);
+      return () => {
+        requestIdRef.current += 1;
+      };
+    }, [loadCalendarMemories])
+  );
 
   const handleMonthChange = (dateString: string) => {
     const [year, month] = dateString.split('-').map(Number);
@@ -127,10 +120,6 @@ export default function MemoriesController() {
   };
 
   const handleDayPress = (dateString: string) => {
-    if (!groupId) {
-      return;
-    }
-
     router.push({
       pathname: '/group/[id]/memories/gallery',
       params: { id: groupId, date: dateString },
@@ -138,10 +127,6 @@ export default function MemoriesController() {
   };
 
   const handleSeeAllPress = () => {
-    if (!groupId) {
-      return;
-    }
-
     router.push({
       pathname: '/group/[id]/memories/gallery',
       params: {
@@ -153,11 +138,14 @@ export default function MemoriesController() {
   };
 
   const handleAddMemory = () => {
-    if (!groupId) {
-      return;
-    }
-
-    router.push({ pathname: '/group/[id]/memories/new', params: { id: groupId } });
+    router.push({
+      pathname: '/group/[id]/memories/new',
+      params: {
+        id: groupId,
+        month: String(visibleMonth.month),
+        year: String(visibleMonth.year),
+      },
+    });
   };
 
   if (!groupId) {

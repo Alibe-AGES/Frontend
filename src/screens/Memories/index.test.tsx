@@ -2,9 +2,12 @@ import { fireEvent, render } from '@testing-library/react-native';
 import type { ImageSourcePropType, ImageStyle, StyleProp } from 'react-native';
 import { MemoriesScreen, type MemoriesScreenProps } from '.';
 
-jest.mock('@/components/NavigationBar', () => ({
-  NavigationBar: () => null,
-}));
+jest.mock('@/components/NavigationBar', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    NavigationBar: () => <View testID="navigation-bar" />,
+  };
+});
 
 jest.mock('@/hooks/use-authenticated-image-source', () => ({
   useAuthenticatedImageSource: (uri: string | null | undefined) => (uri ? { uri } : null),
@@ -123,5 +126,30 @@ describe('<MemoriesScreen />', () => {
     await Promise.resolve();
 
     expect(props.onRetry).toHaveBeenCalledTimes(1);
+  });
+
+  test('renders the error message without a retry button when onRetry is missing', async () => {
+    const { getByTestId, queryByTestId } = await renderScreen({
+      errorMessage: 'Não foi possível carregar as memórias do calendário.',
+      onRetry: undefined,
+    });
+
+    expect(getByTestId('memories-error')).toBeTruthy();
+    expect(queryByTestId('memories-retry')).toBeNull();
+  });
+
+  test('shows a loading indicator while memories are loading', async () => {
+    const { getByTestId } = await renderScreen({ isLoading: true });
+
+    expect(getByTestId('memories-loading')).toBeTruthy();
+  });
+
+  test('shows the navigation bar only when there is a group', async () => {
+    const withGroup = await renderScreen();
+    expect(withGroup.getByTestId('navigation-bar')).toBeTruthy();
+    withGroup.unmount();
+
+    const withoutGroup = await renderScreen({ groupId: '' });
+    expect(withoutGroup.queryByTestId('navigation-bar')).toBeNull();
   });
 });
