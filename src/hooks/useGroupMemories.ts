@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { API_BASE_URL } from '@/constants';
-import { type CalendarDay, getGroupCalendar } from '@/server/calendar';
-import { getEventDetails, getEventMemories, getMemoryImageUrl } from '@/server/events';
+import { getGroupCalendar, type CalendarDay } from '@/server/calendar';
+import { getEventDetails, getEventMemories, type EventMemoryResponse } from '@/server/events';
 import { resolveCalendarMonth } from '@/utils/calendarMonth';
+import { getMemoryImageUrl } from '@/utils/memoryImageUrl';
 
 export interface MemoryPhotoItem {
   id: string;
@@ -54,6 +55,79 @@ function getDayEventIds(day: CalendarDay): string[] {
       ...(day.proposalEventIds ?? []).map(({ eventId }) => eventId),
     ]),
   ];
+}
+
+interface EventDayEntry {
+  calendarDate: string;
+  eventId: string;
+}
+
+function collectEventDayEntries(
+  calendarDays: CalendarDay[],
+  selectedDate?: string
+): EventDayEntry[] {
+  const entries: EventDayEntry[] = [];
+  const seenEventIds = new Set<string>();
+  const visibleDays = selectedDate
+    ? calendarDays.filter((day) => day.date === selectedDate)
+    : calendarDays;
+
+  for (const day of visibleDays) {
+    for (const eventId of getDayEventIds(day)) {
+      if (!seenEventIds.has(eventId)) {
+        seenEventIds.add(eventId);
+        entries.push({ calendarDate: day.date, eventId });
+      }
+    }
+  }
+
+  return entries;
+}
+
+async function loadMemorySection({
+  calendarDate,
+  eventId,
+}: EventDayEntry): Promise<MemoryEventSection | null> {
+  const [eventDetails, memories] = await Promise.all([
+    getEventDetails(eventId),
+    getEventMemories(eventId),
+  ]);
+
+  if (memories.length === 0) {
+    return null;
+  }
+
+  const eventDate = eventDetails.date?.slice(0, 10) ?? calendarDate;
+  const trimmedName = eventDetails.name?.trim();
+  const trimmedLocation = eventDetails.location?.description?.trim();
+  const eventName =
+    (trimmedName && trimmedName.length > 0 ? trimmedName : undefined) ??
+    (trimmedLocation && trimmedLocation.length > 0 ? trimmedLocation : undefined) ??
+    'Encontro';
+
+  return {
+    eventId: eventDetails.id,
+    address: trimmedLocation && trimmedLocation.length > 0 ? trimmedLocation : undefined,
+    date: eventDate,
+    time: eventDetails.time,
+    eventName,
+    photos: memories.map((memory: EventMemoryResponse) => ({
+      id: memory.id,
+      imageUrl: getMemoryImageUrl(memory),
+    })),
+  };
+}
+
+function getFulfilledSections(
+  results: PromiseSettledResult<MemoryEventSection | null>[]
+): MemoryEventSection[] {
+  if (results.length > 0 && results.every((result) => result.status === 'rejected')) {
+    throw results[0].reason;
+  }
+
+  return results.flatMap((result) =>
+    result.status === 'fulfilled' && result.value !== null ? [result.value] : []
+  );
 }
 
 export function resolveMemoryCalendarPeriod(
@@ -126,69 +200,14 @@ export function useGroupMemories({
         return;
       }
 
-      const eventDayEntries: { calendarDate: string; eventId: string }[] = [];
-      const seenEventIds = new Set<string>();
-      const visibleDays = selectedDate
-        ? calendarDays.filter((day) => day.date === selectedDate)
-        : calendarDays;
-
-      for (const day of visibleDays) {
-        for (const eventId of getDayEventIds(day)) {
-          if (!seenEventIds.has(eventId)) {
-            seenEventIds.add(eventId);
-            eventDayEntries.push({ calendarDate: day.date, eventId });
-          }
-        }
-      }
-
-      const results = await Promise.allSettled(
-        eventDayEntries.map(
-          async ({ calendarDate, eventId }): Promise<MemoryEventSection | null> => {
-            const [eventDetails, memories] = await Promise.all([
-              getEventDetails(eventId),
-              getEventMemories(eventId),
-            ]);
-
-            if (memories.length === 0) {
-              return null;
-            }
-
-            const eventDate = eventDetails.date?.slice(0, 10) ?? calendarDate;
-            const trimmedName = eventDetails.name?.trim();
-            const trimmedLocation = eventDetails.location?.description?.trim();
-            const eventName =
-              (trimmedName && trimmedName.length > 0 ? trimmedName : undefined) ??
-              (trimmedLocation && trimmedLocation.length > 0 ? trimmedLocation : undefined) ??
-              'Encontro';
-
-            return {
-              eventId: eventDetails.id,
-              address: trimmedLocation && trimmedLocation.length > 0 ? trimmedLocation : undefined,
-              date: eventDate,
-              time: eventDetails.time,
-              eventName,
-              photos: memories.map((memory) => ({
-                id: memory.id,
-                imageUrl: getMemoryImageUrl(memory),
-              })),
-            };
-          }
-        )
-      );
+      const eventDayEntries = collectEventDayEntries(calendarDays, selectedDate);
+      const results = await Promise.allSettled(eventDayEntries.map(loadMemorySection));
 
       if (requestIdRef.current !== requestId) {
         return;
       }
 
-      if (results.length > 0 && results.every((result) => result.status === 'rejected')) {
-        throw results[0].reason;
-      }
-
-      const validSections = results.flatMap((result) =>
-        result.status === 'fulfilled' && result.value !== null ? [result.value] : []
-      );
-
-      setSections(sortMemorySections(validSections, selectedDate));
+      setSections(sortMemorySections(getFulfilledSections(results), selectedDate));
     } catch (error: unknown) {
       if (requestIdRef.current !== requestId) {
         return;

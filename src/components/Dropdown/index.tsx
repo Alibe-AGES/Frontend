@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react';
-import { type HostInstance, Pressable, Text } from 'react-native';
+import type { RefCallback } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import { Pressable, Text, type View } from 'react-native';
 import tw from 'twrnc';
 
 import ChevronUpIcon from '@/assets/images/chevron-up.svg';
@@ -19,7 +20,10 @@ export function Dropdown({
   disabled = false,
   testID = 'alibe-dropdown',
 }: Readonly<DropdownProps>) {
-  const triggerRef = useRef<HostInstance>(null);
+  const triggerRef = useRef<View | undefined>(undefined);
+  const setTriggerRef = useCallback<RefCallback<View>>((instance) => {
+    triggerRef.current = instance ?? undefined;
+  }, []);
   const [isOpen, setIsOpen] = useState(false);
   const [triggerFrame, setTriggerFrame] = useState<TriggerFrame | null>(null);
   const selectedOption = options.find((option) => option.value === value);
@@ -50,7 +54,7 @@ export function Dropdown({
   return (
     <>
       <Pressable
-        ref={triggerRef}
+        ref={setTriggerRef}
         accessibilityLabel={selectedOption?.label ?? placeholder}
         accessibilityRole="combobox"
         accessibilityState={{ disabled, expanded: isExpanded }}

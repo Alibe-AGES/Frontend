@@ -28,7 +28,7 @@ jest.mock('@/server/auth', () => ({
 
 jest.mock('@/server/events', () => {
   const { getMemoryImageUrl } =
-    jest.requireActual<typeof import('@/server/events')>('@/server/events');
+    jest.requireActual<typeof import('@/utils/memoryImageUrl')>('@/utils/memoryImageUrl');
   return {
     getEventDetails: jest.fn(),
     getEventMemories: jest.fn(),
