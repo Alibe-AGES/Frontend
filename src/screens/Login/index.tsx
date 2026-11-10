@@ -22,6 +22,7 @@ export interface LoginScreenProps {
   onGoogleSignIn?: () => void;
   errorMessage?: string;
   isLoading?: boolean;
+  isGoogleLoading?: boolean;
 }
 
 export function LoginScreen({
@@ -30,6 +31,7 @@ export function LoginScreen({
   onGoogleSignIn,
   errorMessage,
   isLoading = false,
+  isGoogleLoading = false,
 }: LoginScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -124,6 +126,7 @@ export function LoginScreen({
           <GoogleButton
             onPress={onGoogleSignIn}
             disabled={isLoading}
+            isLoading={isGoogleLoading}
             testID="login-google"
           />
         </View>
@@ -141,7 +144,7 @@ export function LoginScreen({
             onPress={() => {
               void onContinue({ email: trimmedEmail, password });
             }}
-            disabled={!canContinue || isLoading}
+            disabled={!canContinue || isLoading || isGoogleLoading}
             isLoading={isLoading}
             testID="login-continue"
           />
