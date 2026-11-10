@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { API_BASE_URL } from '@/constants';
 import { type CalendarDay, getGroupCalendar } from '@/server/calendar';
 import { getEventDetails, getEventMemories, getMemoryImageUrl } from '@/server/events';
+import { resolveCalendarMonth } from '@/utils/calendarMonth';
 
 export interface MemoryPhotoItem {
   id: string;
@@ -55,7 +56,11 @@ function getDayEventIds(day: CalendarDay): string[] {
   ];
 }
 
-function resolveCalendarPeriod(date?: string, monthParam?: string, yearParam?: string) {
+export function resolveMemoryCalendarPeriod(
+  date?: string,
+  monthParam?: string,
+  yearParam?: string
+) {
   if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
     const [year, month] = date.split('-').map(Number);
     if (year && month >= 1 && month <= 12) {
@@ -63,13 +68,7 @@ function resolveCalendarPeriod(date?: string, monthParam?: string, yearParam?: s
     }
   }
 
-  const now = new Date();
-  const parsedMonth = Number(monthParam);
-  const parsedYear = Number(yearParam);
-  const month = parsedMonth >= 1 && parsedMonth <= 12 ? parsedMonth : now.getMonth() + 1;
-  const year = parsedYear >= 1000 && parsedYear <= 9999 ? parsedYear : now.getFullYear();
-
-  return { month, year, selectedDate: undefined };
+  return { ...resolveCalendarMonth(monthParam, yearParam), selectedDate: undefined };
 }
 
 export function sortMemorySections(
@@ -119,7 +118,7 @@ export function useGroupMemories({
     setIsLoading(true);
     setErrorMessage(null);
 
-    const { month, year, selectedDate } = resolveCalendarPeriod(date, monthParam, yearParam);
+    const { month, year, selectedDate } = resolveMemoryCalendarPeriod(date, monthParam, yearParam);
 
     try {
       const calendarDays = await getGroupCalendar(groupId, month, year);
@@ -129,8 +128,11 @@ export function useGroupMemories({
 
       const eventDayEntries: { calendarDate: string; eventId: string }[] = [];
       const seenEventIds = new Set<string>();
+      const visibleDays = selectedDate
+        ? calendarDays.filter((day) => day.date === selectedDate)
+        : calendarDays;
 
-      for (const day of calendarDays) {
+      for (const day of visibleDays) {
         for (const eventId of getDayEventIds(day)) {
           if (!seenEventIds.has(eventId)) {
             seenEventIds.add(eventId);

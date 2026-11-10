@@ -1,6 +1,12 @@
-import { fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { Calendar } from '@/components/Calendar';
+import { API_BASE_URL } from '@/constants';
+import { getAuthenticationHeaders } from '@/server/authenticated-fetch';
+
+jest.mock('@/server/authenticated-fetch', () => ({
+  getAuthenticationHeaders: jest.fn(),
+}));
 
 describe('Calendar', () => {
   test('renders the month, weekdays, and backend day marks', async () => {
@@ -96,6 +102,31 @@ describe('Calendar', () => {
 
     expect(onDayPress).toHaveBeenCalledTimes(1);
     expect(onDayPress).toHaveBeenCalledWith('2026-05-18');
+  });
+
+  test('renders the first memory image on a day and keeps it selectable even in the past', async () => {
+    const onDayPress = jest.fn();
+    const { getByTestId, getByLabelText } = await Promise.resolve(
+      render(
+        <Calendar
+          initialDate="2025-05-01"
+          dayMarks={{
+            '2025-05-08': {
+              status: 'realized',
+              imageUrl: 'https://cdn.alibe.com/memory-1.jpg',
+            },
+          }}
+          onDayPress={onDayPress}
+        />
+      )
+    );
+
+    expect(getByTestId('calendar-day-image-2025-05-08')).toBeTruthy();
+
+    fireEvent.press(getByLabelText('Dia 2025-05-08'));
+    await Promise.resolve();
+
+    expect(onDayPress).toHaveBeenCalledWith('2025-05-08');
   });
 
   test('preserves realized and suggested styles for past event days without IDs', async () => {
@@ -210,5 +241,37 @@ describe('Calendar', () => {
     );
 
     expect(getByTestId('calendar-legend-event-icon')).toBeTruthy();
+  });
+
+  test('waits for the session headers before showing an API memory image', async () => {
+    let resolveHeaders: (headers: Record<string, string>) => void = () => undefined;
+    jest.mocked(getAuthenticationHeaders).mockReturnValue(
+      new Promise((resolve) => {
+        resolveHeaders = resolve;
+      })
+    );
+
+    const { queryByTestId } = await Promise.resolve(
+      render(
+        <Calendar
+          initialDate="2025-05-01"
+          dayMarks={{
+            '2025-05-08': {
+              status: 'realized',
+              imageUrl: `${API_BASE_URL}/api/events/event-1/memories/memory-1/image`,
+            },
+          }}
+        />
+      )
+    );
+
+    expect(queryByTestId('calendar-day-image-2025-05-08')).toBeNull();
+
+    await act(async () => {
+      resolveHeaders({ Authorization: 'Bearer token' });
+      await Promise.resolve();
+    });
+
+    expect(queryByTestId('calendar-day-image-2025-05-08')).toBeTruthy();
   });
 });

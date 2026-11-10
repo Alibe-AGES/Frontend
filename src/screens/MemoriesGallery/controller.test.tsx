@@ -307,7 +307,7 @@ describe('MemoriesGalleryController', () => {
     ]);
   });
 
-  test('prioritizes events of the chosen day when a specific date parameter is passed', async () => {
+  test('shows only the events of the chosen day when a specific date parameter is passed', async () => {
     mockUseLocalSearchParams.mockReturnValue({
       id: 'group-1',
       date: '2026-05-08',
@@ -316,10 +316,10 @@ describe('MemoriesGalleryController', () => {
     await renderLoaded();
 
     expect(mockGetGroupCalendar).toHaveBeenCalledWith('group-1', 5, 2026);
+    expect(mockGetEventMemories).not.toHaveBeenCalledWith('event-most-recent');
     expect(screenProps().sections.map((section) => section.eventId)).toEqual([
       'event-same-day-late',
       'event-same-day-early',
-      'event-most-recent',
     ]);
   });
 
@@ -340,6 +340,18 @@ describe('MemoriesGalleryController', () => {
     });
   });
 
+  test('shows no events when the chosen day has no memories', async () => {
+    mockUseLocalSearchParams.mockReturnValue({
+      id: 'group-1',
+      date: '2026-05-12',
+    });
+
+    await renderLoaded();
+
+    expect(screenProps().sections).toEqual([]);
+    expect(screenProps().errorMessage).toBeNull();
+  });
+
   test('navigates to new memory screen when onAddMemory is triggered', async () => {
     await renderLoaded();
 
@@ -347,7 +359,7 @@ describe('MemoriesGalleryController', () => {
 
     expect(push).toHaveBeenCalledWith({
       pathname: '/group/[id]/memories/new',
-      params: { id: 'group-1' },
+      params: { id: 'group-1', month: '5', year: '2026' },
     });
   });
 

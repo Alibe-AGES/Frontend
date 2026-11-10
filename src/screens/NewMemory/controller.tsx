@@ -8,13 +8,16 @@ import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
 import { getGroupCalendar } from '@/server/calendar';
 import { getEventDetails } from '@/server/events';
 import { createMemory } from '@/server/memories';
+import { resolveCalendarMonth, type CalendarMonth } from '@/utils/calendarMonth';
 import { NewMemoryScreen } from '.';
 
 // Memories are made from events that already happened, so the dropdown lists
-// the group's completed events for the current month.
-async function loadCompletedEvents(groupId: string): Promise<DropdownOption[]> {
-  const today = new Date();
-  const days = await getGroupCalendar(groupId, today.getMonth() + 1, today.getFullYear());
+// the group's completed events for the selected month (the current one by default).
+async function loadCompletedEvents(
+  groupId: string,
+  { month, year }: CalendarMonth
+): Promise<DropdownOption[]> {
+  const days = await getGroupCalendar(groupId, month, year);
   const eventIds = Array.from(new Set(days.flatMap((day) => day.completedEventIds)));
   const details = await Promise.all(eventIds.map((eventId) => getEventDetails(eventId)));
 
@@ -26,7 +29,11 @@ async function loadCompletedEvents(groupId: string): Promise<DropdownOption[]> {
 
 export default function NewMemoryController() {
   const router = useRouter();
-  const { id: groupId } = useLocalSearchParams<{ id: string }>();
+  const {
+    id: groupId,
+    month: monthParam,
+    year: yearParam,
+  } = useLocalSearchParams<{ id: string; month?: string; year?: string }>();
   const { handleBack } = useDefaultBackController({
     fallbackHref: { pathname: '/group/[id]/memories', params: { id: groupId } },
   });
@@ -49,14 +56,14 @@ export default function NewMemoryController() {
     setIsLoadingEvents(true);
     setError(null);
     try {
-      setEvents(await loadCompletedEvents(groupId));
+      setEvents(await loadCompletedEvents(groupId, resolveCalendarMonth(monthParam, yearParam)));
     } catch (loadError: unknown) {
       console.error('Erro ao carregar os eventos do grupo', loadError);
       setError('Não foi possível carregar os eventos.');
     } finally {
       setIsLoadingEvents(false);
     }
-  }, [groupId]);
+  }, [groupId, monthParam, yearParam]);
 
   useEffect(() => {
     void loadEvents();

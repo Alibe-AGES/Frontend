@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
-import { useGroupMemories } from '@/hooks/useGroupMemories';
+import { resolveMemoryCalendarPeriod, useGroupMemories } from '@/hooks/useGroupMemories';
 import { MemoriesGalleryScreen } from '@/screens/MemoriesGallery';
 
 export { resolveMemoryImageUrl, sortMemorySections } from '@/hooks/useGroupMemories';
@@ -10,8 +10,8 @@ export default function MemoriesGalleryController() {
   const {
     id: groupId,
     date,
-    month,
-    year,
+    month: monthParam,
+    year: yearParam,
   } = useLocalSearchParams<{
     id: string;
     date?: string;
@@ -22,8 +22,8 @@ export default function MemoriesGalleryController() {
   const { sections, isLoading, errorMessage, reload } = useGroupMemories({
     groupId,
     date,
-    month,
-    year,
+    month: monthParam,
+    year: yearParam,
   });
 
   const handleAddMemory = () => {
@@ -31,7 +31,12 @@ export default function MemoriesGalleryController() {
       return;
     }
 
-    router.push({ pathname: '/group/[id]/memories/new', params: { id: groupId } });
+    const { month, year } = resolveMemoryCalendarPeriod(date, monthParam, yearParam);
+
+    router.push({
+      pathname: '/group/[id]/memories/new',
+      params: { id: groupId, month: String(month), year: String(year) },
+    });
   };
 
   const handlePhotoPress = (photoId: string) => {
@@ -45,8 +50,8 @@ export default function MemoriesGalleryController() {
         id: groupId,
         photoId,
         ...(date ? { date } : {}),
-        ...(month ? { month } : {}),
-        ...(year ? { year } : {}),
+        ...(monthParam ? { month: monthParam } : {}),
+        ...(yearParam ? { year: yearParam } : {}),
       },
     });
   };

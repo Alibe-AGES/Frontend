@@ -8,10 +8,11 @@ import NewMemoryController from './controller';
 import type { NewMemoryScreenProps } from '.';
 
 let mockScreenProps: NewMemoryScreenProps | null = null;
+let mockSearchParams: { id: string; month?: string; year?: string } = { id: 'group-1' };
 const mockReplace = jest.fn();
 
 jest.mock('expo-router', () => ({
-  useLocalSearchParams: () => ({ id: 'group-1' }),
+  useLocalSearchParams: () => mockSearchParams,
   useRouter: () => ({
     back: jest.fn(),
     replace: mockReplace,
@@ -54,6 +55,39 @@ describe('<NewMemoryController />', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockScreenProps = null;
+    mockSearchParams = { id: 'group-1' };
+  });
+
+  test('lists the completed events of the month selected in the calendar', async () => {
+    mockSearchParams = { id: 'group-1', month: '10', year: '2026' };
+    mockedCalendar.mockResolvedValue([calendarDay(['event-1'])]);
+    mockedEventDetails.mockResolvedValue(eventDetails('event-1', 'Churrasco'));
+
+    render(<NewMemoryController />);
+
+    await waitFor(() => {
+      expect(mockScreenProps?.isLoadingEvents).toBe(false);
+    });
+
+    expect(mockedCalendar).toHaveBeenCalledWith('group-1', 10, 2026);
+    expect(mockScreenProps?.events).toEqual([{ label: 'Churrasco', value: 'event-1' }]);
+  });
+
+  test('lists the completed events of the current month when no month is selected', async () => {
+    const today = new Date();
+    mockedCalendar.mockResolvedValue([]);
+
+    render(<NewMemoryController />);
+
+    await waitFor(() => {
+      expect(mockScreenProps?.isLoadingEvents).toBe(false);
+    });
+
+    expect(mockedCalendar).toHaveBeenCalledWith(
+      'group-1',
+      today.getMonth() + 1,
+      today.getFullYear()
+    );
   });
 
   test('lists the completed events of the group without repeating them', async () => {
