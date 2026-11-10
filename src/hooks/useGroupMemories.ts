@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { API_BASE_URL } from '@/constants';
 import { type CalendarDay, getGroupCalendar } from '@/server/calendar';
-import { getEventDetails, getEventMemories } from '@/server/events';
+import { getEventDetails, getEventMemories, getMemoryImageUrl } from '@/server/events';
 
 export interface MemoryPhotoItem {
   id: string;
@@ -139,7 +139,7 @@ export function useGroupMemories({
         }
       }
 
-      const loadedSections = await Promise.all(
+      const results = await Promise.allSettled(
         eventDayEntries.map(
           async ({ calendarDate, eventId }): Promise<MemoryEventSection | null> => {
             const [eventDetails, memories] = await Promise.all([
@@ -167,7 +167,7 @@ export function useGroupMemories({
               eventName,
               photos: memories.map((memory) => ({
                 id: memory.id,
-                imageUrl: resolveMemoryImageUrl(memory.picture),
+                imageUrl: getMemoryImageUrl(memory),
               })),
             };
           }
@@ -178,8 +178,12 @@ export function useGroupMemories({
         return;
       }
 
-      const validSections = loadedSections.filter(
-        (section): section is MemoryEventSection => section !== null
+      if (results.length > 0 && results.every((result) => result.status === 'rejected')) {
+        throw results[0].reason;
+      }
+
+      const validSections = results.flatMap((result) =>
+        result.status === 'fulfilled' && result.value !== null ? [result.value] : []
       );
 
       setSections(sortMemorySections(validSections, selectedDate));

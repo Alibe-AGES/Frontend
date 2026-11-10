@@ -22,9 +22,17 @@ export interface SignUpScreenProps {
   onContinue: (data: SignUpData) => void;
   onGoogleSignUp?: () => void;
   emailError?: string;
+  errorMessage?: string;
+  isGoogleLoading?: boolean;
 }
 
-export function SignUpScreen({ onContinue, onGoogleSignUp, emailError }: SignUpScreenProps) {
+export function SignUpScreen({
+  onContinue,
+  onGoogleSignUp,
+  emailError,
+  errorMessage,
+  isGoogleLoading = false,
+}: SignUpScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
@@ -131,16 +139,25 @@ export function SignUpScreen({ onContinue, onGoogleSignUp, emailError }: SignUpS
 
           <GoogleButton
             onPress={onGoogleSignUp}
+            isLoading={isGoogleLoading}
             testID="sign-up-google"
           />
         </View>
 
         <View className="mt-auto">
+          {errorMessage ? (
+            <Text
+              accessibilityRole="alert"
+              className="mb-3 text-center font-poppins text-sm text-error"
+            >
+              {errorMessage}
+            </Text>
+          ) : null}
           <ContinueButton
             onPress={() => {
               onContinue({ email: trimmedEmail, password });
             }}
-            disabled={!canContinue}
+            disabled={!canContinue || isGoogleLoading}
             testID="sign-up-continue"
           />
         </View>

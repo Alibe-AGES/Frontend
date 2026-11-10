@@ -11,7 +11,7 @@ export function ComponentGalleryScreen() {
       className="flex-1 bg-canvas"
       contentContainerClassName="gap-6 px-6 py-16"
     >
-      <View className="items-center justify-center">
+      <View className="items-center">
         <Button title="Simple button" />
       </View>
 
@@ -49,14 +49,12 @@ export function ComponentGalleryScreen() {
       </View>
 
       <View className="items-center">
-        <View className="w-72 max-w-full">
-          <MemoryCard
-            date={new Date()}
-            name="Sample Memory"
-            address="123 Main St, City, State 12345"
-            imageUri="https://picsum.photos/600/800"
-          />
-        </View>
+        <MemoryCard
+          date={new Date()}
+          name="Sample Memory"
+          address="123 Main St, City, State 12345"
+          imageUri="https://picsum.photos/600/800"
+        />
       </View>
     </ScrollView>
   );
