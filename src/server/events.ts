@@ -326,3 +326,7 @@ export async function getEventMemories(eventId: string): Promise<EventMemoryResp
 
   return (await response.json()) as EventMemoryResponse[];
 }
+
+export function getMemoryImageUrl({ eventId, id }: EventMemoryResponse): string {
+  return `${API_BASE_URL}/api/events/${eventId}/memories/${id}/image`;
+}
