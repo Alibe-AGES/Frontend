@@ -1,6 +1,9 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import Toast from 'react-native-toast-message';
+import { ApiError } from '@/server/api';
 import { UserProfileScreen, UserProfileScreenProps } from './index';
+
+const mockChangePassword = jest.fn();
 
 jest.mock('../../../src/hooks/useUserAvatarSource', () => ({
   useUserAvatarSource: jest.fn(() => null),
@@ -68,6 +71,7 @@ describe('UserProfileScreen', () => {
     refetch: jest.fn(),
     onLogout: jest.fn(),
     onUpdateProfile: jest.fn(),
+    onChangePassword: mockChangePassword,
   };
 
   beforeEach(() => {
@@ -417,6 +421,156 @@ describe('UserProfileScreen', () => {
       expect(getByPlaceholderText('Seu nome')).toBeTruthy();
 
       toastShowSpy.mockRestore();
+    });
+  });
+
+  describe('change password', () => {
+    async function openPasswordModal() {
+      const screen = await Promise.resolve(render(<UserProfileScreen {...defaultProps} />));
+
+      fireEvent.press(screen.getByText('Alterar Senha'));
+      await Promise.resolve();
+
+      return screen;
+    }
+
+    function fillPasswordForm(
+      getByTestId: ReturnType<typeof render>['getByTestId'],
+      values: { current: string; next: string; confirmation: string }
+    ) {
+      fireEvent.changeText(getByTestId('user-profile-current-password'), values.current);
+      fireEvent.changeText(getByTestId('user-profile-new-password'), values.next);
+      fireEvent.changeText(getByTestId('user-profile-confirm-password'), values.confirmation);
+    }
+
+    async function pressSave(getByTestId: ReturnType<typeof render>['getByTestId']) {
+      await act(async () => {
+        fireEvent.press(getByTestId('user-profile-password-save'));
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+    }
+
+    test('changes the password and closes the modal', async () => {
+      const toastShowSpy = jest.spyOn(Toast, 'show').mockImplementation(jest.fn());
+      mockChangePassword.mockResolvedValue(undefined);
+      const { getByTestId, queryByText } = await openPasswordModal();
+      // The success toast must only be shown after the modal (and its own Toast) is gone.
+      let isModalOpenWhenToastShows: boolean | undefined;
+      toastShowSpy.mockImplementation(() => {
+        isModalOpenWhenToastShows = queryByText('Confirmar Nova Senha') !== null;
+      });
+
+      fillPasswordForm(getByTestId, {
+        current: 'senha-segura',
+        next: 'nova-senha-segura',
+        confirmation: 'nova-senha-segura',
+      });
+      await pressSave(getByTestId);
+
+      await waitFor(() => {
+        expect(mockChangePassword).toHaveBeenCalledWith({
+          password: 'senha-segura',
+          newPassword: 'nova-senha-segura',
+        });
+      });
+      expect(toastShowSpy).toHaveBeenCalledWith({
+        type: 'success',
+        text1: 'Sucesso!',
+        text2: 'Senha alterada com sucesso.',
+      });
+      expect(queryByText('Confirmar Nova Senha')).toBeNull();
+      expect(isModalOpenWhenToastShows).toBe(false);
+
+      toastShowSpy.mockRestore();
+    });
+
+    test('shows an error toast and keeps the modal open when the current password is wrong', async () => {
+      const toastShowSpy = jest.spyOn(Toast, 'show').mockImplementation(jest.fn());
+      mockChangePassword.mockRejectedValue(new ApiError('Senha atual incorreta', 400));
+      const { getByTestId, getByText } = await openPasswordModal();
+
+      fillPasswordForm(getByTestId, {
+        current: 'senha-errada',
+        next: 'nova-senha-segura',
+        confirmation: 'nova-senha-segura',
+      });
+      await pressSave(getByTestId);
+
+      await waitFor(() => {
+        expect(toastShowSpy).toHaveBeenCalledWith({
+          type: 'error',
+          text1: 'Erro!',
+          text2: 'Senha atual incorreta.',
+        });
+      });
+      expect(getByText('Confirmar Nova Senha')).toBeTruthy();
+
+      toastShowSpy.mockRestore();
+    });
+
+    test('shows a generic error toast when the request fails for another reason', async () => {
+      const toastShowSpy = jest.spyOn(Toast, 'show').mockImplementation(jest.fn());
+      mockChangePassword.mockRejectedValue(new Error('Network error'));
+      const { getByTestId } = await openPasswordModal();
+
+      fillPasswordForm(getByTestId, {
+        current: 'senha-segura',
+        next: 'nova-senha-segura',
+        confirmation: 'nova-senha-segura',
+      });
+      await pressSave(getByTestId);
+
+      await waitFor(() => {
+        expect(toastShowSpy).toHaveBeenCalledWith({
+          type: 'error',
+          text1: 'Erro!',
+          text2: 'Não foi possível alterar a senha. Tente novamente.',
+        });
+      });
+
+      toastShowSpy.mockRestore();
+    });
+
+    test('does not send the form when the new passwords do not match', async () => {
+      const { getByTestId, getByText } = await openPasswordModal();
+
+      fillPasswordForm(getByTestId, {
+        current: 'senha-segura',
+        next: 'nova-senha-segura',
+        confirmation: 'outra-senha-segura',
+      });
+      await pressSave(getByTestId);
+
+      expect(getByText('As senhas não coincidem.')).toBeTruthy();
+      expect(mockChangePassword).not.toHaveBeenCalled();
+    });
+
+    test('does not send the form when the new password is too short', async () => {
+      const { getByTestId, getByText } = await openPasswordModal();
+
+      fillPasswordForm(getByTestId, {
+        current: 'senha-segura',
+        next: 'curta',
+        confirmation: 'curta',
+      });
+      await pressSave(getByTestId);
+
+      expect(getByText('A senha deve ter pelo menos 8 caracteres.')).toBeTruthy();
+      expect(mockChangePassword).not.toHaveBeenCalled();
+    });
+
+    test('does not send the form without the current password', async () => {
+      const { getByTestId } = await openPasswordModal();
+
+      fillPasswordForm(getByTestId, {
+        current: '',
+        next: 'nova-senha-segura',
+        confirmation: 'nova-senha-segura',
+      });
+      await pressSave(getByTestId);
+
+      expect(mockChangePassword).not.toHaveBeenCalled();
     });
   });
 });

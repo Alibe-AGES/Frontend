@@ -6,7 +6,12 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import Toast from 'react-native-toast-message';
 import { UserProfileScreen, type UserProfileUpdate } from '.';
-import { getMyProfile, updateMyProfile, updateUserProfilePicture } from '../../server/users';
+import {
+  getMyProfile,
+  updateMyProfile,
+  updatePassword,
+  updateUserProfilePicture,
+} from '../../server/users';
 
 export interface ProfileData {
   name: string;
@@ -98,6 +103,7 @@ export default function UserProfileController() {
       }}
       onLogout={handleLogout}
       onUpdateProfile={handleUpdateProfile}
+      onChangePassword={updatePassword}
     />
   );
 }
