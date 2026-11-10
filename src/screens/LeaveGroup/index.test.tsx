@@ -15,7 +15,7 @@ describe('LeaveGroupScreen', () => {
     );
 
     expect(getByText('Tem certeza de que deseja sair do grupo Hermanas?')).toBeTruthy();
-    await fireEvent.press(getByTestId('leave-group-cancel'));
+    fireEvent.press(getByTestId('leave-group-cancel'));
     await Promise.resolve();
 
     expect(onCancel).toHaveBeenCalledTimes(1);
@@ -33,7 +33,7 @@ describe('LeaveGroupScreen', () => {
     );
 
     expect(getByText('Tem certeza de que deseja sair do grupo?')).toBeTruthy();
-    await fireEvent.press(getByTestId('leave-group-confirm'));
+    fireEvent.press(getByTestId('leave-group-confirm'));
     await Promise.resolve();
 
     expect(onConfirm).toHaveBeenCalledTimes(1);

@@ -39,7 +39,7 @@ describe('<Dropdown />', () => {
   test('opens the menu with every option', async () => {
     const { getByTestId, getByText } = await Promise.resolve(render(<ControlledDropdown />));
 
-    await fireEvent.press(getByTestId('alibe-dropdown'));
+    fireEvent.press(getByTestId('alibe-dropdown'));
 
     expect(getByTestId('alibe-dropdown')).toBeExpanded();
     expect(getByText('Jantar de sexta')).toBeTruthy();
@@ -52,8 +52,8 @@ describe('<Dropdown />', () => {
       render(<ControlledDropdown onChange={onChange} />)
     );
 
-    await fireEvent.press(getByTestId('alibe-dropdown'));
-    await fireEvent.press(getByTestId('alibe-dropdown-option-barbecue'));
+    fireEvent.press(getByTestId('alibe-dropdown'));
+    fireEvent.press(getByTestId('alibe-dropdown-option-barbecue'));
 
     expect(onChange).toHaveBeenCalledWith('barbecue');
     expect(queryByTestId('alibe-dropdown-menu')).toBeNull();
@@ -71,7 +71,7 @@ describe('<Dropdown />', () => {
       )
     );
 
-    await fireEvent.press(getByTestId('alibe-dropdown'));
+    fireEvent.press(getByTestId('alibe-dropdown'));
 
     expect(getByTestId('alibe-dropdown-option-dinner')).toBeSelected();
     expect(getByTestId('alibe-dropdown-option-barbecue')).not.toBeSelected();
@@ -80,8 +80,8 @@ describe('<Dropdown />', () => {
   test('closes the menu when pressing the trigger again', async () => {
     const { getByTestId, queryByTestId } = await Promise.resolve(render(<ControlledDropdown />));
 
-    await fireEvent.press(getByTestId('alibe-dropdown'));
-    await fireEvent.press(getByTestId('alibe-dropdown'));
+    fireEvent.press(getByTestId('alibe-dropdown'));
+    fireEvent.press(getByTestId('alibe-dropdown'));
 
     expect(queryByTestId('alibe-dropdown-menu')).toBeNull();
   });
@@ -92,8 +92,8 @@ describe('<Dropdown />', () => {
       render(<ControlledDropdown onChange={onChange} />)
     );
 
-    await fireEvent.press(getByTestId('alibe-dropdown'));
-    await fireEvent.press(getByTestId('alibe-dropdown-backdrop'));
+    fireEvent.press(getByTestId('alibe-dropdown'));
+    fireEvent.press(getByTestId('alibe-dropdown-backdrop'));
 
     expect(queryByTestId('alibe-dropdown-menu')).toBeNull();
     expect(onChange).not.toHaveBeenCalled();
@@ -114,7 +114,7 @@ describe('<Dropdown />', () => {
       )
     );
 
-    await fireEvent.press(getByTestId('alibe-dropdown'));
+    fireEvent.press(getByTestId('alibe-dropdown'));
 
     expect(getByTestId('alibe-dropdown-options').props.onContentSizeChange).toBeDefined();
     expect(getByText('Evento 1')).toBeTruthy();
@@ -133,7 +133,7 @@ describe('<Dropdown />', () => {
       )
     );
 
-    await fireEvent.press(getByTestId('alibe-dropdown'));
+    fireEvent.press(getByTestId('alibe-dropdown'));
 
     expect(queryByTestId('alibe-dropdown-menu')).toBeNull();
     expect(getByTestId('alibe-dropdown')).toBeDisabled();
@@ -151,7 +151,7 @@ describe('<Dropdown />', () => {
       )
     );
 
-    await fireEvent.press(getByTestId('alibe-dropdown'));
+    fireEvent.press(getByTestId('alibe-dropdown'));
 
     expect(getByText('Nenhum evento no grupo')).toBeTruthy();
   });

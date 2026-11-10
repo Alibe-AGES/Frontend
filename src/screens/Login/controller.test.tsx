@@ -48,12 +48,12 @@ describe('LoginController', () => {
       render(<LoginController />)
     );
 
-    await fireEvent.changeText(getByPlaceholderText('Email'), 'user@example.com');
+    fireEvent.changeText(getByPlaceholderText('Email'), 'user@example.com');
     await Promise.resolve();
-    await fireEvent.changeText(getByPlaceholderText('Senha'), 'senha-segura');
+    fireEvent.changeText(getByPlaceholderText('Senha'), 'senha-segura');
     await Promise.resolve();
     await act(async () => {
-      await fireEvent.press(getByTestId('login-continue'));
+      fireEvent.press(getByTestId('login-continue'));
       await Promise.resolve();
       await Promise.resolve();
       await Promise.resolve();
@@ -76,12 +76,12 @@ describe('LoginController', () => {
       render(<LoginController />)
     );
 
-    await fireEvent.changeText(getByPlaceholderText('Email'), 'user@example.com');
+    fireEvent.changeText(getByPlaceholderText('Email'), 'user@example.com');
     await Promise.resolve();
-    await fireEvent.changeText(getByPlaceholderText('Senha'), 'wrong-password');
+    fireEvent.changeText(getByPlaceholderText('Senha'), 'wrong-password');
     await Promise.resolve();
     await act(async () => {
-      await fireEvent.press(getByTestId('login-continue'));
+      fireEvent.press(getByTestId('login-continue'));
       await Promise.resolve();
       await Promise.resolve();
       await Promise.resolve();
@@ -129,7 +129,7 @@ describe('LoginController', () => {
   test('pops back to the previous screen', async () => {
     const { getByLabelText } = await Promise.resolve(render(<LoginController />));
 
-    await fireEvent.press(getByLabelText('Voltar'));
+    fireEvent.press(getByLabelText('Voltar'));
     await Promise.resolve();
 
     expect(back).toHaveBeenCalledTimes(1);
@@ -140,7 +140,7 @@ describe('LoginController', () => {
     canGoBack.mockReturnValueOnce(false);
     const { getByLabelText } = await Promise.resolve(render(<LoginController />));
 
-    await fireEvent.press(getByLabelText('Voltar'));
+    fireEvent.press(getByLabelText('Voltar'));
     await Promise.resolve();
 
     expect(back).not.toHaveBeenCalled();
@@ -150,7 +150,7 @@ describe('LoginController', () => {
   test('does nothing on forgot password while recovery is not implemented', async () => {
     const { getByText } = await Promise.resolve(render(<LoginController />));
 
-    await fireEvent.press(getByText('Esqueci minha senha'));
+    fireEvent.press(getByText('Esqueci minha senha'));
     await Promise.resolve();
 
     expect(replace).not.toHaveBeenCalled();

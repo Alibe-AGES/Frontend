@@ -52,6 +52,7 @@ export function SignUpScreen({
       padding="horizontal"
       topFade
       floatingChrome
+      testID="sign-up-screen"
       header={
         <BackButton
           fallbackHref="/auth"

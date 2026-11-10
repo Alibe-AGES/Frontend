@@ -57,7 +57,7 @@ describe('GroupInfoScreen', () => {
     );
 
     expect(getByText('Carregando…')).toBeTruthy();
-    await fireEvent.press(getByTestId('group-info-leave'));
+    fireEvent.press(getByTestId('group-info-leave'));
     await Promise.resolve();
 
     expect(onLeaveGroup).toHaveBeenCalledTimes(1);

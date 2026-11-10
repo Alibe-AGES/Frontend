@@ -30,7 +30,7 @@ describe('Calendar', () => {
       )
     );
 
-    await fireEvent.press(getByTestId('calendar-next-month'));
+    fireEvent.press(getByTestId('calendar-next-month'));
     await Promise.resolve();
 
     expect(getByText('junho')).toBeTruthy();
@@ -48,7 +48,7 @@ describe('Calendar', () => {
       )
     );
 
-    await fireEvent.press(getByLabelText('Dia 2999-10-18'));
+    fireEvent.press(getByLabelText('Dia 2999-10-18'));
     await Promise.resolve();
 
     expect(onDayPress).toHaveBeenCalledWith('2999-10-18');
@@ -65,7 +65,7 @@ describe('Calendar', () => {
       )
     );
 
-    await fireEvent.press(getByTestId('calendar-create-2999-01-05'));
+    fireEvent.press(getByTestId('calendar-create-2999-01-05'));
     await Promise.resolve();
 
     expect(onDayCreatePress).toHaveBeenCalledWith('2999-01-05');
@@ -88,10 +88,10 @@ describe('Calendar', () => {
     const emptyPastDay = getByLabelText('Dia 2026-05-17');
     const pastEventDay = getByLabelText('Dia 2026-05-18, 2 eventos');
 
-    await fireEvent.press(emptyPastDay);
+    fireEvent.press(emptyPastDay);
     await Promise.resolve();
     expect(onDayPress).not.toHaveBeenCalled();
-    await fireEvent.press(pastEventDay);
+    fireEvent.press(pastEventDay);
     await Promise.resolve();
 
     expect(onDayPress).toHaveBeenCalledTimes(1);

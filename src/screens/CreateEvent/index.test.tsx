@@ -92,9 +92,9 @@ describe('<CreateEventScreen />', () => {
     );
 
     expect(queryByTestId('mock-date-picker-sheet')).toBeNull();
-    await fireEvent.press(getByTestId('create-event-card-date-button'));
+    fireEvent.press(getByTestId('create-event-card-date-button'));
     await Promise.resolve();
-    await fireEvent.press(getByTestId('mock-date-picker-sheet'));
+    fireEvent.press(getByTestId('mock-date-picker-sheet'));
     await Promise.resolve();
 
     expect(onSelectDate).toHaveBeenCalledWith('2026-10-15');
@@ -118,7 +118,7 @@ describe('<CreateEventScreen />', () => {
       render(<CreateEventScreen {...buildProps({ onChangeDraft })} />)
     );
 
-    await fireEvent.changeText(getByTestId('create-event-card-name-input'), 'Bloom Café');
+    fireEvent.changeText(getByTestId('create-event-card-name-input'), 'Bloom Café');
     await Promise.resolve();
 
     expect(onChangeDraft).toHaveBeenCalledWith({ ...EMPTY_DRAFT, name: 'Bloom Café' });
@@ -131,7 +131,7 @@ describe('<CreateEventScreen />', () => {
     );
 
     const confirm = getByTestId('create-event-card-confirm');
-    await fireEvent.press(confirm);
+    fireEvent.press(confirm);
     await Promise.resolve();
 
     expect(confirm.props.accessibilityState).toMatchObject({ disabled: true });
@@ -144,7 +144,7 @@ describe('<CreateEventScreen />', () => {
       render(<CreateEventScreen {...buildProps({ onConfirm, isConfirmDisabled: false })} />)
     );
 
-    await fireEvent.press(getByTestId('create-event-card-confirm'));
+    fireEvent.press(getByTestId('create-event-card-confirm'));
     await Promise.resolve();
 
     expect(onConfirm).toHaveBeenCalledTimes(1);
@@ -183,11 +183,11 @@ describe('<CreateEventScreen />', () => {
     expect(getByPlaceholderText('Definir nome do evento')).toBeTruthy();
     expect(getByText('Adicione uma imagem que representa seu evento')).toBeTruthy();
 
-    await fireEvent.press(getByTestId('create-event-tab-suggestion'));
+    fireEvent.press(getByTestId('create-event-tab-suggestion'));
     await Promise.resolve();
     expect(onSelectTab).toHaveBeenCalledWith('suggestion');
 
-    await rerender(<CreateEventScreen {...buildProps({ activeTab: 'suggestion', onSelectTab })} />);
+    rerender(<CreateEventScreen {...buildProps({ activeTab: 'suggestion', onSelectTab })} />);
     await Promise.resolve();
 
     expect(getByTestId('create-event-tab-event').props.accessibilityState).toEqual({
@@ -199,7 +199,7 @@ describe('<CreateEventScreen />', () => {
     expect(getByPlaceholderText('Definir nome da sugestão')).toBeTruthy();
     expect(getByText('Adicione uma imagem que representa sua sugestão')).toBeTruthy();
 
-    await fireEvent.press(getByTestId('create-event-tab-event'));
+    fireEvent.press(getByTestId('create-event-tab-event'));
     await Promise.resolve();
     expect(onSelectTab).toHaveBeenCalledWith('event');
   });

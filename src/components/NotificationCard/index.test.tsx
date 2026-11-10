@@ -27,7 +27,7 @@ describe('<NotificationCard />', () => {
 
     expect(queryByTestId('alibe-notification-card-action')).toBeNull();
 
-    await rerender(
+    rerender(
       <NotificationCard
         notification={match}
         onActionPress={jest.fn()}
@@ -49,7 +49,7 @@ describe('<NotificationCard />', () => {
       )
     );
 
-    await fireEvent.press(getByTestId('alibe-notification-card'));
+    fireEvent.press(getByTestId('alibe-notification-card'));
     await Promise.resolve();
 
     expect(onPress).toHaveBeenCalledWith(createdEvent);
@@ -68,7 +68,7 @@ describe('<NotificationCard />', () => {
       )
     );
 
-    await fireEvent.press(getByTestId('alibe-notification-card-action'));
+    fireEvent.press(getByTestId('alibe-notification-card-action'));
     await Promise.resolve();
 
     expect(onActionPress).toHaveBeenCalledWith(createdEvent);
@@ -86,7 +86,7 @@ describe('<NotificationCard />', () => {
       )
     );
 
-    await fireEvent.press(getByLabelText('Dispensar notificação'));
+    fireEvent.press(getByLabelText('Dispensar notificação'));
     await Promise.resolve();
 
     expect(onDismiss).toHaveBeenCalledWith('notification-1');

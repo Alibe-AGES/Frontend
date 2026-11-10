@@ -76,7 +76,7 @@ describe('<PlaceCard />', () => {
       )
     );
 
-    await fireEvent.press(getByLabelText('Abrir Bloom Café'));
+    fireEvent.press(getByLabelText('Abrir Bloom Café'));
     await Promise.resolve();
 
     expect(onClickCard).toHaveBeenCalledTimes(1);

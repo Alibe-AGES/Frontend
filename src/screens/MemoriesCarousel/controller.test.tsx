@@ -60,10 +60,10 @@ describe('MemoriesCarouselController', () => {
     });
   });
 
-  test('flattens the gallery and starts on the tapped photo', async () => {
+  test('flattens the gallery and starts on the tapped photo', () => {
     mockParams.mockReturnValue({ id: 'group-1', photoId: 'photo-3' });
 
-    await render(<MemoriesCarouselController />);
+    render(<MemoriesCarouselController />);
 
     expect(screenProps().memories.map((memory) => memory.id)).toEqual([
       'photo-1',
@@ -73,18 +73,18 @@ describe('MemoriesCarouselController', () => {
     expect(screenProps().initialIndex).toBe(2);
   });
 
-  test('starts on the first photo when the photo is unknown or missing', async () => {
+  test('starts on the first photo when the photo is unknown or missing', () => {
     mockParams.mockReturnValue({ id: 'group-1', photoId: 'missing' });
 
-    await render(<MemoriesCarouselController />);
+    render(<MemoriesCarouselController />);
 
     expect(screenProps().initialIndex).toBe(0);
   });
 
-  test('loads the same period the gallery was showing', async () => {
+  test('loads the same period the gallery was showing', () => {
     mockParams.mockReturnValue({ id: 'group-1', month: '9', year: '2026' });
 
-    await render(<MemoriesCarouselController />);
+    render(<MemoriesCarouselController />);
 
     expect(mockUseGroupMemories).toHaveBeenCalledWith({
       groupId: 'group-1',
@@ -94,10 +94,10 @@ describe('MemoriesCarouselController', () => {
     });
   });
 
-  test('navigates to the new memory flow and retries loading', async () => {
+  test('navigates to the new memory flow and retries loading', () => {
     mockParams.mockReturnValue({ id: 'group-1' });
 
-    await render(<MemoriesCarouselController />);
+    render(<MemoriesCarouselController />);
     screenProps().onAddMemory();
     screenProps().onRetry();
 
@@ -108,10 +108,10 @@ describe('MemoriesCarouselController', () => {
     expect(reload).toHaveBeenCalledTimes(1);
   });
 
-  test('renders nothing without a group id', async () => {
+  test('renders nothing without a group id', () => {
     mockParams.mockReturnValue({});
 
-    await render(<MemoriesCarouselController />);
+    render(<MemoriesCarouselController />);
 
     expect(mockScreenProps).toBeNull();
   });

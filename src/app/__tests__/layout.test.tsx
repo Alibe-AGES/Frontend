@@ -47,7 +47,7 @@ const mockUsePathname = usePathname as jest.Mock;
 const mockAuthenticatedRoute = jest.mocked(AuthenticatedRoute);
 
 async function renderLayout() {
-  const result = await render(<RootLayout />);
+  const result = render(<RootLayout />);
   await act(async () => {
     await Promise.resolve();
     await Promise.resolve();

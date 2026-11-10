@@ -140,7 +140,7 @@ describe('<MemoriesGalleryScreen />', () => {
   test('triggers onAddMemory when pressing the add button in the header', async () => {
     const { getByTestId, props } = await renderScreen();
 
-    await fireEvent.press(getByTestId('memories-gallery-add'));
+    fireEvent.press(getByTestId('memories-gallery-add'));
     await Promise.resolve();
 
     expect(props.onAddMemory).toHaveBeenCalledTimes(1);
@@ -176,7 +176,7 @@ describe('<MemoriesGalleryScreen />', () => {
     expect(getByText('Não foi possível carregar as memórias do grupo.')).toBeTruthy();
     expect(queryByTestId('memories-gallery-empty')).toBeNull();
 
-    await fireEvent.press(getByTestId('memories-gallery-retry'));
+    fireEvent.press(getByTestId('memories-gallery-retry'));
     await Promise.resolve();
 
     expect(props.onRetry).toHaveBeenCalledTimes(1);

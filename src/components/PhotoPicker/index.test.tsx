@@ -89,7 +89,7 @@ describe('<PhotoPicker />', () => {
 
     expect(getByText(label).props.className).toContain('text-black');
 
-    await rerender(
+    rerender(
       <PhotoPicker
         {...defaultProps}
         labelClassName="text-wine"
@@ -137,7 +137,7 @@ describe('<PhotoPicker />', () => {
     );
 
     // Aplicando void para ignorar a floating promise
-    await fireEvent.press(getByTestId('alibe-photo-picker'));
+    fireEvent.press(getByTestId('alibe-photo-picker'));
 
     expect(mockPickImage).toHaveBeenCalledTimes(1);
   });
@@ -156,7 +156,7 @@ describe('<PhotoPicker />', () => {
     );
 
     // Aplicando void para ignorar a floating promise
-    await fireEvent.press(getByTestId('alibe-photo-picker'));
+    fireEvent.press(getByTestId('alibe-photo-picker'));
 
     expect(mockPickImage).not.toHaveBeenCalled();
   });
@@ -176,7 +176,7 @@ describe('<PhotoPicker />', () => {
     expect(queryByTestId('alibe-photo-picker-photo')).toBeNull();
 
     // Aplicando void para ignorar a floating promise
-    await fireEvent.press(getByTestId('alibe-photo-picker'));
+    fireEvent.press(getByTestId('alibe-photo-picker'));
 
     expect(mockPickImage).not.toHaveBeenCalled();
   });
@@ -212,7 +212,7 @@ describe('<PhotoPicker />', () => {
     const { getByTestId } = await Promise.resolve(render(<PhotoPicker />));
 
     // Aplicando void para ignorar a floating promise
-    await fireEvent.press(getByTestId('alibe-photo-picker'));
+    fireEvent.press(getByTestId('alibe-photo-picker'));
 
     expect(mockDefaultPickImage).toHaveBeenCalledTimes(1);
   });

@@ -6,7 +6,7 @@ describe('<CreateGroupButton />', () => {
     const onPress = jest.fn();
     const { getByTestId } = await Promise.resolve(render(<CreateGroupButton onPress={onPress} />));
 
-    await fireEvent.press(getByTestId('create-group-button'));
+    fireEvent.press(getByTestId('create-group-button'));
     await Promise.resolve();
 
     expect(onPress).toHaveBeenCalledTimes(1);
@@ -23,7 +23,7 @@ describe('<CreateGroupButton />', () => {
       )
     );
 
-    await fireEvent.press(getByTestId('create-group-button'));
+    fireEvent.press(getByTestId('create-group-button'));
     await Promise.resolve();
 
     expect(onPress).not.toHaveBeenCalled();
