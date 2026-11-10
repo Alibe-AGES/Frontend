@@ -5,8 +5,8 @@ import {
   Poppins_500Medium,
   Poppins_600SemiBold,
   Poppins_700Bold,
-  Poppins_900Black,
   Poppins_800ExtraBold,
+  Poppins_900Black,
   useFonts,
 } from '@expo-google-fonts/poppins';
 import { usePathname } from 'expo-router';
@@ -22,6 +22,7 @@ import { PendingInviteProvider } from '@/hooks/usePendingInvite';
 import { SignUpDraftProvider } from '@/hooks/useSignUpDraft';
 import { PushNotifications } from '@/notifications/PushNotifications';
 import { AnimatedSplash } from '@/screens/AnimatedSplash';
+import { theme } from '@/theme';
 import { StatusBar } from 'react-native';
 
 polyfillWebCrypto();
@@ -77,8 +78,10 @@ export default function RootLayout() {
             />
           ) : null}
           <PushNotifications />
-          {/* Android draws edge-to-edge, so the status bar shows the screen behind it. */}
-          <StatusBar barStyle="dark-content" />
+          <StatusBar
+            barStyle="dark-content"
+            backgroundColor={theme.colors.canvas}
+          />
           <Toast />
         </PendingInviteProvider>
       </SignUpDraftProvider>
