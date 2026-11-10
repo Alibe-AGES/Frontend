@@ -1,3 +1,5 @@
+import { theme } from '@/theme';
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { Pressable, Text, View } from 'react-native';
 import tw from 'twrnc';
@@ -32,7 +34,8 @@ const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
 
 const dayContainerClasses: Record<DayStatus, string> = {
   normal: 'bg-transparent',
-  available: 'bg-lime',
+  // Availability is shown by the coral dot below the day, not by the background.
+  available: 'bg-transparent',
   realized: 'bg-ink',
   suggested: 'bg-pink',
   matched: 'bg-ink',
@@ -141,10 +144,25 @@ function DayContent({ status, day, hasImage }: DayContentProps) {
     return <Text className="z-10 text-sm font-medium text-white">{String(day)}</Text>;
   }
   if (status === 'suggested') {
-    return <Text className="text-xl text-canvas">☆</Text>;
+    // An icon is centered by its box, unlike a ☆ character, which sits on the font baseline.
+    return (
+      <Ionicons
+        name="star-outline"
+        size={20}
+        color={theme.colors.canvas}
+        testID="calendar-day-icon-suggested"
+      />
+    );
   }
   if (status === 'matched') {
-    return <Text className="text-xl text-lime">★</Text>;
+    return (
+      <Ionicons
+        name="star"
+        size={20}
+        color={theme.colors.lime}
+        testID="calendar-day-icon-matched"
+      />
+    );
   }
 
   return <Text className={`text-sm font-medium ${dayTextClasses[status]}`}>{String(day)}</Text>;

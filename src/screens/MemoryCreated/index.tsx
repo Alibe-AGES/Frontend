@@ -20,7 +20,7 @@ export function MemoryCreatedScreen() {
   }
 
   return (
-    <View style={[tw`flex-1`, { backgroundColor: theme.colors.surface }]}>
+    <View style={[tw`flex-1`, { backgroundColor: theme.colors.canvas }]}>
       {/* Outside the safe area so the cropped edges sit flush with the device corner. */}
       <View
         accessible={false}

@@ -79,8 +79,12 @@ export function ModalFrame({
           children
         )}
       </KeyboardAvoidingView>
-      {/* Toasts must render inside the Modal window to appear above it. */}
-      <Toast />
+      {/*
+        Toasts must render inside the Modal window to appear above it. Unmount it as soon as the
+        modal starts closing, so toasts shown after closing go to the screen's Toast instead of
+        this one, which disappears with the modal
+      */}
+      {visible ? <Toast /> : null}
     </Modal>
   );
 }

@@ -56,7 +56,7 @@ export function Calendar({
       {showLegend ? <CalendarLegend /> : null}
 
       <View className="mt-4 items-center rounded-full bg-pink px-3 py-2">
-        <Text className="text-center text-sm font-medium text-ink underline">
+        <Text className="text-center text-sm font-medium text-ink">
           Toque nos dias para ver mais detalhes.
         </Text>
       </View>

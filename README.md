@@ -559,7 +559,7 @@ For UI-only work, use local state and fixture data. Do not add API calls merely 
 
 ### Screen frame
 
-Every page wraps its content in `ScreenFrame` (`src/components/ScreenFrame`). It owns the defaults shared by all screens: background, horizontal gutter, top spacing, an optional fixed `header`, and an optional `footer` pinned to the bottom (usually `NavigationBar`), whose height is reserved below the content automatically.
+Every page wraps its content in `ScreenFrame` (`src/components/ScreenFrame`). It owns the defaults shared by all screens: background, horizontal gutter, top spacing, an optional fixed `header`, and an optional `footer` pinned to the bottom (usually `NavigationBar`), whose height is reserved below the content automatically. Set `floatingChrome` to float the `header` and `footer` over the content, which then scrolls behind them and starts at the top of the screen; a virtualized list uses `scrollable={false}` and a function as `children` to receive the `topInset` and `bottomInset` it must apply. `topFade` fades content out behind a floating header: it stays hidden until the content scrolls by default, `topFade="always"` keeps it visible on screens that fit without scrolling, and `topFade="header"` keeps it opaque behind a tall header.
 
 By default the content is rendered in a `KeyboardAwareScrollView` from `react-native-keyboard-controller`, which scrolls the focused input above the keyboard on iOS and Android. This only works because `KeyboardProvider` wraps the app in `src/app/_layout.tsx`; do not remove it. Inputs do not need any extra wiring.
 

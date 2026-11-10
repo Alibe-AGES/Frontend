@@ -27,9 +27,27 @@ describe('<PlaceCard />', () => {
       )
     );
 
-    expect(getByLabelText('Foto de Bloom Café').props.source).toEqual({
-      uri: 'https://cdn.alibe.com/bloom.jpg',
-    });
+    expect(getByLabelText('Foto de Bloom Café').props.source).toEqual([
+      { uri: 'https://cdn.alibe.com/bloom.jpg' },
+    ]);
+  });
+
+  test('sends the session headers with the photo request', async () => {
+    const headers = { Cookie: 'session=token' };
+    const { getByLabelText } = await Promise.resolve(
+      render(
+        <PlaceCard
+          name="Bloom Café"
+          address="Endereço"
+          imageUri="https://api.alibe.com/locations/1/photo"
+          imageHeaders={headers}
+        />
+      )
+    );
+
+    expect(getByLabelText('Foto de Bloom Café').props.source).toEqual([
+      { uri: 'https://api.alibe.com/locations/1/photo', headers },
+    ]);
   });
 
   test('shows only the colored block when there is no image', async () => {

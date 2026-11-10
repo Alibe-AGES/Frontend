@@ -1,9 +1,8 @@
+import { Avatar } from '@/components/Avatar';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { FC } from 'react';
 import { Text, View } from 'react-native';
-import tw from 'twrnc';
 import { Participant, ParticipantAvatarsProps } from './ParticipantAvatars.types';
 
 export type {
@@ -92,23 +91,16 @@ export const ParticipantAvatars: FC<ParticipantAvatarsProps> = ({
           >
             <View className="relative h-12 w-12 items-center justify-center">
               <View className="h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-pink">
-                {participant.profilePic ? (
-                  <Image
-                    source={{ uri: participant.profilePic }}
-                    accessible
-                    accessibilityLabel={`Foto de ${participant.name}`}
-                    contentFit="cover"
-                    style={tw`h-full w-full`}
-                    testID={`${testID}-${participant.id}-photo`}
-                  />
-                ) : (
-                  <Ionicons
-                    name="person-outline"
-                    size={22}
-                    color={theme.colors.wine}
-                    testID={`${testID}-${participant.id}-placeholder`}
-                  />
-                )}
+                {/* Avatar adds the login headers that API-hosted photos require. */}
+                <Avatar
+                  photoUri={participant.profilePic}
+                  accessibilityLabel={`Foto de ${participant.name}`}
+                  imageClassName="h-12 w-12 rounded-full"
+                  iconSize={22}
+                  fallbackIconName="person-outline"
+                  fallbackIconColor={theme.colors.wine}
+                  testID={`${testID}-${participant.id}`}
+                />
               </View>
               {answerBadge}
             </View>

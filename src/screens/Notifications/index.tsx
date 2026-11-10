@@ -1,4 +1,5 @@
 import NotificationsEmptyHands from '@/assets/images/notifications-empty-hands.svg';
+import { Avatar } from '@/components/Avatar';
 import { BackButton } from '@/components/BackButton';
 import { Button } from '@/components/Button';
 import { NavigationBar } from '@/components/NavigationBar';
@@ -7,9 +8,7 @@ import { ScreenFrame } from '@/components/ScreenFrame';
 import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { ActivityIndicator, Text, View } from 'react-native';
-import tw from 'twrnc';
 
 export interface NotificationsScreenProps {
   groupId: string;
@@ -50,28 +49,34 @@ export function NotificationsScreen({
 }: Readonly<NotificationsScreenProps>) {
   const groupPhotoSource = useAuthenticatedImageSource(groupPhoto);
   const isEmpty = !isLoading && !errorMessage && notifications.length === 0;
+  const hasNotifications = !isLoading && notifications.length > 0;
 
-  return (
-    <ScreenFrame
-      gap="lg"
-      footer={<NavigationBar groupId={groupId} />}
-      testID="notifications-screen"
-    >
-      <View className="flex-row items-center">
+  const header = (
+    <View className="gap-6">
+      <View className="flex-row items-center gap-4">
         <BackButton
           fallbackHref={{ pathname: '/group/[id]', params: { id: groupId } }}
           accessibilityLabel="Voltar para o grupo"
         />
+        <Text
+          accessibilityRole="header"
+          className="flex-1 font-poppins-semibold text-2xl text-ink"
+          testID="notifications-title"
+        >
+          Notificações
+        </Text>
       </View>
 
-      <View className="flex-row items-center gap-3">
+      <View
+        className="flex-row items-center gap-3"
+        testID="notifications-group"
+      >
         <View className="h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-coral">
           {groupPhotoSource ? (
-            <Image
-              source={groupPhotoSource}
+            <Avatar
+              photoUri={groupPhotoSource}
               accessibilityLabel={`Foto do grupo ${groupName}`}
-              contentFit="cover"
-              style={tw`h-16 w-16 rounded-full`}
+              imageClassName="w-full h-full"
             />
           ) : (
             <Ionicons
@@ -100,81 +105,105 @@ export function NotificationsScreen({
         </View>
       </View>
 
-      {isLoading ? (
-        <View
-          className="items-center gap-3 py-10"
-          testID="notifications-loading"
-        >
-          <ActivityIndicator color={theme.colors.ink} />
-          <Text className="font-poppins text-sm text-ink">Carregando notificações…</Text>
-        </View>
-      ) : null}
-
-      {errorMessage ? (
-        <View
-          className="items-center gap-4 py-10"
-          testID="notifications-error"
-        >
-          <Text className="text-center font-poppins text-base text-wine">{errorMessage}</Text>
+      {/* Part of the floating header, so it stays fixed above the list while it scrolls. */}
+      {hasNotifications && (
+        <View className="px-8">
           <Button
-            title="Tentar de novo"
+            title="Limpar notificações"
             variant="secondary"
-            onPress={onRetry}
-            testID="notifications-retry"
+            isLoading={isClearing}
+            onPress={onClearNotifications}
+            testID="notifications-clear"
           />
         </View>
-      ) : null}
+      )}
+    </View>
+  );
 
-      {isEmpty ? (
+  return (
+    <ScreenFrame
+      padding="horizontal"
+      floatingChrome
+      topFade="header"
+      header={header}
+      footer={<NavigationBar groupId={groupId} />}
+      testID="notifications-screen"
+    >
+      {({ topInset }) => (
+        // The header floats over the list, so the list starts below it and fades out behind it.
         <View
-          className="-mx-6 flex-1 items-center justify-center gap-6"
-          testID="notifications-empty"
+          className="flex-1 gap-6"
+          style={{ paddingTop: topInset }}
         >
-          <NotificationsEmptyHands
-            width="100%"
-            height={240}
-            preserveAspectRatio="xMidYMid slice"
-          />
-          <Text className="px-10 text-center font-poppins-semibold text-xl text-wine">
-            Nenhuma novidade do grupo por enquanto
-          </Text>
-        </View>
-      ) : null}
+          {isLoading ? (
+            <View
+              className="items-center gap-3 py-10"
+              testID="notifications-loading"
+            >
+              <ActivityIndicator color={theme.colors.ink} />
+              <Text className="font-poppins text-sm text-ink">Carregando notificações…</Text>
+            </View>
+          ) : null}
 
-      {!isLoading && notifications.length > 0 ? (
-        <View className="gap-3">
-          {notifications.map((notification) => (
-            <NotificationCard
-              key={notification.id}
-              notification={notification}
-              onPress={onPressNotification}
-              onActionPress={onActionPressNotification}
-              onDismiss={onDismissNotification}
-              testID={`notifications-card-${notification.id}`}
-            />
-          ))}
-
-          <View className="items-center gap-3 pt-2">
-            {hasMore ? (
+          {errorMessage ? (
+            <View
+              className="items-center gap-4 py-10"
+              testID="notifications-error"
+            >
+              <Text className="text-center font-poppins text-base text-wine">{errorMessage}</Text>
               <Button
-                title="Carregar mais"
+                title="Tentar de novo"
                 variant="secondary"
-                isLoading={isLoadingMore}
-                onPress={onLoadMore}
-                testID="notifications-load-more"
+                onPress={onRetry}
+                testID="notifications-retry"
               />
-            ) : null}
+            </View>
+          ) : null}
 
-            <Button
-              title="Limpar notificações"
-              variant="tertiary"
-              isLoading={isClearing}
-              onPress={onClearNotifications}
-              testID="notifications-clear"
-            />
-          </View>
+          {isEmpty ? (
+            <View
+              className="-mx-6 flex-1 items-center justify-center gap-6"
+              testID="notifications-empty"
+            >
+              <NotificationsEmptyHands
+                width="100%"
+                height={240}
+                preserveAspectRatio="xMidYMid slice"
+              />
+              <Text className="px-10 text-center font-poppins-semibold text-xl text-wine">
+                Nenhuma novidade do grupo por enquanto
+              </Text>
+            </View>
+          ) : null}
+
+          {hasNotifications ? (
+            <View className="gap-3">
+              {notifications.map((notification) => (
+                <NotificationCard
+                  key={notification.id}
+                  notification={notification}
+                  onPress={onPressNotification}
+                  onActionPress={onActionPressNotification}
+                  onDismiss={onDismissNotification}
+                  testID={`notifications-card-${notification.id}`}
+                />
+              ))}
+
+              {hasMore ? (
+                <View className="items-center pt-2">
+                  <Button
+                    title="Carregar mais"
+                    variant="secondary"
+                    isLoading={isLoadingMore}
+                    onPress={onLoadMore}
+                    testID="notifications-load-more"
+                  />
+                </View>
+              ) : null}
+            </View>
+          ) : null}
         </View>
-      ) : null}
+      )}
     </ScreenFrame>
   );
 }

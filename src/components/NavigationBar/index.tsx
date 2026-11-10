@@ -86,10 +86,14 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ groupId, className
   return (
     <View
       className={`w-full max-w-xl self-center px-[1.625rem] ${className}`}
+      pointerEvents="box-none"
       style={{ paddingBottom: Math.max(insets?.bottom ?? 0, BOTTOM_GAP) }}
       testID="alibe-navigation-bar"
     >
-      <View className="pt-6">
+      <View
+        className="pt-6"
+        pointerEvents="box-none"
+      >
         <View className="h-12 flex-row items-center rounded-full bg-ink px-[0.5625rem]">
           {LEFT_ITEMS.map(renderIcon)}
           <View className="w-[3.25rem]" />

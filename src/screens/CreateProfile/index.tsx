@@ -3,6 +3,7 @@ import { PhotoPicker } from '@/components/PhotoPicker';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
 import { ScreenFrame } from '@/components/ScreenFrame';
 import { TextInput } from '@/components/TextInput';
+import { BackButton } from '@/components/BackButton';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
@@ -32,10 +33,20 @@ export function CreateProfileScreen({
   const trimmedNickname = nickname.trim();
 
   return (
-    <ScreenFrame>
+    <ScreenFrame
+      padding="horizontal"
+      topFade="always"
+      floatingChrome
+      header={
+        <BackButton
+          fallbackHref="/sign-up"
+          className="self-start"
+        />
+      }
+    >
       <View
         accessible={false}
-        className="absolute -left-12 -top-10 h-48 w-48 rotate-[100deg]"
+        className="absolute left-[-4.45rem] top-[-2.64rem] h-[12.69rem] w-[12.76rem] rotate-[108deg]"
       >
         <ProfileDecoration
           width="100%"
@@ -46,7 +57,7 @@ export function CreateProfileScreen({
 
       <View
         accessible={false}
-        className="absolute -right-16 top-52 h-44 w-44 -rotate-90"
+        className="absolute right-[-6.0rem] top-[13.6rem] h-[11.89rem] w-[11.96rem] -rotate-90"
       >
         <ProfileDecoration
           width="100%"
@@ -56,26 +67,31 @@ export function CreateProfileScreen({
       </View>
 
       <Text
-        className={`mt-16 text-center text-5xl leading-tight text-ink ${theme.typography.display}`}
+        adjustsFontSizeToFit
+        numberOfLines={2}
+        className={`mt-[9.4rem] text-center text-[2.857rem] leading-[3rem] text-ink ${theme.typography.display}`}
       >
         Vamos criar{'\n'}seu perfil?
       </Text>
 
-      <Text className="mt-3 px-4 text-center font-poppins-medium text-sm text-wine">
-        Você poderá adicionar ou trocar sua foto e nome de usuário a qualquer momento pelo seu
+      <Text className="mt-[0.8rem] text-center font-poppins-medium text-[0.857rem] leading-[1.07rem] text-wine">
+        Você poderá adicionar ou trocar sua foto e nome{'\n'}de usuário a qualquer momento pelo seu
         perfil.
       </Text>
 
-      <View className="mt-20 flex-1 rounded-t-3xl bg-pink/70 px-6 pb-28 pt-10">
+      <View
+        className="mt-[5.25rem] flex-1 rounded-t-[2.36rem] px-6 pb-16 pt-8"
+        style={{ backgroundColor: theme.colors.pink }}
+      >
         <PhotoPicker
           placeholder="camera"
-          imageClassName="h-44 w-44"
+          labelClassName="text-wine"
           onUploadSuccess={setPhoto}
           disabled={isSubmitting}
           testID="create-profile-photo"
         />
 
-        <Text className="mt-8 text-center font-poppins-medium text-xl text-wine">
+        <Text className="mt-8 text-center font-poppins-medium text-base text-wine">
           Como seus amigos te chamam?
         </Text>
 
@@ -97,7 +113,7 @@ export function CreateProfileScreen({
           />
         </View>
 
-        <View className="mt-auto pt-6">
+        <View className="mt-12">
           <ContinueButton
             onPress={() => {
               onContinue({ nickname: trimmedNickname, photo });

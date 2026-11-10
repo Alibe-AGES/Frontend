@@ -1,8 +1,7 @@
 import { API_BASE_URL } from '@/constants';
+import { resolveApiImageUrl } from '@/utils/apiImageUrl';
 import { ApiError } from './api';
 import { authenticatedFetch } from './auth';
-import { getGroupCalendar } from './calendar';
-import { getGroupMembers } from './groups';
 
 export interface CreateAvailabilityInterval {
   startTime: string;
@@ -58,36 +57,41 @@ export async function createAvailability(
   return (await response.json()) as AvailabilityResponse[];
 }
 
-export interface GroupAvailabilityStatus {
+export interface DayAvailabilityUser {
   id: string;
   name: string;
-  profilePic: string | null;
-  hasAvailability: boolean;
+  image: string | null;
+  isCurrentUser: boolean;
+  availableAllDay: boolean;
+  intervals: [string, string][];
 }
 
-export async function getAvailabilityStatusesByDate(
+export interface DayAvailabilities {
+  date: string;
+  users: DayAvailabilityUser[];
+}
+
+export async function getAvailabilitiesByDate(
   groupId: string,
   date: string
-): Promise<GroupAvailabilityStatus[]> {
-  const [year, month] = date.split('-').map(Number);
+): Promise<DayAvailabilities> {
+  const query = new URLSearchParams({ date }).toString();
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/groups/${groupId}/availabilities?${query}`
+  );
 
-  if (!year || !month) {
-    return [];
+  if (!response.ok) {
+    const text = await response.text();
+    throw new ApiError(
+      text || response.statusText || 'Não foi possível carregar as disponibilidades',
+      response.status
+    );
   }
 
-  const [days, members] = await Promise.all([
-    getGroupCalendar(groupId, month, year),
-    getGroupMembers(groupId),
-  ]);
+  const data = (await response.json()) as DayAvailabilities;
 
-  const day = days.find((item) => item.date === date);
-
-  const availableIds = new Set(day?.availableUserIds ?? []);
-
-  return members.map((member) => ({
-    id: member.id,
-    name: member.name,
-    profilePic: member.profilePic,
-    hasAvailability: availableIds.has(member.id),
-  }));
+  return {
+    ...data,
+    users: data.users.map((user) => ({ ...user, image: resolveApiImageUrl(user.image) })),
+  };
 }

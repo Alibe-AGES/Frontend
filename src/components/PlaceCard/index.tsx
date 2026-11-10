@@ -1,4 +1,6 @@
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image } from 'expo-image';
+import { Pressable, Text, View } from 'react-native';
+import tw from 'twrnc';
 import { PlaceCardColor, PlaceCardProps } from './PlaceCard.types';
 
 export type { PlaceCardProps } from './PlaceCard.types';
@@ -17,9 +19,6 @@ export function PlaceCard({
   imageHeaders,
   color = 'coral',
   onClickCard,
-  // TODO: Re-enable favorite props after the backend API is available.
-  // onToggleFavorite,
-  // isFavorite = false,
   testID = 'place-card',
 }: PlaceCardProps) {
   return (
@@ -35,9 +34,10 @@ export function PlaceCard({
           {imageUri ? (
             <Image
               source={{ uri: imageUri, headers: imageHeaders }}
+              accessible
               accessibilityLabel={`Foto de ${name}`}
-              className="h-full w-full"
-              resizeMode="cover"
+              contentFit="cover"
+              style={tw`absolute inset-0`}
             />
           ) : null}
         </View>
@@ -59,29 +59,6 @@ export function PlaceCard({
           </Text>
         </View>
       </Pressable>
-
-      {/* TODO: Restore the favorite control when backend favorite integration is ready.
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={isFavorite ? `Desfavoritar ${name}` : `Favoritar ${name}`}
-        accessibilityState={{ selected: isFavorite }}
-        onPress={onToggleFavorite}
-        hitSlop={8}
-        className="absolute right-3 top-3 h-9 w-9 items-center justify-center rounded-full bg-white active:opacity-75"
-        testID={`${testID}-favorite`}
-      >
-        {isFavorite ? (
-          <StarFilledIcon
-            width={20}
-            height={20}
-          />
-        ) : (
-          <StarIcon
-            width={20}
-            height={20}
-          />
-        )}
-      </Pressable> */}
     </View>
   );
 }
