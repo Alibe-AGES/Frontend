@@ -1,17 +1,15 @@
 # Memories flow: opens the memories calendar of a seeded group, taps a day with a memory and sees it in the gallery.
 appId: com.alibe.app
-tags: [ci, memories]
+tags: [memories]
 ---
 - runFlow: ../subflows/launch.yaml
 - runFlow: ../subflows/login.yaml
 
 # Seeded group of ana.silva. Its event "Jantar da turma" (2026-12-05) has a seeded memory.
-- scrollUntilVisible:
-    element:
-      text: 'Turma da Faculdade'
-    direction: DOWN
-    timeout: 30000
-- tapOn: 'Turma da Faculdade'
+- runFlow:
+    file: ../subflows/open-group.yaml
+    env:
+      NAME: 'Turma da Faculdade'
 - extendedWaitUntil:
     visible:
       id: group-screen
@@ -44,6 +42,8 @@ tags: [ci, memories]
       id: calendar-day-button-2026-12-05
     direction: DOWN
     timeout: 10000
+    # Keeps the day away from the floating navigation bar, which covers the bottom of small screens.
+    centerElement: true
 - tapOn:
     id: calendar-day-button-2026-12-05
 

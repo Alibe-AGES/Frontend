@@ -8,14 +8,30 @@ appId: com.alibe.app
     timeout: 60000
 - tapOn:
     id: auth-login
+    # A dev-only React warning can swallow this tap; tap again if the screen does not change.
+    retryTapIfNoChange: true
+# On small screens fields and buttons can sit below the fold or behind the keyboard,
+# so close the keyboard and scroll to each element before using it.
+- scrollUntilVisible:
+    element:
+      id: login-email
+    direction: DOWN
 - tapOn:
     id: login-email
 - inputText: ${EMAIL || 'ana.silva@example.com'}
+- runFlow: close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: login-password
+    direction: DOWN
 - tapOn:
     id: login-password
 - inputText: ${PASSWORD || 'senha-segura'}
-# hideKeyboard presses back on these screens and leaves them, so tap a static text to close the keyboard.
-- tapOn: 'Login'
+- runFlow: close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: login-continue
+    direction: DOWN
 - tapOn:
     id: login-continue
 - extendedWaitUntil:

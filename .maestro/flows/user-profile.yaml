@@ -1,7 +1,7 @@
 # Profile flow: edits the user name and password, logs in again with the new password, restores the old one and checks that the changes were saved.
 # It uses bruno.souza instead of ana.silva: if it fails after changing the password, the other flows can still log in.
 appId: com.alibe.app
-tags: [ci, profile]
+tags: [profile]
 env:
   EMAIL: bruno.souza@example.com
   OLD_PASSWORD: senha-segura

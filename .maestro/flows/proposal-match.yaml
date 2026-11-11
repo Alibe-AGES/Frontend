@@ -16,9 +16,16 @@ tags: [ci, events]
     timeout: 10000
 - tapOn:
     id: create-event-tab-suggestion
+- scrollUntilVisible:
+    element:
+      id: create-event-card-name-input
+    direction: DOWN
 - tapOn:
     id: create-event-card-name-input
 - inputText: ${output.suggestionName}
+# Small screens can hide fields and buttons below the fold or behind the keyboard,
+# so close the keyboard and scroll to each element before using it.
+- runFlow: ../subflows/close-keyboard.yaml
 # The suggestion card is taller, so typing the name scrolls the address field out of view.
 - scrollUntilVisible:
     element:
@@ -28,6 +35,7 @@ tags: [ci, events]
 - tapOn:
     id: create-event-card-address-input
 - inputText: Rua dos Testes, 123
+- runFlow: ../subflows/close-keyboard.yaml
 - scrollUntilVisible:
     element:
       id: create-event-card-confirm

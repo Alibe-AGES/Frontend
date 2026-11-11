@@ -16,6 +16,8 @@ tags: [ci, groups]
       id: calendar-day-button-${output.calendarDay}
     direction: DOWN
     timeout: 10000
+    # Keeps the day away from the floating navigation bar, which covers the bottom of small screens.
+    centerElement: true
 - tapOn:
     id: calendar-day-button-${output.calendarDay}
 

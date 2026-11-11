@@ -16,6 +16,8 @@ tags: [ci, events]
       id: calendar-create-${output.calendarDay}
     direction: DOWN
     timeout: 10000
+    # Keeps the day away from the floating navigation bar, which covers the bottom of small screens.
+    centerElement: true
 - tapOn:
     id: calendar-create-${output.calendarDay}
 
@@ -23,16 +25,32 @@ tags: [ci, events]
     visible:
       id: create-event-card-name-input
     timeout: 10000
+# Small screens can hide fields and buttons below the fold or behind the keyboard,
+# so close the keyboard and scroll to each element before using it.
 - tapOn:
     id: create-event-card-name-input
 - inputText: ${output.eventName}
+- runFlow: ../subflows/close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: create-event-card-address-input
+    direction: DOWN
 - tapOn:
     id: create-event-card-address-input
 - inputText: Rua dos Testes, 123
+- runFlow: ../subflows/close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: create-event-card-time-input
+    direction: DOWN
 - tapOn:
     id: create-event-card-time-input
 - inputText: '2000'
-# The confirm button stays above the keyboard, so there is no need to close it.
+- runFlow: ../subflows/close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: create-event-card-confirm
+    direction: DOWN
 - tapOn:
     id: create-event-card-confirm
 
@@ -47,6 +65,13 @@ tags: [ci, events]
 - extendedWaitUntil:
     visible: '• ${output.eventName}'
     timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: calendar-day-button-${output.calendarDay}
+    direction: DOWN
+    timeout: 10000
+    # Keeps the day away from the floating navigation bar, which covers the bottom of small screens.
+    centerElement: true
 - assertVisible:
     id: calendar-proposal-indicator-${output.calendarDay}
 - tapOn:

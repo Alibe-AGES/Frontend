@@ -8,11 +8,19 @@ appId: com.alibe.app
     visible:
       id: create-group-screen
     timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: create-group-name
+    direction: DOWN
 - tapOn:
     id: create-group-name
 - inputText: ${output.groupName}
-# hideKeyboard presses back on these screens and leaves them, so tap a static text to close the keyboard.
-- tapOn: 'Seu próximo encontro nasce aqui.'
+# Small screens can hide the button below the fold or behind the keyboard.
+- runFlow: close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: create-group-continue
+    direction: DOWN
 - tapOn:
     id: create-group-continue
 
@@ -24,6 +32,10 @@ appId: com.alibe.app
     visible:
       id: alibe-invite-link
     timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: invite-group-continue
+    direction: DOWN
 - tapOn:
     id: invite-group-continue
 
@@ -31,12 +43,10 @@ appId: com.alibe.app
     visible:
       id: groups-screen
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      text: ${output.groupName}
-    direction: DOWN
-    timeout: 30000
-- tapOn: ${output.groupName}
+- runFlow:
+    file: open-group.yaml
+    env:
+      NAME: ${output.groupName}
 - extendedWaitUntil:
     visible:
       id: group-screen

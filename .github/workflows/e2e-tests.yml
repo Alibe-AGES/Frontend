@@ -88,11 +88,6 @@ jobs:
           api-level: 34
           arch: x86_64
           target: google_apis
-          # The default device has a small screen that hides the buttons at the bottom of the auth screens.
-          # Pixel 6 has the same screen size as the Pixel 8 emulator the flows were written on.
-          profile: pixel_6
-          # The runner has 4 cores; the default 2 leaves the emulator slow enough to show "isn't responding" warnings.
-          cores: 4
           ram-size: 4096
           disable-animations: true
           emulator-options: >-
@@ -110,15 +105,11 @@ jobs:
 
             adb reverse tcp:3000 tcp:3000
 
-            # The slow CI emulator makes Pixel Launcher stop responding during the flows, and its
-            # "isn't responding" dialog covers the app. Android then closes the stuck app without the dialog.
-            adb shell settings put global hide_error_dialogs 1
-
-            # Pixel Launcher is the app that stops responding, and Maestro opens the app directly, so turn it off.
-            adb shell pm disable-user --user 0 com.google.android.apps.nexuslauncher || true
-
-            # Finish the app optimization Android runs after boot, so the flows start with a calmer system.
-            adb shell cmd package bg-dexopt-job || true
+            # The default emulator screen (320x640 dp) is smaller than any current phone, and the floating
+            # navigation bar covers parts of the app. 411x914 dp matches the Pixel 8 the flows were written on;
+            # the low density keeps the pixel count small, since this emulator draws every frame on the CPU.
+            adb shell wm size 411x914
+            adb shell wm density 160
 
             echo "Starting Maestro E2E tests..."
             maestro test .maestro/ --include-tags ci --test-output-dir=./maestro-results

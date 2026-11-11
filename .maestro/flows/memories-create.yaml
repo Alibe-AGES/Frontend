@@ -10,12 +10,10 @@ tags: [ci, memories]
     - '../assets/memory-photo.png'
 
 # Seeded group of ana.silva. Its event "Jantar de encerramento" (2026-10-03) is confirmed and in the past.
-- scrollUntilVisible:
-    element:
-      text: 'Turma da Faculdade'
-    direction: DOWN
-    timeout: 30000
-- tapOn: 'Turma da Faculdade'
+- runFlow:
+    file: ../subflows/open-group.yaml
+    env:
+      NAME: 'Turma da Faculdade'
 - extendedWaitUntil:
     visible:
       id: group-screen
@@ -97,6 +95,8 @@ tags: [ci, memories]
       id: calendar-day-button-2026-10-03
     direction: DOWN
     timeout: 10000
+    # Keeps the day away from the floating navigation bar, which covers the bottom of small screens.
+    centerElement: true
 - tapOn:
     id: calendar-day-button-2026-10-03
 - extendedWaitUntil:
