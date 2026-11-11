@@ -29,6 +29,14 @@ appId: com.alibe.app
       visible: 'Dismiss'
     commands:
       - tapOn: 'Dismiss'
+# The warning can take the tap meant for "Continuar", so tap it again if the login screen is still open.
+- runFlow:
+    when:
+      visible:
+        id: login-continue
+    commands:
+      - tapOn:
+          id: login-continue
 - extendedWaitUntil:
     visible:
       id: groups-screen
