@@ -91,6 +91,8 @@ jobs:
           # The default device has a small screen that hides the buttons at the bottom of the auth screens.
           # Pixel 6 has the same screen size as the Pixel 8 emulator the flows were written on.
           profile: pixel_6
+          # The runner has 4 cores; the default 2 leaves the emulator slow enough to show "isn't responding" warnings.
+          cores: 4
           ram-size: 4096
           disable-animations: true
           emulator-options: >-

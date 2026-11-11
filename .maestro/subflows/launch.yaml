@@ -28,3 +28,15 @@ appId: com.alibe.app
           timeout: 10000
       - tapOn: 'Tools button'
       - back
+# Slow CI emulators sometimes cover the app with "<app> isn't responding" right after launch.
+# The app is fine behind it, so give the warning time to show up and close it with "Wait".
+- extendedWaitUntil:
+    visible:
+      id: auth-screen
+    timeout: 15000
+    optional: true
+- runFlow:
+    when:
+      visible: ".*isn't responding"
+    commands:
+      - tapOn: 'Wait'
