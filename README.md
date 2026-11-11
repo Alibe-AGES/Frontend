@@ -515,9 +515,16 @@ src/app/
 │       ├── info.tsx
 │       ├── leave.tsx                   # Leave confirmation modal
 │       ├── memories/                   # Memories stack
+│       │   ├── index.tsx               # /group/[id]/memories
+│       │   ├── gallery.tsx             # /group/[id]/memories/gallery
+│       │   ├── carousel.tsx            # /group/[id]/memories/carousel
+│       │   ├── new.tsx                 # /group/[id]/memories/new
+│       │   └── created.tsx             # /group/[id]/memories/created
 │       └── experiences/                # Experiences stack
 └── __tests__/                          # Route-level tests
 ```
+
+The memory gallery (`memories/gallery`) and the memory carousel (`memories/carousel`) are two views of the same data. Both load it through `src/hooks/useGroupMemories.ts`, which reads the group's calendar for one month, fetches each event and its memories, and returns the events that have photos ordered from the most recent. Tapping a photo in the gallery opens the carousel on that photo and forwards the `date`, `month`, and `year` params so both screens show the same period. The carousel flattens the gallery into one list with `src/utils/memories.ts` and stops at the first and last photo instead of looping.
 
 `package.json` sets `main` to `expo-router/entry`. Expo Router scans `src/app` and turns files into routes. Parenthesized folders such as `(auth)` and `(app)` group screens into stacks without adding a URL segment. Dynamic folders such as `[id]` and `[date]` provide route parameters.
 

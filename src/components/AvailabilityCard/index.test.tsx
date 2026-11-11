@@ -154,6 +154,77 @@ describe('<AvailabilityCard />', () => {
     const { getByTestId } = await Promise.resolve(render(<AvailabilityCard />));
 
     fireEvent.changeText(getByTestId('alibe-availability-card-start-0'), '1000');
+    await Promise.resolve();
+    fireEvent.changeText(getByTestId('alibe-availability-card-end-0'), '0900');
+    await Promise.resolve();
+
+    await waitFor(() => {
+      expect(getByTestId('alibe-availability-card-end-0-error')).toHaveTextContent(
+        'O horário de fim deve ser depois do início.'
+      );
+    });
+  });
+
+  test('flags an interval that overlaps one the user already registered', async () => {
+    const { getByTestId, queryByTestId } = await Promise.resolve(
+      render(<AvailabilityCard registeredIntervals={[['14:00', '22:00']]} />)
+    );
+
+    fireEvent.changeText(getByTestId('alibe-availability-card-start-0'), '2000');
+    fireEvent.changeText(getByTestId('alibe-availability-card-end-0'), '2300');
+    await Promise.resolve();
+
+    await waitFor(() => {
+      expect(getByTestId('alibe-availability-card-end-0-error')).toHaveTextContent(
+        'Este horário coincide com um já registrado.'
+      );
+    });
+
+    // Starting exactly when the saved slot ends is a separate slot.
+    fireEvent.changeText(getByTestId('alibe-availability-card-start-0'), '2200');
+    await Promise.resolve();
+
+    await waitFor(() => {
+      expect(queryByTestId('alibe-availability-card-end-0-error')).toBeNull();
+    });
+  });
+
+  test('flags the later of two intervals that overlap in the form', async () => {
+    const { getByTestId, queryByTestId } = await Promise.resolve(render(<AvailabilityCard />));
+
+    fireEvent.press(getByTestId('alibe-availability-card-add-interval'));
+    await Promise.resolve();
+    fireEvent.changeText(getByTestId('alibe-availability-card-start-0'), '1400');
+    fireEvent.changeText(getByTestId('alibe-availability-card-end-0'), '2200');
+    fireEvent.changeText(getByTestId('alibe-availability-card-start-1'), '2000');
+    fireEvent.changeText(getByTestId('alibe-availability-card-end-1'), '2200');
+    await Promise.resolve();
+
+    await waitFor(() => {
+      expect(getByTestId('alibe-availability-card-end-1-error')).toHaveTextContent(
+        'Este horário coincide com outro intervalo.'
+      );
+    });
+    expect(queryByTestId('alibe-availability-card-end-0-error')).toBeNull();
+    // Both times of the conflicting interval turn red, but the message shows only once.
+    expect(getByTestId('alibe-availability-card-start-1-field')).toHaveProp(
+      'className',
+      expect.stringContaining('border-coral')
+    );
+    expect(queryByTestId('alibe-availability-card-start-1-error')).toBeNull();
+
+    fireEvent.changeText(getByTestId('alibe-availability-card-end-0'), '1800');
+    await Promise.resolve();
+
+    await waitFor(() => {
+      expect(queryByTestId('alibe-availability-card-end-1-error')).toBeNull();
+    });
+  });
+
+  test('rejects an interval that starts and ends at the same time', async () => {
+    const { getByTestId } = await Promise.resolve(render(<AvailabilityCard />));
+
+    fireEvent.changeText(getByTestId('alibe-availability-card-start-0'), '1000');
     fireEvent.changeText(getByTestId('alibe-availability-card-end-0'), '1000');
     await Promise.resolve();
 

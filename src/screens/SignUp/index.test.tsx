@@ -1,5 +1,4 @@
 import { fireEvent, render, within } from '@testing-library/react-native';
-import { ScrollView } from 'react-native';
 import { SignUpScreen } from '.';
 
 jest.mock('expo-router', () => ({
@@ -55,10 +54,10 @@ describe('<SignUpScreen />', () => {
   });
 
   test('keeps the back button fixed outside the scrollable content', async () => {
-    const { UNSAFE_getByType, getByLabelText } = await Promise.resolve(
+    const { getByTestId, getByLabelText } = await Promise.resolve(
       render(<SignUpScreen onContinue={onContinue} />)
     );
-    const scrollView = within(UNSAFE_getByType(ScrollView));
+    const scrollView = within(getByTestId('sign-up-screen'));
 
     expect(getByLabelText('Voltar')).toBeTruthy();
     expect(scrollView.queryByText('Criar conta')).toBeTruthy();
