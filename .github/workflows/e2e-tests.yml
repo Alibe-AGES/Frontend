@@ -87,6 +87,9 @@ jobs:
           api-level: 34
           arch: x86_64
           target: google_apis
+          # The default device has a small screen that hides the buttons at the bottom of the auth screens.
+          # Pixel 6 has the same screen size as the Pixel 8 emulator the flows were written on.
+          profile: pixel_6
           ram-size: 4096
           disable-animations: true
           emulator-options: >-
