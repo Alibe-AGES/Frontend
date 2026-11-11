@@ -11,6 +11,7 @@ jobs:
     uses: ./.github/workflows/local-build.yml
     with:
       artifact-name: app-e2e
+      architectures: x86_64
 
   maestro:
     name: Maestro
