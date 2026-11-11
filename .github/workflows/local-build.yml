@@ -2,6 +2,11 @@ name: Android APK - Local Build
 
 on:
   workflow_call:
+    inputs:
+      artifact-name:
+        # The release fallback keeps the default; the E2E workflow passes "app-e2e" so both can run in one release.
+        type: string
+        default: app-release
   workflow_dispatch:
 
 jobs:
@@ -27,19 +32,22 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Create .env
+        # The emulator reaches the Docker backend through adb reverse.
+        # EAS builds ignore this file and use the URL set on expo.dev.
+        run: Set-Content -Path .env -Value "EXPO_PUBLIC_API_URL=http://localhost:3000" -Encoding utf8NoBOM
+
       - name: Expo Prebuild for Android
         run: npx expo prebuild --platform android --clean
         # This step generates the native Android project files in the android/ directory.
 
       - name: Compile Android APK
         working-directory: android
-        env:
-          EXPO_PUBLIC_API_URL: http://localhost:3000
         run: .\gradlew assembleRelease
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
+          name: ${{ inputs.artifact-name || 'app-release' }}
           path: android/app/build/outputs/apk/release/app-release.apk
           retention-days: 7

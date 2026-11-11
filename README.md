@@ -775,7 +775,9 @@ npm run test:e2e:dev
 
 To run without Metro, use a release app (`npm run build:android`, or the `app-release` artifact from the _Android APK - Local Build_ workflow) and `npm run test:e2e`.
 
-CI runs every flow tagged `ci` in releases. The _E2E Tests (Maestro)_ workflow starts the minimal Backend stack (`infra/e2e/docker-compose.yml` from `Alibe-AGES/Backend`) with its seed data, installs the release APK on an Android emulator, and points the emulator's `localhost:3000` at the Backend with `adb reverse`. Log in with the seeded users (password `senha-segura`). Results and Backend logs are uploaded as the `maestro-e2e-results-<run number>` artifact.
+CI runs every flow tagged `ci` in releases, and a failure blocks the release. The EAS APK points to the AWS backend, so the _E2E Tests (Maestro) - Android_ workflow does not test it. It first calls the _Android APK - Local Build_ workflow to build a test APK (artifact `app-e2e`) with a `.env` containing `EXPO_PUBLIC_API_URL=http://localhost:3000`. Then it starts the minimal Backend stack (`infra/e2e/docker-compose.yml` from `Alibe-AGES/Backend`) with its seed data, installs the test APK on an Android emulator, and points the emulator's `localhost:3000` at the Backend with `adb reverse`. Log in with the seeded users (password `senha-segura`). Results are uploaded as the `maestro-e2e-results-<run number>` artifact, and Backend logs are printed in the job log when a flow fails.
+
+EAS ignores the local `.env` and uses the `EXPO_PUBLIC_API_URL` set in the `preview` environment on expo.dev, so the published APK uses the AWS backend.
 
 To add a test, copy `.maestro/flows/smoke.yaml`, set its `tags`, and replace the steps after `runFlow`. Run a single test with:
 

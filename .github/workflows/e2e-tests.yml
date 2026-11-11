@@ -4,8 +4,17 @@ on:
   workflow_call:
 
 jobs:
+  build-e2e-apk:
+    # The release APK from EAS points to the AWS backend, so the tests use their own APK
+    # that points to the Docker backend started below.
+    name: Build E2E APK
+    uses: ./.github/workflows/local-build.yml
+    with:
+      artifact-name: app-e2e
+
   maestro:
     name: Maestro
+    needs: build-e2e-apk
     runs-on: ubuntu-latest
     # Stops a stuck run instead of waiting for GitHub's 6-hour job limit.
     timeout-minutes: 60
@@ -19,7 +28,7 @@ jobs:
       - name: Download APK Artifact
         uses: actions/download-artifact@v4
         with:
-          name: app-release
+          name: app-e2e
           path: ./artifacts
 
       - name: Find APK
