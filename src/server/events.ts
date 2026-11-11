@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '@/constants';
 import { resolveApiImageUrl } from '@/utils/apiImageUrl';
+import { getMemoryImageUrl as buildMemoryImageUrl } from '@/utils/memoryImageUrl';
 import { ApiError } from './api';
 import { authenticatedFetch } from './auth';
 import { appendImage, UploadImage } from './images';
@@ -313,6 +314,10 @@ export interface EventMemoryResponse {
   eventId: string;
 }
 
+export function getMemoryImageUrl(memory: EventMemoryResponse): string {
+  return buildMemoryImageUrl(memory);
+}
+
 export async function getEventMemories(eventId: string): Promise<EventMemoryResponse[]> {
   const response = await authenticatedFetch(`${API_BASE_URL}/api/events/${eventId}/memories`);
 
@@ -325,8 +330,4 @@ export async function getEventMemories(eventId: string): Promise<EventMemoryResp
   }
 
   return (await response.json()) as EventMemoryResponse[];
-}
-
-export function getMemoryImageUrl({ eventId, id }: EventMemoryResponse): string {
-  return `${API_BASE_URL}/api/events/${eventId}/memories/${id}/image`;
 }

@@ -1,5 +1,5 @@
 import { fireEvent, render } from '@testing-library/react-native';
-import { Text } from 'react-native';
+import { processColor, Text } from 'react-native';
 import { Stop } from 'react-native-svg';
 
 import { theme } from '@/theme';
@@ -230,10 +230,15 @@ describe('<ScreenFrame />', () => {
       </ScreenFrame>
     );
 
-    const colors = UNSAFE_getAllByType(Stop).map((stop) => stop.props.stopColor as string);
+    const toRgb = (color: unknown) => (Number(color) >>> 0) & 0xffffff;
+    const stopColors = UNSAFE_getAllByType(Stop).map((stop) =>
+      processColor(stop.props.stopColor as string)
+    );
 
-    expect(colors.length).toBeGreaterThan(0);
-    expect(new Set(colors)).toEqual(new Set([theme.colors[background]]));
+    expect(stopColors.length).toBeGreaterThan(0);
+    expect(new Set(stopColors.map(toRgb))).toEqual(
+      new Set([toRgb(processColor(theme.colors[background]))])
+    );
   });
 
   test('renders no top fade unless requested on a scrollable frame', () => {

@@ -227,7 +227,7 @@ export function GroupDayCarousel({
   currentUserId = null,
   testID = 'group-day-carousel',
 }: GroupDayCarouselProps) {
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollView | null>(null);
   const [pageWidth, setPageWidth] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
 

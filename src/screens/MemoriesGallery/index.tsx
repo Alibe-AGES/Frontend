@@ -8,18 +8,9 @@ import { Image } from 'expo-image';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import tw from 'twrnc';
 
-export interface MemoryPhotoItem {
-  id: string;
-  imageUrl: string;
-}
+import type { MemoryEventSection, MemoryPhotoItem } from '@/hooks/useGroupMemories';
 
-export interface MemoryEventSection {
-  eventId: string;
-  date: string;
-  time?: string | null;
-  eventName: string;
-  photos: MemoryPhotoItem[];
-}
+export type { MemoryEventSection, MemoryPhotoItem } from '@/hooks/useGroupMemories';
 
 export interface MemoriesGalleryScreenProps {
   groupId: string;
@@ -27,6 +18,7 @@ export interface MemoriesGalleryScreenProps {
   isLoading: boolean;
   errorMessage: string | null;
   onAddMemory: () => void;
+  onPhotoPress?: (photoId: string) => void;
   onRetry: () => void;
 }
 
@@ -81,13 +73,18 @@ function chunkPhotos(photos: MemoryPhotoItem[], size: number): MemoryPhotoItem[]
 interface MemoryPhotoCardProps {
   photo: MemoryPhotoItem;
   eventName: string;
+  onPress?: (photoId: string) => void;
 }
 
-function MemoryPhotoCard({ photo, eventName }: Readonly<MemoryPhotoCardProps>) {
+function MemoryPhotoCard({ photo, eventName, onPress }: Readonly<MemoryPhotoCardProps>) {
   const imageSource = useAuthenticatedImageSource(photo.imageUrl);
 
   return (
-    <View
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Abrir foto de ${eventName} no carrossel`}
+      disabled={!onPress}
+      onPress={() => onPress?.(photo.id)}
       className="aspect-[3/4] w-full overflow-hidden rounded-2xl bg-lime-soft shadow-sm"
       testID={`memories-gallery-photo-${photo.id}`}
     >
@@ -101,7 +98,7 @@ function MemoryPhotoCard({ photo, eventName }: Readonly<MemoryPhotoCardProps>) {
           testID={`memories-gallery-photo-image-${photo.id}`}
         />
       ) : null}
-    </View>
+    </Pressable>
   );
 }
 
@@ -111,6 +108,7 @@ export function MemoriesGalleryScreen({
   isLoading,
   errorMessage,
   onAddMemory,
+  onPhotoPress,
   onRetry,
 }: Readonly<MemoriesGalleryScreenProps>) {
   const isEmpty = !isLoading && !errorMessage && sections.length === 0;
@@ -232,6 +230,7 @@ export function MemoriesGalleryScreen({
                               <MemoryPhotoCard
                                 photo={photo}
                                 eventName={section.eventName}
+                                onPress={onPhotoPress}
                               />
                             </View>
                           ))}

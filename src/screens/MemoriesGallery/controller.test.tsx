@@ -28,7 +28,7 @@ jest.mock('@/server/auth', () => ({
 
 jest.mock('@/server/events', () => {
   const { getMemoryImageUrl } =
-    jest.requireActual<typeof import('@/server/events')>('@/server/events');
+    jest.requireActual<typeof import('@/utils/memoryImageUrl')>('@/utils/memoryImageUrl');
   return {
     getEventDetails: jest.fn(),
     getEventMemories: jest.fn(),
@@ -321,6 +321,23 @@ describe('MemoriesGalleryController', () => {
       'event-same-day-late',
       'event-same-day-early',
     ]);
+  });
+
+  test('opens the carousel on the tapped photo keeping the period params', async () => {
+    mockUseLocalSearchParams.mockReturnValue({ id: 'group-1', month: '9', year: '2026' });
+    mockGetGroupCalendar.mockResolvedValue([]);
+
+    render(<MemoriesGalleryController />);
+    await waitFor(() => {
+      expect(screenProps().isLoading).toBe(false);
+    });
+
+    screenProps().onPhotoPress?.('photo-7');
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/group/[id]/memories/carousel',
+      params: { id: 'group-1', photoId: 'photo-7', month: '9', year: '2026' },
+    });
   });
 
   test('shows no events when the chosen day has no memories', async () => {

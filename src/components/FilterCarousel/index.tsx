@@ -15,7 +15,7 @@ export function FilterCarousel({
   fullBleed = false,
   testID = 'filter-carousel',
 }: FilterCarouselProps) {
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollView | null>(null);
   // Selected tags come first, keeping the original order within each group.
   const orderedTags = [
     ...tags.filter((tag) => selectedTagIds.includes(tag.id)),
