@@ -38,7 +38,6 @@ export function CreateProfileScreen({
       topFade="always"
       testID="create-profile-screen"
       floatingChrome
-      testID="create-profile-screen"
       header={
         <BackButton
           fallbackHref="/sign-up"

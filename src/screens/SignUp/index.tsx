@@ -53,7 +53,6 @@ export function SignUpScreen({
       topFade
       testID="sign-up-screen"
       floatingChrome
-      testID="sign-up-screen"
       header={
         <BackButton
           fallbackHref="/auth"
