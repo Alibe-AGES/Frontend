@@ -1,12 +1,16 @@
 import type { ReactNode } from 'react';
 
-export type TextInputType = 'all' | 'email' | 'numeric' | 'alphanumeric';
+export type TextInputType = 'all' | 'email' | 'numeric' | 'alphanumeric' | 'password';
 export type TextInputIconBackground = 'coral' | 'ink';
+export type TextInputSize = 'sm' | 'md';
+export type TextInputColor = 'ink' | 'wine';
 
 export interface TextInputProps {
   value: string;
   onChangeText: (text: string) => void;
   type?: TextInputType;
+  size?: TextInputSize;
+  textColor?: TextInputColor;
   label?: string;
   placeholder?: string;
   error?: string;
@@ -17,5 +21,6 @@ export interface TextInputProps {
   icon?: ReactNode;
   iconBackground?: TextInputIconBackground;
   onBlur?: () => void;
+  onFocus?: () => void;
   testID?: string;
 }

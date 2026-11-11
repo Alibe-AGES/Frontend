@@ -1,1 +1,1 @@
-export { default } from '@/screens/Loading/controller';
+export { default } from '@/screens/Auth/controller';

@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 // Exemplo de constante fixa do app.
@@ -5,18 +6,35 @@ export const STORAGE_KEYS = {
   token: '@alibe:token',
 };
 
-// No emulador Android, troque para http://10.0.2.2:3000 (localhost aponta para o próprio emulador).
-const LOCAL_API_URL = 'http://localhost:3000';
+const extraApiBaseUrl: unknown = Constants.expoConfig?.extra?.apiBaseUrl;
+const extraMobileApiBaseUrl: unknown = Constants.expoConfig?.extra?.mobileApiBaseUrl;
+const processApiBaseUrl: unknown = process.env.EXPO_PUBLIC_API_URL;
+const processFallbackApiBaseUrl: unknown = process.env.ENV_API_BASE_URL;
+const processMobileApiBaseUrl: unknown = process.env.EXPO_PUBLIC_API_URL_MOBILE;
+const configuredApiBaseUrl =
+  typeof extraApiBaseUrl === 'string' && extraApiBaseUrl.length > 0
+    ? extraApiBaseUrl
+    : (processApiBaseUrl ?? processFallbackApiBaseUrl);
+const configuredMobileApiBaseUrl =
+  typeof extraMobileApiBaseUrl === 'string' && extraMobileApiBaseUrl.length > 0
+    ? extraMobileApiBaseUrl
+    : processMobileApiBaseUrl;
 
-// IP da máquina na rede local, usado quando o app roda em um dispositivo físico via Expo Go.
-const LAN_API_URL = 'https://192.000.0.00:8081';
+export function resolveApiBaseUrl(
+  webApiBaseUrl: string,
+  mobileApiBaseUrl: string | undefined,
+  platform: string
+): string {
+  const apiBaseUrl = platform === 'web' ? webApiBaseUrl : (mobileApiBaseUrl ?? webApiBaseUrl);
+  return apiBaseUrl.replace(/\/$/, '');
+}
 
-const ENV_API_BASE_URL = (process as { env: { EXPO_PUBLIC_API_URL?: string } }).env
-  .EXPO_PUBLIC_API_URL;
-
-export const API_BASE_URL: string =
-  typeof ENV_API_BASE_URL === 'string' && ENV_API_BASE_URL.length > 0
-    ? ENV_API_BASE_URL
-    : Platform.OS === 'web'
-      ? LOCAL_API_URL
-      : LAN_API_URL;
+export const API_BASE_URL = resolveApiBaseUrl(
+  typeof configuredApiBaseUrl === 'string' && configuredApiBaseUrl.length > 0
+    ? configuredApiBaseUrl
+    : 'http://localhost:3000',
+  typeof configuredMobileApiBaseUrl === 'string' && configuredMobileApiBaseUrl.length > 0
+    ? configuredMobileApiBaseUrl
+    : undefined,
+  Platform.OS
+);

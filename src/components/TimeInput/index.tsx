@@ -16,8 +16,10 @@ export function TimeInput({
   label,
   placeholder = 'Horário',
   error,
+  invalid = false,
   disabled = false,
   onBlur,
+  onFocus,
   testID = 'alibe-time-input',
 }: TimeInputProps) {
   const [formatError, setFormatError] = useState<string | null>(null);
@@ -30,6 +32,7 @@ export function TimeInput({
 
   const handleFocus = () => {
     setIsFocused(true);
+    onFocus?.();
   };
 
   const handleBlur = () => {
@@ -39,7 +42,7 @@ export function TimeInput({
   };
 
   const displayedError = error ?? formatError;
-  const hasError = Boolean(displayedError);
+  const hasError = Boolean(displayedError) || invalid;
   let borderClassName = 'border-transparent';
   if (hasError) {
     borderClassName = 'border-coral';
@@ -82,11 +85,13 @@ export function TimeInput({
           onFocus={handleFocus}
           placeholder={placeholder}
           placeholderTextColor={theme.colors.wine}
+          // Poppins adds extra font padding on Android, which pushes the placeholder off center.
+          style={{ includeFontPadding: false, textAlignVertical: 'center' }}
           testID={testID}
           value={value}
         />
       </View>
-      {hasError ? (
+      {displayedError ? (
         <Text
           className="px-2 font-poppins-medium text-xs text-coral"
           testID={`${testID}-error`}

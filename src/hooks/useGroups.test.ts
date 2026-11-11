@@ -1,6 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import { Group as ServerGroup, listGroups } from '@/server/groups';
-import { useGroups } from './useGroups';
+import { preloadGroups, useGroups } from './useGroups';
 
 jest.mock('@/server/groups', () => ({
   listGroups: jest.fn(),
@@ -28,7 +28,7 @@ describe('useGroups', () => {
   });
 
   test('finishes loading once the backend responds', async () => {
-    const { result } = await renderHook(() => useGroups());
+    const { result } = await Promise.resolve(renderHook(() => useGroups()));
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -36,7 +36,7 @@ describe('useGroups', () => {
   });
 
   test('loads every group returned by the backend, mapping profilePic to photoUri', async () => {
-    const { result } = await renderHook(() => useGroups());
+    const { result } = await Promise.resolve(renderHook(() => useGroups()));
 
     await waitFor(() => {
       expect(result.current.groups).toHaveLength(2);
@@ -54,7 +54,7 @@ describe('useGroups', () => {
   });
 
   test('refetch reloads the groups from the backend', async () => {
-    const { result } = await renderHook(() => useGroups());
+    const { result } = await Promise.resolve(renderHook(() => useGroups()));
 
     await waitFor(() => {
       expect(result.current.groups).toHaveLength(2);
@@ -74,7 +74,7 @@ describe('useGroups', () => {
   test('exposes an error message and an empty list when the request fails', async () => {
     mockListGroups.mockRejectedValue(new Error('network error'));
 
-    const { result } = await renderHook(() => useGroups());
+    const { result } = await Promise.resolve(renderHook(() => useGroups()));
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -87,7 +87,7 @@ describe('useGroups', () => {
   test('clears a previous error once a refetch succeeds', async () => {
     mockListGroups.mockRejectedValueOnce(new Error('network error'));
 
-    const { result } = await renderHook(() => useGroups());
+    const { result } = await Promise.resolve(renderHook(() => useGroups()));
 
     await waitFor(() => {
       expect(result.current.error).not.toBeNull();
@@ -101,5 +101,52 @@ describe('useGroups', () => {
 
     expect(result.current.error).toBeNull();
     expect(result.current.groups).toHaveLength(2);
+  });
+
+  test('starts loaded, without refetching, when the groups were preloaded', async () => {
+    await preloadGroups();
+    mockListGroups.mockClear();
+
+    const { result } = await Promise.resolve(renderHook(() => useGroups()));
+
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.groups.map((group) => group.id)).toEqual(['1', '2']);
+    expect(mockListGroups).not.toHaveBeenCalled();
+  });
+
+  test('uses the preloaded groups only once', async () => {
+    await preloadGroups();
+    await Promise.resolve(renderHook(() => useGroups()));
+    mockListGroups.mockClear();
+
+    await Promise.resolve(renderHook(() => useGroups()));
+
+    await waitFor(() => {
+      expect(mockListGroups).toHaveBeenCalledTimes(1);
+    });
+    expect(mockListGroups).toHaveBeenCalledTimes(1);
+  });
+
+  test('resolves without preloading when the backend fails', async () => {
+    mockListGroups.mockRejectedValue(new Error('offline'));
+
+    await expect(preloadGroups()).resolves.toBeUndefined();
+
+    mockListGroups.mockResolvedValue(SERVER_GROUPS);
+    await Promise.resolve(renderHook(() => useGroups()));
+    await waitFor(() => {
+      expect(mockListGroups).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  test('gives up preloading when the backend does not answer in time', async () => {
+    jest.useFakeTimers();
+    mockListGroups.mockReturnValue(new Promise(() => undefined));
+
+    const preload = preloadGroups(1000);
+    await jest.advanceTimersByTimeAsync(1000);
+
+    await expect(preload).resolves.toBeUndefined();
+    jest.useRealTimers();
   });
 });

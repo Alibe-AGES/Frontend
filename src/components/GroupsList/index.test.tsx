@@ -28,7 +28,7 @@ describe('<GroupsList />', () => {
       refetch: jest.fn(),
     });
 
-    const { getByTestId } = await render(<GroupsList />);
+    const { getByTestId } = await Promise.resolve(render(<GroupsList />));
 
     expect(getByTestId('alibe-groups-list-loading')).toBeTruthy();
   });
@@ -43,11 +43,12 @@ describe('<GroupsList />', () => {
       refetch,
     });
 
-    const { getByText, getByLabelText } = await render(<GroupsList />);
+    const { getByText, getByLabelText } = await Promise.resolve(render(<GroupsList />));
 
     expect(getByText('Não foi possível carregar os grupos.')).toBeTruthy();
 
-    await fireEvent.press(getByLabelText('Tentar novamente'));
+    fireEvent.press(getByLabelText('Tentar novamente'));
+    await Promise.resolve();
 
     expect(refetch).toHaveBeenCalledTimes(1);
   });
@@ -61,7 +62,7 @@ describe('<GroupsList />', () => {
       refetch: jest.fn(),
     });
 
-    const { getByTestId } = await render(<GroupsList />);
+    const { getByTestId } = await Promise.resolve(render(<GroupsList />));
 
     expect(getByTestId('alibe-groups-list-empty')).toBeTruthy();
   });
@@ -75,7 +76,7 @@ describe('<GroupsList />', () => {
       refetch: jest.fn(),
     });
 
-    const { getByText } = await render(<GroupsList />);
+    const { getByText } = await Promise.resolve(render(<GroupsList />));
 
     await waitFor(() => {
       expect(getByText('Hermanas')).toBeTruthy();
@@ -93,13 +94,16 @@ describe('<GroupsList />', () => {
       refetch: jest.fn(),
     });
     const onGroupPress = jest.fn();
-    const { getByTestId } = await render(<GroupsList onGroupPress={onGroupPress} />);
+    const { getByTestId } = await Promise.resolve(
+      render(<GroupsList onGroupPress={onGroupPress} />)
+    );
 
     await waitFor(() => {
       expect(getByTestId('alibe-groups-list-item-1')).toBeTruthy();
     });
 
-    await fireEvent.press(getByTestId('alibe-groups-list-item-1'));
+    fireEvent.press(getByTestId('alibe-groups-list-item-1'));
+    await Promise.resolve();
 
     expect(onGroupPress).toHaveBeenCalledWith('1');
   });

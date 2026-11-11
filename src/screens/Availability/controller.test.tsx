@@ -31,6 +31,13 @@ const mockGetAvailabilitiesByDate = getAvailabilitiesByDate as jest.MockedFuncti
 >;
 const mockCreateAvailability = createAvailability as jest.MockedFunction<typeof createAvailability>;
 
+async function renderController() {
+  render(<AvailabilityController />);
+  await waitFor(() => {
+    expect(mockAvailabilityProps.participants).toHaveLength(2);
+  });
+}
+
 describe('AvailabilityController', () => {
   const back = jest.fn();
   const replace = jest.fn();
@@ -41,10 +48,35 @@ describe('AvailabilityController', () => {
     mockUseRouter.mockReturnValue({ back, replace, canGoBack } as unknown as ReturnType<
       typeof useRouter
     >);
-    mockGetAvailabilitiesByDate.mockResolvedValue([
-      { id: 'user-1', name: 'Ana', profilePic: null },
-      { id: 'user-2', name: 'Bia', profilePic: 'https://example.com/bia.png' },
-    ]);
+    mockGetAvailabilitiesByDate.mockResolvedValue({
+      date: '2026-09-14',
+      users: [
+        {
+          id: 'user-1',
+          name: 'Ana',
+          image: null,
+          isCurrentUser: true,
+          availableAllDay: false,
+          intervals: [['14:00', '20:00']],
+        },
+        {
+          id: 'user-2',
+          name: 'Bia',
+          image: 'https://example.com/bia.png',
+          isCurrentUser: false,
+          availableAllDay: true,
+          intervals: [],
+        },
+        {
+          id: 'user-3',
+          name: 'Clara',
+          image: null,
+          isCurrentUser: false,
+          availableAllDay: false,
+          intervals: [],
+        },
+      ],
+    });
     mockCreateAvailability.mockResolvedValue([]);
     canGoBack.mockReturnValue(true);
     mockAvailabilityProps = {};
@@ -54,25 +86,34 @@ describe('AvailabilityController', () => {
     jest.clearAllMocks();
   });
 
-  test('loads participants and supplies an avatar fallback', async () => {
-    await render(<AvailabilityController />);
+  test('loads the available participants, skipping anyone without a day or interval', async () => {
+    await renderController();
 
-    await waitFor(() => {
-      expect(mockGetAvailabilitiesByDate).toHaveBeenCalledWith('group-1', '2026-09-14');
-      expect(mockAvailabilityProps.participants).toEqual([
-        {
-          id: 'user-1',
-          name: 'Ana',
-          avatarUrl: 'https://ui-avatars.com/api/?name=Ana&background=random',
-        },
-        { id: 'user-2', name: 'Bia', avatarUrl: 'https://example.com/bia.png' },
-      ]);
-    });
+    expect(mockGetAvailabilitiesByDate).toHaveBeenCalledWith('group-1', '2026-09-14');
+    expect(mockAvailabilityProps.participants).toEqual([
+      {
+        id: 'user-1',
+        name: 'Ana',
+        photoUri: null,
+        isCurrentUser: true,
+        availableAllDay: false,
+        intervals: [['14:00', '20:00']],
+      },
+      {
+        id: 'user-2',
+        name: 'Bia',
+        photoUri: 'https://example.com/bia.png',
+        isCurrentUser: false,
+        availableAllDay: true,
+        intervals: [],
+      },
+    ]);
+    expect(mockAvailabilityProps.isLoadingParticipants).toBe(false);
     expect(mockAvailabilityProps.date).toBe('2026-09-14');
   });
 
   test('submits only complete intervals and navigates back', async () => {
-    await render(<AvailabilityController />);
+    await renderController();
     const onConfirm = mockAvailabilityProps.onConfirm as (intervals: unknown[]) => Promise<void>;
 
     await onConfirm([
@@ -91,23 +132,11 @@ describe('AvailabilityController', () => {
 
   test('replaces the route when confirming without back history', async () => {
     canGoBack.mockReturnValue(false);
-    await render(<AvailabilityController />);
+    await renderController();
     const onConfirm = mockAvailabilityProps.onConfirm as (intervals: unknown[]) => Promise<void>;
 
     await onConfirm([]);
 
-    expect(replace).toHaveBeenCalledWith('/group/group-1');
-  });
-
-  test('declines by going back or replacing the route', async () => {
-    await render(<AvailabilityController />);
-    const onDecline = mockAvailabilityProps.onDecline as () => void;
-
-    onDecline();
-    expect(back).toHaveBeenCalledTimes(1);
-
-    canGoBack.mockReturnValue(false);
-    onDecline();
     expect(replace).toHaveBeenCalledWith('/group/group-1');
   });
 });

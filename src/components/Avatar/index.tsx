@@ -1,7 +1,9 @@
+import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { FC } from 'react';
+import { View } from 'react-native';
 import tw from 'twrnc';
 import { AvatarProps } from './Avatar.types';
 
@@ -12,12 +14,19 @@ export const Avatar: FC<AvatarProps> = ({
   accessibilityLabel,
   imageClassName = 'h-36 w-36 rounded-full',
   iconSize = 80,
+  fallbackIconName = 'people-outline',
+  fallbackIconColor = theme.colors.coral,
   testID = 'alibe-avatar',
 }) => {
-  if (photoUri) {
+  const authenticatedImageSource = useAuthenticatedImageSource(
+    typeof photoUri === 'string' ? photoUri : undefined
+  );
+  const imageSource = typeof photoUri === 'string' ? authenticatedImageSource : photoUri;
+
+  if (imageSource) {
     return (
       <Image
-        source={{ uri: photoUri }}
+        source={imageSource}
         accessible
         accessibilityLabel={accessibilityLabel}
         contentFit="cover"
@@ -28,11 +37,15 @@ export const Avatar: FC<AvatarProps> = ({
   }
 
   return (
-    <Ionicons
-      name="people-outline"
-      size={iconSize}
-      color={theme.colors.coral}
+    <View
+      className="items-center justify-center"
       testID={`${testID}-placeholder`}
-    />
+    >
+      <Ionicons
+        name={fallbackIconName}
+        size={iconSize}
+        color={fallbackIconColor}
+      />
+    </View>
   );
 };

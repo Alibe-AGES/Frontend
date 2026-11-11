@@ -1,21 +1,15 @@
 import { API_BASE_URL } from '@/constants';
 import { createAvailability, getAvailabilitiesByDate } from './availabilities';
-import { getGroupCalendar } from './calendar';
-import { getGroupMembers } from './groups';
 
-jest.mock('./calendar', () => ({
-  getGroupCalendar: jest.fn(),
-}));
-
-jest.mock('./groups', () => ({
-  getGroupMembers: jest.fn(),
+jest.mock('./auth', () => ({
+  authenticatedFetch: jest.fn((url: string, options?: RequestInit) =>
+    globalThis.fetch(url, { ...options, credentials: 'include' })
+  ),
 }));
 
 declare const global: { fetch: jest.Mock };
 
 const originalFetch = global.fetch;
-const mockedGetGroupCalendar = jest.mocked(getGroupCalendar);
-const mockedGetGroupMembers = jest.mocked(getGroupMembers);
 
 describe('createAvailability', () => {
   afterEach(() => {
@@ -38,17 +32,29 @@ describe('createAvailability', () => {
         endTime: '10:00',
       },
     ];
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(response),
-    });
+    const fetchMock = jest
+      .fn<Promise<Response>, [RequestInfo | URL, RequestInit?]>()
+      .mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(response),
+      } as Response);
+    global.fetch = fetchMock;
 
     await expect(createAvailability('group-1', payload)).resolves.toEqual(response);
-    expect(global.fetch).toHaveBeenCalledWith(`${API_BASE_URL}/groups/group-1/availabilities`, {
+
+    const [requestUrl, requestOptions] = fetchMock.mock.calls[0] ?? [];
+    expect(requestUrl).toBe(API_BASE_URL + '/groups/group-1/availabilities');
+    expect(requestOptions).toMatchObject({
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
+    expect(requestOptions).toBeDefined();
+
+    if (!requestOptions) {
+      throw new Error('Request options were not provided');
+    }
   });
 
   test('throws an ApiError when saving availability fails', async () => {
@@ -71,63 +77,78 @@ describe('createAvailability', () => {
 
 describe('getAvailabilitiesByDate', () => {
   afterEach(() => {
+    global.fetch = originalFetch;
     jest.clearAllMocks();
   });
 
-  test('returns available members for the requested date', async () => {
-    mockedGetGroupCalendar.mockResolvedValue([
-      {
-        date: '2026-09-22',
-        scheduledEventIds: [],
-        proposalIds: [],
-        availableUserIds: ['user-2', 'user-1'],
-        completedEventIds: [],
-        allUsersAvailable: false,
-      },
-    ]);
-    mockedGetGroupMembers.mockResolvedValue([
-      { id: 'user-1', name: 'Ana', profilePic: null },
-      { id: 'user-3', name: 'Bia', profilePic: '/bia.jpg' },
-      { id: 'user-2', name: 'Clara', profilePic: null },
-    ]);
+  test('requests the day availabilities and resolves relative user images', async () => {
+    const fetchMock = jest
+      .fn<Promise<Response>, [RequestInfo | URL, RequestInit?]>()
+      .mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            date: '2026-09-05',
+            users: [
+              {
+                id: 'user-1',
+                name: 'Ana Beatriz Silva',
+                image: '/users/user-1/profile-picture',
+                isCurrentUser: true,
+                availableAllDay: false,
+                intervals: [['14:00', '20:00']],
+              },
+              {
+                id: 'user-2',
+                name: 'Bia',
+                image: null,
+                isCurrentUser: false,
+                availableAllDay: true,
+                intervals: [],
+              },
+            ],
+          }),
+      } as Response);
+    global.fetch = fetchMock;
 
-    await expect(getAvailabilitiesByDate('group-1', '2026-09-22')).resolves.toEqual([
-      { id: 'user-1', name: 'Ana', profilePic: null },
-      { id: 'user-2', name: 'Clara', profilePic: null },
-    ]);
-    expect(mockedGetGroupCalendar).toHaveBeenCalledWith('group-1', 9, 2026);
-    expect(mockedGetGroupMembers).toHaveBeenCalledWith('group-1');
+    await expect(getAvailabilitiesByDate('group-1', '2026-09-05')).resolves.toEqual({
+      date: '2026-09-05',
+      users: [
+        {
+          id: 'user-1',
+          name: 'Ana Beatriz Silva',
+          image: `${API_BASE_URL}/users/user-1/profile-picture`,
+          isCurrentUser: true,
+          availableAllDay: false,
+          intervals: [['14:00', '20:00']],
+        },
+        {
+          id: 'user-2',
+          name: 'Bia',
+          image: null,
+          isCurrentUser: false,
+          availableAllDay: true,
+          intervals: [],
+        },
+      ],
+    });
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
+      `${API_BASE_URL}/groups/group-1/availabilities?date=2026-09-05`
+    );
   });
 
-  test('returns an empty list for an invalid date without making requests', async () => {
-    await expect(getAvailabilitiesByDate('group-1', 'not-a-date')).resolves.toEqual([]);
+  test('throws an ApiError when loading availabilities fails', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 403,
+      statusText: 'Forbidden',
+      text: () => Promise.resolve(''),
+    });
 
-    expect(mockedGetGroupCalendar).not.toHaveBeenCalled();
-    expect(mockedGetGroupMembers).not.toHaveBeenCalled();
-  });
-
-  test('returns an empty list when the date is absent or has no available users', async () => {
-    mockedGetGroupCalendar.mockResolvedValue([
-      {
-        date: '2026-09-21',
-        scheduledEventIds: [],
-        proposalIds: [],
-        availableUserIds: ['user-1'],
-        completedEventIds: [],
-        allUsersAvailable: false,
-      },
-      {
-        date: '2026-09-22',
-        scheduledEventIds: [],
-        proposalIds: [],
-        availableUserIds: [],
-        completedEventIds: [],
-        allUsersAvailable: false,
-      },
-    ]);
-    mockedGetGroupMembers.mockResolvedValue([]);
-
-    await expect(getAvailabilitiesByDate('group-1', '2026-09-22')).resolves.toEqual([]);
-    await expect(getAvailabilitiesByDate('group-1', '2026-09-23')).resolves.toEqual([]);
+    await expect(getAvailabilitiesByDate('group-1', '2026-09-05')).rejects.toMatchObject({
+      name: 'ApiError',
+      message: 'Forbidden',
+      status: 403,
+    });
   });
 });

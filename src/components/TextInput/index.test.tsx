@@ -19,14 +19,66 @@ function ControlledTextInput(
 }
 
 describe('<TextInput />', () => {
-  test('renders label and placeholder', async () => {
-    const { getByText, getByPlaceholderText } = await render(
+  test('keeps the default height unless a smaller size is requested', async () => {
+    const { getByPlaceholderText, rerender } = await Promise.resolve(
+      render(
+        <TextInput
+          value=""
+          onChangeText={jest.fn()}
+          placeholder="Valor"
+        />
+      )
+    );
+    expect(getByPlaceholderText('Valor').props.className).toContain('py-4');
+
+    rerender(
       <TextInput
-        label="E-mail"
-        placeholder="voce@exemplo.com"
         value=""
         onChangeText={jest.fn()}
+        placeholder="Valor"
+        size="sm"
       />
+    );
+    await Promise.resolve();
+
+    expect(getByPlaceholderText('Valor').props.className).toContain('py-2');
+  });
+
+  test('uses ink text by default and accepts wine', async () => {
+    const { getByPlaceholderText, rerender } = await Promise.resolve(
+      render(
+        <TextInput
+          value=""
+          onChangeText={jest.fn()}
+          placeholder="Valor"
+        />
+      )
+    );
+    expect(getByPlaceholderText('Valor').props.className).toContain('text-ink');
+
+    rerender(
+      <TextInput
+        value=""
+        onChangeText={jest.fn()}
+        placeholder="Valor"
+        textColor="wine"
+      />
+    );
+    await Promise.resolve();
+
+    expect(getByPlaceholderText('Valor').props.className).toContain('text-wine');
+  });
+
+  test('renders label and placeholder', async () => {
+    const { getByText, getByPlaceholderText } = await Promise.resolve(
+      render(
+        <TextInput
+          label="E-mail"
+          placeholder="voce@exemplo.com"
+          value=""
+          onChangeText={jest.fn()}
+        />
+      )
     );
 
     expect(getByText('E-mail')).toBeTruthy();
@@ -34,27 +86,31 @@ describe('<TextInput />', () => {
   });
 
   test('lets the user edit its content', async () => {
-    const { getByTestId, getByDisplayValue } = await render(
-      <ControlledTextInput testID="name-input" />
+    const { getByTestId, getByDisplayValue } = await Promise.resolve(
+      render(<ControlledTextInput testID="name-input" />)
     );
 
-    await fireEvent.changeText(getByTestId('name-input'), 'Alibe');
+    fireEvent.changeText(getByTestId('name-input'), 'Alibe');
+    await Promise.resolve();
 
     expect(getByDisplayValue('Alibe')).toBeTruthy();
   });
 
   test('type "all" accepts any character, including special ones', async () => {
     const onChangeText = jest.fn();
-    const { getByTestId, queryByTestId } = await render(
-      <TextInput
-        type="all"
-        value=""
-        onChangeText={onChangeText}
-        testID="all-input"
-      />
+    const { getByTestId, queryByTestId } = await Promise.resolve(
+      render(
+        <TextInput
+          type="all"
+          value=""
+          onChangeText={onChangeText}
+          testID="all-input"
+        />
+      )
     );
 
-    await fireEvent.changeText(getByTestId('all-input'), 'Rua 123, ap° 4 - #casa!');
+    fireEvent.changeText(getByTestId('all-input'), 'Rua 123, ap° 4 - #casa!');
+    await Promise.resolve();
 
     expect(onChangeText).toHaveBeenLastCalledWith('Rua 123, ap° 4 - #casa!');
     expect(queryByTestId('all-input-error')).toBeNull();
@@ -62,16 +118,19 @@ describe('<TextInput />', () => {
 
   test('type "numeric" strips non-numeric characters and warns the user', async () => {
     const onChangeText = jest.fn();
-    const { getByTestId, getByText } = await render(
-      <TextInput
-        type="numeric"
-        value=""
-        onChangeText={onChangeText}
-        testID="numeric-input"
-      />
+    const { getByTestId, getByText } = await Promise.resolve(
+      render(
+        <TextInput
+          type="numeric"
+          value=""
+          onChangeText={onChangeText}
+          testID="numeric-input"
+        />
+      )
     );
 
-    await fireEvent.changeText(getByTestId('numeric-input'), '12a3b');
+    fireEvent.changeText(getByTestId('numeric-input'), '12a3b');
+    await Promise.resolve();
 
     expect(onChangeText).toHaveBeenLastCalledWith('123');
     expect(getByText('Este campo aceita somente números.')).toBeTruthy();
@@ -79,16 +138,19 @@ describe('<TextInput />', () => {
 
   test('type "numeric" has no error when only digits are typed', async () => {
     const onChangeText = jest.fn();
-    const { getByTestId, queryByTestId } = await render(
-      <TextInput
-        type="numeric"
-        value=""
-        onChangeText={onChangeText}
-        testID="numeric-input"
-      />
+    const { getByTestId, queryByTestId } = await Promise.resolve(
+      render(
+        <TextInput
+          type="numeric"
+          value=""
+          onChangeText={onChangeText}
+          testID="numeric-input"
+        />
+      )
     );
 
-    await fireEvent.changeText(getByTestId('numeric-input'), '2026');
+    fireEvent.changeText(getByTestId('numeric-input'), '2026');
+    await Promise.resolve();
 
     expect(onChangeText).toHaveBeenLastCalledWith('2026');
     expect(queryByTestId('numeric-input-error')).toBeNull();
@@ -96,16 +158,19 @@ describe('<TextInput />', () => {
 
   test('type "alphanumeric" strips special characters and warns the user', async () => {
     const onChangeText = jest.fn();
-    const { getByTestId, getByText } = await render(
-      <TextInput
-        type="alphanumeric"
-        value=""
-        onChangeText={onChangeText}
-        testID="alphanumeric-input"
-      />
+    const { getByTestId, getByText } = await Promise.resolve(
+      render(
+        <TextInput
+          type="alphanumeric"
+          value=""
+          onChangeText={onChangeText}
+          testID="alphanumeric-input"
+        />
+      )
     );
 
-    await fireEvent.changeText(getByTestId('alphanumeric-input'), 'Alibe#2026!');
+    fireEvent.changeText(getByTestId('alphanumeric-input'), 'Alibe#2026!');
+    await Promise.resolve();
 
     expect(onChangeText).toHaveBeenLastCalledWith('Alibe2026');
     expect(getByText('Este campo não aceita caracteres especiais.')).toBeTruthy();
@@ -113,74 +178,88 @@ describe('<TextInput />', () => {
 
   test('type "alphanumeric" accepts letters, numbers and spaces without error', async () => {
     const onChangeText = jest.fn();
-    const { getByTestId, queryByTestId } = await render(
-      <TextInput
-        type="alphanumeric"
-        value=""
-        onChangeText={onChangeText}
-        testID="alphanumeric-input"
-      />
+    const { getByTestId, queryByTestId } = await Promise.resolve(
+      render(
+        <TextInput
+          type="alphanumeric"
+          value=""
+          onChangeText={onChangeText}
+          testID="alphanumeric-input"
+        />
+      )
     );
 
-    await fireEvent.changeText(getByTestId('alphanumeric-input'), 'Grupo Familia 2026');
+    fireEvent.changeText(getByTestId('alphanumeric-input'), 'Grupo Familia 2026');
+    await Promise.resolve();
 
     expect(onChangeText).toHaveBeenLastCalledWith('Grupo Familia 2026');
     expect(queryByTestId('alphanumeric-input-error')).toBeNull();
   });
 
   test('type "email" warns the user about an invalid format on blur', async () => {
-    const { getByTestId, getByText } = await render(
-      <TextInput
-        type="email"
-        value="not-an-email"
-        onChangeText={jest.fn()}
-        testID="email-input"
-      />
+    const { getByTestId, getByText } = await Promise.resolve(
+      render(
+        <TextInput
+          type="email"
+          value="not-an-email"
+          onChangeText={jest.fn()}
+          testID="email-input"
+        />
+      )
     );
 
-    await fireEvent(getByTestId('email-input'), 'blur');
+    fireEvent(getByTestId('email-input'), 'blur');
+    await Promise.resolve();
 
     expect(getByText('Informe um e-mail válido.')).toBeTruthy();
   });
 
   test('type "email" has no error for a valid address on blur', async () => {
-    const { getByTestId, queryByTestId } = await render(
-      <TextInput
-        type="email"
-        value="user@example.com"
-        onChangeText={jest.fn()}
-        testID="email-input"
-      />
+    const { getByTestId, queryByTestId } = await Promise.resolve(
+      render(
+        <TextInput
+          type="email"
+          value="user@example.com"
+          onChangeText={jest.fn()}
+          testID="email-input"
+        />
+      )
     );
 
-    await fireEvent(getByTestId('email-input'), 'blur');
+    fireEvent(getByTestId('email-input'), 'blur');
+    await Promise.resolve();
 
     expect(queryByTestId('email-input-error')).toBeNull();
   });
 
   test('type "email" has no error for an empty value on blur', async () => {
-    const { getByTestId, queryByTestId } = await render(
-      <TextInput
-        type="email"
-        value=""
-        onChangeText={jest.fn()}
-        testID="email-input"
-      />
+    const { getByTestId, queryByTestId } = await Promise.resolve(
+      render(
+        <TextInput
+          type="email"
+          value=""
+          onChangeText={jest.fn()}
+          testID="email-input"
+        />
+      )
     );
 
-    await fireEvent(getByTestId('email-input'), 'blur');
+    fireEvent(getByTestId('email-input'), 'blur');
+    await Promise.resolve();
 
     expect(queryByTestId('email-input-error')).toBeNull();
   });
 
   test('an externally provided error takes precedence over the internal validation', async () => {
-    const { getByText, queryByText } = await render(
-      <TextInput
-        type="numeric"
-        value="123"
-        onChangeText={jest.fn()}
-        error="Campo obrigatório."
-      />
+    const { getByText, queryByText } = await Promise.resolve(
+      render(
+        <TextInput
+          type="numeric"
+          value="123"
+          onChangeText={jest.fn()}
+          error="Campo obrigatório."
+        />
+      )
     );
 
     expect(getByText('Campo obrigatório.')).toBeTruthy();
@@ -188,13 +267,15 @@ describe('<TextInput />', () => {
   });
 
   test('is not editable when disabled', async () => {
-    const { getByTestId } = await render(
-      <TextInput
-        value=""
-        onChangeText={jest.fn()}
-        disabled
-        testID="disabled-input"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <TextInput
+          value=""
+          onChangeText={jest.fn()}
+          disabled
+          testID="disabled-input"
+        />
+      )
     );
 
     expect(getByTestId('disabled-input').props.editable).toBe(false);
@@ -202,87 +283,103 @@ describe('<TextInput />', () => {
 
   test('calls the onBlur callback', async () => {
     const onBlur = jest.fn();
-    const { getByTestId } = await render(
-      <TextInput
-        value=""
-        onChangeText={jest.fn()}
-        onBlur={onBlur}
-        testID="blur-input"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <TextInput
+          value=""
+          onChangeText={jest.fn()}
+          onBlur={onBlur}
+          testID="blur-input"
+        />
+      )
     );
 
-    await fireEvent(getByTestId('blur-input'), 'blur');
+    fireEvent(getByTestId('blur-input'), 'blur');
+    await Promise.resolve();
 
     expect(onBlur).toHaveBeenCalledTimes(1);
   });
 
   test('highlights the whole pill border on focus and clears it on blur', async () => {
-    const { getByTestId } = await render(
-      <TextInput
-        value=""
-        onChangeText={jest.fn()}
-        testID="focus-input"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <TextInput
+          value=""
+          onChangeText={jest.fn()}
+          testID="focus-input"
+        />
+      )
     );
 
     const field = getByTestId('focus-input-field');
     expect(field.props.className).toContain('border-transparent');
 
-    await fireEvent(getByTestId('focus-input'), 'focus');
+    fireEvent(getByTestId('focus-input'), 'focus');
+    await Promise.resolve();
     expect(field.props.className).toContain('border-ink');
 
-    await fireEvent(getByTestId('focus-input'), 'blur');
+    fireEvent(getByTestId('focus-input'), 'blur');
+    await Promise.resolve();
     expect(field.props.className).toContain('border-transparent');
   });
 
   test('keeps the error border even when the field is focused', async () => {
-    const { getByTestId } = await render(
-      <TextInput
-        value=""
-        onChangeText={jest.fn()}
-        testID="focus-error-input"
-        error="Campo obrigatório."
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <TextInput
+          value=""
+          onChangeText={jest.fn()}
+          testID="focus-error-input"
+          error="Campo obrigatório."
+        />
+      )
     );
 
-    await fireEvent(getByTestId('focus-error-input'), 'focus');
+    fireEvent(getByTestId('focus-error-input'), 'focus');
+    await Promise.resolve();
 
     expect(getByTestId('focus-error-input-field').props.className).toContain('border-coral');
   });
 
   test('renders the placeholder in the readable wine-soft tone', async () => {
-    const { getByTestId } = await render(
-      <TextInput
-        value=""
-        onChangeText={jest.fn()}
-        testID="placeholder-input"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <TextInput
+          value=""
+          onChangeText={jest.fn()}
+          testID="placeholder-input"
+        />
+      )
     );
 
     expect(getByTestId('placeholder-input').props.placeholderTextColor).toBe(theme.colors.wineSoft);
   });
 
   test('renders no icon slot when no icon is provided', async () => {
-    const { queryByTestId } = await render(
-      <TextInput
-        value=""
-        onChangeText={jest.fn()}
-        testID="no-icon-input"
-      />
+    const { queryByTestId } = await Promise.resolve(
+      render(
+        <TextInput
+          value=""
+          onChangeText={jest.fn()}
+          testID="no-icon-input"
+        />
+      )
     );
 
     expect(queryByTestId('no-icon-input-icon')).toBeNull();
   });
 
   test('renders the provided icon with a coral badge', async () => {
-    const { getByTestId, getByText } = await render(
-      <TextInput
-        value=""
-        onChangeText={jest.fn()}
-        testID="icon-input"
-        icon={<Text>@</Text>}
-        iconBackground="coral"
-      />
+    const { getByTestId, getByText } = await Promise.resolve(
+      render(
+        <TextInput
+          value=""
+          onChangeText={jest.fn()}
+          testID="icon-input"
+          icon={<Text>@</Text>}
+          iconBackground="coral"
+        />
+      )
     );
 
     expect(getByText('@')).toBeTruthy();
@@ -290,31 +387,72 @@ describe('<TextInput />', () => {
   });
 
   test('renders the provided icon with an ink badge', async () => {
-    const { getByTestId } = await render(
-      <TextInput
-        value=""
-        onChangeText={jest.fn()}
-        testID="icon-input"
-        icon={<Text>@</Text>}
-        iconBackground="ink"
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <TextInput
+          value=""
+          onChangeText={jest.fn()}
+          testID="icon-input"
+          icon={<Text>@</Text>}
+          iconBackground="ink"
+        />
+      )
     );
 
     expect(getByTestId('icon-input-icon').props.className).toContain('bg-ink');
   });
 
   test('renders a plain icon with no badge background when iconBackground is omitted', async () => {
-    const { getByTestId } = await render(
-      <TextInput
-        value=""
-        onChangeText={jest.fn()}
-        testID="icon-input"
-        icon={<Text>✎</Text>}
-      />
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <TextInput
+          value=""
+          onChangeText={jest.fn()}
+          testID="icon-input"
+          icon={<Text>✎</Text>}
+        />
+      )
     );
 
     const iconWrapperClassName = getByTestId('icon-input-icon').props.className as string;
     expect(iconWrapperClassName).not.toContain('bg-coral');
     expect(iconWrapperClassName).not.toContain('bg-ink');
+  });
+
+  test('type "password" disables auto-capitalization and auto-correct', async () => {
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <TextInput
+          type="password"
+          value=""
+          onChangeText={jest.fn()}
+          testID="password-input"
+        />
+      )
+    );
+
+    const field = getByTestId('password-input');
+    expect(field.props.autoCapitalize).toBe('none');
+    expect(field.props.autoCorrect).toBe(false);
+  });
+
+  test('calls onFocus when the field is focused', async () => {
+    const handleFocus = jest.fn();
+
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <TextInput
+          value=""
+          onChangeText={jest.fn()}
+          onFocus={handleFocus}
+          testID="focused-input"
+        />
+      )
+    );
+
+    fireEvent(getByTestId('focused-input'), 'focus');
+    await Promise.resolve();
+
+    expect(handleFocus).toHaveBeenCalled();
   });
 });

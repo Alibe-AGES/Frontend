@@ -1,7 +1,7 @@
 import { API_BASE_URL } from '@/constants';
+import { resolveApiImageUrl } from '@/utils/apiImageUrl';
 import { ApiError } from './api';
-import { getGroupCalendar } from './calendar';
-import { getGroupMembers } from './groups';
+import { authenticatedFetch } from './auth';
 
 export interface CreateAvailabilityInterval {
   startTime: string;
@@ -37,7 +37,7 @@ export async function createAvailability(
 
   console.log('[Availability] POST', url, body);
 
-  const response = await fetch(url, {
+  const response = await authenticatedFetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -57,40 +57,41 @@ export async function createAvailability(
   return (await response.json()) as AvailabilityResponse[];
 }
 
-export interface GroupParticipant {
+export interface DayAvailabilityUser {
   id: string;
   name: string;
-  profilePic: string | null;
+  image: string | null;
+  isCurrentUser: boolean;
+  availableAllDay: boolean;
+  intervals: [string, string][];
+}
+
+export interface DayAvailabilities {
+  date: string;
+  users: DayAvailabilityUser[];
 }
 
 export async function getAvailabilitiesByDate(
   groupId: string,
   date: string
-): Promise<GroupParticipant[]> {
-  const [year, month] = date.split('-').map(Number);
+): Promise<DayAvailabilities> {
+  const query = new URLSearchParams({ date }).toString();
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/groups/${groupId}/availabilities?${query}`
+  );
 
-  if (!year || !month) {
-    return [];
+  if (!response.ok) {
+    const text = await response.text();
+    throw new ApiError(
+      text || response.statusText || 'Não foi possível carregar as disponibilidades',
+      response.status
+    );
   }
 
-  const [days, members] = await Promise.all([
-    getGroupCalendar(groupId, month, year),
-    getGroupMembers(groupId),
-  ]);
+  const data = (await response.json()) as DayAvailabilities;
 
-  const day = days.find((item) => item.date === date);
-
-  if (!day || day.availableUserIds.length === 0) {
-    return [];
-  }
-
-  const availableIds = new Set(day.availableUserIds);
-
-  return members
-    .filter((member) => availableIds.has(member.id))
-    .map((member) => ({
-      id: member.id,
-      name: member.name,
-      profilePic: member.profilePic,
-    }));
+  return {
+    ...data,
+    users: data.users.map((user) => ({ ...user, image: resolveApiImageUrl(user.image) })),
+  };
 }

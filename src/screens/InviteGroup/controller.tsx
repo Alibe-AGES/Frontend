@@ -1,3 +1,1 @@
-import { InviteGroupScreen } from '.';
-
-export default InviteGroupScreen;
+export { InviteGroupScreen as default } from '.';
