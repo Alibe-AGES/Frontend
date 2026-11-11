@@ -110,6 +110,16 @@ jobs:
 
             adb reverse tcp:3000 tcp:3000
 
+            # The slow CI emulator makes Pixel Launcher stop responding during the flows, and its
+            # "isn't responding" dialog covers the app. Android then closes the stuck app without the dialog.
+            adb shell settings put global hide_error_dialogs 1
+
+            # Pixel Launcher is the app that stops responding, and Maestro opens the app directly, so turn it off.
+            adb shell pm disable-user --user 0 com.google.android.apps.nexuslauncher || true
+
+            # Finish the app optimization Android runs after boot, so the flows start with a calmer system.
+            adb shell cmd package bg-dexopt-job || true
+
             echo "Starting Maestro E2E tests..."
             maestro test .maestro/ --include-tags ci --test-output-dir=./maestro-results
 
