@@ -22,13 +22,22 @@ function formatDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+function getDayEventIds(day: CalendarDay): string[] {
+  return [
+    ...new Set([
+      ...day.scheduledEventIds,
+      ...day.completedEventIds,
+      ...(day.proposalEventIds ?? []).map(({ eventId }) => eventId),
+    ]),
+  ];
+}
+
 function getDayStatus(
   day: CalendarDay,
   confirmedEventIds: Set<string>
 ): DayMark['status'] | undefined {
-  if (
-    [...day.scheduledEventIds, ...day.completedEventIds].some((id) => confirmedEventIds.has(id))
-  ) {
+  const eventIds = getDayEventIds(day);
+  if (eventIds.some((id) => confirmedEventIds.has(id))) {
     return 'matched';
   }
   if (day.completedEventIds.length > 0) return 'realized';
@@ -48,11 +57,15 @@ function buildDayMarks(
   for (const day of days) {
     const status = getDayStatus(day, confirmedEventIds);
 
-    const eventIds = [...new Set([...day.scheduledEventIds, ...day.completedEventIds])];
+    const eventIds = getDayEventIds(day);
+    const hasConfirmedEvent = eventIds.some((eventId) => confirmedEventIds.has(eventId));
+    const hasUnconfirmedProposal = day.proposalEventIds
+      ? day.proposalEventIds.some(({ eventId }) => !confirmedEventIds.has(eventId))
+      : day.proposalIds.length > 0 && !hasConfirmedEvent;
     if (status !== undefined || eventIds.length > 0 || day.proposalIds.length > 0) {
       marks[day.date] = {
         status: status ?? 'normal',
-        dot: day.proposalIds.length > 0 ? 'pink' : undefined,
+        dot: hasUnconfirmedProposal ? 'pink' : undefined,
         eventIds,
         proposalIds: day.proposalIds,
         availableUserCount: day.availableUserIds.length,
@@ -136,9 +149,7 @@ export function GroupScreen() {
       const groupMembers = membersResult.value;
       setMembers(groupMembers);
 
-      const eventIds = [
-        ...new Set(days.flatMap((day) => [...day.scheduledEventIds, ...day.completedEventIds])),
-      ];
+      const eventIds = [...new Set(days.flatMap(getDayEventIds))];
       const eventResults = await Promise.allSettled(
         eventIds.map((eventId) => getEventDetails(eventId))
       );
