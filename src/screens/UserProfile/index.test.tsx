@@ -110,10 +110,11 @@ describe('UserProfileScreen', () => {
       },
     };
 
-    const { getByText, getByTestId } = await Promise.resolve(
+    const { getByText, getByTestId, queryByTestId } = await Promise.resolve(
       render(<UserProfileScreen {...successProps} />)
     );
 
+    expect(queryByTestId('mock-navigation-bar')).toBeNull();
     expect(getByTestId('user-profile-screen-name')).toHaveTextContent('Ellen Miranda');
     expect(getByText('no alibe desde 21 de Setembro de 2026')).toBeTruthy();
 
