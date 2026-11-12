@@ -59,7 +59,7 @@ describe('searchPlaces', () => {
     expect(requestUrl.searchParams.get('period')).toBe('morning');
     expect(requestUrl.searchParams.get('environment')).toBe('outdoor');
     expect(requestUrl.searchParams.get('groupSize')).toBe('couple');
-    expect(result[0]).toMatchObject({
+    expect(result.places[0]).toMatchObject({
       id: 'google-place-1',
       name: 'Museu',
       address: '',
@@ -72,6 +72,7 @@ describe('searchPlaces', () => {
       ).toString(),
     });
     expect(getAuthenticationHeaders).toHaveBeenCalled();
+    expect(result.hasMore).toBe(false);
   });
 
   test('unions multiple selected categories using separate Backend type requests', async () => {
@@ -106,7 +107,7 @@ describe('searchPlaces', () => {
       'bar',
       'night_club',
     ]);
-    expect(places.map((place) => place.id)).toEqual(['restaurant-place', 'bar-place']);
+    expect(places.places.map((place) => place.id)).toEqual(['restaurant-place', 'bar-place']);
   });
 
   test('uses the nearby feed when no text search is entered', async () => {
@@ -121,6 +122,35 @@ describe('searchPlaces', () => {
     const requestInput = (authenticatedFetch as jest.MockedFunction<typeof authenticatedFetch>).mock
       .calls[0]?.[0];
     expect(requestInput).toEqual(expect.stringContaining('/api/locations?'));
+  });
+
+  test('requests the selected backend page and reads pagination metadata', async () => {
+    (authenticatedFetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          items: [{ externalId: 'place-2', name: 'Outro lugar' }],
+          pagination: { page: 2, totalPages: 3 },
+        }),
+    });
+
+    const result = await searchPlaces(
+      {
+        latitude: -30,
+        longitude: -51,
+        query: '',
+        tagIds: [],
+        filters: { minBudget: '', maxBudget: '', selections: {} },
+      },
+      2
+    );
+
+    const requestInput = (authenticatedFetch as jest.MockedFunction<typeof authenticatedFetch>).mock
+      .calls[0]?.[0];
+    if (typeof requestInput !== 'string') throw new Error('Expected request URL string');
+    expect(new URL(requestInput).searchParams.get('page')).toBe('2');
+    expect(result.places.map((place) => place.id)).toEqual(['place-2']);
+    expect(result.hasMore).toBe(true);
   });
 
   test('maps missing optional fields and skips unavailable filter values', async () => {
@@ -151,7 +181,7 @@ describe('searchPlaces', () => {
         }),
     });
 
-    const places = await searchPlaces({
+    const result = await searchPlaces({
       latitude: 0,
       longitude: 0,
       query: '',
@@ -163,7 +193,7 @@ describe('searchPlaces', () => {
       },
     });
 
-    expect(places[0]).toMatchObject({
+    expect(result.places[0]).toMatchObject({
       id: 'place-without-optionals',
       address: '',
       photoUri: undefined,
@@ -172,7 +202,7 @@ describe('searchPlaces', () => {
       distanceKm: undefined,
       averagePrice: undefined,
     });
-    expect(places[1]).toMatchObject({
+    expect(result.places[1]).toMatchObject({
       distanceKm: 0,
       averagePrice: 10,
       photoUri: undefined,

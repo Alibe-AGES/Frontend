@@ -27,9 +27,10 @@ describe('usePlaces', () => {
     jest.clearAllMocks();
     (Location.requestForegroundPermissionsAsync as jest.Mock).mockResolvedValue({ granted: true });
     (Location.getCurrentPositionAsync as jest.Mock).mockResolvedValue({ coords: coordinates });
-    (searchPlaces as jest.Mock).mockResolvedValue([
-      { id: 'place-1', name: 'Bloom Café', address: 'Rua A' },
-    ]);
+    (searchPlaces as jest.Mock).mockResolvedValue({
+      places: [{ id: 'place-1', name: 'Bloom Café', address: 'Rua A' }],
+      hasMore: false,
+    });
   });
 
   test('requests nearby backend places using the current device location', async () => {
@@ -46,12 +47,52 @@ describe('usePlaces', () => {
     });
 
     expect(Location.requestForegroundPermissionsAsync).toHaveBeenCalled();
-    expect(searchPlaces).toHaveBeenCalledWith({
-      latitude: coordinates.latitude,
-      longitude: coordinates.longitude,
-      ...input,
-    });
+    expect(searchPlaces).toHaveBeenCalledWith(
+      {
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
+        ...input,
+      },
+      1
+    );
     expect(result.current.places[0]).toMatchObject({ id: 'place-1', name: 'Bloom Café' });
+  });
+
+  test('loads the next backend page and appends only unseen places', async () => {
+    jest
+      .mocked(searchPlaces)
+      .mockResolvedValueOnce({
+        places: [{ id: 'place-1', name: 'Bloom Café', address: 'Rua A' }],
+        hasMore: true,
+      })
+      .mockResolvedValueOnce({
+        places: [
+          { id: 'place-1', name: 'Bloom Café', address: 'Rua A' },
+          { id: 'place-2', name: 'Arena Kart', address: 'Rua B' },
+        ],
+        hasMore: false,
+      });
+
+    const input = { query: '', tagIds: [], filters: EMPTY_FILTER_VALUE };
+    const { result } = renderHook(() => usePlaces(input));
+
+    await waitFor(() => {
+      expect(result.current.hasMore).toBe(true);
+    });
+    await act(async () => {
+      await result.current.loadMore();
+    });
+
+    expect(searchPlaces).toHaveBeenLastCalledWith(
+      {
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
+        ...input,
+      },
+      2
+    );
+    expect(result.current.places.map((place) => place.id)).toEqual(['place-1', 'place-2']);
+    expect(result.current.hasMore).toBe(false);
   });
 
   test('shows a useful error when location access is denied', async () => {
