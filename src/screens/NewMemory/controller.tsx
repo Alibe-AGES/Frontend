@@ -15,10 +15,12 @@ import { NewMemoryScreen } from '.';
 // the group's completed events for the selected month (the current one by default).
 async function loadCompletedEvents(
   groupId: string,
-  { month, year }: CalendarMonth
+  { month, year }: CalendarMonth,
+  selectedDate?: string
 ): Promise<DropdownOption[]> {
   const days = await getGroupCalendar(groupId, month, year);
-  const eventIds = Array.from(new Set(days.flatMap((day) => day.completedEventIds)));
+  const visibleDays = selectedDate ? days.filter((day) => day.date === selectedDate) : days;
+  const eventIds = Array.from(new Set(visibleDays.flatMap((day) => day.completedEventIds)));
   const details = await Promise.all(eventIds.map((eventId) => getEventDetails(eventId)));
 
   return details.map((event) => ({
@@ -33,7 +35,8 @@ export default function NewMemoryController() {
     id: groupId,
     month: monthParam,
     year: yearParam,
-  } = useLocalSearchParams<{ id: string; month?: string; year?: string }>();
+    date: selectedDate,
+  } = useLocalSearchParams<{ id: string; month?: string; year?: string; date?: string }>();
   const { handleBack } = useDefaultBackController({
     fallbackHref: { pathname: '/group/[id]/memories', params: { id: groupId } },
   });
@@ -56,14 +59,20 @@ export default function NewMemoryController() {
     setIsLoadingEvents(true);
     setError(null);
     try {
-      setEvents(await loadCompletedEvents(groupId, resolveCalendarMonth(monthParam, yearParam)));
+      setEvents(
+        await loadCompletedEvents(
+          groupId,
+          resolveCalendarMonth(monthParam, yearParam),
+          selectedDate
+        )
+      );
     } catch (loadError: unknown) {
       console.error('Erro ao carregar os eventos do grupo', loadError);
       setError('Não foi possível carregar os eventos.');
     } finally {
       setIsLoadingEvents(false);
     }
-  }, [groupId, monthParam, yearParam]);
+  }, [groupId, monthParam, yearParam, selectedDate]);
 
   useEffect(() => {
     void loadEvents();

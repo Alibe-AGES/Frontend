@@ -323,6 +323,7 @@ export const UserProfileScreen = ({
         <View className="flex-row items-center justify-center">
           <ProfileCard
             avatarUrl={avatarSource}
+            avatarCachePolicy="none"
             completedEventsCount={profile?.completedEventsCount ?? 0}
             pendingEventsCount={profile?.pendingEventsCount ?? 0}
           />

@@ -46,6 +46,21 @@ describe('<ProfileCard />', () => {
     expect(getByTestId('alibe-profile-card-avatar-placeholder')).toBeTruthy();
   });
 
+  test('forwards the avatar cache policy to the profile image', async () => {
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <ProfileCard
+          avatarUrl="https://example.com/avatar.jpg"
+          avatarCachePolicy="none"
+          completedEventsCount={0}
+          pendingEventsCount={0}
+        />
+      )
+    );
+
+    expect(getByTestId('alibe-profile-card-avatar-photo').props.cachePolicy).toBe('none');
+  });
+
   test('renders zero counts as "0", not blank', async () => {
     const { getByTestId } = await Promise.resolve(
       render(

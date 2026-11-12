@@ -6,6 +6,7 @@ import { ProfileButton } from '@/components/ProfileButton';
 import { ScreenFrame } from '@/components/ScreenFrame';
 import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
 import { CalendarDay, getGroupCalendar } from '@/server/calendar';
+import { getEventDetails } from '@/server/events';
 import { getGroup, getGroupMembers, GroupMember, GroupNextEvent } from '@/server/groups';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,7 +24,15 @@ function formatDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-function getDayStatus(day: CalendarDay): DayMark['status'] | undefined {
+function getDayStatus(
+  day: CalendarDay,
+  confirmedEventIds: Set<string>
+): DayMark['status'] | undefined {
+  if (
+    [...day.scheduledEventIds, ...day.completedEventIds].some((id) => confirmedEventIds.has(id))
+  ) {
+    return 'matched';
+  }
   if (day.completedEventIds.length > 0) return 'realized';
   if (day.scheduledEventIds.length > 0) return 'suggested';
   if (day.allUsersAvailable) return 'allAvailable';
@@ -31,11 +40,15 @@ function getDayStatus(day: CalendarDay): DayMark['status'] | undefined {
   return undefined;
 }
 
-function buildDayMarks(days: CalendarDay[], today: string): Record<string, DayMark> {
+function buildDayMarks(
+  days: CalendarDay[],
+  today: string,
+  confirmedEventIds: Set<string>
+): Record<string, DayMark> {
   const marks: Record<string, DayMark> = {};
 
   for (const day of days) {
-    const status = getDayStatus(day);
+    const status = getDayStatus(day, confirmedEventIds);
 
     const eventIds = [...new Set([...day.scheduledEventIds, ...day.completedEventIds])];
     if (status !== undefined || eventIds.length > 0 || day.proposalIds.length > 0) {
@@ -69,6 +82,7 @@ export function GroupScreen() {
   const [groupName, setGroupName] = useState('');
   const [groupPhoto, setGroupPhoto] = useState<string | null>(null);
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
+  const [confirmedEventIds, setConfirmedEventIds] = useState<Set<string>>(() => new Set());
   const [nextEvent, setNextEvent] = useState<GroupNextEvent | null | undefined>(undefined);
   const groupPhotoSource = useAuthenticatedImageSource(groupPhoto);
   const [visibleMonth, setVisibleMonth] = useState(() => {
@@ -78,20 +92,10 @@ export function GroupScreen() {
 
   const today = formatDate(new Date());
 
-  const dayMarks = useMemo(() => buildDayMarks(calendarDays, today), [calendarDays, today]);
-
-  const loadMembers = useCallback(async () => {
-    if (!groupId) {
-      return;
-    }
-
-    try {
-      const data = await getGroupMembers(groupId);
-      setMembers(data);
-    } catch (error) {
-      console.error('Erro ao buscar membros do grupo', error);
-    }
-  }, [groupId]);
+  const dayMarks = useMemo(
+    () => buildDayMarks(calendarDays, today, confirmedEventIds),
+    [calendarDays, confirmedEventIds, today]
+  );
 
   const loadGroup = useCallback(async () => {
     if (!groupId) {
@@ -114,17 +118,60 @@ export function GroupScreen() {
     }
 
     try {
-      const days = await getGroupCalendar(groupId, visibleMonth.month, visibleMonth.year);
+      const [calendarResult, membersResult] = await Promise.allSettled([
+        getGroupCalendar(groupId, visibleMonth.month, visibleMonth.year),
+        getGroupMembers(groupId),
+      ]);
+      if (calendarResult.status === 'rejected') {
+        throw calendarResult.reason;
+      }
+
+      const days = calendarResult.value;
       setCalendarDays(days);
+
+      if (membersResult.status === 'rejected') {
+        console.error('Erro ao buscar membros do grupo', membersResult.reason);
+        setMembers([]);
+        setConfirmedEventIds(new Set());
+        return;
+      }
+
+      const groupMembers = membersResult.value;
+      setMembers(groupMembers);
+
+      const eventIds = [
+        ...new Set(days.flatMap((day) => [...day.scheduledEventIds, ...day.completedEventIds])),
+      ];
+      const eventResults = await Promise.allSettled(
+        eventIds.map((eventId) => getEventDetails(eventId))
+      );
+      const memberIds = new Set(groupMembers.map((member) => member.id));
+      const unanimouslyConfirmedEventIds = new Set<string>();
+
+      if (memberIds.size > 0) {
+        eventResults.forEach((result, index) => {
+          if (result.status !== 'fulfilled') return;
+
+          const confirmedMemberIds = new Set(
+            result.value.proposal.responses
+              .filter((response) => response.answer === 'yes')
+              .map((response) => response.user.id)
+          );
+          if ([...memberIds].every((memberId) => confirmedMemberIds.has(memberId))) {
+            unanimouslyConfirmedEventIds.add(eventIds[index]);
+          }
+        });
+      }
+
+      setConfirmedEventIds(unanimouslyConfirmedEventIds);
     } catch (error) {
       console.error('Erro ao buscar o calendário do grupo', error);
     }
   }, [groupId, visibleMonth]);
 
   useEffect(() => {
-    void loadMembers();
     void loadGroup();
-  }, [loadMembers, loadGroup]);
+  }, [loadGroup]);
 
   useEffect(() => {
     void loadCalendar();
@@ -132,10 +179,9 @@ export function GroupScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      void loadMembers();
       void loadGroup();
       void loadCalendar();
-    }, [loadMembers, loadGroup, loadCalendar])
+    }, [loadGroup, loadCalendar])
   );
 
   const handleDayPress = (dateString: string) => {

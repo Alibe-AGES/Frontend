@@ -1,5 +1,6 @@
 import { DayMark } from '@/components/Calendar/Calendar.types';
 import { getGroupCalendar } from '@/server/calendar';
+import { getEventDetails } from '@/server/events';
 import { getGroup, getGroupMembers } from '@/server/groups';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -13,6 +14,10 @@ jest.mock('expo-router', () => ({
 
 jest.mock('@/server/calendar', () => ({
   getGroupCalendar: jest.fn(),
+}));
+
+jest.mock('@/server/events', () => ({
+  getEventDetails: jest.fn(),
 }));
 
 jest.mock('@/server/groups', () => ({
@@ -51,6 +56,7 @@ const mockUseLocalSearchParams = useLocalSearchParams as jest.MockedFunction<
 >;
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
 const mockGetGroupCalendar = getGroupCalendar as jest.MockedFunction<typeof getGroupCalendar>;
+const mockGetEventDetails = jest.mocked(getEventDetails);
 const mockGetGroup = getGroup as jest.MockedFunction<typeof getGroup>;
 const mockGetGroupMembers = getGroupMembers as jest.MockedFunction<typeof getGroupMembers>;
 
@@ -85,6 +91,13 @@ describe('GroupScreen', () => {
       { id: 'user-2', name: 'Bia', profilePic: null },
     ]);
     mockGetGroupCalendar.mockResolvedValue([]);
+    mockGetEventDetails.mockImplementation(
+      async (eventId) =>
+        ({
+          id: eventId,
+          proposal: { responses: [] },
+        }) as unknown as Awaited<ReturnType<typeof getEventDetails>>
+    );
   });
 
   afterEach(() => {
@@ -249,6 +262,43 @@ describe('GroupScreen', () => {
         allUsersAvailable: true,
       });
     });
+  });
+
+  test('shows a star status only when every group member confirms an event', async () => {
+    mockGetGroupCalendar.mockResolvedValue([
+      {
+        date: '2026-10-15',
+        scheduledEventIds: ['event-all-confirmed', 'event-pending'],
+        proposalIds: [],
+        availableUserIds: [],
+        completedEventIds: [],
+        allUsersAvailable: false,
+      },
+    ]);
+    mockGetEventDetails.mockImplementation(
+      async (eventId) =>
+        ({
+          id: eventId,
+          proposal: {
+            responses:
+              eventId === 'event-all-confirmed'
+                ? [
+                    { answer: 'yes', user: { id: 'user-1' } },
+                    { answer: 'yes', user: { id: 'user-2' } },
+                  ]
+                : [{ answer: 'yes', user: { id: 'user-1' } }],
+          },
+        }) as unknown as Awaited<ReturnType<typeof getEventDetails>>
+    );
+
+    await renderGroup();
+
+    await waitFor(() => {
+      expect(mockDayMarks?.['2026-10-15'].status).toBe('matched');
+    });
+    expect(mockDayMarks?.['2026-10-15'].eventIds).toEqual(['event-all-confirmed', 'event-pending']);
+    expect(mockGetEventDetails).toHaveBeenCalledWith('event-all-confirmed');
+    expect(mockGetEventDetails).toHaveBeenCalledWith('event-pending');
   });
 
   test('navigates to the standalone details screen when the day has events or proposals', async () => {

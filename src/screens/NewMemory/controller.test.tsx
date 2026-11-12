@@ -4,11 +4,13 @@ import Toast from 'react-native-toast-message';
 import { getGroupCalendar } from '@/server/calendar';
 import { getEventDetails } from '@/server/events';
 import { createMemory } from '@/server/memories';
-import NewMemoryController from './controller';
 import type { NewMemoryScreenProps } from '.';
+import NewMemoryController from './controller';
 
 let mockScreenProps: NewMemoryScreenProps | null = null;
-let mockSearchParams: { id: string; month?: string; year?: string } = { id: 'group-1' };
+let mockSearchParams: { id: string; month?: string; year?: string; date?: string } = {
+  id: 'group-1',
+};
 const mockReplace = jest.fn();
 
 jest.mock('expo-router', () => ({
@@ -36,9 +38,9 @@ const mockedCalendar = jest.mocked(getGroupCalendar);
 const mockedEventDetails = jest.mocked(getEventDetails);
 const PHOTO = { uri: 'file:///memory.jpg' };
 
-function calendarDay(completedEventIds: string[]) {
+function calendarDay(completedEventIds: string[], date = '2026-11-01') {
   return {
-    date: '2026-11-01',
+    date,
     scheduledEventIds: [],
     proposalIds: [],
     availableUserIds: [],
@@ -70,6 +72,25 @@ describe('<NewMemoryController />', () => {
     });
 
     expect(mockedCalendar).toHaveBeenCalledWith('group-1', 10, 2026);
+    expect(mockScreenProps?.events).toEqual([{ label: 'Churrasco', value: 'event-1' }]);
+  });
+
+  test('lists only completed events for the selected day', async () => {
+    mockSearchParams = { id: 'group-1', month: '11', year: '2026', date: '2026-11-01' };
+    mockedCalendar.mockResolvedValue([
+      calendarDay(['event-1'], '2026-11-01'),
+      calendarDay(['event-2'], '2026-11-02'),
+    ]);
+    mockedEventDetails.mockResolvedValue(eventDetails('event-1', 'Churrasco'));
+
+    render(<NewMemoryController />);
+
+    await waitFor(() => {
+      expect(mockScreenProps?.isLoadingEvents).toBe(false);
+    });
+
+    expect(mockedEventDetails).toHaveBeenCalledTimes(1);
+    expect(mockedEventDetails).toHaveBeenCalledWith('event-1');
     expect(mockScreenProps?.events).toEqual([{ label: 'Churrasco', value: 'event-1' }]);
   });
 
