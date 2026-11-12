@@ -91,12 +91,11 @@ describe('GroupScreen', () => {
       { id: 'user-2', name: 'Bia', profilePic: null },
     ]);
     mockGetGroupCalendar.mockResolvedValue([]);
-    mockGetEventDetails.mockImplementation(
-      async (eventId) =>
-        ({
-          id: eventId,
-          proposal: { responses: [] },
-        }) as unknown as Awaited<ReturnType<typeof getEventDetails>>
+    mockGetEventDetails.mockImplementation((eventId) =>
+      Promise.resolve({
+        id: eventId,
+        proposal: { responses: [] },
+      } as unknown as Awaited<ReturnType<typeof getEventDetails>>)
     );
   });
 
@@ -275,20 +274,19 @@ describe('GroupScreen', () => {
         allUsersAvailable: false,
       },
     ]);
-    mockGetEventDetails.mockImplementation(
-      async (eventId) =>
-        ({
-          id: eventId,
-          proposal: {
-            responses:
-              eventId === 'event-all-confirmed'
-                ? [
-                    { answer: 'yes', user: { id: 'user-1' } },
-                    { answer: 'yes', user: { id: 'user-2' } },
-                  ]
-                : [{ answer: 'yes', user: { id: 'user-1' } }],
-          },
-        }) as unknown as Awaited<ReturnType<typeof getEventDetails>>
+    mockGetEventDetails.mockImplementation((eventId) =>
+      Promise.resolve({
+        id: eventId,
+        proposal: {
+          responses:
+            eventId === 'event-all-confirmed'
+              ? [
+                  { answer: 'yes', user: { id: 'user-1' } },
+                  { answer: 'yes', user: { id: 'user-2' } },
+                ]
+              : [{ answer: 'yes', user: { id: 'user-1' } }],
+        },
+      } as unknown as Awaited<ReturnType<typeof getEventDetails>>)
     );
 
     await renderGroup();
