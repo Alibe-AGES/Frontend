@@ -1,6 +1,6 @@
+import { BackButton } from '@/components/BackButton';
 import { FilterCarousel } from '@/components/FilterCarousel';
 import { EMPTY_FILTER_VALUE, FilterSheet, hasActiveFilters } from '@/components/FilterSheet';
-import { BackButton } from '@/components/BackButton';
 import { NavigationBar } from '@/components/NavigationBar';
 import { PlaceList } from '@/components/PlaceList';
 import { ScreenFrame, type ScreenFrameLayout } from '@/components/ScreenFrame';
@@ -20,11 +20,12 @@ export function ExperiencesScreen() {
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [filters, setFilters] = useState(EMPTY_FILTER_VALUE);
   const [isFilterSheetVisible, setIsFilterSheetVisible] = useState(false);
-  const { places, isLoading, error, refetch } = usePlaces({
-    query,
-    tagIds: selectedTagIds,
-    filters,
-  });
+  const { places, hasMore, isLoading, isLoadingMore, error, loadMoreError, loadMore, refetch } =
+    usePlaces({
+      query,
+      tagIds: selectedTagIds,
+      filters,
+    });
 
   const handleToggleTag = (id: string) => {
     setSelectedTagIds((current) =>
@@ -84,8 +85,14 @@ export function ExperiencesScreen() {
         {({ topInset, bottomInset }: ScreenFrameLayout) => (
           <PlaceList
             places={places}
+            hasMore={hasMore}
             isLoading={isLoading}
+            isLoadingMore={isLoadingMore}
             error={error}
+            loadMoreError={loadMoreError}
+            onLoadMore={() => {
+              void loadMore();
+            }}
             onRetry={() => {
               void refetch();
             }}

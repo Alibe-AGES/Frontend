@@ -184,6 +184,7 @@ export function ScreenFrame({
   background = 'canvas',
   padding = 'default',
   gap = 'none',
+  backdrop,
   header,
   footer,
   floatingChrome = false,
@@ -225,7 +226,18 @@ export function ScreenFrame({
   ) : null;
 
   return (
-    <View className={`flex-1 ${BACKGROUND_CLASSES[background]}`}>
+    <View className={`flex-1 overflow-hidden ${BACKGROUND_CLASSES[background]}`}>
+      {isPresent(backdrop) ? (
+        <View
+          accessible={false}
+          className="absolute inset-0"
+          pointerEvents="none"
+          testID="screen-frame-backdrop"
+        >
+          {backdrop}
+        </View>
+      ) : null}
+
       {floatingChrome ? null : headerElement}
 
       <ScreenFrameBody

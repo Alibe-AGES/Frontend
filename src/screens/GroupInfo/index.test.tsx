@@ -6,6 +6,7 @@ const group = {
   name: 'Hermanas',
   profilePic: null,
   createdAt: '2026-01-01T00:00:00.000Z',
+  ownerId: 'user-1',
   participants: [
     {
       id: 'user-1',

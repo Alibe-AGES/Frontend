@@ -2,15 +2,14 @@ import * as Linking from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
-import tw from 'twrnc';
 
-import InviteDecoration from '@/assets/images/invite-decoration.svg';
 import { Button } from '@/components/Button';
 import { ContinueButton } from '@/components/ContinueButton';
 import { InviteLink } from '@/components/InviteLink';
 import { ScreenFrame } from '@/components/ScreenFrame';
 import { getGroupInviteLink, type GroupInviteLink } from '@/server/groups';
 import { theme } from '@/theme';
+import { HandsHiFive } from '@/components/HandsHiFive';
 
 export function InviteGroupScreen() {
   const router = useRouter();
@@ -18,6 +17,7 @@ export function InviteGroupScreen() {
   const [invite, setInvite] = useState<GroupInviteLink | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [copyCount, setCopyCount] = useState(0);
 
   const loadInvite = useCallback(async () => {
     if (!groupId) {
@@ -60,7 +60,9 @@ export function InviteGroupScreen() {
       testID="invite-group-screen"
     >
       <View className="flex-1 px-6 pb-28 pt-40">
-        <Text className="text-center font-poppins-black text-4xl leading-tight text-ink">
+        <Text
+          className={`text-center text-[2.857rem] leading-[3rem] text-ink ${theme.typography.display}`}
+        >
           Tudo{'\n'}pronto!
         </Text>
 
@@ -95,9 +97,13 @@ export function InviteGroupScreen() {
             }
             return (
               <InviteLink
+                variant="primary"
                 link={inviteUrl}
                 expiresAt={invite?.expiresAt}
                 onExpired={() => void loadInvite()}
+                onCopy={() => {
+                  setCopyCount((count) => count + 1);
+                }}
               />
             );
           })()}
@@ -105,12 +111,12 @@ export function InviteGroupScreen() {
 
         <View
           accessible={false}
-          style={tw`-mx-6 mt-8 h-60`}
-          testID="alibe-invite-decoration"
+          className="-mx-8 aspect-[390/280]"
+          testID="hi-five-hands-invite-group"
         >
-          <InviteDecoration
-            width="100%"
-            height="100%"
+          <HandsHiFive
+            variant="sign-up"
+            playKey={copyCount}
           />
         </View>
 

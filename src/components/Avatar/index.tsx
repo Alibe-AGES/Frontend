@@ -41,12 +41,15 @@ export const Avatar: FC<AvatarProps> = ({
   return (
     <View
       className="items-center justify-center"
+      style={tw.style(imageClassName)}
       testID={`${testID}-placeholder`}
     >
       <Ionicons
         name={fallbackIconName}
         size={iconSize}
         color={fallbackIconColor}
+        // A fixed width keeps the glyph from being squeezed when it is wider than the avatar box.
+        style={{ width: iconSize, textAlign: 'center' }}
       />
     </View>
   );

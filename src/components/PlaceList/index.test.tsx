@@ -10,27 +10,22 @@ const places: Place[] = Array.from({ length: 5 }, (_, index) => ({
 }));
 
 describe('<PlaceList />', () => {
-  test('renders only the first page of places', async () => {
-    const { getByText, queryByText } = await Promise.resolve(
-      render(
-        <PlaceList
-          places={places}
-          pageSize={2}
-        />
-      )
-    );
+  test('renders all places loaded from the backend', async () => {
+    const { getByText } = await Promise.resolve(render(<PlaceList places={places} />));
 
     expect(getByText('Local 0')).toBeTruthy();
     expect(getByText('Local 1')).toBeTruthy();
-    expect(queryByText('Local 2')).toBeNull();
+    expect(getByText('Local 2')).toBeTruthy();
   });
 
-  test('loads the next page when the end is reached', async () => {
-    const { getByTestId, getByText } = await Promise.resolve(
+  test('offers backend pagination and requests another page at the scroll end', async () => {
+    const onLoadMore = jest.fn();
+    const { getByTestId } = await Promise.resolve(
       render(
         <PlaceList
-          places={places}
-          pageSize={2}
+          places={places.slice(0, 2)}
+          hasMore
+          onLoadMore={onLoadMore}
         />
       )
     );
@@ -38,8 +33,9 @@ describe('<PlaceList />', () => {
     fireEvent(getByTestId('alibe-place-list'), 'endReached');
     await Promise.resolve();
 
-    expect(getByText('Local 2')).toBeTruthy();
-    expect(getByText('Local 3')).toBeTruthy();
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
+    fireEvent.press(getByTestId('alibe-place-list-load-more'));
+    expect(onLoadMore).toHaveBeenCalledTimes(2);
   });
 
   test('applies the filter', async () => {
@@ -161,12 +157,7 @@ describe('<PlaceList />', () => {
 
   test('pads an odd last row so a lone card keeps its column width', async () => {
     const { getByTestId } = await Promise.resolve(
-      render(
-        <PlaceList
-          places={places.slice(0, 3)}
-          pageSize={3}
-        />
-      )
+      render(<PlaceList places={places.slice(0, 3)} />)
     );
 
     expect(getByTestId('alibe-place-list').props.data).toHaveLength(4);

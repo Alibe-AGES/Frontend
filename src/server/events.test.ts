@@ -272,7 +272,7 @@ describe('createEvent', () => {
     expect(append).toHaveBeenCalledWith('image', expect.any(File));
   });
 
-  test('includes the matched suggestion id when converting a match into an event', async () => {
+  test('creates an event at the matched location using backend-supported fields', async () => {
     const append = jest.spyOn(FormData.prototype, 'append');
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
@@ -284,11 +284,10 @@ describe('createEvent', () => {
       date: '2026-10-25',
       time: '19:30',
       locationId: 'location-1',
-      matchedSuggestionId: 'proposal-1',
     });
 
     expect(append).toHaveBeenCalledWith('locationId', 'location-1');
-    expect(append).toHaveBeenCalledWith('matchedSuggestionId', 'proposal-1');
+    expect(append).not.toHaveBeenCalledWith('location', expect.anything());
   });
 
   test('throws an ApiError with the backend message when creation fails', async () => {

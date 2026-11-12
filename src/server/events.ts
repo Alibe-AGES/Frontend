@@ -16,7 +16,6 @@ export interface CreateEventInput {
   time: string;
   location?: string;
   locationId?: string;
-  matchedSuggestionId?: string;
   image?: UploadImage | null;
 }
 
@@ -255,9 +254,6 @@ export async function createEvent(groupId: string, input: CreateEventInput): Pro
   formData.append('time', input.time);
   if (input.location) formData.append('location', input.location.trim());
   if (input.locationId) formData.append('locationId', input.locationId);
-  if (input.matchedSuggestionId) {
-    formData.append('matchedSuggestionId', input.matchedSuggestionId);
-  }
 
   if (input.image) {
     await appendImage(formData, 'image', input.image, 'event-image');

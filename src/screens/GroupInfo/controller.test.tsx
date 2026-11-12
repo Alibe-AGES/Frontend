@@ -1,5 +1,5 @@
 import { getGroupCalendar } from '@/server/calendar';
-import { getGroup, getGroupInviteLink, getMe } from '@/server/groups';
+import { getGroup, getGroupInviteLink, getMe, updateGroup } from '@/server/groups';
 import { act, render, waitFor } from '@testing-library/react-native';
 import { createURL } from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -24,7 +24,22 @@ jest.mock('@/server/groups', () => ({
   getGroup: jest.fn(),
   getGroupInviteLink: jest.fn(),
   getMe: jest.fn(),
+  updateGroup: jest.fn(),
 }));
+
+const mockPickImage = jest.fn();
+let mockOnPhotoPicked: ((photo: { uri: string }) => void) | undefined;
+
+jest.mock('@/components/PhotoPicker/controllers/useDefaultPhotoPickerController', () => ({
+  useDefaultPhotoPickerController: (params: {
+    onUploadSuccess?: (photo: { uri: string }) => void;
+  }) => {
+    mockOnPhotoPicked = params.onUploadSuccess;
+    return { photoUri: null, isLoading: false, pickImage: mockPickImage };
+  },
+}));
+
+jest.mock('react-native-toast-message', () => ({ show: jest.fn() }));
 
 jest.mock('@/screens/GroupInfo', () => ({
   GroupInfoScreen: (props: Record<string, unknown>) => {
@@ -41,6 +56,7 @@ const mockGetGroup = getGroup as jest.MockedFunction<typeof getGroup>;
 const mockGetGroupCalendar = getGroupCalendar as jest.MockedFunction<typeof getGroupCalendar>;
 const mockGetGroupInviteLink = getGroupInviteLink as jest.MockedFunction<typeof getGroupInviteLink>;
 const mockGetMe = getMe as jest.MockedFunction<typeof getMe>;
+const mockUpdateGroup = updateGroup as jest.MockedFunction<typeof updateGroup>;
 const mockCreateURL = createURL as jest.MockedFunction<typeof createURL>;
 
 async function renderController() {
@@ -61,6 +77,7 @@ describe('GroupInfoController', () => {
       name: 'Hermanas',
       profilePic: null,
       createdAt: '2026-01-01T00:00:00.000Z',
+      ownerId: 'user-1',
       participants: [{ id: 'user-1', name: 'Ana', profilePic: null }],
     });
     mockGetGroupCalendar.mockResolvedValue([
@@ -132,6 +149,83 @@ describe('GroupInfoController', () => {
     await waitFor(() => {
       expect(mockGetGroupInviteLink).toHaveBeenCalledTimes(2);
       expect(mockGroupInfoProps.inviteUrl).toBe('alibe://groups?invite=new-token');
+    });
+  });
+
+  test('lets only the owner edit the group', async () => {
+    await renderController();
+
+    await waitFor(() => {
+      expect(mockGroupInfoProps.canEdit).toBe(true);
+    });
+
+    mockGetMe.mockResolvedValueOnce({ id: 'user-2', name: 'Bia', profilePic: null });
+    await renderController();
+
+    await waitFor(() => {
+      expect(mockGroupInfoProps.canEdit).toBe(false);
+    });
+  });
+
+  test('renames the group with the trimmed name', async () => {
+    mockUpdateGroup.mockResolvedValue({
+      id: 'group-1',
+      name: 'Primas',
+      profilePic: null,
+      createdAt: '2026-01-01T00:00:00.000Z',
+    });
+    await renderController();
+    const onRenameGroup = mockGroupInfoProps.onRenameGroup as (
+      name: string
+    ) => Promise<string | null>;
+
+    let result: string | null = 'unset';
+    await act(async () => {
+      result = await onRenameGroup('  Primas  ');
+    });
+
+    expect(result).toBeNull();
+    expect(mockUpdateGroup).toHaveBeenCalledWith('group-1', { name: 'Primas' });
+    expect(mockGroupInfoProps.group).toMatchObject({ name: 'Primas' });
+  });
+
+  test('rejects a name that is too short without calling the API', async () => {
+    await renderController();
+    const onRenameGroup = mockGroupInfoProps.onRenameGroup as (
+      name: string
+    ) => Promise<string | null>;
+
+    let result: string | null = null;
+    await act(async () => {
+      result = await onRenameGroup(' a ');
+    });
+
+    expect(result).toBe('O nome deve conter entre 2 e 100 caracteres.');
+    expect(mockUpdateGroup).not.toHaveBeenCalled();
+  });
+
+  test('uploads the picked image and shows it right away', async () => {
+    mockUpdateGroup.mockResolvedValue({
+      id: 'group-1',
+      name: 'Hermanas',
+      profilePic: 'https://api.alibe.app/groups/group-1/profile-picture',
+      createdAt: '2026-01-01T00:00:00.000Z',
+    });
+    await renderController();
+
+    const onEditImage = mockGroupInfoProps.onEditImage as () => void;
+    onEditImage();
+    expect(mockPickImage).toHaveBeenCalled();
+
+    const photo = { uri: 'file:///picked.jpg', fileName: 'picked.jpg', mimeType: 'image/jpeg' };
+    await act(async () => {
+      mockOnPhotoPicked?.(photo);
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(mockUpdateGroup).toHaveBeenCalledWith('group-1', { image: photo });
+      expect(mockGroupInfoProps.group).toMatchObject({ profilePic: 'file:///picked.jpg' });
     });
   });
 });

@@ -15,6 +15,11 @@ export type HandsHiFiveVariant = 'login' | 'sign-up' | 'event-created';
 
 export interface HandsHiFiveProps {
   readonly variant: HandsHiFiveVariant;
+  /**
+   * Plays on demand instead of on focus: the resting artwork shows while it is 0, and every new
+   * value (e.g. a counter bumped on each copy) plays the animation once more.
+   */
+  readonly playKey?: number;
 }
 
 // Every screen uses the same animation, but with a different color palette.
@@ -47,8 +52,12 @@ const STATIC_ARTWORK = {
   'event-created': { Artwork: EventCreatedHands, viewBox: '0 0 390 280' },
 };
 
-/** Plays once each time the screen gains focus and rests on the same drawing as the artwork. */
-export function HandsHiFive({ variant }: HandsHiFiveProps) {
+/**
+ * Plays once each time the screen gains focus, or on each new `playKey`, and rests on the same
+ * drawing as the artwork.
+ */
+export function HandsHiFive({ variant, playKey }: HandsHiFiveProps) {
+  const playsOnDemand = playKey !== undefined;
   const [reduceMotion, setReduceMotion] = useState<boolean | null>(null);
   const [hasFailed, setHasFailed] = useState(false);
   // Remounting replays it when the user comes back to a screen that stayed mounted.
@@ -69,15 +78,21 @@ export function HandsHiFive({ variant }: HandsHiFiveProps) {
 
   useFocusEffect(
     useCallback(() => {
+      if (playsOnDemand) {
+        return;
+      }
       if (isFirstFocus.current) {
         isFirstFocus.current = false;
         return;
       }
       setPlayCount((current) => current + 1);
-    }, [])
+    }, [playsOnDemand])
   );
 
-  if (reduceMotion !== false || hasFailed) {
+  // Before the first play, the artwork is the drawing the animation comes to rest on.
+  const isWaitingToPlay = playsOnDemand && playKey === 0;
+
+  if (reduceMotion !== false || hasFailed || isWaitingToPlay) {
     const { Artwork, viewBox } = STATIC_ARTWORK[variant];
     return (
       <Artwork
@@ -93,7 +108,7 @@ export function HandsHiFive({ variant }: HandsHiFiveProps) {
 
   return (
     <LottieView
-      key={playCount}
+      key={playsOnDemand ? playKey : playCount}
       autoPlay
       loop={false}
       onAnimationFailure={() => {

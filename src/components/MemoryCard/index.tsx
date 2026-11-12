@@ -1,4 +1,6 @@
-import { Image, Text, View } from 'react-native';
+import { Image } from 'expo-image';
+import { Text, View } from 'react-native';
+import tw from 'twrnc';
 import { MemoryCardProps } from './MemoryCard.types';
 
 export type { MemoryCardProps } from './MemoryCard.types';
@@ -29,8 +31,12 @@ export function MemoryCard({
   address,
   imageUri,
   imageHeaders,
+  imageSource,
   testID = 'memory-card',
 }: MemoryCardProps) {
+  const resolvedImageSource =
+    imageSource === undefined ? { uri: imageUri, headers: imageHeaders } : imageSource;
+
   return (
     // The shadow lives on the outer view: on iOS `overflow-hidden` would clip it.
     <View
@@ -45,12 +51,20 @@ export function MemoryCard({
           {formatDate(date)}
         </Text>
 
-        <Image
-          source={{ uri: imageUri, headers: imageHeaders }}
-          accessibilityLabel={`Foto de ${name}`}
-          className="aspect-[3/4] w-full bg-lime-soft"
-          resizeMode="cover"
-        />
+        <View
+          className="w-full bg-lime-soft"
+          style={{ aspectRatio: 3 / 4 }}
+          testID={`${testID}-image-frame`}
+        >
+          {resolvedImageSource ? (
+            <Image
+              source={resolvedImageSource}
+              accessibilityLabel={`Foto de ${name}`}
+              contentFit="cover"
+              style={tw`h-full w-full`}
+            />
+          ) : null}
+        </View>
 
         <View className="flex-row items-start justify-between gap-2 px-4 py-4">
           <View className="flex-1">

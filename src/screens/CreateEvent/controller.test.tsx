@@ -97,6 +97,7 @@ describe('CreateEventController', () => {
       name: 'Hermanas',
       profilePic: null,
       createdAt: '2026-01-01T00:00:00.000Z',
+      ownerId: null,
       participants: [
         { id: 'user-1', name: 'Luiza', profilePic: null },
         { id: 'user-2', name: 'Kata', profilePic: null },
@@ -243,7 +244,6 @@ describe('CreateEventController', () => {
       date: '2026-10-15',
       time: '20:00',
       locationId: 'location-1',
-      matchedSuggestionId: 'proposal-1',
     });
   });
 

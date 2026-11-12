@@ -43,8 +43,8 @@ export function LoginScreen({
     <ScreenFrame
       padding="horizontal"
       topFade
-      testID="login-screen"
       floatingChrome
+      testID="login-screen"
       header={
         <BackButton
           className="self-start"

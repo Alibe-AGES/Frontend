@@ -159,7 +159,7 @@ function DayContent({ status, day, hasImage }: DayContentProps) {
       <Ionicons
         name="star"
         size={20}
-        color={theme.colors.lime}
+        color={theme.colors.pinkDeep}
         testID="calendar-day-icon-matched"
       />
     );

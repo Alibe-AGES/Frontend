@@ -10,7 +10,6 @@ import { useEffect, useRef, useState } from 'react';
 import { Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-import GreenSpin from '@/assets/images/green-spin.svg';
 import GroupSpin from '@/assets/images/group-spin-dark-green.svg';
 import PinkSpin from '@/assets/images/pink-spin.svg';
 
@@ -89,18 +88,14 @@ export function GroupsScreen() {
 
   const handleCreateGroup = () => {
     router.push('/create-group');
-    // router.push({
-    //   pathname: '/(profile)/profile/[userId]',
-    //   params: { userId: 'user-1' },
-    // });
-    // router.push({
-    //   pathname: '/(profile)/profile/[userId]',
-    //   params: { userId: '33333333-3333-4333-8333-333333333333' },
-    // });
   };
 
   const handleGroupPress = (id: string) => {
     router.push({ pathname: '/group/[id]', params: { id } });
+  };
+
+  const handleInfoGroupPress = (id: string) => {
+    router.push({ pathname: '/group/[id]/info', params: { id } });
   };
 
   return (
@@ -114,25 +109,7 @@ export function GroupsScreen() {
       />
       <View
         accessible={false}
-        className="absolute -left-3 -top-2 h-32 w-32 sm:h-40 sm:w-40"
-      >
-        <PinkSpin
-          width="100%"
-          height="100%"
-        />
-      </View>
-      <View
-        accessible={false}
-        className="absolute -bottom-5 -left-8 h-32 w-32 sm:h-36 sm:w-36"
-      >
-        <GreenSpin
-          width="100%"
-          height="100%"
-        />
-      </View>
-      <View
-        accessible={false}
-        className="sm:w-15 absolute -bottom-3 -right-3 h-32 w-32 rotate-180 sm:h-32"
+        className="absolute -left-3 -top-2 h-40 w-40 sm:h-40 sm:w-40"
       >
         <PinkSpin
           width="100%"
@@ -140,8 +117,18 @@ export function GroupsScreen() {
         />
       </View>
 
-      <View className="w-full max-w-2xl flex-1 gap-6 self-center px-6 pb-6 pt-10">
-        <View className="items-center gap-2">
+      <View
+        accessible={false}
+        className="sm:w-15 absolute -bottom-3 -right-3 h-40 w-40 rotate-180 sm:h-32"
+      >
+        <PinkSpin
+          width="100%"
+          height="100%"
+        />
+      </View>
+
+      <View className="mt-28 w-full max-w-2xl flex-1 gap-6 self-center">
+        <View className="items-center">
           <View
             accessibilityLabel="Logo Alibe"
             className="h-32 w-32 max-w-24"
@@ -151,20 +138,30 @@ export function GroupsScreen() {
               height="100%"
             />
           </View>
-
-          <Text className={`text-center text-3xl text-ink ${theme.typography.display}`}>
+          <Text
+            adjustsFontSizeToFit
+            numberOfLines={1}
+            className={`text-center text-[2.3rem] leading-tight text-ink ${theme.typography.display}`}
+          >
             Meus grupos
           </Text>
-          <Text className={`text-center text-wine ${theme.typography.body}`}>
+
+          <Text className={`mt-2 text-center text-wine ${theme.typography.body}`}>
             Clique no + para criar um novo grupo.
           </Text>
-          <CreateGroupButton onPress={handleCreateGroup} />
         </View>
 
-        <GroupsList
-          key={groupsListVersion}
-          onGroupPress={handleGroupPress}
-        />
+        <View className="flex-1 gap-6">
+          <View className="items-center">
+            <CreateGroupButton onPress={handleCreateGroup} />
+          </View>
+
+          <GroupsList
+            key={groupsListVersion}
+            onGroupPress={handleGroupPress}
+            onInfoGroupPress={handleInfoGroupPress}
+          />
+        </View>
       </View>
     </View>
   );

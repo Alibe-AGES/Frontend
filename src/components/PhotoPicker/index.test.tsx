@@ -29,8 +29,9 @@ jest.mock('../Avatar', () => {
       photoUri,
       fallbackIconName,
       imageClassName,
+      cachePolicy,
       testID = 'avatar',
-    }: MockAvatarProps) => {
+    }: MockAvatarProps & { cachePolicy?: string }) => {
       const avatarTestID = `${testID}-${photoUri ? 'photo' : 'placeholder'}`;
 
       return (
@@ -38,6 +39,7 @@ jest.mock('../Avatar', () => {
           <RN.Text testID={`${avatarTestID}-uri`}>{photoUri ?? 'null'}</RN.Text>
           <RN.Text testID={`${avatarTestID}-icon`}>{fallbackIconName ?? 'none'}</RN.Text>
           <RN.Text testID={`${avatarTestID}-image-class`}>{imageClassName ?? 'none'}</RN.Text>
+          <RN.Text testID={`${avatarTestID}-cache-policy`}>{cachePolicy ?? 'default'}</RN.Text>
         </RN.View>
       );
     },
@@ -71,6 +73,17 @@ describe('<PhotoPicker />', () => {
   const defaultProps: PhotoPickerProps = {
     useController: createMockController(),
   };
+
+  test('passes the cache policy on to the photo', () => {
+    const { getByTestId } = render(
+      <PhotoPicker
+        useController={createMockController({ photoUri: 'https://api.alibe.app/users/1/photo' })}
+        cachePolicy="none"
+      />
+    );
+
+    expect(getByTestId('alibe-photo-picker-photo-cache-policy')).toHaveTextContent('none');
+  });
 
   test('renders with the default label and group placeholder', async () => {
     const { getByText, getByTestId } = await Promise.resolve(

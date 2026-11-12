@@ -3,6 +3,7 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 import { Calendar } from '@/components/Calendar';
 import { API_BASE_URL } from '@/constants';
 import { getAuthenticationHeaders } from '@/server/authenticated-fetch';
+import { theme } from '@/theme';
 
 jest.mock('@/server/authenticated-fetch', () => ({
   getAuthenticationHeaders: jest.fn(),
@@ -145,6 +146,21 @@ describe('Calendar', () => {
     expect(getByTestId('calendar-day-icon-suggested')).toBeTruthy();
     expect(getByTestId('calendar-day-2025-05-08').props.className).toContain('bg-ink');
     expect(getByTestId('calendar-day-2025-05-22').props.className).toContain('bg-pink-deep');
+  });
+
+  test('shows a deep-pink star for a unanimously confirmed event day', async () => {
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <Calendar
+          initialDate="2026-05-01"
+          dayMarks={{ '2026-05-08': { status: 'matched', eventIds: ['event-1'] } }}
+        />
+      )
+    );
+
+    expect(getByTestId('calendar-day-icon-matched').props.style).toEqual(
+      expect.arrayContaining([expect.objectContaining({ color: theme.colors.pinkDeep })])
+    );
   });
 
   test("outlines today's date without outlining other days", () => {

@@ -58,7 +58,6 @@ function buildProposalInput(
 function buildEventInput(
   draft: EventCardDraft,
   locationId: string | undefined,
-  matchedSuggestionId: string | undefined,
   image: SelectedPhoto | null
 ): CreateEventInput {
   let locationInput: Pick<CreateEventInput, 'location' | 'locationId'>;
@@ -72,7 +71,6 @@ function buildEventInput(
     date: draft.date,
     time: draft.time,
     ...locationInput,
-    ...(matchedSuggestionId ? { matchedSuggestionId } : {}),
     ...(!locationId && image ? { image } : {}),
   };
 }
@@ -92,7 +90,6 @@ export default function CreateEventController() {
     address: initialAddress,
     name: initialName,
     tab: initialTab,
-    matchedSuggestionId: initialMatchedSuggestionId,
   } = useLocalSearchParams<{
     id: string;
     date?: string;
@@ -106,7 +103,6 @@ export default function CreateEventController() {
     address?: string;
     name?: string;
     tab?: CreateEventTab;
-    matchedSuggestionId?: string;
   }>();
 
   const validInitialDate = initialDate && isValidApiDate(initialDate) ? initialDate : '';
@@ -202,10 +198,7 @@ export default function CreateEventController() {
         return;
       }
 
-      const event = await createEvent(
-        groupId,
-        buildEventInput(draft, initialLocationId, initialMatchedSuggestionId, photo)
-      );
+      const event = await createEvent(groupId, buildEventInput(draft, initialLocationId, photo));
 
       router.replace({
         pathname: '/group/[id]/event-created',

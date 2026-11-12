@@ -84,6 +84,7 @@ describe('GroupScreen', () => {
       name: 'Hermanas',
       profilePic: null,
       createdAt: '2026-01-01T00:00:00.000Z',
+      ownerId: null,
       participants: [],
     });
     mockGetGroupMembers.mockResolvedValue([
@@ -295,8 +296,66 @@ describe('GroupScreen', () => {
       expect(mockDayMarks?.['2026-10-15'].status).toBe('matched');
     });
     expect(mockDayMarks?.['2026-10-15'].eventIds).toEqual(['event-all-confirmed', 'event-pending']);
+    expect(mockDayMarks?.['2026-10-15'].dot).toBeUndefined();
     expect(mockGetEventDetails).toHaveBeenCalledWith('event-all-confirmed');
     expect(mockGetEventDetails).toHaveBeenCalledWith('event-pending');
+  });
+
+  test('changes a proposal dot to a star when its linked event gets unanimous confirmation', async () => {
+    mockGetGroupCalendar.mockResolvedValue([
+      {
+        date: '2026-10-16',
+        scheduledEventIds: [],
+        proposalIds: ['proposal-1'],
+        proposalEventIds: [{ proposalId: 'proposal-1', eventId: 'event-1' }],
+        availableUserIds: [],
+        completedEventIds: [],
+        allUsersAvailable: false,
+      },
+    ]);
+    mockGetEventDetails.mockResolvedValue({
+      id: 'event-1',
+      proposal: {
+        responses: [
+          { answer: 'yes', user: { id: 'user-1' } },
+          { answer: 'yes', user: { id: 'user-2' } },
+        ],
+      },
+    } as unknown as Awaited<ReturnType<typeof getEventDetails>>);
+
+    await renderGroup();
+
+    await waitFor(() => {
+      expect(mockDayMarks?.['2026-10-16'].status).toBe('matched');
+      expect(mockDayMarks?.['2026-10-16'].dot).toBeUndefined();
+    });
+    expect(mockDayMarks?.['2026-10-16'].eventIds).toEqual(['event-1']);
+    expect(mockGetEventDetails).toHaveBeenCalledWith('event-1');
+  });
+
+  test('keeps the proposal dot while any group member has not confirmed the linked event', async () => {
+    mockGetGroupCalendar.mockResolvedValue([
+      {
+        date: '2026-10-17',
+        scheduledEventIds: [],
+        proposalIds: ['proposal-1'],
+        proposalEventIds: [{ proposalId: 'proposal-1', eventId: 'event-1' }],
+        availableUserIds: [],
+        completedEventIds: [],
+        allUsersAvailable: false,
+      },
+    ]);
+    mockGetEventDetails.mockResolvedValue({
+      id: 'event-1',
+      proposal: { responses: [{ answer: 'yes', user: { id: 'user-1' } }] },
+    } as unknown as Awaited<ReturnType<typeof getEventDetails>>);
+
+    await renderGroup();
+
+    await waitFor(() => {
+      expect(mockDayMarks?.['2026-10-17'].status).toBe('normal');
+      expect(mockDayMarks?.['2026-10-17'].dot).toBe('pink');
+    });
   });
 
   test('navigates to the standalone details screen when the day has events or proposals', async () => {
@@ -330,6 +389,7 @@ describe('GroupScreen', () => {
       name: 'Hermanas',
       profilePic: null,
       createdAt: '2026-01-01T00:00:00.000Z',
+      ownerId: null,
       participants: [],
       nextEvent: {
         id: 'event-1',

@@ -3,6 +3,8 @@ import { FC } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import tw from 'twrnc';
 import { GroupCardProps } from './GroupCard.types';
+import { Ionicons } from '@expo/vector-icons';
+import { theme } from '@/theme';
 
 export type { GroupCardProps } from './GroupCard.types';
 
@@ -12,6 +14,7 @@ export const GroupCard: FC<GroupCardProps> = ({
   photoUri,
   membersPreview,
   onPress,
+  onInfoPress,
   testID = 'alibe-group-card',
 }) => {
   return (
@@ -20,13 +23,14 @@ export const GroupCard: FC<GroupCardProps> = ({
       accessibilityLabel={`Abrir grupo ${name}`}
       onPress={() => onPress?.(id)}
       style={({ pressed }) => tw`${pressed ? 'opacity-75' : 'opacity-100'}`}
-      className="w-full flex-row items-center gap-3 rounded-2xl bg-surface p-3"
+      className="w-full flex-row items-center gap-3 rounded-full bg-surface p-3"
       testID={testID}
     >
-      <View className="h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-coral">
+      <View className="h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-pink">
         <Avatar
           photoUri={photoUri}
           accessibilityLabel={`Foto do grupo ${name}`}
+          fallbackIconColor={theme.colors.surface}
           imageClassName="h-14 w-14 rounded-full"
           iconSize={26}
           testID={`${testID}-avatar`}
@@ -52,6 +56,20 @@ export const GroupCard: FC<GroupCardProps> = ({
           </Text>
         ) : null}
       </View>
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Abrir informações do grupo ${name}`}
+        onPress={() => onInfoPress?.(id)}
+        style={({ pressed }) => tw`${pressed ? 'opacity-75' : 'opacity-100'}`}
+        testID={`${testID}-info-button`}
+      >
+        <Ionicons
+          name={'information-circle'}
+          size={24}
+          color={theme.colors.coral}
+        />
+      </Pressable>
     </Pressable>
   );
 };
