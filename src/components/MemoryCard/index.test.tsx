@@ -1,6 +1,11 @@
 import { render } from '@testing-library/react-native';
 import { MemoryCard } from './index';
 
+jest.mock('expo-image', () => {
+  const RN = jest.requireActual<typeof import('react-native')>('react-native');
+  return { Image: RN.Image };
+});
+
 const IMAGE_URI = 'https://cdn.alibe.com/memory.jpg';
 
 describe('<MemoryCard />', () => {
@@ -76,6 +81,20 @@ describe('<MemoryCard />', () => {
       uri: IMAGE_URI,
       headers,
     });
+  });
+
+  test('does not request the image while the authenticated source is pending', () => {
+    const { getByLabelText } = render(
+      <MemoryCard
+        date={new Date(2026, 4, 8)}
+        name="Evento"
+        address="Endereço"
+        imageUri={IMAGE_URI}
+        imageSource={null}
+      />
+    );
+
+    expect(getByLabelText('Foto de Evento').props.source).toBeNull();
   });
 
   test('truncates name and address to two lines', () => {
