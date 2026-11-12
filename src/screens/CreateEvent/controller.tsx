@@ -84,6 +84,11 @@ export default function CreateEventController() {
     date: initialDate,
     locationId: initialLocationId,
     externalId: initialExternalId,
+    phoneNumber: initialPhoneNumber,
+    website: initialWebsite,
+    openingHours: initialOpeningHours,
+    priceStart: initialPriceStart,
+    priceEnd: initialPriceEnd,
     address: initialAddress,
     name: initialName,
     tab: initialTab,
@@ -93,6 +98,11 @@ export default function CreateEventController() {
     date?: string;
     locationId?: string;
     externalId?: string;
+    phoneNumber?: string;
+    website?: string;
+    openingHours?: string;
+    priceStart?: string;
+    priceEnd?: string;
     address?: string;
     name?: string;
     tab?: CreateEventTab;
@@ -108,6 +118,11 @@ export default function CreateEventController() {
     name: initialName?.trim() ?? '',
     address: initialAddress?.trim() ?? '',
     date: validInitialDate,
+    ...(initialPhoneNumber ? { phoneNumber: initialPhoneNumber } : {}),
+    ...(initialWebsite ? { website: initialWebsite } : {}),
+    ...(initialOpeningHours ? { openingHours: initialOpeningHours } : {}),
+    ...(initialPriceStart ? { priceStart: initialPriceStart } : {}),
+    ...(initialPriceEnd ? { priceEnd: initialPriceEnd } : {}),
   });
   const [photo, setPhoto] = useState<SelectedPhoto | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);

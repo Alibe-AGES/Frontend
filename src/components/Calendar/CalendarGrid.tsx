@@ -37,7 +37,7 @@ const dayContainerClasses: Record<DayStatus, string> = {
   // Availability is shown by the coral dot below the day, not by the background.
   available: 'bg-transparent',
   realized: 'bg-ink',
-  suggested: 'bg-pink',
+  suggested: 'bg-pink-deep',
   matched: 'bg-ink',
   allAvailable: 'bg-coral',
   past: 'bg-gray-200',
@@ -213,6 +213,7 @@ function CalendarDayCell({ dateString, day, mark, onPress, onCreatePress }: Cale
   );
 
   const isFutureOrToday = dateString >= formatCalendarDate(new Date());
+  const isToday = dateString === formatCalendarDate(new Date());
 
   return (
     <View className="relative h-11 flex-1 items-center justify-center">
@@ -228,7 +229,7 @@ function CalendarDayCell({ dateString, day, mark, onPress, onCreatePress }: Cale
         testID={`calendar-day-button-${dateString}`}
       >
         <View
-          className={`h-9 w-9 items-center justify-center overflow-hidden rounded-lg ${dayContainerClasses[displayStatus]}`}
+          className={`h-9 w-9 items-center justify-center overflow-hidden rounded-lg ${dayContainerClasses[displayStatus]} ${isToday ? 'border-2 border-pink-deep' : ''}`}
           testID={`calendar-day-${dateString}`}
         >
           {mark.imageUrl ? (

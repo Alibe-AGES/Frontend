@@ -6,6 +6,7 @@ import { ProfileCardProps } from './ProfileCard.types';
 
 export const ProfileCard: FC<ProfileCardProps> = ({
   avatarUrl,
+  avatarCachePolicy,
   completedEventsCount,
   pendingEventsCount,
   className = '',
@@ -66,6 +67,7 @@ export const ProfileCard: FC<ProfileCardProps> = ({
       >
         <Avatar
           photoUri={avatarUrl}
+          cachePolicy={avatarCachePolicy}
           accessibilityLabel="Foto de perfil"
           imageClassName="w-full h-full"
           iconSize={avatarSize * 0.45}

@@ -1,6 +1,6 @@
+import { ApiError } from '@/server/api';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import Toast from 'react-native-toast-message';
-import { ApiError } from '@/server/api';
 import { UserProfileScreen, UserProfileScreenProps } from './index';
 
 const mockChangePassword = jest.fn();
@@ -38,8 +38,17 @@ jest.mock('@/components/NavigationBar', () => {
 jest.mock('@/components/ProfileCard', () => {
   const RN = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    ProfileCard: ({ avatarUrl }: { avatarUrl?: string | null }) => (
-      <RN.Text testID="profile-card-avatar-source">{avatarUrl ?? 'no-photo'}</RN.Text>
+    ProfileCard: ({
+      avatarUrl,
+      avatarCachePolicy,
+    }: {
+      avatarUrl?: string | null;
+      avatarCachePolicy?: string;
+    }) => (
+      <>
+        <RN.Text testID="profile-card-avatar-source">{avatarUrl ?? 'no-photo'}</RN.Text>
+        <RN.Text testID="profile-card-avatar-cache-policy">{avatarCachePolicy}</RN.Text>
+      </>
     ),
   };
 });
@@ -223,6 +232,7 @@ describe('UserProfileScreen', () => {
     );
 
     expect(getByTestId('profile-card-avatar-source')).toHaveTextContent(profilePhotoUrl);
+    expect(getByTestId('profile-card-avatar-cache-policy')).toHaveTextContent('none');
   });
 
   test('does not render edit/password/logout buttons when it is not the user own profile', async () => {

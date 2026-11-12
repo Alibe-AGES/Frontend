@@ -35,7 +35,12 @@ export default function MemoriesGalleryController() {
 
     router.push({
       pathname: '/group/[id]/memories/new',
-      params: { id: groupId, month: String(month), year: String(year) },
+      params: {
+        id: groupId,
+        month: String(month),
+        year: String(year),
+        ...(date ? { date } : {}),
+      },
     });
   };
 

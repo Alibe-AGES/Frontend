@@ -136,6 +136,10 @@ describe('<ExperienceDetailsScreen />', () => {
     jest.mocked(getPlaceDetails).mockResolvedValueOnce({
       ...details,
       address: 'Rua Padre Chagas, 320',
+      phoneNumber: '(51) 3333-4444',
+      website: 'https://bloom.example',
+      openingHours: ['Monday: 09:00-18:00', 'Tuesday: 09:00-18:00'],
+      priceRange: { start: 20, end: 80, currencyCode: 'BRL' },
     });
     const { findByTestId } = await renderDetails({ groupId: 'group-1', placeId: 'cafe-1' });
 
@@ -147,6 +151,11 @@ describe('<ExperienceDetailsScreen />', () => {
         id: 'group-1',
         tab: 'suggestion',
         externalId: 'cafe-1',
+        phoneNumber: '(51) 3333-4444',
+        website: 'https://bloom.example',
+        openingHours: 'Monday: 09:00-18:00\nTuesday: 09:00-18:00',
+        priceStart: '20',
+        priceEnd: '80',
         address: 'Rua Padre Chagas, 320',
         name: 'Bloom Café',
       },

@@ -144,6 +144,22 @@ describe('Calendar', () => {
 
     expect(getByTestId('calendar-day-icon-suggested')).toBeTruthy();
     expect(getByTestId('calendar-day-2025-05-08').props.className).toContain('bg-ink');
+    expect(getByTestId('calendar-day-2025-05-22').props.className).toContain('bg-pink-deep');
+  });
+
+  test("outlines today's date without outlining other days", async () => {
+    const now = new Date();
+    const today = `${String(now.getFullYear())}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const otherDayNumber = now.getDate() === 1 ? 2 : 1;
+    const otherDay = `${today.slice(0, 8)}${String(otherDayNumber).padStart(2, '0')}`;
+    const { getByTestId } = render(<Calendar initialDate={today} />);
+
+    expect(getByTestId(`calendar-day-${today}`).props.className).toContain(
+      'border-2 border-pink-deep'
+    );
+    expect(getByTestId(`calendar-day-${otherDay}`).props.className).not.toContain(
+      'border-pink-deep'
+    );
   });
 
   test('announces scheduled event counts accessibly without adding number badges', async () => {

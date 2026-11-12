@@ -11,6 +11,7 @@ export type { AvatarProps } from './Avatar.types';
 
 export const Avatar: FC<AvatarProps> = ({
   photoUri,
+  cachePolicy,
   accessibilityLabel,
   imageClassName = 'h-36 w-36 rounded-full',
   iconSize = 80,
@@ -27,6 +28,7 @@ export const Avatar: FC<AvatarProps> = ({
     return (
       <Image
         source={imageSource}
+        cachePolicy={cachePolicy}
         accessible
         accessibilityLabel={accessibilityLabel}
         contentFit="cover"
