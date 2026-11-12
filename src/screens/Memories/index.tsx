@@ -1,3 +1,4 @@
+import { BackButton } from '@/components/BackButton';
 import { Button } from '@/components/Button';
 import { Calendar } from '@/components/Calendar';
 import { DayMark } from '@/components/Calendar/Calendar.types';
@@ -39,7 +40,11 @@ export function MemoriesScreen({
       footer={groupId ? <NavigationBar groupId={groupId} /> : undefined}
       testID="memories-screen"
     >
-      <View className="flex-row items-center justify-end">
+      <View className="flex-row items-center justify-between">
+        <BackButton
+          fallbackHref={groupId ? `/group/${groupId}` : '/groups'}
+          accessibilityLabel="Voltar para o grupo"
+        />
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Adicionar memória"

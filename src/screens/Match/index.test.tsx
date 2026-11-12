@@ -2,6 +2,13 @@ import type { GroupMember } from '@/server/groups';
 import { fireEvent, render } from '@testing-library/react-native';
 import { MatchScreen } from './index';
 
+jest.mock('expo-router', () => ({
+  useRouter: () => ({
+    back: jest.fn(),
+    canGoBack: () => true,
+  }),
+}));
+
 const participants: GroupMember[] = [
   { id: 'user-1', name: 'Luiza Costa', profilePic: null },
   { id: 'user-2', name: 'Kata Silva', profilePic: null },
@@ -12,7 +19,7 @@ const participants: GroupMember[] = [
 describe('<MatchScreen />', () => {
   test('shows the match message, group members, and event action', async () => {
     const onConfirm = jest.fn();
-    const { getByText, getByTestId } = await Promise.resolve(
+    const { getByLabelText, getByText, getByTestId } = await Promise.resolve(
       render(
         <MatchScreen
           participants={participants}
@@ -25,6 +32,7 @@ describe('<MatchScreen />', () => {
     );
 
     expect(getByText('Vocês tem um álibi!')).toBeTruthy();
+    expect(getByLabelText('Voltar para o grupo')).toBeTruthy();
     expect(getByText('Eu')).toBeTruthy();
     expect(getByText('Kata')).toBeTruthy();
     expect(getByText('Manu')).toBeTruthy();

@@ -2,6 +2,13 @@ import { fireEvent, render } from '@testing-library/react-native';
 import type { ImageSourcePropType, ImageStyle, StyleProp } from 'react-native';
 import { MemoriesScreen, type MemoriesScreenProps } from '.';
 
+jest.mock('expo-router', () => ({
+  useRouter: () => ({
+    back: jest.fn(),
+    canGoBack: () => true,
+  }),
+}));
+
 jest.mock('@/components/NavigationBar', () => {
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
@@ -61,9 +68,10 @@ async function renderScreen(overrides: Partial<MemoriesScreenProps> = {}) {
 
 describe('<MemoriesScreen />', () => {
   test('renders title, see all button, subtitle and the base calendar', async () => {
-    const { getByText, getByTestId } = await renderScreen();
+    const { getByLabelText, getByText, getByTestId } = await renderScreen();
 
     expect(getByTestId('memories-screen')).toBeTruthy();
+    expect(getByLabelText('Voltar para o grupo')).toBeTruthy();
     expect(getByText('Suas memórias')).toBeTruthy();
     expect(getByText('Ver todas')).toBeTruthy();
     expect(getByText('Ou procure pela data do evento')).toBeTruthy();
