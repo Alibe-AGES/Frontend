@@ -1,6 +1,5 @@
 import { BackButton } from '@/components/BackButton';
 import { ModalFrame } from '@/components/ModalFrame';
-import { NavigationBar } from '@/components/NavigationBar';
 import { PasswordInput } from '@/components/PasswordInput';
 import { PhotoPicker } from '@/components/PhotoPicker';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
@@ -121,7 +120,6 @@ export interface UserProfileScreenProps {
 
 export const UserProfileScreen = ({
   userId,
-  groupId,
   isOwnProfile,
   profile,
   isLoading,
@@ -306,7 +304,6 @@ export const UserProfileScreen = ({
     <>
       <ScreenFrame
         gap="lg"
-        footer={<NavigationBar groupId={groupId ?? ''} />}
         testID="user-profile-screen"
       >
         <View className="flex-row items-center gap-4">

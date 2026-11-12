@@ -1,6 +1,6 @@
-import { API_BASE_URL } from '@/constants';
-import type { Place } from '@/components/PlaceList/PlaceList.types';
 import type { FilterSheetValue } from '@/components/FilterSheet/FilterSheet.types';
+import type { Place } from '@/components/PlaceList/PlaceList.types';
+import { API_BASE_URL } from '@/constants';
 import { ApiError } from './api';
 import { authenticatedFetch, getAuthenticationHeaders } from './authenticated-fetch';
 
@@ -10,6 +10,13 @@ export interface PlacesSearchInput {
   query: string;
   tagIds: string[];
   filters: FilterSheetValue;
+}
+
+export const PLACES_PAGE_SIZE = 20;
+
+export interface PlacesPage {
+  places: Place[];
+  hasMore: boolean;
 }
 
 interface LocationListItem {
@@ -23,7 +30,16 @@ interface LocationListItem {
 }
 
 interface LocationListResponse {
-  items: LocationListItem[];
+  items?: unknown;
+  data?: unknown;
+  meta?: RawPageMeta;
+  pagination?: RawPageMeta;
+}
+
+interface RawPageMeta {
+  totalPages?: unknown;
+  lastPage?: unknown;
+  hasNextPage?: unknown;
 }
 
 export interface PlaceDetails {
@@ -63,12 +79,12 @@ function selectedValue(input: PlacesSearchInput, key: string): string | undefine
   return input.filters.selections[key][0];
 }
 
-function buildSearchParams(input: PlacesSearchInput, type?: string): URLSearchParams {
+function buildSearchParams(input: PlacesSearchInput, page: number, type?: string): URLSearchParams {
   const params = new URLSearchParams({
     latitude: String(input.latitude),
     longitude: String(input.longitude),
-    page: '1',
-    limit: '20',
+    page: String(page),
+    limit: String(PLACES_PAGE_SIZE),
   });
   const query = input.query.trim();
 
@@ -91,6 +107,33 @@ function buildSearchParams(input: PlacesSearchInput, type?: string): URLSearchPa
   return params;
 }
 
+function getHasMore(meta: RawPageMeta | undefined, page: number, filledPage: boolean): boolean {
+  if (typeof meta?.hasNextPage === 'boolean') return meta.hasNextPage;
+
+  const totalPages = meta?.totalPages ?? meta?.lastPage;
+  if (typeof totalPages === 'number') return page < totalPages;
+
+  return filledPage;
+}
+
+function parsePlacesPage(
+  body: unknown,
+  page: number
+): { items: LocationListItem[]; hasMore: boolean } {
+  const envelope = (body ?? {}) as LocationListResponse;
+  const rawItems = Array.isArray(body) ? body : (envelope.items ?? envelope.data);
+  const items = Array.isArray(rawItems) ? (rawItems as LocationListItem[]) : [];
+
+  return {
+    items,
+    hasMore: getHasMore(
+      envelope.pagination ?? envelope.meta,
+      page,
+      items.length >= PLACES_PAGE_SIZE
+    ),
+  };
+}
+
 function toPlace(item: LocationListItem, photoHeaders: Record<string, string>): Place {
   const start = item.priceRange?.start;
   const end = item.priceRange?.end;
@@ -111,7 +154,7 @@ function toPlace(item: LocationListItem, photoHeaders: Record<string, string>): 
   };
 }
 
-export async function searchPlaces(input: PlacesSearchInput): Promise<Place[]> {
+export async function searchPlaces(input: PlacesSearchInput, page = 1): Promise<PlacesPage> {
   const selectedTypes = input.tagIds
     .filter((tagId) => tagId !== 'recommended')
     .flatMap((tagId) => CATEGORY_TYPES[tagId] ?? []);
@@ -120,7 +163,7 @@ export async function searchPlaces(input: PlacesSearchInput): Promise<Place[]> {
   const path = input.query.trim() ? '/api/locations/search' : '/api/locations';
   const results = await Promise.all(
     requestTypes.map(async (type) => {
-      const params = buildSearchParams(input, type);
+      const params = buildSearchParams(input, page, type);
       const response = await authenticatedFetch(`${API_BASE_URL}${path}?${params.toString()}`);
       if (!response.ok) {
         const message = await response.text();
@@ -129,7 +172,7 @@ export async function searchPlaces(input: PlacesSearchInput): Promise<Place[]> {
           response.status
         );
       }
-      return (await response.json()) as LocationListResponse;
+      return parsePlacesPage(await response.json(), page);
     })
   );
   const photoHeaders = await getAuthenticationHeaders();
@@ -139,7 +182,10 @@ export async function searchPlaces(input: PlacesSearchInput): Promise<Place[]> {
     .forEach((item) => {
       if (!uniqueItems.has(item.externalId)) uniqueItems.set(item.externalId, item);
     });
-  return [...uniqueItems.values()].map((item) => toPlace(item, photoHeaders));
+  return {
+    places: [...uniqueItems.values()].map((item) => toPlace(item, photoHeaders)),
+    hasMore: results.some((result) => result.hasMore),
+  };
 }
 
 export async function getPlaceDetails(placeId: string): Promise<PlaceDetails> {

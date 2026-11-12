@@ -92,7 +92,7 @@ describe('<ExperiencesScreen />', () => {
         if (environments.includes('outdoor')) {
           results = results.filter((place) => place.id === 'yoga');
         }
-        return Promise.resolve(results);
+        return Promise.resolve({ places: results, hasMore: false });
       });
   });
 
@@ -131,7 +131,7 @@ describe('<ExperiencesScreen />', () => {
     expect(await findByText('Bloom Café')).toBeTruthy();
     fireEvent.changeText(getByTestId('experiences-search'), 'arena');
     await waitFor(() => {
-      expect(searchPlaces).toHaveBeenLastCalledWith(expect.objectContaining({ query: 'arena' }));
+      expect(searchPlaces).toHaveBeenLastCalledWith(expect.objectContaining({ query: 'arena' }), 1);
     });
     expect(await findByText('Arena Kart')).toBeTruthy();
     expect(queryByText('Bloom Café')).toBeNull();
@@ -144,7 +144,8 @@ describe('<ExperiencesScreen />', () => {
     fireEvent.press(getByTestId('experiences-filters-tag-restaurant'));
     await waitFor(() => {
       expect(searchPlaces).toHaveBeenLastCalledWith(
-        expect.objectContaining({ tagIds: ['restaurant'] })
+        expect.objectContaining({ tagIds: ['restaurant'] }),
+        1
       );
     });
     expect(queryByText('Arena Kart')).toBeNull();
@@ -194,7 +195,8 @@ describe('<ExperiencesScreen />', () => {
       expect(searchPlaces).toHaveBeenLastCalledWith(
         expect.objectContaining({
           filters: { minBudget: '', maxBudget: '', selections: { environment: ['outdoor'] } },
-        })
+        }),
+        1
       );
     });
     expect(await findByText('Estúdio de Yoga')).toBeTruthy();

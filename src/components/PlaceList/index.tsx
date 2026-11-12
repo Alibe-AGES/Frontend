@@ -1,15 +1,13 @@
+import { Button } from '@/components/Button';
 import { ErrorCard } from '@/components/ErrorCard';
 import { PlaceCard } from '@/components/PlaceCard';
 import { PlaceCardColor } from '@/components/PlaceCard/PlaceCard.types';
 import { theme } from '@/theme';
-import { FC, ReactElement, useState } from 'react';
+import { FC, Fragment, ReactElement } from 'react';
 import { ActivityIndicator, FlatList, ScrollView, Text, View } from 'react-native';
 import { Place, PlaceListProps } from './PlaceList.types';
 
 export type { Place, PlaceListProps } from './PlaceList.types';
-
-// Fixed value until backend defines pagination size.
-export const DEFAULT_PLACE_PAGE_SIZE = 6;
 
 const NUM_COLUMNS = 2;
 const SPACER_KEY = '__place-list-spacer';
@@ -21,18 +19,19 @@ const CARD_COLORS: PlaceCardColor[] = ['coral', 'lime', 'pink', 'wine'];
 export const PlaceList: FC<PlaceListProps> = ({
   places,
   filter,
-  pageSize = DEFAULT_PLACE_PAGE_SIZE,
+  hasMore = false,
   isLoading = false,
+  isLoadingMore = false,
   error = null,
+  loadMoreError = null,
   onRetry,
+  onLoadMore,
   onPlacePress,
   header,
   footer,
   contentContainerClassName = DEFAULT_CONTENT_CLASS_NAME,
   testID = 'alibe-place-list',
 }) => {
-  const [pageCount, setPageCount] = useState(1);
-
   // Loading, error and empty states keep the header and footer and the list's scrolling layout.
   const renderState = (state: ReactElement) =>
     header || footer ? (
@@ -84,11 +83,33 @@ export const PlaceList: FC<PlaceListProps> = ({
     );
   }
 
-  const visiblePlaces = filteredPlaces.slice(0, pageSize * pageCount);
-  const hasMore = visiblePlaces.length < filteredPlaces.length;
   // A lone card in the last row keeps the width of a regular column instead of stretching.
   const entries: (Place | null)[] =
-    visiblePlaces.length % NUM_COLUMNS === 0 ? visiblePlaces : [...visiblePlaces, null];
+    filteredPlaces.length % NUM_COLUMNS === 0 ? filteredPlaces : [...filteredPlaces, null];
+
+  const listFooter = (
+    <Fragment>
+      {loadMoreError ? (
+        <ErrorCard
+          message={loadMoreError}
+          onRetry={onLoadMore}
+          testID={`${testID}-load-more-error`}
+        />
+      ) : null}
+      {hasMore && onLoadMore && !loadMoreError ? (
+        <View className="items-center py-4">
+          <Button
+            title="Carregar mais"
+            variant="secondary"
+            isLoading={isLoadingMore}
+            onPress={onLoadMore}
+            testID={`${testID}-load-more`}
+          />
+        </View>
+      ) : null}
+      {footer}
+    </Fragment>
+  );
 
   return (
     <FlatList
@@ -115,11 +136,11 @@ export const PlaceList: FC<PlaceListProps> = ({
       columnWrapperClassName="gap-4"
       contentContainerClassName={contentContainerClassName}
       ListHeaderComponent={header}
-      ListFooterComponent={footer}
+      ListFooterComponent={listFooter}
       keyboardShouldPersistTaps="handled"
       onEndReached={() => {
-        if (hasMore) {
-          setPageCount((current) => current + 1);
+        if (hasMore && !isLoadingMore && !loadMoreError) {
+          onLoadMore?.();
         }
       }}
       onEndReachedThreshold={0.4}

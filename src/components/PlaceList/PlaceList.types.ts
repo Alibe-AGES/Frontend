@@ -1,7 +1,5 @@
 import { ReactElement } from 'react';
 
-import { PlaceCardColor } from '@/components/PlaceCard/PlaceCard.types';
-
 export interface Place {
   id: string;
   name: string;
@@ -19,10 +17,13 @@ export interface Place {
 export interface PlaceListProps {
   places: Place[];
   filter?: (place: Place) => boolean;
-  pageSize?: number;
+  hasMore?: boolean;
   isLoading?: boolean;
+  isLoadingMore?: boolean;
   error?: string | null;
+  loadMoreError?: string | null;
   onRetry?: () => void;
+  onLoadMore?: () => void;
   onPlacePress?: (id: string) => void;
   header?: ReactElement;
   footer?: ReactElement;
@@ -30,4 +31,4 @@ export interface PlaceListProps {
   testID?: string;
 }
 
-export type { PlaceCardColor };
+export type { PlaceCardColor } from '@/components/PlaceCard/PlaceCard.types';
