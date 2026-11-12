@@ -1,9 +1,22 @@
+import { useDefaultPhotoPickerController } from '@/components/PhotoPicker/controllers/useDefaultPhotoPickerController';
+import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
 import { GroupInfoScreen, type MemberAvailability } from '@/screens/GroupInfo';
 import { getGroupCalendar } from '@/server/calendar';
-import { getGroup, getGroupInviteLink, getMe, type GroupDetails } from '@/server/groups';
+import {
+  getGroup,
+  getGroupInviteLink,
+  getMe,
+  updateGroup,
+  type GroupDetails,
+  type UpdateGroupInput,
+} from '@/server/groups';
 import * as Linking from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
+import Toast from 'react-native-toast-message';
+
+const GROUP_NAME_MIN_LENGTH = 2;
+const GROUP_NAME_MAX_LENGTH = 100;
 
 function buildMemberAvailabilities(
   days: { date: string; availableUserIds: string[] }[]
@@ -34,6 +47,7 @@ export default function GroupInfoController() {
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [inviteExpiresAt, setInviteExpiresAt] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   const load = useCallback(async () => {
     if (!groupId) {
@@ -85,6 +99,67 @@ export default function GroupInfoController() {
       });
   }, [load, loadInvite]);
 
+  const saveGroup = async (input: UpdateGroupInput, localPhotoUri?: string): Promise<boolean> => {
+    if (!groupId) {
+      return false;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const updated = await updateGroup(groupId, input);
+      // The picture keeps the same URL after an edit, so the cached image would come back; the
+      // picked file is shown instead until the screen loads again.
+      setGroup((current) =>
+        current
+          ? {
+              ...current,
+              name: updated.name,
+              profilePic: localPhotoUri ?? updated.profilePic,
+            }
+          : current
+      );
+      return true;
+    } catch (error) {
+      console.error('Erro ao atualizar o grupo', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Erro',
+        text2: 'Não foi possível atualizar o grupo. Tente novamente.',
+      });
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handlePhotoPicked = async (photo: SelectedPhoto) => {
+    const saved = await saveGroup({ image: photo }, photo.uri);
+
+    if (saved) {
+      Toast.show({ type: 'success', text1: 'Sucesso!', text2: 'Imagem do grupo atualizada.' });
+    }
+  };
+
+  const photoPicker = useDefaultPhotoPickerController({
+    onUploadSuccess: (photo) => void handlePhotoPicked(photo),
+  });
+
+  const handleRenameGroup = async (name: string): Promise<string | null> => {
+    const trimmed = name.trim();
+
+    if (trimmed.length < GROUP_NAME_MIN_LENGTH || trimmed.length > GROUP_NAME_MAX_LENGTH) {
+      return `O nome deve conter entre ${String(GROUP_NAME_MIN_LENGTH)} e ${String(GROUP_NAME_MAX_LENGTH)} caracteres.`;
+    }
+
+    if (trimmed === group?.name) {
+      return null;
+    }
+
+    const saved = await saveGroup({ name: trimmed });
+    return saved ? null : 'Não foi possível salvar o nome.';
+  };
+
   const handleLeaveGroup = () => {
     if (!groupId) {
       return;
@@ -101,6 +176,10 @@ export default function GroupInfoController() {
       inviteUrl={inviteUrl}
       inviteExpiresAt={inviteExpiresAt}
       isLoading={isLoading}
+      canEdit={Boolean(group?.ownerId) && group?.ownerId === currentUserId}
+      isSaving={isSaving || photoPicker.isLoading}
+      onEditImage={() => void photoPicker.pickImage()}
+      onRenameGroup={handleRenameGroup}
       onLeaveGroup={handleLeaveGroup}
       onRefreshInvite={() => void loadInvite()}
     />

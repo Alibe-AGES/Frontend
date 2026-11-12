@@ -57,7 +57,7 @@ describe('<MemoriesCarouselScreen />', () => {
   test('renders the title and the memory cards', () => {
     const { getByText, getByTestId } = renderScreen();
 
-    expect(getByText('Suas memórias')).toBeTruthy();
+    expect(getByText('Todas memórias')).toBeTruthy();
     expect(getByTestId('memories-carousel-card-photo-1')).toBeTruthy();
     expect(getByText('Restaurante Giozakaya')).toBeTruthy();
   });

@@ -7,5 +7,6 @@ export interface GroupCardProps {
   photoUri?: string | null;
   membersPreview?: string;
   onPress?: (id: string) => void;
+  onInfoPress?: (id: string) => void;
   testID?: string;
 }

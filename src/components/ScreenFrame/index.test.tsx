@@ -28,6 +28,26 @@ describe('<ScreenFrame />', () => {
     expect(getByTestId('frame').props.keyboardShouldPersistTaps).toBe('handled');
   });
 
+  test('draws the backdrop behind the header and content, outside the scroll view', () => {
+    const { getByTestId, getByText, toJSON } = render(
+      <ScreenFrame
+        backdrop={<Text>Arte</Text>}
+        header={<Text>Cabeçalho</Text>}
+        testID="frame"
+      >
+        <Text>Conteúdo</Text>
+      </ScreenFrame>
+    );
+
+    const backdrop = getByTestId('screen-frame-backdrop');
+    expect(backdrop.props.pointerEvents).toBe('none');
+    expect(getByText('Arte')).toBeTruthy();
+    expect(getByTestId('frame')).not.toContainElement(getByText('Arte'));
+
+    const root = toJSON() as { children: { props: { testID?: string } }[] };
+    expect(root.children[0].props.testID).toBe('screen-frame-backdrop');
+  });
+
   test('renders the header outside the scrollable content', () => {
     const { getByTestId, getByText } = render(
       <ScreenFrame

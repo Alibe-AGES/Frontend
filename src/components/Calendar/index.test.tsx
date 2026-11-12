@@ -147,7 +147,7 @@ describe('Calendar', () => {
     expect(getByTestId('calendar-day-2025-05-22').props.className).toContain('bg-pink-deep');
   });
 
-  test("outlines today's date without outlining other days", async () => {
+  test("outlines today's date without outlining other days", () => {
     const now = new Date();
     const today = `${String(now.getFullYear())}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const otherDayNumber = now.getDate() === 1 ? 2 : 1;

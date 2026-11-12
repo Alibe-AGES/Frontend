@@ -1,4 +1,5 @@
 import { Modal, Pressable, Text, View } from 'react-native';
+import tw from 'twrnc';
 
 export interface LeaveGroupScreenProps {
   groupName?: string;
@@ -27,7 +28,7 @@ export function LeaveGroupScreen({ groupName, onConfirm, onCancel }: LeaveGroupS
             }}
             testID="leave-group-dialog"
           >
-            <Text className="text-center font-poppins-bold text-xl leading-7 text-lime">
+            <Text className="text-center font-poppins-medium text-xl leading-7 text-lime">
               Tem certeza de que deseja sair{groupName ? ` do grupo ${groupName}` : ' do grupo'}?
             </Text>
 
@@ -40,10 +41,13 @@ export function LeaveGroupScreen({ groupName, onConfirm, onCancel }: LeaveGroupS
                 accessibilityRole="button"
                 accessibilityLabel="Cancelar"
                 onPress={onCancel}
-                className="flex-1 items-center rounded-full bg-lime py-3"
+                style={({ pressed }) => tw`${pressed ? 'opacity-25' : ''}`}
+                className="flex-1 items-center rounded-full bg-lime py-4"
                 testID="leave-group-cancel"
               >
-                <Text className="font-poppins-semibold text-sm text-ink">Cancelar</Text>
+                <Text className="font-poppins-semibold text-sm leading-none text-ink">
+                  Cancelar
+                </Text>
               </Pressable>
 
               <Pressable

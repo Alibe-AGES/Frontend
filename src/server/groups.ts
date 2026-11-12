@@ -86,6 +86,43 @@ export async function createGroup(input: CreateGroupInput): Promise<Group> {
   return { ...group, profilePic: resolveApiImageUrl(group.profilePic) };
 }
 
+export interface UpdateGroupInput {
+  name?: string;
+  image?: UploadImage | null;
+  removeProfilePicture?: boolean;
+}
+
+// Only the group owner may edit; the backend answers 403 for anyone else.
+export async function updateGroup(groupId: string, input: UpdateGroupInput): Promise<Group> {
+  const formData = new FormData();
+
+  if (input.name !== undefined) {
+    formData.append('name', input.name.trim());
+  }
+
+  if (input.image) {
+    await appendImage(formData, 'profile_pic', input.image, 'profile-picture');
+  } else if (input.removeProfilePicture) {
+    formData.append('removeProfilePicture', 'true');
+  }
+
+  const response = await authenticatedFetch(`${API_BASE_URL}/groups/${groupId}`, {
+    method: 'PATCH',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new ApiError(
+      text || response.statusText || 'Não foi possível atualizar o grupo',
+      response.status
+    );
+  }
+
+  const group = (await response.json()) as Group;
+  return { ...group, profilePic: resolveApiImageUrl(group.profilePic) };
+}
+
 export interface GroupMember {
   id: string;
   name: string;
@@ -104,6 +141,7 @@ export interface GroupDetails {
   name: string;
   profilePic: string | null;
   createdAt: string;
+  ownerId: string | null;
   participants: GroupMember[];
   nextEvent?: GroupNextEvent | null;
 }
