@@ -244,7 +244,6 @@ describe('CreateEventController', () => {
       date: '2026-10-15',
       time: '20:00',
       locationId: 'location-1',
-      matchedSuggestionId: 'proposal-1',
     });
   });
 

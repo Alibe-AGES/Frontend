@@ -62,7 +62,6 @@ export default function MatchController() {
       pathname: '/group/[id]/create-event',
       params: {
         id: groupId,
-        matchedSuggestionId,
         locationId,
         name: name ?? '',
         address: address ?? '',
