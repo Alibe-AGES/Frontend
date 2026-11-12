@@ -99,6 +99,22 @@ describe('<GroupDayCarousel />', () => {
     expect(queryByText('Confirmar presença')).toBeNull();
   });
 
+  test('hides presence actions for a confirmed event after its date has passed', async () => {
+    const pastConfirmedItem = {
+      ...mockItems[0],
+      event: {
+        ...mockItems[0].event,
+        status: 'confirmed' as const,
+        timeslot: '2000-01-01T10:00:00',
+      },
+    };
+    const { queryByTestId, getByText } = await renderCarousel({ items: [pastConfirmedItem] });
+
+    expect(getByText('Status dos participantes')).toBeTruthy();
+    expect(queryByTestId('group-day-carousel-presence-no-event-1')).toBeNull();
+    expect(queryByTestId('group-day-carousel-presence-yes-event-1')).toBeNull();
+  });
+
   test('only offers to confirm again after the user cancelled', async () => {
     const { getByText, queryByText } = await renderCarousel({ items: withAnswer('no') });
 

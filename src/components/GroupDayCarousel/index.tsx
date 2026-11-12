@@ -156,6 +156,24 @@ function getPresenceOptions(currentUserAnswer: string | undefined): PresenceButt
   return [CONFIRM_PRESENCE, CANCEL_PRESENCE];
 }
 
+function formatLocalDate(date: Date): string {
+  const year = String(date.getFullYear());
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function hasEventDatePassed(timeslot: string | Date | null | undefined): boolean {
+  if (timeslot instanceof Date) {
+    return (
+      Number.isFinite(timeslot.getTime()) && formatLocalDate(timeslot) < formatLocalDate(new Date())
+    );
+  }
+
+  const eventDate = /^\d{4}-\d{2}-\d{2}/.exec(timeslot ?? '')?.[0];
+  return eventDate !== undefined && eventDate < formatLocalDate(new Date());
+}
+
 interface ParticipantResponseSectionProps {
   item: GroupDayCarouselItem;
   currentUserId: string | null;
@@ -173,6 +191,8 @@ function ParticipantResponseSection({
 }: ParticipantResponseSectionProps) {
   const eventId = item.event.id;
   const isPending = pendingEventId === eventId;
+  const isPastConfirmedEvent =
+    item.event.status === 'confirmed' && hasEventDatePassed(item.event.timeslot);
   const [pressedAnswer, setPressedAnswer] = useState<EventPresenceAnswer | null>(null);
   const buttonClassName = `w-full items-center justify-center rounded-full bg-ink py-4 ${
     isPending ? 'opacity-60' : 'opacity-100'
@@ -193,27 +213,29 @@ function ParticipantResponseSection({
         currentUserId={currentUserId ?? undefined}
         testID={`${testID}-participants-${eventId}`}
       />
-      <View className="gap-3 pt-6">
-        {getPresenceOptions(item.currentUserAnswer).map((option) => (
-          <Pressable
-            key={option.answer}
-            accessibilityRole="button"
-            accessibilityLabel={option.accessibilityLabel}
-            accessibilityState={{ disabled: isPending, busy: isPending }}
-            className={buttonClassName}
-            disabled={isPending}
-            onPress={() => {
-              setPressedAnswer(option.answer);
-              void onPresenceResponse(eventId, option.answer);
-            }}
-            testID={`${testID}-presence-${option.answer}-${eventId}`}
-          >
-            <Text className="font-poppins text-base text-canvas">
-              {isPending && pressedAnswer === option.answer ? 'Salvando...' : option.label}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+      {!isPastConfirmedEvent ? (
+        <View className="gap-3 pt-6">
+          {getPresenceOptions(item.currentUserAnswer).map((option) => (
+            <Pressable
+              key={option.answer}
+              accessibilityRole="button"
+              accessibilityLabel={option.accessibilityLabel}
+              accessibilityState={{ disabled: isPending, busy: isPending }}
+              className={buttonClassName}
+              disabled={isPending}
+              onPress={() => {
+                setPressedAnswer(option.answer);
+                void onPresenceResponse(eventId, option.answer);
+              }}
+              testID={`${testID}-presence-${option.answer}-${eventId}`}
+            >
+              <Text className="font-poppins text-base text-canvas">
+                {isPending && pressedAnswer === option.answer ? 'Salvando...' : option.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 }
