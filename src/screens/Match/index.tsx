@@ -9,9 +9,11 @@ import tw from 'twrnc';
 import Logo from '@/assets/images/Logo.svg';
 import OrangeDecoration from '@/assets/images/group-spin-orange.svg';
 import PinkDecoration from '@/assets/images/pink-spin.svg';
+import { BackButton } from '@/components/BackButton';
 import { Button } from '@/components/Button';
 
 export interface MatchScreenProps {
+  groupId?: string;
   participants: GroupMember[];
   currentUserId?: string;
   isLoadingParticipants: boolean;
@@ -24,6 +26,7 @@ function firstName(name: string): string {
 }
 
 export function MatchScreen({
+  groupId,
   participants,
   currentUserId,
   isLoadingParticipants,
@@ -85,6 +88,13 @@ export function MatchScreen({
       testID="match-screen"
     >
       <View className="flex-1 items-center px-6 pb-5 pt-3">
+        <View className="w-full flex-row items-center">
+          <BackButton
+            fallbackHref={groupId ? `/group/${groupId}` : '/groups'}
+            accessibilityLabel="Voltar para o grupo"
+          />
+        </View>
+
         <View
           accessible
           accessibilityRole="image"

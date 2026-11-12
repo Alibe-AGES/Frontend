@@ -72,6 +72,7 @@ describe('MatchController', () => {
 
     await waitFor(() => {
       expect(mockScreenProps.participants).toHaveLength(2);
+      expect(mockScreenProps.groupId).toBe('group-1');
       expect(mockScreenProps.currentUserId).toBe('user-1');
       expect(mockScreenProps.isLoadingParticipants).toBe(false);
     });
