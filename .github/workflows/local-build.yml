@@ -4,11 +4,10 @@ on:
   workflow_call:
     inputs:
       artifact-name:
-        # The release fallback keeps the default; the E2E workflow passes "app-e2e" so both can run in one release.
+        # The E2E workflow passes "app-e2e" so its test APK never mixes with the EAS app-release.
         type: string
         default: app-release
       architectures:
-        # Empty builds every architecture. The E2E workflow passes "x86_64", the emulator's, to build faster.
         type: string
         default: ''
   workflow_dispatch:
@@ -32,8 +31,7 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
-          # Reuses downloaded Gradle dependencies between runs. android/ only exists after prebuild,
-          # so the cache key comes from package-lock.json, which decides the native libraries.
+          # android/ only exists after prebuild, so the cache key comes from package-lock.json.
           cache: gradle
           cache-dependency-path: package-lock.json
 
@@ -41,8 +39,6 @@ jobs:
         run: npm ci
 
       - name: Create .env
-        # The emulator reaches the Docker backend through adb reverse.
-        # EAS builds ignore this file and use the URL set on expo.dev.
         run: Set-Content -Path .env -Value "EXPO_PUBLIC_API_URL=http://localhost:3000" -Encoding utf8NoBOM
 
       - name: Expo Prebuild for Android

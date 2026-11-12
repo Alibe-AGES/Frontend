@@ -5,8 +5,7 @@ on:
 
 jobs:
   build-e2e-apk:
-    # The release APK from EAS points to the AWS backend, so the tests use their own APK
-    # that points to the Docker backend started below.
+    # The EAS APK points to AWS, so the tests build their own APK for the Docker backend.
     name: Build E2E APK
     uses: ./.github/workflows/local-build.yml
     with:
@@ -105,9 +104,8 @@ jobs:
 
             adb reverse tcp:3000 tcp:3000
 
-            # The default emulator screen (320x640 dp) is smaller than any current phone, and the floating
-            # navigation bar covers parts of the app. 411x914 dp matches the Pixel 8 the flows were written on;
-            # the low density keeps the pixel count small, since this emulator draws every frame on the CPU.
+            # The default emulator screen is too small for the app; 411x914 dp at low density keeps a phone
+            # layout without slowing down the emulator, which draws on the CPU.
             adb shell wm size 411x914
             adb shell wm density 160
 
