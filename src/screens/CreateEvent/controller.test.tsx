@@ -97,6 +97,7 @@ describe('CreateEventController', () => {
       name: 'Hermanas',
       profilePic: null,
       createdAt: '2026-01-01T00:00:00.000Z',
+      ownerId: null,
       participants: [
         { id: 'user-1', name: 'Luiza', profilePic: null },
         { id: 'user-2', name: 'Kata', profilePic: null },
@@ -354,6 +355,11 @@ describe('CreateEventController', () => {
       id: 'group-1',
       locationId: customLocationId,
       address: 'Rua Padre Chagas, 320 - Moinhos de Vento, Porto Alegre - RS',
+      phoneNumber: '(51) 3333-4444',
+      website: 'https://bloom.example',
+      openingHours: 'Monday: 09:00-18:00\nTuesday: 09:00-18:00',
+      priceStart: '20',
+      priceEnd: '80',
       tab: 'suggestion',
     });
 
@@ -363,6 +369,13 @@ describe('CreateEventController', () => {
     expect(mockScreenProps.draft.address).toBe(
       'Rua Padre Chagas, 320 - Moinhos de Vento, Porto Alegre - RS'
     );
+    expect(mockScreenProps.draft).toMatchObject({
+      phoneNumber: '(51) 3333-4444',
+      website: 'https://bloom.example',
+      openingHours: 'Monday: 09:00-18:00\nTuesday: 09:00-18:00',
+      priceStart: '20',
+      priceEnd: '80',
+    });
 
     await fillDraft({
       ...mockScreenProps.draft,
@@ -379,6 +392,13 @@ describe('CreateEventController', () => {
       locationId: customLocationId,
       name: 'Bloom Café',
       address: 'Rua Padre Chagas, 320 - Moinhos de Vento, Porto Alegre - RS',
+      description: JSON.stringify({
+        phoneNumber: '(51) 3333-4444',
+        website: 'https://bloom.example',
+        openingHours: ['Monday: 09:00-18:00', 'Tuesday: 09:00-18:00'],
+        priceStart: 20,
+        priceEnd: 80,
+      }),
     });
   });
 

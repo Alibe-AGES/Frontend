@@ -9,6 +9,7 @@ import {
   getMe,
   joinGroupByInvite,
   listGroups,
+  updateGroup,
 } from './groups';
 
 jest.mock('./auth', () => ({
@@ -210,6 +211,74 @@ describe('createGroup', () => {
     });
 
     await expect(createGroup({ name: 'Grupo' })).rejects.toBeInstanceOf(ApiError);
+  });
+});
+
+describe('updateGroup', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.restoreAllMocks();
+    jest.clearAllMocks();
+  });
+
+  test('patches only the trimmed name and resolves the picture URL', async () => {
+    const append = jest.spyOn(FormData.prototype, 'append');
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({ ...BASE_GROUP, name: 'Primas', profilePic: '/groups/1/profile-picture' }),
+    });
+
+    const group = await updateGroup('1', { name: '  Primas  ' });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      API_BASE_URL + '/groups/1',
+      expect.objectContaining({
+        method: 'PATCH',
+        credentials: 'include',
+        body: expect.any(FormData) as FormData,
+      })
+    );
+    expect(append).toHaveBeenCalledTimes(1);
+    expect(append).toHaveBeenCalledWith('name', 'Primas');
+    expect(group.profilePic).toBe(API_BASE_URL + '/groups/1/profile-picture');
+  });
+
+  test('sends a new picture as profile_pic', async () => {
+    const append = jest.spyOn(FormData.prototype, 'append');
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ ...BASE_GROUP, profilePic: '/groups/1/profile-picture' }),
+    });
+
+    await updateGroup('1', {
+      image: { uri: 'file://photo.png', fileName: 'photo.png', mimeType: 'image/png' },
+    });
+
+    expect(append).toHaveBeenCalledWith('profile_pic', expect.any(File));
+  });
+
+  test('asks the backend to remove the picture', async () => {
+    const append = jest.spyOn(FormData.prototype, 'append');
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ ...BASE_GROUP, profilePic: null }),
+    });
+
+    await updateGroup('1', { removeProfilePicture: true });
+
+    expect(append).toHaveBeenCalledWith('removeProfilePicture', 'true');
+  });
+
+  test('throws an ApiError when the user is not the owner', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 403,
+      statusText: 'Forbidden',
+      text: () => Promise.resolve('Somente o owner pode editar o grupo'),
+    });
+
+    await expect(updateGroup('1', { name: 'Primas' })).rejects.toMatchObject({ status: 403 });
   });
 });
 

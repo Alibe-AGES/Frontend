@@ -22,6 +22,7 @@ export const PhotoPicker: FC<PhotoPickerProps> = ({
   placeholder = 'group',
   uploadUrl,
   initialPhotoUri,
+  cachePolicy,
   onUploadSuccess,
   onUploadError,
   disabled,
@@ -70,6 +71,7 @@ export const PhotoPicker: FC<PhotoPickerProps> = ({
         ) : (
           <Avatar
             photoUri={photoUri}
+            cachePolicy={cachePolicy}
             accessibilityLabel="Foto selecionada"
             imageClassName="h-full w-full rounded-full"
             iconSize={80}

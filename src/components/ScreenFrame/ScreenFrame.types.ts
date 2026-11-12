@@ -29,6 +29,11 @@ export interface ScreenFrameProps {
   readonly padding?: ScreenFramePadding;
   /** Spacing between the direct children of the content area. */
   readonly gap?: ScreenFrameGap;
+  /**
+   * Decorative artwork drawn behind the header and content, positioned against the screen edges
+   * (it reaches under the status bar and does not scroll). Children position themselves absolutely.
+   */
+  readonly backdrop?: ReactNode;
   /** Fixed content at the top of the screen, such as a back button or tabs. */
   readonly header?: ReactNode;
   /** Content pinned to the bottom of the screen, such as the NavigationBar. */

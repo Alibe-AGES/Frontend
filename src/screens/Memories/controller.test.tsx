@@ -190,6 +190,21 @@ describe('MemoriesController', () => {
   });
 
   test('marks days that have memories with the first image', async () => {
+    mockGetGroupCalendar.mockResolvedValue([
+      ...MAY_CALENDAR_DAYS,
+      {
+        date: '2026-05-13',
+        scheduledEventIds: [],
+        completedEventIds: ['event-completed-without-memory'],
+        proposalIds: [],
+        proposalEventIds: [],
+        availableUserIds: [],
+        allUsersAvailable: false,
+      },
+    ]);
+    mockGetEventMemories.mockImplementation((eventId: string) =>
+      Promise.resolve(MEMORIES_BY_EVENT[eventId] ?? [])
+    );
     await renderLoaded();
 
     const now = new Date();
@@ -201,6 +216,7 @@ describe('MemoriesController', () => {
     expect(mockGetEventMemories).toHaveBeenCalledWith('event-1');
     expect(mockGetEventMemories).toHaveBeenCalledWith('event-2');
     expect(mockGetEventMemories).toHaveBeenCalledWith('event-no-memories');
+    expect(mockGetEventMemories).toHaveBeenCalledWith('event-completed-without-memory');
     expect(mockGetEventMemories).toHaveBeenCalledWith('event-3');
 
     const { dayMarks } = screenProps();
@@ -217,6 +233,10 @@ describe('MemoriesController', () => {
       imageUrl: `${API_BASE_URL}/api/events/event-3/memories/mem-4/image`,
     });
     expect(dayMarks['2026-05-10']).toBeUndefined();
+    expect(dayMarks['2026-05-13']).toEqual({
+      status: 'realized',
+      eventIds: ['event-completed-without-memory'],
+    });
     expect(dayMarks['2026-05-12']).toBeUndefined();
   });
 

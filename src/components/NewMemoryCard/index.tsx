@@ -39,7 +39,7 @@ export function NewMemoryCard({
     >
       <View className="flex-row items-center px-3 py-3">
         <View className="w-5" />
-        <Text className="flex-1 text-center font-poppins text-xs text-ink">
+        <Text className="flex-1 text-center font-poppins text-sm text-ink">
           Selecione o evento e a imagem
         </Text>
         {onClose ? (

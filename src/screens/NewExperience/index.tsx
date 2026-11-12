@@ -95,13 +95,13 @@ function renderProposalCard(
   };
 
   return (
-    <View className="w-full max-w-md gap-5">
+    <View className="w-full max-w-md">
       <EventCard
         variant="proposal"
         event={event}
         testID={`new-experience-proposal-${proposal.id}`}
       />
-      <View className="flex-row items-center justify-center gap-10">
+      <View className="-mt-4 flex-row items-center justify-center gap-20">
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Não quero este local"
@@ -213,11 +213,10 @@ export function NewExperienceScreen({
 }: NewExperienceScreenProps) {
   return (
     <ScreenFrame
-      scrollable={false}
       padding="none"
       footer={<NavigationBar groupId={groupId} />}
     >
-      <View className="flex-1 items-center justify-center px-6 pt-12">
+      <View className="flex-1 items-center justify-center px-6 pt-16">
         <View className="mb-6 items-center gap-2">
           <Text className={`text-center text-3xl text-ink ${theme.typography.display}`}>
             Match de rolês

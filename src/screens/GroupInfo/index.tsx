@@ -1,10 +1,14 @@
+import { useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
+
 import { Avatar } from '@/components/Avatar';
 import { BackButton } from '@/components/BackButton';
 import { InviteLink } from '@/components/InviteLink';
 import { ScreenFrame } from '@/components/ScreenFrame';
+import { TextInput } from '@/components/TextInput';
 import { GroupDetails } from '@/server/groups';
+import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, Text, View } from 'react-native';
 
 export interface MemberAvailability {
   memberId: string;
@@ -18,6 +22,12 @@ export interface GroupInfoScreenProps {
   inviteUrl: string | null;
   inviteExpiresAt?: string;
   isLoading: boolean;
+  /** Only the owner can edit the group's name and picture. */
+  canEdit?: boolean;
+  isSaving?: boolean;
+  onEditImage?: () => void;
+  /** Resolves with an error message to show, or null once the name is saved. */
+  onRenameGroup?: (name: string) => Promise<string | null>;
   onLeaveGroup: () => void;
   onRefreshInvite: () => void;
 }
@@ -42,14 +52,17 @@ function MemberRow({
 }) {
   return (
     <View
-      className="flex-row items-center gap-3 rounded-full bg-canvas px-5 py-3"
+      className="flex-row items-center gap-3 rounded-full bg-canvas px-1.5 py-1"
       testID={testID}
     >
       <Avatar
         photoUri={profilePic}
         accessibilityLabel={'Foto de perfil de ' + name}
-        imageClassName="h-10 w-10 rounded-full"
-        iconSize={22}
+        imageClassName="h-8 w-8 rounded-full"
+        cachePolicy="none"
+        iconSize={32}
+        fallbackIconName="person-outline"
+        fallbackIconColor={theme.colors.coral}
         testID={testID + '-avatar'}
       />
 
@@ -66,7 +79,9 @@ function MemberRow({
           ) : null}
         </View>
 
-        {isCurrentUser ? <Text className="text-inkSoft text-xs font-medium">(você)</Text> : null}
+        {isCurrentUser ? (
+          <Text className="text-inkSoft pr-2 text-xs font-medium">(você)</Text>
+        ) : null}
       </View>
     </View>
   );
@@ -79,55 +94,115 @@ export function GroupInfoScreen({
   inviteUrl,
   inviteExpiresAt,
   isLoading,
+  canEdit = false,
+  isSaving = false,
+  onEditImage,
+  onRenameGroup,
   onLeaveGroup,
   onRefreshInvite,
 }: GroupInfoScreenProps) {
   const datesByMember = new Map(availabilities.map((a) => [a.memberId, a.dates]));
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [draftName, setDraftName] = useState('');
+  const [nameError, setNameError] = useState<string | null>(null);
+
+  const startEditingName = () => {
+    setDraftName(group?.name ?? '');
+    setNameError(null);
+    setIsEditingName(true);
+  };
+
+  const submitName = async () => {
+    const error = onRenameGroup ? await onRenameGroup(draftName) : null;
+
+    if (error) {
+      setNameError(error);
+      return;
+    }
+
+    setIsEditingName(false);
+  };
 
   return (
     <ScreenFrame
+      floatingChrome
+      topFade="header"
       header={
-        <BackButton
-          fallbackHref={group ? `/group/${group.id}` : '/groups'}
-          accessibilityLabel="Voltar"
-        />
+        <View className="flex-row items-center gap-4">
+          <BackButton
+            fallbackHref={group ? `/group/${group.id}` : '/groups'}
+            accessibilityLabel="Voltar"
+          />
+          <Text className="flex-1 font-poppins-semibold text-2xl text-ink">Detalhes do grupo</Text>
+        </View>
       }
       testID="group-info-screen"
     >
-      <View className="relative mt-3 rounded-[2rem] bg-ink px-6 pb-10 pt-16">
+      <View className="relative mt-28 rounded-[2rem] bg-ink px-6 pb-10 pt-16">
         <View className="absolute -top-12 left-0 right-0 items-center">
-          <View className="h-24 w-24 overflow-hidden rounded-full border-4 border-canvas bg-coral">
+          <View className="h-24 w-24 overflow-hidden rounded-full border-4 border-canvas bg-surface">
             {group ? (
               <Avatar
                 photoUri={group.profilePic}
                 accessibilityLabel={`Foto do grupo ${group.name}`}
                 imageClassName="h-full w-full rounded-full"
-                iconSize={40}
+                iconSize={42}
                 testID="group-info-avatar"
               />
             ) : null}
           </View>
         </View>
 
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Editar imagem do grupo"
-          className="mt-2"
-          testID="group-info-edit-image"
-        >
-          <Text className="text-center text-xs font-medium text-canvas underline">
-            Editar imagem do grupo
-          </Text>
-        </Pressable>
+        {canEdit ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Editar imagem do grupo"
+            accessibilityState={{ disabled: isSaving }}
+            disabled={isSaving}
+            onPress={onEditImage}
+            className={isSaving ? 'opacity-50' : 'opacity-100'}
+            testID="group-info-edit-image"
+          >
+            <Text className="text-center font-poppins-medium text-xs text-surface underline">
+              {isSaving ? 'Salvando…' : 'Editar imagem do grupo'}
+            </Text>
+          </Pressable>
+        ) : null}
 
-        <View className="mt-4 flex-row items-center justify-center gap-2 self-center rounded-full bg-lime px-6 py-2">
-          <Text className="font-poppins-semibold text-lg text-ink">{group?.name ?? ''}</Text>
-          <Ionicons
-            name="pencil"
-            size={16}
-            color="#17352B"
-          />
-        </View>
+        {isEditingName ? (
+          <View className="mt-6">
+            <TextInput
+              value={draftName}
+              onChangeText={setDraftName}
+              size="sm"
+              autoFocus
+              maxLength={100}
+              disabled={isSaving}
+              error={nameError ?? undefined}
+              onBlur={() => void submitName()}
+              testID="group-info-name-input"
+            />
+          </View>
+        ) : (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Editar nome do grupo"
+            accessibilityState={{ disabled: !canEdit || isSaving }}
+            disabled={!canEdit || isSaving}
+            onPress={startEditingName}
+            className="mt-6 flex-row items-center justify-center gap-2 self-center rounded-full bg-lime px-6 py-2"
+            testID="group-info-edit-name"
+          >
+            <Text className="font-poppins-semibold text-lg text-ink">{group?.name ?? ''}</Text>
+            {canEdit ? (
+              <Ionicons
+                name="pencil"
+                size={16}
+                color={theme.colors.ink}
+              />
+            ) : null}
+          </Pressable>
+        )}
 
         <Text className="mt-6 text-center font-poppins-semibold text-sm text-canvas">
           Participantes:
@@ -155,22 +230,13 @@ export function GroupInfoScreen({
           </Text>
         )}
 
-        <View className="mt-4 items-center">
-          <View className="h-8 w-8 items-center justify-center rounded-full bg-canvas">
-            <Ionicons
-              name="add"
-              size={20}
-              color="#17352B"
-            />
-          </View>
-        </View>
-
         {inviteUrl ? (
-          <View className="mt-4 gap-2">
+          <View className="mt-6 gap-2">
             <Text className="text-center text-xs font-medium text-canvas">
               Tem alguém faltando? Compartilhe o link para convidar mais amigos para o grupo.
             </Text>
             <InviteLink
+              variant="secondary"
               link={inviteUrl}
               expiresAt={inviteExpiresAt}
               onExpired={onRefreshInvite}

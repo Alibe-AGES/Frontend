@@ -363,6 +363,18 @@ describe('MemoriesGalleryController', () => {
     });
   });
 
+  test('keeps the selected day when adding a memory from its gallery', async () => {
+    mockUseLocalSearchParams.mockReturnValue({ id: 'group-1', date: '2026-05-08' });
+
+    await renderLoaded();
+    screenProps().onAddMemory();
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/group/[id]/memories/new',
+      params: { id: 'group-1', month: '5', year: '2026', date: '2026-05-08' },
+    });
+  });
+
   test('sets an error message when loading fails and retries on demand', async () => {
     mockGetGroupCalendar.mockRejectedValueOnce(new Error('Network error'));
     jest.spyOn(console, 'error').mockImplementation(() => undefined);

@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
 
 import { ErrorCard } from '@/components/ErrorCard';
 import { ScreenFrame } from '@/components/ScreenFrame';
@@ -50,16 +50,28 @@ export function ExperienceDetailsScreen({
 
   const handleSuggestLocation = () => {
     if (!details) return;
+    const locationParams: { locationId?: string; externalId?: string } = {};
+    if (isStoredLocation) {
+      locationParams.locationId = placeId;
+    } else if (details.externalId) {
+      locationParams.externalId = details.externalId;
+    }
+
     router.push({
       pathname: '/group/[id]/create-event',
       params: {
         id: groupId,
         tab: 'suggestion',
-        ...(isStoredLocation
-          ? { locationId: placeId }
-          : details.externalId
-            ? { externalId: details.externalId }
-            : {}),
+        ...locationParams,
+        ...(details.phoneNumber ? { phoneNumber: details.phoneNumber } : {}),
+        ...(details.website ? { website: details.website } : {}),
+        ...(details.openingHours.length > 0
+          ? { openingHours: details.openingHours.join('\n') }
+          : {}),
+        ...(details.priceRange?.start != null
+          ? { priceStart: String(details.priceRange.start) }
+          : {}),
+        ...(details.priceRange?.end != null ? { priceEnd: String(details.priceRange.end) } : {}),
         address: details.address ?? '',
         name: details.name,
       },

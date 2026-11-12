@@ -11,6 +11,7 @@ export type { AvatarProps } from './Avatar.types';
 
 export const Avatar: FC<AvatarProps> = ({
   photoUri,
+  cachePolicy,
   accessibilityLabel,
   imageClassName = 'h-36 w-36 rounded-full',
   iconSize = 80,
@@ -27,6 +28,7 @@ export const Avatar: FC<AvatarProps> = ({
     return (
       <Image
         source={imageSource}
+        cachePolicy={cachePolicy}
         accessible
         accessibilityLabel={accessibilityLabel}
         contentFit="cover"
@@ -39,12 +41,15 @@ export const Avatar: FC<AvatarProps> = ({
   return (
     <View
       className="items-center justify-center"
+      style={tw.style(imageClassName)}
       testID={`${testID}-placeholder`}
     >
       <Ionicons
         name={fallbackIconName}
         size={iconSize}
         color={fallbackIconColor}
+        // A fixed width keeps the glyph from being squeezed when it is wider than the avatar box.
+        style={{ width: iconSize, textAlign: 'center' }}
       />
     </View>
   );

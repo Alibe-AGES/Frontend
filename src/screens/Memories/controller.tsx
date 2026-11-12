@@ -52,7 +52,11 @@ export default function MemoriesController() {
       }
 
       const days = calendarDays
-        .map((day) => ({ date: day.date, eventIds: getDayEventIds(day) }))
+        .map((day) => ({
+          date: day.date,
+          eventIds: getDayEventIds(day),
+          completedEventIds: day.completedEventIds,
+        }))
         .filter(({ eventIds }) => eventIds.length > 0);
       const uniqueEventIds = [...new Set(days.flatMap(({ eventIds }) => eventIds))];
 
@@ -73,15 +77,19 @@ export default function MemoriesController() {
       });
 
       const nextMarks: Record<string, DayMark> = {};
-      for (const { date, eventIds } of days) {
+      for (const { date, eventIds, completedEventIds } of days) {
         const dayMemories = eventIds.flatMap((eventId) => memoriesByEventId.get(eventId) ?? []);
 
-        if (dayMemories.length > 0) {
+        if (dayMemories.length > 0 || completedEventIds.length > 0) {
           nextMarks[date] = {
             status: 'realized',
             eventIds,
-            memoryIds: dayMemories.map((memory) => memory.id),
-            imageUrl: getMemoryImageUrl(dayMemories[0]),
+            ...(dayMemories.length > 0
+              ? {
+                  memoryIds: dayMemories.map((memory) => memory.id),
+                  imageUrl: getMemoryImageUrl(dayMemories[0]),
+                }
+              : {}),
           };
         }
       }
