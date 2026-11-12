@@ -1,11 +1,12 @@
 import { BackButton } from '@/components/BackButton';
 import { Button } from '@/components/Button';
 import { NavigationBar } from '@/components/NavigationBar';
+import { ScreenFrame } from '@/components/ScreenFrame';
 import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import tw from 'twrnc';
 
 import type { MemoryEventSection, MemoryPhotoItem } from '@/hooks/useGroupMemories';
@@ -114,19 +115,27 @@ export function MemoriesGalleryScreen({
   const isEmpty = !isLoading && !errorMessage && sections.length === 0;
 
   return (
-    <View className="flex-1 bg-canvas">
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="flex-grow gap-6 px-6 pb-32 pt-16"
-        testID="memories-gallery-screen"
-      >
-        <View className="flex-row items-center justify-between">
-          <BackButton
-            fallbackHref={
-              groupId ? { pathname: '/group/[id]/memories', params: { id: groupId } } : '/groups'
-            }
-            accessibilityLabel="Voltar para memórias"
-          />
+    <ScreenFrame
+      gap="lg"
+      floatingChrome
+      topFade="header"
+      header={
+        <View className="flex-row items-center justify-between pr-8">
+          <View className="flex-row items-center gap-4">
+            <BackButton
+              fallbackHref={
+                groupId ? { pathname: '/group/[id]/memories', params: { id: groupId } } : '/groups'
+              }
+              accessibilityLabel="Voltar para memórias"
+            />
+            <Text
+              accessibilityRole="header"
+              className="flex-1 font-poppins-semibold text-2xl text-ink"
+              testID="user-profile-title"
+            >
+              Todas memórias
+            </Text>
+          </View>
 
           <Pressable
             accessibilityRole="button"
@@ -144,118 +153,112 @@ export function MemoriesGalleryScreen({
             />
           </Pressable>
         </View>
-
-        <Text className="text-center font-poppins-medium text-3xl text-wine">Suas memórias</Text>
-
-        {isLoading ? (
-          <View
-            className="items-center gap-3 py-10"
-            testID="memories-gallery-loading"
-          >
-            <ActivityIndicator color={theme.colors.ink} />
-            <Text className="font-poppins text-sm text-ink">Carregando memórias…</Text>
-          </View>
-        ) : null}
-
-        {errorMessage ? (
-          <View
-            className="items-center gap-4 py-10"
-            testID="memories-gallery-error"
-          >
-            <Text className="text-center font-poppins text-base text-wine">{errorMessage}</Text>
-            <Button
-              title="Tentar de novo"
-              variant="secondary"
-              onPress={onRetry}
-              testID="memories-gallery-retry"
-            />
-          </View>
-        ) : null}
-
-        {isEmpty ? (
-          <View
-            className="flex-1 items-center justify-center py-10"
-            testID="memories-gallery-empty"
-          >
-            <Text className="px-6 text-center font-poppins text-base text-wine">
-              Nenhuma memória encontrada para este período.
-            </Text>
-          </View>
-        ) : null}
-
-        {!isLoading && !errorMessage && sections.length > 0 ? (
-          <View
-            className="gap-8"
-            testID="memories-gallery-list"
-          >
-            {sections.map((section) => {
-              const rows = chunkPhotos(section.photos, COLUMNS_PER_ROW);
-
-              return (
-                <View
-                  key={section.eventId}
-                  className="gap-3"
-                  testID={`memories-gallery-event-${section.eventId}`}
-                >
-                  <View className="gap-0.5">
-                    <Text
-                      className="font-poppins-light text-xs text-wine"
-                      testID={`memories-gallery-event-${section.eventId}-date`}
-                    >
-                      {formatMemoryDate(section.date)}
-                    </Text>
-                    <Text
-                      className="font-poppins-semibold text-base text-wine"
-                      numberOfLines={2}
-                      testID={`memories-gallery-event-${section.eventId}-name`}
-                    >
-                      {section.eventName}
-                    </Text>
-                  </View>
-
-                  <View className="gap-3">
-                    {rows.map((row, rowIndex) => {
-                      const spacerCount = COLUMNS_PER_ROW - row.length;
-
-                      return (
-                        <View
-                          key={`${section.eventId}-row-${String(rowIndex)}`}
-                          className="flex-row gap-3"
-                        >
-                          {row.map((photo) => (
-                            <View
-                              key={photo.id}
-                              className="flex-1"
-                            >
-                              <MemoryPhotoCard
-                                photo={photo}
-                                eventName={section.eventName}
-                                onPress={onPhotoPress}
-                              />
-                            </View>
-                          ))}
-                          {Array.from({ length: spacerCount }, (_, spacerIndex) => (
-                            <View
-                              key={`${section.eventId}-spacer-${String(rowIndex)}-${String(spacerIndex)}`}
-                              className="flex-1"
-                            />
-                          ))}
-                        </View>
-                      );
-                    })}
-                  </View>
-                </View>
-              );
-            })}
-          </View>
-        ) : null}
-      </ScrollView>
-
-      {groupId ? (
-        <View className="absolute inset-x-0 bottom-0">
-          <NavigationBar groupId={groupId} />
+      }
+      footer={groupId ? <NavigationBar groupId={groupId} /> : undefined}
+      testID="memories-gallery-screen"
+    >
+      {isLoading ? (
+        <View
+          className="flex-1 items-center justify-center gap-3 py-10"
+          testID="memories-gallery-loading"
+        >
+          <ActivityIndicator color={theme.colors.ink} />
+          <Text className="font-poppins text-sm text-ink">Carregando memórias…</Text>
         </View>
       ) : null}
-    </View>
+
+      {errorMessage ? (
+        <View
+          className="flex-1 items-center justify-center gap-4 py-10"
+          testID="memories-gallery-error"
+        >
+          <Text className="text-center font-poppins text-base text-wine">{errorMessage}</Text>
+          <Button
+            title="Tentar de novo"
+            variant="secondary"
+            onPress={onRetry}
+            testID="memories-gallery-retry"
+          />
+        </View>
+      ) : null}
+
+      {isEmpty ? (
+        <View
+          className="flex-1 items-center justify-center py-10"
+          testID="memories-gallery-empty"
+        >
+          <Text className="px-6 text-center font-poppins text-base text-wine">
+            Nenhuma memória encontrada para este período.
+          </Text>
+        </View>
+      ) : null}
+
+      {!isLoading && !errorMessage && sections.length > 0 ? (
+        <View
+          className="mt-20 gap-8"
+          testID="memories-gallery-list"
+        >
+          {sections.map((section) => {
+            const rows = chunkPhotos(section.photos, COLUMNS_PER_ROW);
+
+            return (
+              <View
+                key={section.eventId}
+                className="gap-3"
+                testID={`memories-gallery-event-${section.eventId}`}
+              >
+                <View className="gap-0.5">
+                  <Text
+                    className="font-poppins-light text-xs text-wine"
+                    testID={`memories-gallery-event-${section.eventId}-date`}
+                  >
+                    {formatMemoryDate(section.date)}
+                  </Text>
+                  <Text
+                    className="font-poppins-semibold text-base text-wine"
+                    numberOfLines={2}
+                    testID={`memories-gallery-event-${section.eventId}-name`}
+                  >
+                    {section.eventName}
+                  </Text>
+                </View>
+
+                <View className="gap-3">
+                  {rows.map((row, rowIndex) => {
+                    const spacerCount = COLUMNS_PER_ROW - row.length;
+
+                    return (
+                      <View
+                        key={`${section.eventId}-row-${String(rowIndex)}`}
+                        className="flex-row gap-3"
+                      >
+                        {row.map((photo) => (
+                          <View
+                            key={photo.id}
+                            className="flex-1"
+                          >
+                            <MemoryPhotoCard
+                              photo={photo}
+                              eventName={section.eventName}
+                              onPress={onPhotoPress}
+                            />
+                          </View>
+                        ))}
+                        {Array.from({ length: spacerCount }, (_, spacerIndex) => (
+                          <View
+                            key={`${section.eventId}-spacer-${String(rowIndex)}-${String(spacerIndex)}`}
+                            className="flex-1"
+                          />
+                        ))}
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      ) : null}
+    </ScreenFrame>
   );
 }

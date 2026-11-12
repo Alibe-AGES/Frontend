@@ -11,6 +11,13 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ id: 'group-42' }),
 }));
 
+jest.mock('@/components/HandsHiFive', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    HandsHiFive: ({ variant }: { variant: string }) => <View testID={`hands-hi-five-${variant}`} />,
+  };
+});
+
 describe('<MemoryCreatedScreen />', () => {
   beforeEach(() => {
     mockDismissTo.mockClear();

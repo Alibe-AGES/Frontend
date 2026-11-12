@@ -375,7 +375,9 @@ export const UserProfileScreen = ({
         <PhotoPicker
           key={editModalKey}
           label=""
-          initialPhotoUri={profile?.photoUri ?? null}
+          // Same source as the profile card: the photo just saved, until the screen reloads.
+          initialPhotoUri={localAvatarOverride ?? profile?.photoUri ?? null}
+          cachePolicy="none"
           onUploadSuccess={setEditPhoto}
           disabled={isSubmittingProfile}
         />

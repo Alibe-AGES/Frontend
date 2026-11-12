@@ -29,6 +29,18 @@ jest.mock('@/server/groups', () => ({
   getGroupInviteLink: jest.fn(),
 }));
 
+jest.mock('@/components/HandsHiFive', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    HandsHiFive: ({ playKey }: { playKey?: number }) => (
+      <View
+        testID="hands-hi-five"
+        accessibilityValue={{ now: playKey }}
+      />
+    ),
+  };
+});
+
 const mockSetStringAsync = (Clipboard as Record<string, unknown>).setStringAsync as jest.Mock;
 const mockCreateURL = Linking.createURL as jest.Mock;
 const mockGetGroupInviteLink = getGroupInviteLink as jest.Mock;
@@ -116,6 +128,25 @@ describe('<InviteGroupScreen />', () => {
     });
   });
 
+  test('plays the hi-five on every copy, not when the screen opens', async () => {
+    const { getByTestId } = await renderInviteGroup();
+    const playKey = () =>
+      (getByTestId('hands-hi-five').props as { accessibilityValue: { now: number } })
+        .accessibilityValue.now;
+
+    expect(playKey()).toBe(0);
+
+    for (const expected of [1, 2]) {
+      await act(async () => {
+        fireEvent.press(getByTestId('alibe-invite-link'));
+        await Promise.resolve();
+      });
+      await waitFor(() => {
+        expect(playKey()).toBe(expected);
+      });
+    }
+  });
+
   test('shows a retry action when loading the invite fails', async () => {
     const { getByText } = await renderInviteGroup({ shouldFail: true });
 
@@ -125,10 +156,10 @@ describe('<InviteGroupScreen />', () => {
     expect(getByText('Tentar novamente')).toBeTruthy();
   });
 
-  test('renders the decoration', async () => {
+  test('renders the hi-five hands', async () => {
     const { getByTestId } = await renderInviteGroup();
 
-    expect(getByTestId('alibe-invite-decoration')).toBeTruthy();
+    expect(getByTestId('hands-hi-five')).toBeTruthy();
   });
 
   test('renders the continue button', async () => {

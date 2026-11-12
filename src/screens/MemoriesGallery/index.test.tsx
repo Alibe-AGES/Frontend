@@ -105,7 +105,7 @@ describe('<MemoriesGalleryScreen />', () => {
   test('renders the screen title without favorites controls', async () => {
     const { getByText, queryByText } = await renderScreen();
 
-    expect(getByText('Suas memórias')).toBeTruthy();
+    expect(getByText('Todas memórias')).toBeTruthy();
     expect(queryByText('Favoritas')).toBeNull();
     expect(queryByText('Todas')).toBeNull();
   });

@@ -47,17 +47,25 @@ export function NewMemoryScreen({
       footer={<NavigationBar groupId={groupId} />}
       gap="md"
       header={
-        <BackButton
-          accessibilityLabel="Voltar para as memórias"
-          fallbackHref={{ pathname: '/group/[id]/memories', params: { id: groupId } }}
-        />
+        <View className="flex-row items-center gap-4">
+          <BackButton
+            accessibilityLabel="Voltar para as memórias"
+            fallbackHref={{ pathname: '/group/[id]/memories', params: { id: groupId } }}
+          />
+
+          <Text
+            accessibilityRole="header"
+            className="flex-1 font-poppins-semibold text-2xl text-ink"
+            testID="user-profile-title"
+          >
+            Nova memória
+          </Text>
+        </View>
       }
       testID="new-memory-screen"
     >
-      <Text className="mb-6 text-center font-poppins text-4xl text-wine">Nova memória</Text>
-
       {error ? (
-        <View className="items-center gap-3">
+        <View className="mt-14 items-center gap-3">
           <Text
             accessibilityRole="alert"
             className="text-center font-poppins text-sm text-wine"
@@ -73,7 +81,7 @@ export function NewMemoryScreen({
         </View>
       ) : null}
 
-      <View className="gap-4 px-4">
+      <View className="mt-14 gap-4 px-4">
         <NewMemoryCard
           events={events}
           isLoadingEvents={isLoadingEvents}
