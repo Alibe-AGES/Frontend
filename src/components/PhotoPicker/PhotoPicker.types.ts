@@ -1,3 +1,4 @@
+import type { ImageProps } from 'expo-image';
 import { PressableProps } from 'react-native';
 
 export interface PhotoPickerStrategy {
@@ -30,6 +31,8 @@ export interface PhotoPickerProps extends Omit<PressableProps, 'children'> {
   placeholder?: PhotoPickerPlaceholder;
   uploadUrl?: string;
   initialPhotoUri?: string | null;
+  /** Use "none" when the photo can change behind the same URL, such as a profile picture. */
+  cachePolicy?: ImageProps['cachePolicy'];
   onUploadSuccess?: (photo: SelectedPhoto) => void;
   onUploadError?: (error: unknown) => void;
   className?: string;

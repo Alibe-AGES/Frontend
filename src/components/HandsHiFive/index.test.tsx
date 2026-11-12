@@ -79,6 +79,43 @@ describe('<HandsHiFive />', () => {
     expect(mockMount).toHaveBeenCalledTimes(2);
   });
 
+  test('with a playKey, waits on the artwork and plays on every new key instead of on focus', async () => {
+    const { findByTestId, getByTestId, queryByTestId, rerender } = render(
+      <HandsHiFive
+        variant="sign-up"
+        playKey={0}
+      />
+    );
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(queryByTestId('hands-hi-five-animation')).toBeNull();
+    expect(getByTestId('hands-hi-five-artwork', { includeHiddenElements: true })).toBeTruthy();
+
+    act(() => {
+      mockFocus.current();
+    });
+    expect(queryByTestId('hands-hi-five-animation')).toBeNull();
+
+    rerender(
+      <HandsHiFive
+        variant="sign-up"
+        playKey={1}
+      />
+    );
+    expect((await findByTestId('hands-hi-five-animation')).props.autoPlay).toBe(true);
+    expect(mockMount).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <HandsHiFive
+        variant="sign-up"
+        playKey={2}
+      />
+    );
+    expect(mockMount).toHaveBeenCalledTimes(2);
+  });
+
   test('shows the static artwork when the user prefers reduced motion', async () => {
     jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
 

@@ -85,6 +85,36 @@ describe('<GroupsList />', () => {
     });
   });
 
+  test('fades the cards out at the top edge only once the list scrolls', async () => {
+    mockUseGroups.mockReturnValue({
+      groups: GROUPS,
+      isLoading: false,
+      isRefreshing: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    const { getByTestId } = await Promise.resolve(render(<GroupsList />));
+    const getFadeOpacity = () => {
+      const styles = [getByTestId('screen-frame-top-fade').props.style as unknown].flat(
+        Infinity
+      ) as { opacity?: number }[];
+      return (Object.assign({}, ...styles) as { opacity?: number }).opacity;
+    };
+
+    expect(getFadeOpacity()).toBe(0);
+
+    fireEvent.scroll(getByTestId('alibe-groups-list'), {
+      nativeEvent: {
+        contentOffset: { x: 0, y: 48 },
+        contentSize: { width: 400, height: 1000 },
+        layoutMeasurement: { width: 400, height: 500 },
+      },
+    });
+
+    expect(getFadeOpacity()).toBe(1);
+  });
+
   test('opens a group when its card is pressed', async () => {
     mockUseGroups.mockReturnValue({
       groups: GROUPS,

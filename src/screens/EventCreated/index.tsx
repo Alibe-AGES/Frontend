@@ -84,10 +84,10 @@ export function EventCreatedScreen() {
             className="mt-12 w-full max-w-sm flex-row items-center"
             testID="event-created-hint"
           >
-            <View className="z-10 h-12 w-12 items-center justify-center rounded-full bg-ink p-2">
+            <View className="z-10 mb-8 h-10 w-10 items-center justify-center rounded-full bg-ink p-2">
               <StarIcon />
             </View>
-            <View className="-ml-6 flex-1 rounded-full bg-coral py-3 pl-10 pr-5">
+            <View className="-ml-6 flex-1 rounded-3xl bg-coral py-3 pl-10 pr-5">
               <Text className="font-poppins text-xs leading-5 text-white">{STAR_HINT}</Text>
             </View>
           </View>

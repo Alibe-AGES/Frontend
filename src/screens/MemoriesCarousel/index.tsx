@@ -139,12 +139,22 @@ export function MemoriesCarouselScreen({
   const showCarousel = !isLoading && !errorMessage && memories.length > 0;
 
   const header = (
-    <View className="gap-6 px-6 pb-3 pt-16">
-      <View className="flex-row items-center justify-between">
-        <BackButton
-          fallbackHref={{ pathname: '/group/[id]/memories/gallery', params: { id: groupId } }}
-          accessibilityLabel="Voltar para a galeria"
-        />
+    <View className="px-6 pb-3 pt-16">
+      <View className="flex-row items-center justify-between pr-8">
+        <View className="flex-row items-center gap-4">
+          <BackButton
+            fallbackHref={{ pathname: '/group/[id]/memories/gallery', params: { id: groupId } }}
+            accessibilityLabel="Voltar para a galeria"
+          />
+
+          <Text
+            accessibilityRole="header"
+            className="flex-1 font-poppins-semibold text-2xl text-ink"
+            testID="user-profile-title"
+          >
+            Todas memórias
+          </Text>
+        </View>
 
         <Pressable
           accessibilityRole="button"
@@ -162,8 +172,6 @@ export function MemoriesCarouselScreen({
           />
         </Pressable>
       </View>
-
-      <Text className="text-center font-poppins text-3xl text-wine">Suas memórias</Text>
     </View>
   );
 

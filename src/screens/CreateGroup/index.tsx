@@ -10,7 +10,6 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
-import tw from 'twrnc';
 
 import CreateGroupDecoration from '@/assets/images/create-group-decoration.svg';
 import PencilIcon from '@/assets/images/pencil.svg';
@@ -51,29 +50,32 @@ export function CreateGroupScreen() {
   };
 
   return (
-    <ScreenFrame>
-      <View
-        accessible={false}
-        style={tw`absolute -right-2 top-0 h-40 w-40`}
-      >
-        <CreateGroupDecoration
-          width="100%"
-          height="100%"
-        />
-      </View>
-
-      <BackButton
-        fallbackHref="/groups"
-        className="mt-6 self-start"
-      />
-
+    <ScreenFrame
+      backdrop={
+        <View className="absolute -right-2 -top-2 h-40 w-40">
+          <CreateGroupDecoration
+            width="100%"
+            height="100%"
+          />
+        </View>
+      }
+      header={
+        <View className="flex-row items-center gap-4">
+          <BackButton
+            fallbackHref="/groups"
+            accessibilityLabel="Voltar para meus grupos"
+          />
+          <Text className="flex-1 font-poppins-semibold text-2xl text-ink">Novo grupo</Text>
+        </View>
+      }
+    >
       <Text
-        className={`mt-12 text-center text-5xl leading-tight text-ink ${theme.typography.display}`}
+        className={`mt-12 text-center text-[2.857rem] leading-[3rem] text-ink ${theme.typography.display}`}
       >
         Vamos{'\n'}começar?
       </Text>
 
-      <Text className="mt-2 text-center font-poppins-medium text-sm text-black">
+      <Text className="mt-2 text-center font-poppins-medium text-sm text-wine">
         Seu próximo encontro nasce aqui.
       </Text>
 

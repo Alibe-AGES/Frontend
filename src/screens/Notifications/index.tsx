@@ -7,7 +7,6 @@ import { AppNotification, NotificationCard } from '@/components/NotificationCard
 import { ScreenFrame } from '@/components/ScreenFrame';
 import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
 import { theme } from '@/theme';
-import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator, Text, View } from 'react-native';
 
 export interface NotificationsScreenProps {
@@ -71,32 +70,25 @@ export function NotificationsScreen({
         className="flex-row items-center gap-3"
         testID="notifications-group"
       >
-        <View className="h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-coral">
-          {groupPhotoSource ? (
-            <Avatar
-              photoUri={groupPhotoSource}
-              accessibilityLabel={`Foto do grupo ${groupName}`}
-              imageClassName="w-full h-full"
-            />
-          ) : (
-            <Ionicons
-              name="people-outline"
-              size={26}
-              color={theme.colors.coral}
-            />
-          )}
+        <View className="h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-surface">
+          <Avatar
+            photoUri={groupPhotoSource}
+            accessibilityLabel={`Foto do grupo ${groupName}`}
+            imageClassName="w-full h-full"
+            iconSize={28}
+          />
         </View>
 
         <View className="flex-1">
           <Text
-            className="font-poppins-light text-xl text-wine"
+            className="font-poppins-semibold text-xl text-wine"
             numberOfLines={1}
           >
             {groupName}
           </Text>
           {membersText ? (
             <Text
-              className="font-poppins-semibold text-base text-wine"
+              className="font-poppins text-base text-wine"
               numberOfLines={1}
             >
               {membersText}
@@ -162,7 +154,7 @@ export function NotificationsScreen({
 
           {isEmpty ? (
             <View
-              className="-mx-6 flex-1 items-center justify-center gap-6"
+              className="-mx-8 flex-1 items-center justify-center gap-6"
               testID="notifications-empty"
             >
               <NotificationsEmptyHands

@@ -13,26 +13,40 @@ const INVITE_LINK = 'https://alibe.app/invite/dddddddd-dddd-4ddd-8ddd-dddddddddd
 const IN_ONE_HOUR = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 const ONE_HOUR_AGO = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
-describe('<InviteLink />', () => {
+describe('<InviteLink variant="primary" />', () => {
   beforeEach(() => {
     mockSetStringAsync.mockClear();
     mockSetStringAsync.mockResolvedValue(true);
   });
 
   test('shows the link it receives', async () => {
-    const { getByTestId } = await Promise.resolve(render(<InviteLink link={INVITE_LINK} />));
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <InviteLink
+          variant="primary"
+          link={INVITE_LINK}
+        />
+      )
+    );
 
     expect(getByTestId('alibe-invite-link-url')).toHaveTextContent(INVITE_LINK);
   });
 
   test('shows a placeholder while no link has arrived', async () => {
-    const { getByTestId } = await Promise.resolve(render(<InviteLink />));
+    const { getByTestId } = await Promise.resolve(render(<InviteLink variant="primary" />));
 
     expect(getByTestId('alibe-invite-link-url')).toHaveTextContent('Gerando link de convite...');
   });
 
   test('shows the link on a single line truncated at the end', async () => {
-    const { getByTestId } = await Promise.resolve(render(<InviteLink link={INVITE_LINK} />));
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <InviteLink
+          variant="primary"
+          link={INVITE_LINK}
+        />
+      )
+    );
     const label = getByTestId('alibe-invite-link-url');
 
     expect(label.props.numberOfLines).toBe(1);
@@ -44,6 +58,7 @@ describe('<InviteLink />', () => {
     const { getByTestId, getByText } = await Promise.resolve(
       render(
         <InviteLink
+          variant="primary"
           link={INVITE_LINK}
           expiresAt={IN_ONE_HOUR}
           onCopy={onCopy}
@@ -63,9 +78,43 @@ describe('<InviteLink />', () => {
     expect(getByText('Copiado')).toBeTruthy();
   });
 
+  test('goes back to the copy label a moment after copying', async () => {
+    jest.useFakeTimers();
+    try {
+      const { getByTestId, getByText } = await Promise.resolve(
+        render(
+          <InviteLink
+            variant="primary"
+            link={INVITE_LINK}
+          />
+        )
+      );
+
+      await act(async () => {
+        fireEvent.press(getByTestId('alibe-invite-link'));
+        await Promise.resolve();
+      });
+      expect(getByText('Copiado')).toBeTruthy();
+
+      act(() => {
+        jest.advanceTimersByTime(2000);
+      });
+      expect(getByText('Copiar')).toBeTruthy();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   test('is disabled while there is no link', async () => {
     const onCopy = jest.fn();
-    const { getByTestId } = await Promise.resolve(render(<InviteLink onCopy={onCopy} />));
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <InviteLink
+          variant="primary"
+          onCopy={onCopy}
+        />
+      )
+    );
 
     await act(async () => {
       fireEvent.press(getByTestId('alibe-invite-link'));
@@ -84,6 +133,7 @@ describe('<InviteLink />', () => {
     const { getByTestId } = await Promise.resolve(
       render(
         <InviteLink
+          variant="primary"
           link={INVITE_LINK}
           onCopy={onCopy}
           disabled
@@ -106,6 +156,7 @@ describe('<InviteLink />', () => {
     const { getByTestId } = await Promise.resolve(
       render(
         <InviteLink
+          variant="primary"
           link={INVITE_LINK}
           expiresAt={ONE_HOUR_AGO}
           onCopy={onCopy}
@@ -133,6 +184,7 @@ describe('<InviteLink />', () => {
     const { getByTestId, getByText } = await Promise.resolve(
       render(
         <InviteLink
+          variant="primary"
           link={INVITE_LINK}
           onCopy={onCopy}
           onCopyError={onCopyError}
@@ -154,7 +206,12 @@ describe('<InviteLink />', () => {
 
   test('goes back to the copy label when a new link arrives', async () => {
     const { getByTestId, getByText, rerender } = await Promise.resolve(
-      render(<InviteLink link={INVITE_LINK} />)
+      render(
+        <InviteLink
+          variant="primary"
+          link={INVITE_LINK}
+        />
+      )
     );
 
     await act(async () => {
@@ -165,7 +222,12 @@ describe('<InviteLink />', () => {
       expect(getByText('Copiado')).toBeTruthy();
     });
 
-    rerender(<InviteLink link="https://alibe.app/invite/outro-link" />);
+    rerender(
+      <InviteLink
+        variant="primary"
+        link="https://alibe.app/invite/outro-link"
+      />
+    );
     await Promise.resolve();
 
     expect(getByText('Copiar')).toBeTruthy();
@@ -175,6 +237,7 @@ describe('<InviteLink />', () => {
     const { getByLabelText, getByTestId } = await Promise.resolve(
       render(
         <InviteLink
+          variant="primary"
           link={INVITE_LINK}
           testID="group-invite-link"
         />

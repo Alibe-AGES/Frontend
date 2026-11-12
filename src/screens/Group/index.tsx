@@ -1,20 +1,18 @@
+import { Avatar } from '@/components/Avatar';
 import { Calendar } from '@/components/Calendar';
 import { DayMark } from '@/components/Calendar/Calendar.types';
 import { NavigationBar } from '@/components/NavigationBar';
 import { NextEventBanner } from '@/components/NextEventBanner';
 import { ProfileButton } from '@/components/ProfileButton';
 import { ScreenFrame } from '@/components/ScreenFrame';
-import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
 import { CalendarDay, getGroupCalendar } from '@/server/calendar';
 import { getEventDetails } from '@/server/events';
 import { getGroup, getGroupMembers, GroupMember, GroupNextEvent } from '@/server/groups';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import tw from 'twrnc';
 
 function formatDate(date: Date): string {
   const year = String(date.getFullYear());
@@ -84,7 +82,6 @@ export function GroupScreen() {
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
   const [confirmedEventIds, setConfirmedEventIds] = useState<Set<string>>(() => new Set());
   const [nextEvent, setNextEvent] = useState<GroupNextEvent | null | undefined>(undefined);
-  const groupPhotoSource = useAuthenticatedImageSource(groupPhoto);
   const [visibleMonth, setVisibleMonth] = useState(() => {
     const now = new Date();
     return { month: now.getMonth() + 1, year: now.getFullYear() };
@@ -284,28 +281,20 @@ export function GroupScreen() {
         className="flex-row items-center gap-3"
         testID="group-screen-members"
       >
-        <View className="h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-coral">
-          {groupPhotoSource ? (
-            <Image
-              source={groupPhotoSource}
-              accessibilityLabel={`Foto do grupo ${groupName}`}
-              contentFit="cover"
-              style={tw`h-16 w-16 rounded-full`}
-              testID="group-screen-photo"
-            />
-          ) : (
-            <Ionicons
-              name="people-outline"
-              size={26}
-              color={theme.colors.coral}
-              testID="group-screen-photo-placeholder"
-            />
-          )}
+        <View className="overflow-hidden rounded-full bg-lime-soft">
+          <Avatar
+            photoUri={groupPhoto}
+            accessibilityLabel={`Foto do grupo ${groupName}`}
+            imageClassName="h-16 w-16 rounded-full"
+            iconSize={34}
+            fallbackIconColor={theme.colors.ink}
+            testID="group-screen-avatar"
+          />
         </View>
 
         <View className="flex-1">
           <Text
-            className="font-poppins-light text-xl text-wine"
+            className="font-poppins-semibold text-xl text-wine"
             numberOfLines={1}
           >
             {groupName}
@@ -313,7 +302,7 @@ export function GroupScreen() {
 
           {members.length > 0 ? (
             <Text
-              className="font-poppins-semibold text-base text-wine"
+              className="font-poppins text-base text-wine"
               numberOfLines={1}
               testID="group-screen-members-names"
             >
