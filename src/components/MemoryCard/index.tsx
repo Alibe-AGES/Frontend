@@ -1,4 +1,6 @@
-import { Image, Text, View } from 'react-native';
+import { Image } from 'expo-image';
+import { Text, View } from 'react-native';
+import tw from 'twrnc';
 import { MemoryCardProps } from './MemoryCard.types';
 
 export type { MemoryCardProps } from './MemoryCard.types';
@@ -29,6 +31,7 @@ export function MemoryCard({
   address,
   imageUri,
   imageHeaders,
+  imageSource,
   testID = 'memory-card',
 }: MemoryCardProps) {
   return (
@@ -46,10 +49,12 @@ export function MemoryCard({
         </Text>
 
         <Image
-          source={{ uri: imageUri, headers: imageHeaders }}
+          source={
+            imageSource === undefined ? { uri: imageUri, headers: imageHeaders } : imageSource
+          }
           accessibilityLabel={`Foto de ${name}`}
-          className="aspect-[3/4] w-full bg-lime-soft"
-          resizeMode="cover"
+          contentFit="cover"
+          style={tw`aspect-[3/4] w-full bg-lime-soft`}
         />
 
         <View className="flex-row items-start justify-between gap-2 px-4 py-4">

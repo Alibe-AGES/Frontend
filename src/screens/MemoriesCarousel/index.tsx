@@ -17,8 +17,8 @@ import { MemoryCard } from '@/components/MemoryCard';
 import { NavigationBar } from '@/components/NavigationBar';
 import { ScreenFrame } from '@/components/ScreenFrame';
 import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
-import { type CarouselMemory, parseMemoryDate } from '@/utils/memories';
 import { theme } from '@/theme';
+import { parseMemoryDate, type CarouselMemory } from '@/utils/memories';
 
 export interface MemoriesCarouselScreenProps {
   groupId: string;
@@ -48,8 +48,6 @@ interface CarouselItemProps {
 
 function CarouselItem({ memory, width }: Readonly<CarouselItemProps>) {
   const source = useAuthenticatedImageSource(memory.imageUrl);
-  const headers =
-    source && typeof source === 'object' && 'headers' in source ? source.headers : undefined;
 
   return (
     <View style={{ width }}>
@@ -58,7 +56,7 @@ function CarouselItem({ memory, width }: Readonly<CarouselItemProps>) {
         name={memory.name}
         address={memory.address}
         imageUri={memory.imageUrl}
-        imageHeaders={headers}
+        imageSource={source}
         testID={`memories-carousel-card-${memory.id}`}
       />
     </View>
