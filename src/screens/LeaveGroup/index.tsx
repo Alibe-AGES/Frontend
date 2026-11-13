@@ -1,13 +1,20 @@
-import { Modal, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, Text, View } from 'react-native';
+import { theme } from '@/theme';
 import tw from 'twrnc';
 
 export interface LeaveGroupScreenProps {
   groupName?: string;
+  isLeaving?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-export function LeaveGroupScreen({ groupName, onConfirm, onCancel }: LeaveGroupScreenProps) {
+export function LeaveGroupScreen({
+  groupName,
+  isLeaving = false,
+  onConfirm,
+  onCancel,
+}: LeaveGroupScreenProps) {
   return (
     <View className="flex-1 items-center justify-center bg-canvas px-6">
       <Modal
@@ -40,6 +47,8 @@ export function LeaveGroupScreen({ groupName, onConfirm, onCancel }: LeaveGroupS
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Cancelar"
+                accessibilityState={{ disabled: isLeaving }}
+                disabled={isLeaving}
                 onPress={onCancel}
                 style={({ pressed }) => tw`${pressed ? 'opacity-25' : ''}`}
                 className="flex-1 items-center rounded-full bg-lime py-4"
@@ -53,11 +62,20 @@ export function LeaveGroupScreen({ groupName, onConfirm, onCancel }: LeaveGroupS
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Sair do grupo"
+                accessibilityState={{ disabled: isLeaving, busy: isLeaving }}
+                disabled={isLeaving}
                 onPress={onConfirm}
-                className="flex-1 items-center rounded-full border-2 border-lime py-3"
+                className="flex-1 items-center justify-center rounded-full border-2 border-lime py-3"
                 testID="leave-group-confirm"
               >
-                <Text className="font-poppins-semibold text-sm text-lime">Sair do grupo</Text>
+                {isLeaving ? (
+                  <ActivityIndicator
+                    color={theme.colors.lime}
+                    testID="leave-group-loading"
+                  />
+                ) : (
+                  <Text className="font-poppins-semibold text-sm text-lime">Sair do grupo</Text>
+                )}
               </Pressable>
             </View>
           </Pressable>

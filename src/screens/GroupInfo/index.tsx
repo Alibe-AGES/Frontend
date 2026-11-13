@@ -1,14 +1,16 @@
-import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, Text, TouchableOpacity, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { BackButton } from '@/components/BackButton';
 import { InviteLink } from '@/components/InviteLink';
+import { ModalFrame } from '@/components/ModalFrame';
 import { ScreenFrame } from '@/components/ScreenFrame';
 import { TextInput } from '@/components/TextInput';
-import { GroupDetails } from '@/server/groups';
+import type { GroupDetails, GroupMember } from '@/server/groups';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
+import tw from 'twrnc';
 
 export interface MemberAvailability {
   memberId: string;
@@ -28,6 +30,10 @@ export interface GroupInfoScreenProps {
   onEditImage?: () => void;
   /** Resolves with an error message to show, or null once the name is saved. */
   onRenameGroup?: (name: string) => Promise<string | null>;
+  /** Only offered to the owner. Resolves with true once the member is removed. */
+  onRemoveMember?: (member: GroupMember) => Promise<boolean>;
+  /** Called once the confirmation has closed, so a toast lands on the screen, not the modal. */
+  onMemberRemoved?: (member: GroupMember) => void;
   onLeaveGroup: () => void;
   onRefreshInvite: () => void;
 }
@@ -42,12 +48,14 @@ function MemberRow({
   profilePic,
   dates,
   isCurrentUser,
+  onRemove,
   testID,
 }: {
   name: string;
   profilePic: string | null;
   dates: string[];
   isCurrentUser: boolean;
+  onRemove?: () => void;
   testID: string;
 }) {
   return (
@@ -60,7 +68,7 @@ function MemberRow({
         accessibilityLabel={'Foto de perfil de ' + name}
         imageClassName="h-8 w-8 rounded-full"
         cachePolicy="none"
-        iconSize={32}
+        iconSize={24}
         fallbackIconName="person-outline"
         fallbackIconColor={theme.colors.coral}
         testID={testID + '-avatar'}
@@ -82,6 +90,24 @@ function MemberRow({
         {isCurrentUser ? (
           <Text className="text-inkSoft pr-2 text-xs font-medium">(você)</Text>
         ) : null}
+
+        {onRemove ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={'Remover ' + name + ' do grupo'}
+            hitSlop={8}
+            onPress={onRemove}
+            style={({ pressed }) => tw`${pressed ? 'opacity-50' : ''}`}
+            className="mr-1 h-7 w-7 items-center justify-center rounded-full bg-surface"
+            testID={testID + '-remove'}
+          >
+            <Ionicons
+              name="remove-circle-outline"
+              size={24}
+              color={theme.colors.error}
+            />
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );
@@ -98,6 +124,8 @@ export function GroupInfoScreen({
   isSaving = false,
   onEditImage,
   onRenameGroup,
+  onRemoveMember,
+  onMemberRemoved,
   onLeaveGroup,
   onRefreshInvite,
 }: GroupInfoScreenProps) {
@@ -105,6 +133,17 @@ export function GroupInfoScreen({
   const [isEditingName, setIsEditingName] = useState(false);
   const [draftName, setDraftName] = useState('');
   const [nameError, setNameError] = useState<string | null>(null);
+  const [memberToRemove, setMemberToRemove] = useState<GroupMember | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [removedMember, setRemovedMember] = useState<GroupMember | null>(null);
+
+  // Runs after the commit that unmounted the modal (and the Toast it hosts).
+  useEffect(() => {
+    if (removedMember) {
+      onMemberRemoved?.(removedMember);
+      setRemovedMember(null);
+    }
+  }, [removedMember, onMemberRemoved]);
 
   const startEditingName = () => {
     setDraftName(group?.name ?? '');
@@ -121,6 +160,27 @@ export function GroupInfoScreen({
     }
 
     setIsEditingName(false);
+  };
+
+  const closeRemoveModal = () => {
+    if (!isRemoving) {
+      setMemberToRemove(null);
+    }
+  };
+
+  const confirmRemoveMember = async () => {
+    if (!memberToRemove || !onRemoveMember) {
+      return;
+    }
+
+    setIsRemoving(true);
+    const removed = await onRemoveMember(memberToRemove);
+    setIsRemoving(false);
+
+    if (removed) {
+      setRemovedMember(memberToRemove);
+      setMemberToRemove(null);
+    }
   };
 
   return (
@@ -220,6 +280,13 @@ export function GroupInfoScreen({
                 profilePic={member.profilePic}
                 dates={datesByMember.get(member.id) ?? []}
                 isCurrentUser={member.id === currentUserId}
+                onRemove={
+                  canEdit && onRemoveMember && member.id !== currentUserId
+                    ? () => {
+                        setMemberToRemove(member);
+                      }
+                    : undefined
+                }
                 testID={`group-info-member-${member.id}`}
               />
             ))}
@@ -254,6 +321,47 @@ export function GroupInfoScreen({
       >
         <Text className="font-poppins-semibold text-sm text-canvas">Sair do grupo</Text>
       </Pressable>
+
+      <ModalFrame
+        visible={memberToRemove !== null}
+        onRequestClose={closeRemoveModal}
+        closeOnBackdropPress
+        title={memberToRemove ? `Remover ${memberToRemove.name} do grupo?` : undefined}
+        testID="group-info-remove-modal"
+      >
+        <Text className="text-center font-poppins text-sm text-ink">
+          A pessoa deixará de ver os encontros deste grupo.
+        </Text>
+
+        <View className="flex-row gap-4">
+          <TouchableOpacity
+            disabled={isRemoving}
+            onPress={closeRemoveModal}
+            className="flex-1 items-center justify-center rounded-full border-2 border-coral py-4"
+            testID="group-info-remove-cancel"
+          >
+            <Text className="font-poppins-semibold leading-none text-coral">Cancelar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => void confirmRemoveMember()}
+            disabled={isRemoving}
+            className={`flex-1 items-center justify-center rounded-full bg-coral py-4 ${
+              isRemoving ? 'opacity-60' : ''
+            }`}
+            testID="group-info-remove-confirm"
+          >
+            {isRemoving ? (
+              <ActivityIndicator
+                color={theme.colors.surface}
+                testID="group-info-remove-confirm-loading"
+              />
+            ) : (
+              <Text className="font-poppins-semibold leading-none text-surface">Remover</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </ModalFrame>
     </ScreenFrame>
   );
 }
