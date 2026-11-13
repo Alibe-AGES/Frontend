@@ -86,6 +86,9 @@ export default function NewExperienceController() {
       onAnswer={(answer: EventPresenceAnswer) => {
         void handleAnswer(answer);
       }}
+      onBack={() => {
+        router.replace({ pathname: '/group/[id]', params: { id: groupId } });
+      }}
     />
   );
 }

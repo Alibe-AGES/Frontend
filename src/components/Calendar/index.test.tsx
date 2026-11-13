@@ -130,8 +130,8 @@ describe('Calendar', () => {
     expect(onDayPress).toHaveBeenCalledWith('2025-05-08');
   });
 
-  test('preserves realized and suggested styles for past event days without IDs', async () => {
-    const { getByTestId } = await Promise.resolve(
+  test('shows past event days as lime squares without a star', async () => {
+    const { getByTestId, queryByTestId } = await Promise.resolve(
       render(
         <Calendar
           initialDate="2025-05-01"
@@ -143,13 +143,29 @@ describe('Calendar', () => {
       )
     );
 
-    expect(getByTestId('calendar-day-icon-suggested')).toBeTruthy();
-    expect(getByTestId('calendar-day-2025-05-08').props.className).toContain('bg-ink');
-    expect(getByTestId('calendar-day-2025-05-22').props.className).toContain('bg-pink-deep');
+    expect(queryByTestId('calendar-day-icon-suggested')).toBeNull();
+    expect(getByTestId('calendar-day-2025-05-08').props.className).toContain('bg-lime');
+    expect(getByTestId('calendar-day-2025-05-22').props.className).toContain('bg-lime');
   });
 
-  test('shows a deep-pink star for a unanimously confirmed event day', async () => {
+  test('shows a confirmed future event day as a deep-pink square with a white star', async () => {
     const { getByTestId } = await Promise.resolve(
+      render(
+        <Calendar
+          initialDate="2099-05-01"
+          dayMarks={{ '2099-05-08': { status: 'matched', eventIds: ['event-1'] } }}
+        />
+      )
+    );
+
+    expect(getByTestId('calendar-day-2099-05-08').props.className).toContain('bg-pink-deep');
+    expect(getByTestId('calendar-day-icon-matched').props.style).toEqual(
+      expect.arrayContaining([expect.objectContaining({ color: theme.colors.white })])
+    );
+  });
+
+  test('shows a confirmed event day in the past as a lime square without a star', async () => {
+    const { getByTestId, queryByTestId } = await Promise.resolve(
       render(
         <Calendar
           initialDate="2026-05-01"
@@ -158,9 +174,8 @@ describe('Calendar', () => {
       )
     );
 
-    expect(getByTestId('calendar-day-icon-matched').props.style).toEqual(
-      expect.arrayContaining([expect.objectContaining({ color: theme.colors.pinkDeep })])
-    );
+    expect(queryByTestId('calendar-day-icon-matched')).toBeNull();
+    expect(getByTestId('calendar-day-2026-05-08').props.className).toContain('bg-lime');
   });
 
   test("outlines today's date without outlining other days", () => {

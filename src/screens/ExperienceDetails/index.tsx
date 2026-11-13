@@ -71,6 +71,7 @@ export function ExperienceDetailsScreen({
             locationId: proposal.location.id,
             name: proposal.name ?? proposal.location.name ?? '',
             address: proposal.location.address ?? proposal.location.description ?? '',
+            ...(proposal.location.imageUrl ? { imageUrl: proposal.location.imageUrl } : {}),
           },
         });
         return;
