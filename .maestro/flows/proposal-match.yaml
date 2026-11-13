@@ -1,9 +1,10 @@
-# Suggestion flow: suggests a place in a new group and sees the confirmation that it was sent.
+# Suggestion flow: suggests a place in a new group and reaches the match screen.
 appId: com.alibe.app
 tags: [ci, events]
 ---
 - runFlow: ../subflows/launch.yaml
 - runFlow: ../subflows/login.yaml
+# A new group has only the logged user, whose own "yes" already matches everyone.
 - runFlow: ../subflows/create-group.yaml
 
 - evalScript: ${output.suggestionName = 'Sugestão E2E ' + Date.now()}
@@ -43,8 +44,11 @@ tags: [ci, events]
 - tapOn:
     id: create-event-card-confirm
 
-# The screen stays open after sending: it shows a toast and clears the form.
 - extendedWaitUntil:
-    visible: 'Sugestão enviada!'
+    visible:
+      id: match-screen
     timeout: 30000
-- assertVisible: '${output.suggestionName} foi sugerido para o grupo.'
+- assertVisible:
+    id: match-headline
+- assertVisible:
+    id: match-create-event
