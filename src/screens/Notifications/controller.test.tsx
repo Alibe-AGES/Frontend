@@ -183,7 +183,7 @@ describe('NotificationsController', () => {
     expect(mockGetEventDetails).toHaveBeenCalledWith('event-2');
   });
 
-  test('opens location details using locationId for a match notification', async () => {
+  test('opens the group calendar for a match notification with a location', async () => {
     await renderLoaded();
 
     await act(async () => {
@@ -191,14 +191,11 @@ describe('NotificationsController', () => {
       await Promise.resolve();
     });
 
-    expect(push).toHaveBeenCalledWith({
-      pathname: '/group/[id]/experiences/[placeId]',
-      params: {
-        id: 'group-hermanas',
-        placeId: 'location-1',
-        isStoredLocation: 'true',
-      },
+    expect(navigate).toHaveBeenCalledWith({
+      pathname: '/group/[id]',
+      params: { id: 'group-hermanas' },
     });
+    expect(push).not.toHaveBeenCalled();
     expect(mockGetEventDetails).not.toHaveBeenCalled();
   });
 

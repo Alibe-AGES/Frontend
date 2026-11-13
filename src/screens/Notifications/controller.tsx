@@ -127,18 +127,6 @@ export default function NotificationsController() {
       return;
     }
 
-    if (notification.type === 'match' && notification.locationId && groupId) {
-      router.push({
-        pathname: '/group/[id]/experiences/[placeId]',
-        params: {
-          id: groupId,
-          placeId: notification.locationId,
-          isStoredLocation: 'true',
-        },
-      });
-      return;
-    }
-
     openGroupCalendar();
   };
 
