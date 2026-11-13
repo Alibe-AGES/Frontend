@@ -51,7 +51,7 @@ const dayTextClasses: Record<DayStatus, string> = {
   suggested: 'text-canvas',
   matched: 'text-lime',
   allAvailable: 'text-canvas',
-  past: 'text-inkSoft/20',
+  past: 'text-ink-soft',
   pastEvent: 'text-ink',
 };
 

@@ -48,6 +48,7 @@ describe('MatchController', () => {
       locationId: 'location-1',
       name: 'Bloom Café',
       address: 'Rua Padre Chagas, 320',
+      imageUrl: '/api/locations/location-1/image',
     });
     mockUseRouter.mockReturnValue({ replace } as unknown as ReturnType<typeof useRouter>);
     mockGetGroup.mockResolvedValue({
@@ -73,7 +74,6 @@ describe('MatchController', () => {
 
     await waitFor(() => {
       expect(mockScreenProps.participants).toHaveLength(2);
-      expect(mockScreenProps.groupId).toBe('group-1');
       expect(mockScreenProps.currentUserId).toBe('user-1');
       expect(mockScreenProps.isLoadingParticipants).toBe(false);
     });
@@ -90,6 +90,7 @@ describe('MatchController', () => {
         locationId: 'location-1',
         name: 'Bloom Café',
         address: 'Rua Padre Chagas, 320',
+        imageUrl: '/api/locations/location-1/image',
       },
     });
   });

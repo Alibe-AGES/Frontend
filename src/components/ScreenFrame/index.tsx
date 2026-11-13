@@ -39,7 +39,7 @@ const HEADER_PADDING_CLASSES: Record<ScreenFramePadding, string> = {
 };
 
 // A floating header sets its own position, because the content may start at the top of the screen.
-const FLOATING_HEADER_PADDING = 'px-6 pb-3 pt-20';
+const FLOATING_HEADER_PADDING = 'px-6 pb-3 pt-16';
 
 const GAP_CLASSES: Record<ScreenFrameGap, string> = {
   none: '',

@@ -191,31 +191,54 @@ export async function getEventDetails(eventId: string): Promise<EventDetailsResp
 export interface CreateProposalFields {
   locationId?: string;
   externalId?: string;
-  name: string;
-  address: string;
+  name?: string;
+  address?: string;
   description?: string;
 }
 
 export interface CreateProposalInput extends CreateProposalFields {
+  /** A remote picture (the Google place photo), downloaded and uploaded with the proposal. */
   imageUrl?: string;
+  /** A picture picked on the device for a manual place. */
+  image?: UploadImage;
 }
 
+type ProposalImage = { kind: 'remote'; url: string } | { kind: 'local'; image: UploadImage };
+
+// A saved place already has its picture; the backend ignores an uploaded one.
+function proposalImage(input: CreateProposalInput): ProposalImage | undefined {
+  if (input.locationId) return undefined;
+  if (input.image) return { kind: 'local', image: input.image };
+  if (input.imageUrl) return { kind: 'remote', url: input.imageUrl };
+  return undefined;
+}
+
+function trimmedOrOmitted(key: 'name' | 'address' | 'description', value?: string) {
+  const trimmed = value?.trim();
+  return trimmed ? { [key]: trimmed } : {};
+}
+
+/**
+ * The backend only reads name, address and description for a manual place: a saved place is
+ * reused by locationId and a Google place is fetched by externalId. Blank strings are rejected.
+ */
 function buildCreateProposalPayload(input: CreateProposalInput): CreateProposalFields {
+  if (input.locationId) return { locationId: input.locationId };
+  if (input.externalId) return { externalId: input.externalId };
+
   return {
-    ...(input.locationId ? { locationId: input.locationId } : {}),
-    ...(input.externalId ? { externalId: input.externalId } : {}),
-    name: input.name.trim(),
-    address: input.address.trim(),
-    ...(input.description?.trim() ? { description: input.description.trim() } : {}),
+    ...trimmedOrOmitted('name', input.name),
+    ...trimmedOrOmitted('address', input.address),
+    ...trimmedOrOmitted('description', input.description),
   };
 }
 
 function appendProposalFields(formData: FormData, payload: CreateProposalFields): void {
-  if (payload.locationId) formData.append('locationId', payload.locationId);
-  if (payload.externalId) formData.append('externalId', payload.externalId);
-  formData.append('name', payload.name);
-  formData.append('address', payload.address);
-  if (payload.description) formData.append('description', payload.description);
+  const keys = ['locationId', 'externalId', 'name', 'address', 'description'] as const;
+  for (const key of keys) {
+    const value = payload[key];
+    if (value) formData.append(key, value);
+  }
 }
 
 function parseProposalImageUrl(value: string): URL {
@@ -264,9 +287,9 @@ async function appendProposalImage(formData: FormData, imageUrl: URL): Promise<(
 async function postCreateProposal(
   url: string,
   payload: CreateProposalFields,
-  remoteImageUrl?: string
+  image?: ProposalImage
 ): Promise<Response> {
-  if (!remoteImageUrl) {
+  if (!image) {
     return authenticatedFetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -276,7 +299,13 @@ async function postCreateProposal(
 
   const formData = new FormData();
   appendProposalFields(formData, payload);
-  const cleanupImage = await appendProposalImage(formData, parseProposalImageUrl(remoteImageUrl));
+
+  if (image.kind === 'local') {
+    await appendImage(formData, 'image', image.image, 'suggestion-image');
+    return authenticatedFetch(url, { method: 'POST', body: formData });
+  }
+
+  const cleanupImage = await appendProposalImage(formData, parseProposalImageUrl(image.url));
   try {
     return await authenticatedFetch(url, { method: 'POST', body: formData });
   } finally {
@@ -371,7 +400,7 @@ export async function createProposal(
 ): Promise<CreatedProposal> {
   const payload = buildCreateProposalPayload(input);
   const url = `${API_BASE_URL}/api/groups/${groupId}/proposals`;
-  const response = await postCreateProposal(url, payload, input.imageUrl);
+  const response = await postCreateProposal(url, payload, proposalImage(input));
 
   if (!response.ok) {
     const text = await response.text();

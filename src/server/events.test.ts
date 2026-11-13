@@ -329,16 +329,14 @@ describe('createProposal', () => {
     jest.clearAllMocks();
   });
 
-  test('posts the trimmed proposal fields as JSON to /api/groups/:groupId/proposals', async () => {
+  test('posts only the locationId for a saved place', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(CREATED_PROPOSAL),
     });
 
     await expect(
-      createProposal('group-1', {
-        ...PROPOSAL_INPUT,
-      })
+      createProposal('group-1', { ...PROPOSAL_INPUT, imageUrl: 'https://example.com/cafe.jpg' })
     ).resolves.toEqual(CREATED_PROPOSAL);
 
     expect(mockAuthenticatedFetch).toHaveBeenCalledWith(
@@ -346,19 +344,31 @@ describe('createProposal', () => {
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          locationId: '44444444-4444-4444-8444-444444444444',
-          name: 'Café de sábado',
-          address: 'Rua Padre Chagas, 320',
-          description: JSON.stringify({
-            phoneNumber: '(51) 3333-3333',
-            website: 'https://cafe.example',
-            openingHours: ['Sexta: 18:00-00:00'],
-            priceStart: 30,
-            priceEnd: 60,
-          }),
-        }),
+        body: JSON.stringify({ locationId: '44444444-4444-4444-8444-444444444444' }),
       }
+    );
+  });
+
+  test('posts the trimmed manual fields and omits blank ones', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(CREATED_PROPOSAL),
+    });
+
+    await createProposal('group-1', {
+      name: PROPOSAL_INPUT.name,
+      address: '   ',
+      description: PROPOSAL_INPUT.description,
+    });
+
+    expect(mockAuthenticatedFetch).toHaveBeenCalledWith(
+      `${API_BASE_URL}/api/groups/group-1/proposals`,
+      expect.objectContaining({
+        body: JSON.stringify({
+          name: 'Café de sábado',
+          description: PROPOSAL_INPUT.description,
+        }),
+      })
     );
   });
 
@@ -389,11 +399,36 @@ describe('createProposal', () => {
     );
     expect(append).toHaveBeenCalledWith('externalId', 'google-place-1');
     expect(append).toHaveBeenCalledWith('image', expect.any(File));
+    expect(append).not.toHaveBeenCalledWith('name', expect.anything());
+    expect(append).not.toHaveBeenCalledWith('address', expect.anything());
     expect(mockAuthenticatedFetch).toHaveBeenCalledWith(
       `${API_BASE_URL}/api/groups/group-1/proposals`,
       expect.objectContaining({ method: 'POST', body: expect.any(FormData) as FormData })
     );
     expect(downloadedImage.delete).toHaveBeenCalledTimes(1);
+  });
+
+  test('uploads a picked image with a manual proposal as multipart', async () => {
+    const append = jest.spyOn(FormData.prototype, 'append');
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(CREATED_PROPOSAL),
+    });
+
+    await createProposal('group-1', {
+      name: ' Bloom Café ',
+      address: 'Rua Padre Chagas, 320',
+      image: { uri: 'file:///picked.jpg', fileName: 'picked.jpg', mimeType: 'image/jpeg' },
+    });
+
+    expect(append).toHaveBeenCalledWith('name', 'Bloom Café');
+    expect(append).toHaveBeenCalledWith('address', 'Rua Padre Chagas, 320');
+    expect(append).toHaveBeenCalledWith('image', expect.any(File));
+    expect(append).not.toHaveBeenCalledWith('description', expect.anything());
+    expect(mockAuthenticatedFetch).toHaveBeenCalledWith(
+      `${API_BASE_URL}/api/groups/group-1/proposals`,
+      expect.objectContaining({ method: 'POST', body: expect.any(FormData) as FormData })
+    );
   });
 
   test('throws an ApiError with the backend message when proposal creation fails', async () => {

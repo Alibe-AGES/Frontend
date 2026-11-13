@@ -28,11 +28,6 @@ export interface EventCardDraft {
   address: string;
   date: string;
   time: string;
-  priceStart?: string;
-  priceEnd?: string;
-  phoneNumber?: string;
-  openingHours?: string;
-  website?: string;
 }
 
 export type EventCardMode = 'read' | 'create';
@@ -50,7 +45,8 @@ export interface EventCardCreateProps {
   variant?: 'event' | 'suggestion';
   draft: EventCardDraft;
   onChangeDraft: (draft: EventCardDraft) => void;
-  readOnly?: boolean;
+  /** The name, address and picture come from a matched place, so they can't be changed. */
+  locationReadOnly?: boolean;
   onDatePress?: () => void;
   onImageSelected?: (photo: SelectedPhoto) => void;
   onConfirm?: () => void;

@@ -122,10 +122,10 @@ export const EventCardDetails: FC<Omit<EventCardReadProps, 'mode'> & { testID: s
       ) : null}
 
       <EventCardAdditionalDetails
-        budget={budget ?? (isProposal ? '--' : null)}
-        phone={event.phone ?? (isProposal ? '(00) 00000-0000' : null)}
-        openingHours={openingHours ?? (isProposal ? '--' : undefined)}
-        website={event.website ?? (isProposal ? '--' : null)}
+        budget={budget}
+        phone={event.phone}
+        openingHours={openingHours}
+        website={event.website}
         testID={testID}
       />
 

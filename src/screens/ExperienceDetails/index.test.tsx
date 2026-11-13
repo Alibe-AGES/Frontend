@@ -2,8 +2,10 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
 
 import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
+import { createProposal, type CreatedProposal } from '@/server/events';
 import { getPlaceDetails, getStoredLocationDetails, PlaceDetails } from '@/server/places';
 import type { ComponentProps } from 'react';
+import Toast from 'react-native-toast-message';
 import { ExperienceDetailsScreen } from '.';
 
 jest.mock('expo-router', () => ({
@@ -22,6 +24,28 @@ jest.mock('@/server/places', () => ({
   getPlaceDetails: jest.fn(),
   getStoredLocationDetails: jest.fn(),
 }));
+
+jest.mock('@/server/events', () => ({
+  createProposal: jest.fn(),
+}));
+
+jest.mock('react-native-toast-message', () => ({
+  __esModule: true,
+  default: { show: jest.fn() },
+}));
+
+const proposal = {
+  id: 'proposal-1',
+  matched: false,
+  name: 'Bloom Café',
+  location: {
+    id: 'location-1',
+    externalId: null,
+    name: 'Bloom Café',
+    description: null,
+    address: 'Rua das Flores, 10',
+  },
+} as unknown as CreatedProposal;
 
 const details: PlaceDetails = {
   externalId: 'cafe-1',
@@ -57,6 +81,7 @@ describe('<ExperienceDetailsScreen />', () => {
     jest.clearAllMocks();
     jest.mocked(useAuthenticatedImageSource).mockImplementation(actualImageSourceHook);
     (useRouter as jest.Mock).mockReturnValue({ back: jest.fn(), push: jest.fn() });
+    jest.mocked(createProposal).mockResolvedValue(proposal);
     jest.mocked(getPlaceDetails).mockResolvedValue(details);
     jest.mocked(getStoredLocationDetails).mockResolvedValue(details);
   });
@@ -130,9 +155,9 @@ describe('<ExperienceDetailsScreen />', () => {
     expect(queryByTestId('experience-details-image')).toBeNull();
   });
 
-  test('starts a location suggestion with the selected Google place', async () => {
-    const push = jest.fn();
-    (useRouter as jest.Mock).mockReturnValue({ back: jest.fn(), push });
+  test('suggests the Google place right away and returns to the experiences list', async () => {
+    const dismissTo = jest.fn();
+    (useRouter as jest.Mock).mockReturnValue({ back: jest.fn(), dismissTo, replace: jest.fn() });
     jest.mocked(getPlaceDetails).mockResolvedValueOnce({
       ...details,
       address: 'Rua Padre Chagas, 320',
@@ -144,28 +169,27 @@ describe('<ExperienceDetailsScreen />', () => {
     const { findByTestId } = await renderDetails({ groupId: 'group-1', placeId: 'cafe-1' });
 
     fireEvent.press(await findByTestId('experience-suggest-location'));
-    await Promise.resolve();
-    expect(push).toHaveBeenCalledWith({
-      pathname: '/group/[id]/create-event',
-      params: {
-        id: 'group-1',
-        tab: 'suggestion',
-        externalId: 'cafe-1',
-        phoneNumber: '(51) 3333-4444',
-        website: 'https://bloom.example',
-        openingHours: 'Monday: 09:00-18:00\nTuesday: 09:00-18:00',
-        priceStart: '20',
-        priceEnd: '80',
-        imageUrl: details.imageUrl,
-        address: 'Rua Padre Chagas, 320',
-        name: 'Bloom Café',
-      },
+
+    await waitFor(() => {
+      expect(dismissTo).toHaveBeenCalledWith({
+        pathname: '/group/[id]/experiences',
+        params: { id: 'group-1' },
+      });
+    });
+    expect(createProposal).toHaveBeenCalledWith('group-1', {
+      externalId: 'cafe-1',
+      imageUrl: details.imageUrl,
+    });
+    expect(Toast.show).toHaveBeenCalledWith({
+      type: 'success',
+      text1: 'Sugestão enviada!',
+      text2: 'Bloom Café foi sugerido para o grupo.',
     });
   });
 
-  test('loads a matched saved location by locationId and preserves it when suggesting', async () => {
-    const push = jest.fn();
-    (useRouter as jest.Mock).mockReturnValue({ back: jest.fn(), push });
+  test('suggests a saved location by locationId', async () => {
+    const dismissTo = jest.fn();
+    (useRouter as jest.Mock).mockReturnValue({ back: jest.fn(), dismissTo, replace: jest.fn() });
     jest.mocked(getStoredLocationDetails).mockResolvedValueOnce({
       ...details,
       externalId: null,
@@ -179,21 +203,61 @@ describe('<ExperienceDetailsScreen />', () => {
     });
 
     fireEvent.press(await findByTestId('experience-suggest-location'));
-    await Promise.resolve();
 
+    await waitFor(() => {
+      expect(dismissTo).toHaveBeenCalledTimes(1);
+    });
     expect(getStoredLocationDetails).toHaveBeenCalledWith('location-1');
     expect(getPlaceDetails).not.toHaveBeenCalled();
-    expect(push).toHaveBeenCalledWith({
-      pathname: '/group/[id]/create-event',
-      params: {
-        id: 'group-1',
-        tab: 'suggestion',
-        locationId: 'location-1',
-        imageUrl: details.imageUrl,
-        address: 'Rua das Flores, 10',
-        name: 'Bloom Café',
-      },
+    expect(createProposal).toHaveBeenCalledWith('group-1', { locationId: 'location-1' });
+  });
+
+  test('opens the match screen when the suggestion matches right away', async () => {
+    const replace = jest.fn();
+    const dismissTo = jest.fn();
+    (useRouter as jest.Mock).mockReturnValue({ back: jest.fn(), dismissTo, replace });
+    jest.mocked(createProposal).mockResolvedValueOnce({ ...proposal, matched: true });
+    const { findByTestId } = await renderDetails({ groupId: 'group-1', placeId: 'cafe-1' });
+
+    fireEvent.press(await findByTestId('experience-suggest-location'));
+
+    await waitFor(() => {
+      expect(replace).toHaveBeenCalledWith({
+        pathname: '/group/[id]/match',
+        params: {
+          id: 'group-1',
+          matchedSuggestionId: 'proposal-1',
+          locationId: 'location-1',
+          name: 'Bloom Café',
+          address: 'Rua das Flores, 10',
+        },
+      });
     });
+    expect(dismissTo).not.toHaveBeenCalled();
+  });
+
+  test('stays on the details and shows an error when the suggestion fails', async () => {
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const dismissTo = jest.fn();
+    (useRouter as jest.Mock).mockReturnValue({ back: jest.fn(), dismissTo, replace: jest.fn() });
+    jest.mocked(createProposal).mockRejectedValueOnce(new Error('network error'));
+    const { findByTestId, findByText } = await renderDetails({
+      groupId: 'group-1',
+      placeId: 'cafe-1',
+    });
+
+    fireEvent.press(await findByTestId('experience-suggest-location'));
+
+    await waitFor(() => {
+      expect(Toast.show).toHaveBeenCalledWith({
+        type: 'error',
+        text1: 'Erro',
+        text2: 'Não foi possível sugerir este local. Tente novamente.',
+      });
+    });
+    expect(dismissTo).not.toHaveBeenCalled();
+    expect(await findByText('Sugerir este local')).toBeTruthy();
+    consoleError.mockRestore();
   });
 
   test('shows a loading state while details are pending', async () => {

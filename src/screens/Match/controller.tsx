@@ -11,12 +11,14 @@ export default function MatchController() {
     locationId,
     name,
     address,
+    imageUrl,
   } = useLocalSearchParams<{
     id: string;
     matchedSuggestionId?: string;
     locationId?: string;
     name?: string;
     address?: string;
+    imageUrl?: string;
   }>();
   const [participants, setParticipants] = useState<GroupMember[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
@@ -65,13 +67,13 @@ export default function MatchController() {
         locationId,
         name: name ?? '',
         address: address ?? '',
+        ...(imageUrl ? { imageUrl } : {}),
       },
     });
   };
 
   return (
     <MatchScreen
-      groupId={groupId}
       participants={participants}
       currentUserId={currentUserId}
       isLoadingParticipants={isLoadingParticipants}

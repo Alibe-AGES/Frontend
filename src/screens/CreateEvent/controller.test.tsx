@@ -1,5 +1,6 @@
 import type { EventCardDraft } from '@/components/EventCard';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
+import { API_BASE_URL } from '@/constants';
 import type { CreateEventTab } from '@/screens/CreateEvent';
 import { createEvent, createProposal } from '@/server/events';
 import { getGroup, getMe } from '@/server/groups';
@@ -12,7 +13,7 @@ interface MockScreenProps {
   groupId?: string;
   openDatePickerOnMount?: boolean;
   activeTab?: CreateEventTab;
-  isSuggestionReadOnly?: boolean;
+  isLocationReadOnly?: boolean;
   onSelectTab?: (tab: CreateEventTab) => void;
   draft: EventCardDraft;
   onChangeDraft: (draft: EventCardDraft) => void;
@@ -220,6 +221,7 @@ describe('CreateEventController', () => {
       id: 'group-1',
       matchedSuggestionId: 'proposal-1',
       locationId: 'location-1',
+      imageUrl: '/api/locations/location-1/image',
       name: 'Bloom Café',
       address: 'Rua Padre Chagas, 320',
     });
@@ -228,7 +230,9 @@ describe('CreateEventController', () => {
     expect(mockScreenProps.draft).toMatchObject({
       name: 'Bloom Café',
       address: 'Rua Padre Chagas, 320',
+      imageUri: `${API_BASE_URL}/api/locations/location-1/image`,
     });
+    expect(mockScreenProps.isLocationReadOnly).toBe(true);
 
     await fillDraft({
       ...mockScreenProps.draft,
@@ -246,6 +250,7 @@ describe('CreateEventController', () => {
       time: '20:00',
       locationId: 'location-1',
     });
+    expect(mockCreateProposal).not.toHaveBeenCalled();
   });
 
   test('shows an error toast and stays on the screen when creation fails', async () => {
@@ -307,13 +312,19 @@ describe('CreateEventController', () => {
       address: 'Av. João Wallig, 1800',
     });
     expect(mockCreateEvent).not.toHaveBeenCalled();
-    expect(replace).toHaveBeenCalledWith({
-      pathname: '/group/[id]/experiences/new',
-      params: { id: 'group-1' },
+    expect(replace).not.toHaveBeenCalled();
+    expect(mockToastShow).toHaveBeenCalledWith({
+      type: 'success',
+      text1: 'Sugestão enviada!',
+      text2: 'Bloom Café foi sugerido para o grupo.',
+    });
+    expect(mockScreenProps.activeTab).toBe('suggestion');
+    await waitFor(() => {
+      expect(mockScreenProps.draft).toMatchObject({ name: '', address: '', imageUri: null });
     });
   });
 
-  test('requires manual proposal name and address, then submits a description-only card', async () => {
+  test('requires manual proposal name and address, then submits only those fields', async () => {
     mockUseLocalSearchParams.mockReturnValue({ id: 'group-1', tab: 'suggestion' });
     await Promise.resolve(render(<CreateEventController />));
     await fillDraft({
@@ -343,157 +354,106 @@ describe('CreateEventController', () => {
       name: 'Um café tranquilo para conversar',
       address: 'Rua das Flores, 123',
     });
-    expect(replace).toHaveBeenCalledWith({
-      pathname: '/group/[id]/experiences/new',
-      params: { id: 'group-1' },
-    });
+    expect(replace).not.toHaveBeenCalled();
   });
 
-  test('uses locationId and address from route params when creating a suggestion', async () => {
-    const customLocationId = 'cc33027e-cfb6-4611-b104-158ba673d98d';
-    mockUseLocalSearchParams.mockReturnValue({
-      id: 'group-1',
-      locationId: customLocationId,
-      address: 'Rua Padre Chagas, 320 - Moinhos de Vento, Porto Alegre - RS',
-      phoneNumber: '(51) 3333-4444',
-      website: 'https://bloom.example',
-      openingHours: 'Monday: 09:00-18:00\nTuesday: 09:00-18:00',
-      priceStart: '20',
-      priceEnd: '80',
-      tab: 'suggestion',
-    });
-
-    await Promise.resolve(render(<CreateEventController />));
-
-    expect(mockScreenProps.activeTab).toBe('suggestion');
-    expect(mockScreenProps.draft.address).toBe(
-      'Rua Padre Chagas, 320 - Moinhos de Vento, Porto Alegre - RS'
-    );
-    expect(mockScreenProps.draft).toMatchObject({
-      phoneNumber: '(51) 3333-4444',
-      website: 'https://bloom.example',
-      openingHours: 'Monday: 09:00-18:00\nTuesday: 09:00-18:00',
-      priceStart: '20',
-      priceEnd: '80',
-    });
-
-    await fillDraft({
-      ...mockScreenProps.draft,
-      name: 'Bloom Café',
-      date: '2026-10-15',
-      time: '20:00',
-    });
-    act(() => {
-      mockScreenProps.onConfirm();
-    });
-    await Promise.resolve();
-
-    expect(mockCreateProposal).toHaveBeenCalledWith('group-1', {
-      locationId: customLocationId,
-      name: 'Bloom Café',
-      address: 'Rua Padre Chagas, 320 - Moinhos de Vento, Porto Alegre - RS',
-      description: JSON.stringify({
-        phoneNumber: '(51) 3333-4444',
-        website: 'https://bloom.example',
-        openingHours: ['Monday: 09:00-18:00', 'Tuesday: 09:00-18:00'],
-        priceStart: 20,
-        priceEnd: 80,
-      }),
-    });
-  });
-
-  test('includes user-entered location details when creating a suggestion', async () => {
-    await Promise.resolve(render(<CreateEventController />));
-    act(() => {
-      mockScreenProps.onSelectTab?.('suggestion');
-    });
-    await Promise.resolve();
-    await fillDraft({
-      ...COMPLETE_DRAFT,
-      priceStart: '100',
-      priceEnd: '150',
-      phoneNumber: '(51) 3333-3333',
-      openingHours: 'Terça a quinta: 18:00-23:45\nSexta e sábado: 18:00-00:00',
-      website: 'www.coolturebr.net',
-    });
-
-    act(() => {
-      mockScreenProps.onConfirm();
-    });
-    await Promise.resolve();
-
-    expect(mockCreateProposal).toHaveBeenCalledWith('group-1', {
-      name: 'Bloom Café',
-      address: 'Av. João Wallig, 1800',
-      description: JSON.stringify({
-        phoneNumber: '(51) 3333-3333',
-        website: 'www.coolturebr.net',
-        openingHours: ['Terça a quinta: 18:00-23:45', 'Sexta e sábado: 18:00-00:00'],
-        priceStart: 100,
-        priceEnd: 150,
-      }),
-    });
-  });
-
-  test('creates a suggestion for a selected Google place rather than creating an event', async () => {
-    mockUseLocalSearchParams.mockReturnValue({
-      id: 'group-1',
-      tab: 'suggestion',
-      externalId: 'google-place-1',
-      address: 'Rua Padre Chagas, 320',
-      name: 'Bloom Café',
-    });
-    await Promise.resolve(render(<CreateEventController />));
-    await fillDraft({
-      ...mockScreenProps.draft,
-      ...COMPLETE_DRAFT,
-      name: 'Bloom Café',
-    });
-
-    act(() => {
-      mockScreenProps.onConfirm();
-    });
-    await Promise.resolve();
-
-    expect(mockCreateProposal).toHaveBeenCalledWith(
-      'group-1',
-      expect.objectContaining({
-        externalId: 'google-place-1',
-        name: 'Bloom Café',
-      })
-    );
-    expect(mockCreateEvent).not.toHaveBeenCalled();
-  });
-
-  test('marks backend place suggestions read-only and submits their image URL', async () => {
-    const imageUrl = 'https://api.example.com/places/google-place-1/image';
-    mockUseLocalSearchParams.mockReturnValue({
-      id: 'group-1',
-      tab: 'suggestion',
-      externalId: 'google-place-1',
-      imageUrl,
-      address: 'Rua Padre Chagas, 320',
-      name: 'Bloom Café',
-    });
-
+  test('sends the picked image with a manual suggestion', async () => {
+    const photo: SelectedPhoto = {
+      uri: 'file:///picked.jpg',
+      fileName: 'picked.jpg',
+      mimeType: 'image/jpeg',
+    };
+    mockUseLocalSearchParams.mockReturnValue({ id: 'group-1', tab: 'suggestion' });
     await renderController();
 
-    expect(mockScreenProps.isSuggestionReadOnly).toBe(true);
-    expect(mockScreenProps.draft.imageUri).toBe(imageUrl);
-
-    await fillDraft({ ...mockScreenProps.draft, ...COMPLETE_DRAFT, name: 'Bloom Café' });
+    act(() => {
+      mockScreenProps.onImageSelected(photo);
+    });
+    await fillDraft(COMPLETE_DRAFT);
     await act(async () => {
       mockScreenProps.onConfirm();
       await Promise.resolve();
     });
 
-    expect(mockCreateProposal).toHaveBeenCalledWith(
-      'group-1',
-      expect.objectContaining({ externalId: 'google-place-1', imageUrl })
-    );
+    expect(mockCreateProposal).toHaveBeenCalledWith('group-1', {
+      name: 'Bloom Café',
+      address: 'Av. João Wallig, 1800',
+      image: photo,
+    });
   });
 
-  test('routes an immediately matched suggestion to the match confirmation with location details', async () => {
+  test('keeps a matched place on the event tab and ignores the suggestion tab', async () => {
+    mockUseLocalSearchParams.mockReturnValue({
+      id: 'group-1',
+      tab: 'suggestion',
+      locationId: 'cc33027e-cfb6-4611-b104-158ba673d98d',
+      address: 'Rua Padre Chagas, 320',
+      name: 'Bloom Café',
+    });
+    await renderController();
+
+    expect(mockScreenProps.activeTab).toBe('event');
+    expect(mockScreenProps.isLocationReadOnly).toBe(true);
+
+    act(() => {
+      mockScreenProps.onSelectTab?.('suggestion');
+    });
+    await Promise.resolve();
+
+    expect(mockScreenProps.activeTab).toBe('event');
+  });
+
+  test.each(['manual'] as const)(
+    'switches from a %s suggestion to event mode after route params change',
+    async () => {
+      mockUseLocalSearchParams.mockReturnValue({
+        id: 'group-1',
+        tab: 'suggestion',
+        name: 'Old suggestion title',
+        address: 'Old suggestion address',
+      });
+      const { rerender } = await renderController();
+      expect(mockScreenProps.activeTab).toBe('suggestion');
+
+      mockUseLocalSearchParams.mockReturnValue({
+        id: 'group-1',
+        locationId: 'matched-location-1',
+        imageUrl: '/api/locations/matched-location-1/image',
+        name: 'Matched place',
+        address: 'Matched address',
+      });
+      await act(async () => {
+        rerender(<CreateEventController />);
+        await Promise.resolve();
+      });
+
+      expect(mockScreenProps.activeTab).toBe('event');
+      expect(mockScreenProps.isLocationReadOnly).toBe(true);
+      expect(mockScreenProps.draft).toMatchObject({
+        name: 'Matched place',
+        address: 'Matched address',
+        imageUri: `${API_BASE_URL}/api/locations/matched-location-1/image`,
+        date: '',
+        time: '',
+      });
+
+      await fillDraft({ ...mockScreenProps.draft, date: '2026-10-15', time: '20:00' });
+      await act(async () => {
+        mockScreenProps.onConfirm();
+        await Promise.resolve();
+      });
+
+      expect(mockCreateEvent).toHaveBeenCalledWith('group-1', {
+        name: 'Matched place',
+        date: '2026-10-15',
+        time: '20:00',
+        locationId: 'matched-location-1',
+      });
+      expect(mockCreateProposal).not.toHaveBeenCalled();
+    }
+  );
+
+  test('stays on the screen even when the suggestion matches right away', async () => {
     mockCreateProposal.mockResolvedValueOnce({
       id: 'proposal-match',
       matched: true,
@@ -502,6 +462,7 @@ describe('CreateEventController', () => {
         name: 'Bloom Café',
         address: 'Rua Padre Chagas, 320',
         description: null,
+        imageUrl: '/api/locations/location-1/image',
       },
     } as Awaited<ReturnType<typeof createProposal>>);
     await Promise.resolve(render(<CreateEventController />));
@@ -511,21 +472,13 @@ describe('CreateEventController', () => {
     await Promise.resolve();
     await fillDraft(COMPLETE_DRAFT);
 
-    act(() => {
+    await act(async () => {
       mockScreenProps.onConfirm();
+      await Promise.resolve();
     });
-    await Promise.resolve();
 
-    expect(replace).toHaveBeenCalledWith({
-      pathname: '/group/[id]/match',
-      params: {
-        id: 'group-1',
-        matchedSuggestionId: 'proposal-match',
-        locationId: 'location-1',
-        name: 'Bloom Café',
-        address: 'Rua Padre Chagas, 320',
-      },
-    });
+    expect(replace).not.toHaveBeenCalled();
+    expect(mockToastShow).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }));
     expect(mockCreateEvent).not.toHaveBeenCalled();
   });
 

@@ -39,7 +39,11 @@ function buildEventDetails(
     budgetEnd: null,
     status: 'confirmed',
     groupId: 'group-1',
-    location: { id: `location-${id}`, description: ' Rua A ', manuallyCreated: true },
+    location: {
+      id: `location-${id}`,
+      description: ' Rua A ',
+      manuallyCreated: true,
+    },
     proposal: {
       id: `proposal-${id}`,
       owner: { id: 'user-1', name: 'Ana', image: null },

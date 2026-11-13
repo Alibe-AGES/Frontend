@@ -97,13 +97,15 @@ describe('<EventCard />', () => {
     expect(queryByTestId('alibe-event-card-image')).toBeNull();
   });
 
-  test('hides optional sections when only the id is provided', async () => {
-    const { getByTestId, queryByTestId } = await Promise.resolve(
+  test('shows additional detail placeholders when only the id is provided', async () => {
+    const { getByTestId, getByText, getAllByText, queryByTestId } = await Promise.resolve(
       render(<EventCard event={{ id: 'event-2' }} />)
     );
 
     expect(getByTestId('alibe-event-card-title').props.children).toBe('Evento');
-    for (const part of ['address', 'time', 'budget', 'phone', 'hours', 'website', 'edit']) {
+    expect(getByText('(00) 00000-0000')).toBeTruthy();
+    expect(getAllByText('--')).toHaveLength(3);
+    for (const part of ['address', 'time', 'edit']) {
       expect(queryByTestId(`alibe-event-card-${part}`)).toBeNull();
     }
   });
@@ -142,13 +144,14 @@ describe('<EventCard />', () => {
     expect(queryByTestId('alibe-event-card-time')).toBeNull();
   });
 
-  test('shows the phone even without a budget', async () => {
-    const { getByTestId, queryByTestId } = await Promise.resolve(
+  test('shows the phone and a placeholder when the budget is missing', async () => {
+    const { getByText, getByTestId } = await Promise.resolve(
       render(<EventCard event={{ id: 'event-7', phone: '(51) 99999-0000' }} />)
     );
 
     expect(getByTestId('alibe-event-card-phone')).toBeTruthy();
-    expect(queryByTestId('alibe-event-card-budget')).toBeNull();
+    expect(getByText('(51) 99999-0000')).toBeTruthy();
+    expect(getByTestId('alibe-event-card-budget')).toBeTruthy();
   });
 
   test('calls onEditPress when the edit button is tapped', async () => {
@@ -187,7 +190,7 @@ describe('<EventCard mode="create" />', () => {
       )
     );
 
-    expect(getByPlaceholderText('Definir nome do evento')).toBeTruthy();
+    expect(getByPlaceholderText('Definir nome')).toBeTruthy();
     expect(getByPlaceholderText('Adicionar endereço')).toBeTruthy();
     expect(getByTestId('alibe-event-card-date-button')).toBeTruthy();
     expect(getByText('Escolher dia')).toBeTruthy();
@@ -226,56 +229,75 @@ describe('<EventCard mode="create" />', () => {
     expect(onChangeDraft).toHaveBeenNthCalledWith(3, { ...draft, time: '10:00' });
   });
 
-  test('shows editable location details on the suggestion card and omits event schedule fields', async () => {
-    const { getByPlaceholderText, queryByTestId } = await Promise.resolve(
-      render(
-        <EventCard
-          mode="create"
-          variant="suggestion"
-          draft={emptyDraft}
-          onChangeDraft={jest.fn()}
-        />
-      )
-    );
-
-    expect(getByPlaceholderText('Preço mínimo (R$)')).toBeTruthy();
-    expect(getByPlaceholderText('Preço máximo (R$)')).toBeTruthy();
-    expect(getByPlaceholderText('Telefone')).toBeTruthy();
-    expect(getByPlaceholderText('Horários de funcionamento')).toBeTruthy();
-    expect(getByPlaceholderText('Site')).toBeTruthy();
-    expect(queryByTestId('alibe-event-card-date-button')).toBeNull();
-    expect(queryByTestId('alibe-event-card-time-input')).toBeNull();
-  });
-
-  test('keeps backend-provided suggestions and their image read-only', async () => {
+  test('locks the name, address and picture of a matched place but keeps the schedule editable', async () => {
     const onChangeDraft = jest.fn();
-    const draft = { ...emptyDraft, name: 'Bloom Café', imageUri: 'https://example.com/cafe.jpg' };
-    const { getByTestId } = await Promise.resolve(
+    const draft = {
+      ...emptyDraft,
+      name: 'Bloom Café',
+      address: 'Rua Padre Chagas, 320',
+      imageUri: 'https://example.com/cafe.jpg',
+    };
+    const { getByTestId, getByLabelText, getByText, queryByDisplayValue } = await Promise.resolve(
       render(
         <EventCard
           mode="create"
-          variant="suggestion"
           draft={draft}
           onChangeDraft={onChangeDraft}
-          readOnly
+          locationReadOnly
         />
       )
     );
 
-    expect(getByTestId('alibe-event-card-name-input').props.editable).toBe(false);
-    expect(getByTestId('alibe-event-card-address-input').props.editable).toBe(false);
-    expect(getByTestId('alibe-event-card-price-start-input').props.editable).toBe(false);
-    expect(getByTestId('alibe-event-card-phone-input').props.editable).toBe(false);
-    const imagePicker = getByTestId('alibe-event-card-image-picker') as unknown as {
-      props: { accessibilityState: { disabled: boolean } };
-    };
-    expect(imagePicker.props.accessibilityState.disabled).toBe(true);
+    // Shown as single-line text so long values end with an ellipsis instead of being cut.
+    expect(queryByDisplayValue('Bloom Café')).toBeNull();
+    expect(queryByDisplayValue('Rua Padre Chagas, 320')).toBeNull();
+    expect(getByText('Bloom Café').props).toMatchObject({
+      numberOfLines: 1,
+      ellipsizeMode: 'tail',
+    });
+    expect(getByText('Rua Padre Chagas, 320').props).toMatchObject({
+      numberOfLines: 1,
+      ellipsizeMode: 'tail',
+    });
+    expect(getByLabelText('Imagem do local').props.accessibilityState).toMatchObject({
+      disabled: true,
+    });
 
-    fireEvent.changeText(getByTestId('alibe-event-card-name-input'), 'Changed name');
     fireEvent.press(getByTestId('alibe-event-card-image-picker'));
-
-    expect(onChangeDraft).not.toHaveBeenCalled();
+    await Promise.resolve();
     expect(mockRequestPermissions).not.toHaveBeenCalled();
+
+    fireEvent.changeText(getByTestId('alibe-event-card-time-input'), '2000');
+    expect(onChangeDraft).toHaveBeenCalledWith({ ...draft, time: '20:00' });
+  });
+
+  test('shows only name, address and image on the suggestion card', async () => {
+    const { getByPlaceholderText, queryByPlaceholderText, queryByTestId, getByTestId } =
+      await Promise.resolve(
+        render(
+          <EventCard
+            mode="create"
+            variant="suggestion"
+            draft={emptyDraft}
+            onChangeDraft={jest.fn()}
+          />
+        )
+      );
+
+    expect(getByTestId('alibe-event-card-name-input')).toBeTruthy();
+    expect(getByPlaceholderText('Adicionar endereço')).toBeTruthy();
+    expect(getByTestId('alibe-event-card-image-picker')).toBeTruthy();
+    for (const placeholder of [
+      'Preço mínimo (R$)',
+      'Preço máximo (R$)',
+      'Telefone',
+      'Horários de funcionamento',
+      'Site',
+    ]) {
+      expect(queryByPlaceholderText(placeholder)).toBeNull();
+    }
+    expect(queryByTestId('alibe-event-card-date-button')).toBeNull();
+    expect(queryByTestId('alibe-event-card-time-input')).toBeNull();
   });
 
   test('picks an image from the gallery and stores it in the draft', async () => {

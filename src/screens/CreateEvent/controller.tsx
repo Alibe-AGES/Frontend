@@ -9,6 +9,7 @@ import {
   type CreateProposalInput,
 } from '@/server/events';
 import { getGroup, getMe } from '@/server/groups';
+import { resolveApiImageUrl } from '@/utils/apiImageUrl';
 import { isValidApiDate } from '@/utils/date';
 import { isValidTime } from '@/utils/time';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -17,41 +18,34 @@ import Toast from 'react-native-toast-message';
 
 const EMPTY_DRAFT: EventCardDraft = { name: '', imageUri: null, address: '', date: '', time: '' };
 
-function parsePrice(value?: string): number | undefined {
-  if (!value?.trim()) return undefined;
-  const price = Number(value.replace(',', '.'));
-  return Number.isFinite(price) ? price : undefined;
+interface InitialEventDraftParams {
+  date?: string;
+  imageUrl?: string;
+  address?: string;
+  name?: string;
 }
 
-function buildProposalInput(
-  draft: EventCardDraft,
-  locationId?: string,
-  externalId?: string
-): CreateProposalInput {
-  const details = {
-    ...(draft.phoneNumber?.trim() ? { phoneNumber: draft.phoneNumber.trim() } : {}),
-    ...(draft.website?.trim() ? { website: draft.website.trim() } : {}),
-    ...(draft.openingHours?.trim()
-      ? {
-          openingHours: draft.openingHours
-            .split('\n')
-            .map((line) => line.trim())
-            .filter(Boolean),
-        }
-      : {}),
-    ...(parsePrice(draft.priceStart) !== undefined
-      ? { priceStart: parsePrice(draft.priceStart) }
-      : {}),
-    ...(parsePrice(draft.priceEnd) !== undefined ? { priceEnd: parsePrice(draft.priceEnd) } : {}),
-  };
-  const description = Object.keys(details).length > 0 ? JSON.stringify(details) : undefined;
+function buildInitialDraft(params: InitialEventDraftParams): EventCardDraft {
+  const validDate = params.date && isValidApiDate(params.date) ? params.date : '';
 
   return {
-    ...(locationId ? { locationId } : {}),
-    ...(externalId ? { externalId } : {}),
+    ...EMPTY_DRAFT,
+    name: params.name?.trim() ?? '',
+    address: params.address?.trim() ?? '',
+    imageUri: resolveApiImageUrl(params.imageUrl),
+    date: validDate,
+  };
+}
+
+// A suggestion from this screen is always a manual place: the user types its name and address.
+function buildProposalInput(
+  draft: EventCardDraft,
+  image: SelectedPhoto | null
+): CreateProposalInput {
+  return {
     name: draft.name.trim(),
     address: draft.address.trim(),
-    ...(description ? { description } : {}),
+    ...(image ? { image } : {}),
   };
 }
 
@@ -81,13 +75,7 @@ export default function CreateEventController() {
     id: groupId,
     date: initialDate,
     locationId: initialLocationId,
-    externalId: initialExternalId,
     imageUrl: initialImageUrl,
-    phoneNumber: initialPhoneNumber,
-    website: initialWebsite,
-    openingHours: initialOpeningHours,
-    priceStart: initialPriceStart,
-    priceEnd: initialPriceEnd,
     address: initialAddress,
     name: initialName,
     tab: initialTab,
@@ -95,39 +83,51 @@ export default function CreateEventController() {
     id: string;
     date?: string;
     locationId?: string;
-    externalId?: string;
     imageUrl?: string;
-    phoneNumber?: string;
-    website?: string;
-    openingHours?: string;
-    priceStart?: string;
-    priceEnd?: string;
     address?: string;
     name?: string;
     tab?: CreateEventTab;
   }>();
 
-  const validInitialDate = initialDate && isValidApiDate(initialDate) ? initialDate : '';
-  const initialActiveTab: CreateEventTab = initialTab === 'suggestion' ? 'suggestion' : 'event';
+  // A matched place (locationId) is already chosen, so only the event tab makes sense.
+  const isLocationReadOnly = Boolean(initialLocationId);
+  const initialActiveTab: CreateEventTab =
+    initialTab === 'suggestion' && !isLocationReadOnly ? 'suggestion' : 'event';
 
   const [activeTab, setActiveTab] = useState<CreateEventTab>(initialActiveTab);
-  const [draft, setDraft] = useState<EventCardDraft>({
-    ...EMPTY_DRAFT,
-    name: initialName?.trim() ?? '',
-    address: initialAddress?.trim() ?? '',
-    imageUri: initialExternalId ? (initialImageUrl ?? null) : null,
-    date: validInitialDate,
-    ...(initialPhoneNumber ? { phoneNumber: initialPhoneNumber } : {}),
-    ...(initialWebsite ? { website: initialWebsite } : {}),
-    ...(initialOpeningHours ? { openingHours: initialOpeningHours } : {}),
-    ...(initialPriceStart ? { priceStart: initialPriceStart } : {}),
-    ...(initialPriceEnd ? { priceEnd: initialPriceEnd } : {}),
-  });
+  const [draft, setDraft] = useState<EventCardDraft>(() =>
+    buildInitialDraft({
+      date: initialDate,
+      imageUrl: initialImageUrl,
+      address: initialAddress,
+      name: initialName,
+    })
+  );
   const [photo, setPhoto] = useState<SelectedPhoto | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
   const [isLoadingParticipants, setIsLoadingParticipants] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    setActiveTab(initialActiveTab);
+    setDraft(
+      buildInitialDraft({
+        date: initialDate,
+        imageUrl: initialImageUrl,
+        address: initialAddress,
+        name: initialName,
+      })
+    );
+    setPhoto(null);
+  }, [
+    initialActiveTab,
+    initialAddress,
+    initialDate,
+    initialImageUrl,
+    initialLocationId,
+    initialName,
+  ]);
 
   useEffect(() => {
     if (!groupId) {
@@ -155,11 +155,7 @@ export default function CreateEventController() {
       });
   }, [groupId]);
 
-  const hasLocation = Boolean(
-    initialLocationId ??
-    initialExternalId ??
-    (draft.address.trim().length > 0 ? 'manual' : undefined)
-  );
+  const hasLocation = Boolean(initialLocationId) || draft.address.trim().length > 0;
   const isDraftComplete =
     draft.name.trim().length > 0 &&
     (activeTab === 'suggestion'
@@ -175,29 +171,16 @@ export default function CreateEventController() {
 
     try {
       if (activeTab === 'suggestion') {
-        const proposal = await createProposal(groupId, {
-          ...buildProposalInput(draft, initialLocationId, initialExternalId),
-          ...(initialExternalId && initialImageUrl ? { imageUrl: initialImageUrl } : {}),
-        });
+        await createProposal(groupId, buildProposalInput(draft, photo));
 
-        if (proposal.matched) {
-          router.replace({
-            pathname: '/group/[id]/match',
-            params: {
-              id: groupId,
-              matchedSuggestionId: proposal.id,
-              locationId: proposal.location.id,
-              name: proposal.name ?? proposal.location.name ?? '',
-              address: proposal.location.address ?? proposal.location.description ?? '',
-            },
-          });
-          return;
-        }
-
-        router.replace({
-          pathname: '/group/[id]/experiences/new',
-          params: { id: groupId },
+        // Stay on the screen; the form is cleared so the same suggestion isn't sent twice.
+        Toast.show({
+          type: 'success',
+          text1: 'Sugestão enviada!',
+          text2: `${draft.name.trim()} foi sugerido para o grupo.`,
         });
+        setDraft((currentDraft) => ({ ...EMPTY_DRAFT, date: currentDraft.date }));
+        setPhoto(null);
         return;
       }
 
@@ -230,8 +213,11 @@ export default function CreateEventController() {
       groupId={groupId}
       openDatePickerOnMount={false}
       activeTab={activeTab}
-      isSuggestionReadOnly={Boolean(initialExternalId)}
-      onSelectTab={setActiveTab}
+      isLocationReadOnly={isLocationReadOnly}
+      onSelectTab={(tab) => {
+        if (tab === 'suggestion' && isLocationReadOnly) return;
+        setActiveTab(tab);
+      }}
       draft={draft}
       onChangeDraft={setDraft}
       onSelectDate={(date) => {
