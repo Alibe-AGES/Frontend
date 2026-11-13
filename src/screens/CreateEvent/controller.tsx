@@ -188,10 +188,14 @@ export default function CreateEventController() {
           return;
         }
 
-        router.replace({
-          pathname: '/group/[id]/experiences/new',
-          params: { id: groupId },
+        // Stay on the screen; the form is cleared so the same suggestion isn't sent twice.
+        Toast.show({
+          type: 'success',
+          text1: 'Sugestão enviada!',
+          text2: `${draft.name.trim()} foi sugerido para o grupo.`,
         });
+        setDraft((currentDraft) => ({ ...EMPTY_DRAFT, date: currentDraft.date }));
+        setPhoto(null);
         return;
       }
 

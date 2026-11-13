@@ -1,7 +1,7 @@
 import { DayMark } from '@/components/Calendar/Calendar.types';
 import { getGroupCalendar } from '@/server/calendar';
 import { getEventDetails, getEventMemories, getMemoryImageUrl } from '@/server/events';
-import { getGroup, getGroupMembers } from '@/server/groups';
+import { getGroup, getGroupMembers, getMe } from '@/server/groups';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { GroupScreen } from './index';
@@ -25,6 +25,7 @@ jest.mock('@/server/events', () => ({
 jest.mock('@/server/groups', () => ({
   getGroup: jest.fn(),
   getGroupMembers: jest.fn(),
+  getMe: jest.fn(),
 }));
 
 jest.mock('@/components/NavigationBar', () => ({
@@ -63,6 +64,7 @@ const mockGetEventMemories = jest.mocked(getEventMemories);
 const mockGetMemoryImageUrl = jest.mocked(getMemoryImageUrl);
 const mockGetGroup = getGroup as jest.MockedFunction<typeof getGroup>;
 const mockGetGroupMembers = getGroupMembers as jest.MockedFunction<typeof getGroupMembers>;
+const mockGetMe = jest.mocked(getMe);
 
 async function renderGroup() {
   const result = render(<GroupScreen />);
@@ -95,6 +97,8 @@ describe('GroupScreen', () => {
       { id: 'user-1', name: 'Ana', profilePic: null },
       { id: 'user-2', name: 'Bia', profilePic: null },
     ]);
+    // Someone outside the group by default, so every member is listed by name.
+    mockGetMe.mockResolvedValue({ id: 'user-9', name: 'Kata', profilePic: null });
     mockGetGroupCalendar.mockResolvedValue([]);
     mockGetEventDetails.mockImplementation((eventId) =>
       Promise.resolve({
@@ -120,6 +124,15 @@ describe('GroupScreen', () => {
     });
     expect(mockGetGroup).toHaveBeenCalledWith('group-1');
     expect(mockGetGroupMembers).toHaveBeenCalledWith('group-1');
+  });
+
+  test('shows the current user first as "Eu", like the group card', async () => {
+    mockGetMe.mockResolvedValue({ id: 'user-2', name: 'Bia', profilePic: null });
+    const { getByText } = await renderGroup();
+
+    await waitFor(() => {
+      expect(getByText('Eu, Ana')).toBeTruthy();
+    });
   });
 
   test('shows the empty member state when no members are returned', async () => {

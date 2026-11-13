@@ -1,5 +1,6 @@
 import { getGroupMembers, getMe, listGroups } from '@/server/groups';
 import { GroupColor, getRandomGroupColor } from '@/utils/groupColors';
+import { buildMembersPreview } from '@/utils/membersPreview';
 import { useCallback, useEffect, useState } from 'react';
 
 export interface Group {
@@ -20,25 +21,6 @@ interface UseGroupsResult {
 
 type FetchMode = 'initial' | 'refresh';
 
-function buildMembersPreview(
-  names: string[],
-  currentUserId: string | undefined,
-  memberIds: string[]
-): string | undefined {
-  if (names.length === 0) {
-    return undefined;
-  }
-
-  const currentUserIndex = currentUserId ? memberIds.indexOf(currentUserId) : -1;
-
-  if (currentUserIndex >= 0) {
-    const others = names.filter((_, index) => index !== currentUserIndex);
-    return ['Eu', ...others].join(', ');
-  }
-
-  return names.join(', ');
-}
-
 async function loadGroups(): Promise<Group[]> {
   const serverGroups = await listGroups();
 
@@ -56,11 +38,7 @@ async function loadGroups(): Promise<Group[]> {
 
       try {
         const members = await getGroupMembers(group.id);
-        membersPreview = buildMembersPreview(
-          members.map((m) => m.name),
-          currentUserId,
-          members.map((m) => m.id)
-        );
+        membersPreview = buildMembersPreview(members, currentUserId);
       } catch {
         membersPreview = undefined;
       }

@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-import CreateGroupDecoration from '@/assets/images/create-group-decoration.svg';
+import CreateGroupDecoration from '@/assets/images/lime-coral-spin-1.svg';
 import PencilIcon from '@/assets/images/pencil.svg';
 
 export function CreateGroupScreen() {

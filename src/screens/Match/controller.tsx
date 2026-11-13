@@ -72,6 +72,15 @@ export default function MatchController() {
     });
   };
 
+  const handleDismiss = () => {
+    router.replace({
+      pathname: '/group/[id]',
+      params: {
+        id: groupId,
+      },
+    });
+  };
+
   return (
     <MatchScreen
       participants={participants}
@@ -79,6 +88,7 @@ export default function MatchController() {
       isLoadingParticipants={isLoadingParticipants}
       isConfirmDisabled={isConfirmDisabled}
       onConfirm={handleConfirm}
+      onDismiss={handleDismiss}
     />
   );
 }
