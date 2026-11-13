@@ -3,12 +3,15 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 import { ErrorCard } from '@/components/ErrorCard';
 import { ScreenFrame } from '@/components/ScreenFrame';
 import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
+import { createProposal } from '@/server/events';
 import { getPlaceDetails, getStoredLocationDetails, type PlaceDetails } from '@/server/places';
 import { theme } from '@/theme';
+import { buildPlaceProposalInput } from '@/utils/proposals';
 
 const IMAGE_FADE_MS = 200;
 
@@ -45,38 +48,49 @@ export function ExperienceDetailsScreen({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const [isSuggesting, setIsSuggesting] = useState(false);
   const imageSource = useAuthenticatedImageSource(details?.imageUrl);
   const rating = details?.rating;
 
-  const handleSuggestLocation = () => {
-    if (!details) return;
-    const locationParams: { locationId?: string; externalId?: string } = {};
-    if (isStoredLocation) {
-      locationParams.locationId = placeId;
-    } else if (details.externalId) {
-      locationParams.externalId = details.externalId;
-    }
+  const handleSuggestLocation = async () => {
+    if (!details || isSuggesting) return;
 
-    router.push({
-      pathname: '/group/[id]/create-event',
-      params: {
-        id: groupId,
-        tab: 'suggestion',
-        ...locationParams,
-        ...(details.phoneNumber ? { phoneNumber: details.phoneNumber } : {}),
-        ...(details.website ? { website: details.website } : {}),
-        ...(details.openingHours.length > 0
-          ? { openingHours: details.openingHours.join('\n') }
-          : {}),
-        ...(details.priceRange?.start != null
-          ? { priceStart: String(details.priceRange.start) }
-          : {}),
-        ...(details.priceRange?.end != null ? { priceEnd: String(details.priceRange.end) } : {}),
-        ...(details.imageUrl ? { imageUrl: details.imageUrl } : {}),
-        address: details.address ?? '',
-        name: details.name,
-      },
-    });
+    setIsSuggesting(true);
+    try {
+      const proposal = await createProposal(
+        groupId,
+        buildPlaceProposalInput(details, placeId, isStoredLocation)
+      );
+
+      if (proposal.matched) {
+        router.replace({
+          pathname: '/group/[id]/match',
+          params: {
+            id: groupId,
+            matchedSuggestionId: proposal.id,
+            locationId: proposal.location.id,
+            name: proposal.name ?? proposal.location.name ?? '',
+            address: proposal.location.address ?? proposal.location.description ?? '',
+          },
+        });
+        return;
+      }
+
+      Toast.show({
+        type: 'success',
+        text1: 'Sugestão enviada!',
+        text2: `${details.name} foi sugerido para o grupo.`,
+      });
+      router.dismissTo({ pathname: '/group/[id]/experiences', params: { id: groupId } });
+    } catch (suggestError) {
+      console.error('Erro ao sugerir local', suggestError);
+      Toast.show({
+        type: 'error',
+        text1: 'Erro',
+        text2: 'Não foi possível sugerir este local. Tente novamente.',
+      });
+      setIsSuggesting(false);
+    }
   };
 
   useEffect(() => {
@@ -243,11 +257,22 @@ export function ExperienceDetailsScreen({
           </Text>
           <Pressable
             accessibilityRole="button"
-            onPress={handleSuggestLocation}
-            className="mt-6 items-center rounded-full bg-coral px-6 py-3"
+            accessibilityState={{ disabled: isSuggesting, busy: isSuggesting }}
+            disabled={isSuggesting}
+            onPress={() => void handleSuggestLocation()}
+            className={`mt-6 items-center rounded-full bg-coral px-6 py-3 ${
+              isSuggesting ? 'opacity-60' : ''
+            }`}
             testID="experience-suggest-location"
           >
-            <Text className="font-poppins-semibold text-white">Sugerir este local</Text>
+            {isSuggesting ? (
+              <ActivityIndicator
+                color={theme.colors.white}
+                testID="experience-suggest-location-loading"
+              />
+            ) : (
+              <Text className="font-poppins-semibold text-white">Sugerir este local</Text>
+            )}
           </Pressable>
         </View>
       </View>

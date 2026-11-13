@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, waitFor, within } from '@testing-library/react-native';
 import type { ComponentProps } from 'react';
 import { GroupDayCarousel, type GroupDayCarouselItem } from './index';
 
@@ -78,6 +78,36 @@ describe('<GroupDayCarousel />', () => {
     });
 
     expect(getByTestId('group-day-carousel-owner-event-1-avatar-placeholder')).toBeTruthy();
+  });
+
+  test('shows all event details and placeholders for blank or missing information', async () => {
+    const item = mockItems[0];
+    const { getByTestId } = await renderCarousel({
+      items: [
+        {
+          ...item,
+          event: {
+            id: 'event-1',
+            name: 'Café',
+            timeslot: 'invalid',
+            location: { address: null },
+            phone: ' ',
+            openingHours: [],
+            website: '',
+            budgetStart: 20,
+          },
+        },
+      ],
+    });
+
+    const card = within(getByTestId('group-day-carousel-event-event-1'));
+    expect(card.getByText('Café')).toBeTruthy();
+    expect(card.getByText('A partir de R$ 20')).toBeTruthy();
+    expect(card.getByText('(00) 00000-0000')).toBeTruthy();
+    expect(card.getAllByText('--')).toHaveLength(2);
+    expect(card.queryByTestId('group-day-carousel-event-event-1-address')).toBeNull();
+    expect(card.queryByTestId('group-day-carousel-event-event-1-time')).toBeNull();
+    expect(card.getByTestId('group-day-carousel-event-event-1-image-placeholder')).toBeTruthy();
   });
 
   function withAnswer(currentUserAnswer?: string): GroupDayCarouselItem[] {

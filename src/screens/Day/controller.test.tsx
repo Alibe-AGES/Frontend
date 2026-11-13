@@ -1,6 +1,7 @@
 import { getGroupCalendar } from '@/server/calendar';
 import { EventDetailsResponse, getEventDetails, respondToEventProposal } from '@/server/events';
 import { getGroupMembers, getMe } from '@/server/groups';
+import { getStoredLocationDetails, type PlaceDetails } from '@/server/places';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import DayController from './controller';
@@ -24,6 +25,10 @@ jest.mock('@/server/groups', () => ({
   getMe: jest.fn(),
 }));
 
+jest.mock('@/server/places', () => ({
+  getStoredLocationDetails: jest.fn(),
+}));
+
 jest.mock('@/components/BackButton', () => ({
   BackButton: () => null,
 }));
@@ -39,6 +44,22 @@ const mockRespondToEventProposal = respondToEventProposal as jest.MockedFunction
 >;
 const mockGetGroupMembers = getGroupMembers as jest.MockedFunction<typeof getGroupMembers>;
 const mockGetMe = getMe as jest.MockedFunction<typeof getMe>;
+const mockGetStoredLocationDetails = jest.mocked(getStoredLocationDetails);
+
+function storedLocation(address: string | null): PlaceDetails {
+  return {
+    externalId: null,
+    name: 'Local',
+    imageUrl: null,
+    description: null,
+    address,
+    rating: null,
+    priceRange: null,
+    phoneNumber: null,
+    website: null,
+    openingHours: [],
+  };
+}
 
 describe('DayController', () => {
   const push = jest.fn();
@@ -63,6 +84,13 @@ describe('DayController', () => {
         allUsersAvailable: false,
       },
     ]);
+    // event-2 is at a place matched from a custom suggestion: its address lives on the location.
+    // event-1's lookup fails, so it keeps the address typed into the description.
+    mockGetStoredLocationDetails.mockImplementation((locationId) =>
+      locationId === 'location-event-2'
+        ? Promise.resolve(storedLocation('Rua das Flores, 123'))
+        : Promise.reject(new Error('not found'))
+    );
     mockGetEventDetails.mockImplementation((eventId) =>
       Promise.resolve({
         id: eventId,
@@ -117,6 +145,10 @@ describe('DayController', () => {
       expect(mockGetEventDetails).toHaveBeenCalledWith('event-2');
       expect(getByText('Bloom Café')).toBeTruthy();
       expect(getByText('Cinema')).toBeTruthy();
+      expect(getByText('Av. Carlos Gomes, 600')).toBeTruthy();
+      expect(getByText('Rua das Flores, 123')).toBeTruthy();
+      expect(mockGetStoredLocationDetails).toHaveBeenCalledWith('location-event-1');
+      expect(mockGetStoredLocationDetails).toHaveBeenCalledWith('location-event-2');
       expect(getAllByText('Status dos participantes')).toHaveLength(2);
       expect(getAllByText('Eu')).toHaveLength(2);
       expect(getAllByText('Bia')).toHaveLength(2);
@@ -146,6 +178,26 @@ describe('DayController', () => {
     expect(push).toHaveBeenCalledWith({
       pathname: '/group/[id]/day/[date]/availability',
       params: { id: 'group-1', date: '2026-10-12' },
+    });
+  });
+
+  test('shows available stored location details in the calendar event card', async () => {
+    mockGetStoredLocationDetails.mockResolvedValue({
+      ...storedLocation('Rua das Flores, 123'),
+      imageUrl: 'https://cdn.alibe.com/cafe.jpg',
+      priceRange: { start: 20, end: 100, currencyCode: 'BRL' },
+      phoneNumber: '(51) 3333-3333',
+      openingHours: ['Segunda: 9:00 - 18:00'],
+      website: 'https://cafe.example',
+    });
+
+    const { getAllByText, getByTestId } = await Promise.resolve(render(<DayController />));
+    await waitFor(() => {
+      expect(getAllByText('R$ 20 - 100')).toHaveLength(2);
+      expect(getAllByText('(51) 3333-3333')).toHaveLength(2);
+      expect(getAllByText('Segunda: 9:00 - 18:00')).toHaveLength(2);
+      expect(getAllByText('https://cafe.example')).toHaveLength(2);
+      expect(getByTestId('group-day-carousel-event-event-1-image')).toBeTruthy();
     });
   });
 

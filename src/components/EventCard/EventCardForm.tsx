@@ -14,8 +14,7 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
   variant = 'event',
   draft,
   onChangeDraft,
-  readOnly = false,
-  imageReadOnly = readOnly,
+  locationReadOnly = false,
   onDatePress,
   onImageSelected,
   onConfirm,
@@ -26,10 +25,9 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
   const isSuggestion = variant === 'suggestion';
   let imagePickerLabel = 'Adicionar imagem do evento';
   if (draft.imageUri) imagePickerLabel = 'Trocar imagem do evento';
-  if (imageReadOnly) imagePickerLabel = 'Imagem do local';
+  if (locationReadOnly) imagePickerLabel = 'Imagem do local';
 
   const updateDraft = (changes: Partial<EventCardDraft>) => {
-    if (readOnly) return;
     onChangeDraft({ ...draft, ...changes });
   };
 
@@ -77,8 +75,8 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={imagePickerLabel}
-      accessibilityState={{ disabled: imageReadOnly }}
-      disabled={imageReadOnly}
+      accessibilityState={{ disabled: locationReadOnly }}
+      disabled={locationReadOnly}
       onPress={() => {
         void pickImage();
       }}
@@ -143,18 +141,31 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
       footer={footer}
       testID={testID}
     >
-      <TextInput
-        accessibilityLabel={isSuggestion ? 'Nome da sugestão' : 'Nome do evento'}
-        className="py-1 text-center font-poppins-medium text-3xl text-wine outline-none"
-        onChangeText={(name) => {
-          updateDraft({ name });
-        }}
-        placeholder={isSuggestion ? 'Definir nome da sugestão' : 'Definir nome do evento'}
-        placeholderTextColor={theme.colors.wineSoft}
-        editable={!readOnly}
-        testID={`${testID}-name-input`}
-        value={draft.name}
-      />
+      {locationReadOnly ? (
+        // A TextInput scrolls long text instead of truncating it, so a fixed name is shown as text.
+        <Text
+          accessibilityLabel={isSuggestion ? 'Nome da sugestão' : 'Nome do evento'}
+          className="py-3 text-center font-poppins-medium text-3xl text-wine"
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          testID={`${testID}-name-input`}
+        >
+          {draft.name}
+        </Text>
+      ) : (
+        <TextInput
+          accessibilityLabel={isSuggestion ? 'Nome da sugestão' : 'Nome do evento'}
+          className="text-center font-poppins-medium text-3xl text-wine"
+          onChangeText={(name) => {
+            updateDraft({ name });
+          }}
+          placeholder="Definir nome"
+          placeholderTextColor={theme.colors.wineSoft}
+          testID={`${testID}-name-input`}
+          style={{ includeFontPadding: false, textAlignVertical: 'center' }}
+          value={draft.name}
+        />
+      )}
 
       <PillInput
         icon="location-outline"
@@ -163,75 +174,11 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
         onChangeText={(address) => {
           updateDraft({ address });
         }}
-        editable={!readOnly}
+        editable={!locationReadOnly}
         testID={`${testID}-address-input`}
       />
 
-      {isSuggestion ? (
-        <>
-          <View className="flex-row gap-3">
-            <View className="flex-1">
-              <PillInput
-                icon="cash-outline"
-                value={draft.priceStart ?? ''}
-                placeholder="Preço mínimo (R$)"
-                onChangeText={(priceStart) => {
-                  updateDraft({ priceStart });
-                }}
-                editable={!readOnly}
-                keyboardType="decimal-pad"
-                testID={`${testID}-price-start-input`}
-              />
-            </View>
-            <View className="flex-1">
-              <PillInput
-                icon="cash-outline"
-                value={draft.priceEnd ?? ''}
-                placeholder="Preço máximo (R$)"
-                onChangeText={(priceEnd) => {
-                  updateDraft({ priceEnd });
-                }}
-                editable={!readOnly}
-                keyboardType="decimal-pad"
-                testID={`${testID}-price-end-input`}
-              />
-            </View>
-          </View>
-          <PillInput
-            icon="call-outline"
-            value={draft.phoneNumber ?? ''}
-            placeholder="Telefone"
-            onChangeText={(phoneNumber) => {
-              updateDraft({ phoneNumber });
-            }}
-            editable={!readOnly}
-            keyboardType="phone-pad"
-            testID={`${testID}-phone-input`}
-          />
-          <PillInput
-            icon="time-outline"
-            value={draft.openingHours ?? ''}
-            placeholder="Horários de funcionamento"
-            onChangeText={(openingHours) => {
-              updateDraft({ openingHours });
-            }}
-            editable={!readOnly}
-            multiline
-            testID={`${testID}-opening-hours-input`}
-          />
-          <PillInput
-            icon="globe-outline"
-            value={draft.website ?? ''}
-            placeholder="Site"
-            onChangeText={(website) => {
-              updateDraft({ website });
-            }}
-            editable={!readOnly}
-            keyboardType="url"
-            testID={`${testID}-website-input`}
-          />
-        </>
-      ) : (
+      {isSuggestion ? null : (
         <PillInput
           icon="time-outline"
           value={draft.time}

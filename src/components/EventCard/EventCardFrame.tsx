@@ -22,11 +22,13 @@ export const EventCardFrame: FC<EventCardFrameProps> = ({
     className="w-full"
     testID={testID}
   >
-    {header ? <View className="mb-2">{header}</View> : null}
+    {header ? <View className="mb-4">{header}</View> : null}
 
-    <View className="relative w-full">
+    <View className="w-full">
+      <View className="z-10 mx-5 h-48 overflow-hidden rounded-3xl shadow-lg">{image}</View>
+
       <View
-        className={`mt-28 w-full gap-3 rounded-[2.5rem] ${
+        className={`-mt-20 w-full gap-3 rounded-[2.5rem] ${
           variant === 'proposal' ? 'bg-surface px-4 pt-24' : 'bg-lime-soft px-6 pt-24'
         } ${footer ? 'pb-12' : 'pb-6'}`}
       >
@@ -34,10 +36,6 @@ export const EventCardFrame: FC<EventCardFrameProps> = ({
       </View>
 
       {footer ? <View className="-mt-6 px-8">{footer}</View> : null}
-
-      <View className="absolute inset-x-5 top-0 h-48 overflow-hidden rounded-3xl shadow-lg">
-        {image}
-      </View>
     </View>
   </View>
 );

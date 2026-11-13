@@ -69,6 +69,24 @@ function buildProps(overrides: Partial<CreateEventScreenProps> = {}): CreateEven
 }
 
 describe('<CreateEventScreen />', () => {
+  test('disables the suggestion tab for a matched place', async () => {
+    const onSelectTab = jest.fn();
+    const { getByTestId } = await Promise.resolve(
+      render(<CreateEventScreen {...buildProps({ isLocationReadOnly: true, onSelectTab })} />)
+    );
+
+    const suggestionTab = getByTestId('create-event-tab-suggestion');
+    expect(suggestionTab.props.accessibilityState).toMatchObject({ disabled: true });
+    fireEvent.press(suggestionTab);
+    await Promise.resolve();
+
+    expect(onSelectTab).not.toHaveBeenCalled();
+    expect(getByTestId('create-event-tab-event').props.accessibilityState).toMatchObject({
+      selected: true,
+      disabled: false,
+    });
+  });
+
   test('renders the tabs, event form, and participants', async () => {
     const { getByText, getByPlaceholderText, getByTestId } = await Promise.resolve(
       render(<CreateEventScreen {...buildProps()} />)
@@ -78,7 +96,7 @@ describe('<CreateEventScreen />', () => {
     expect(getByTestId('create-event-form-scroll')).toBeTruthy();
     expect(getByText('Evento')).toBeTruthy();
     expect(getByText('Sugestão')).toBeTruthy();
-    expect(getByPlaceholderText('Definir nome do evento')).toBeTruthy();
+    expect(getByPlaceholderText('Definir nome')).toBeTruthy();
     expect(getByText('Participantes')).toBeTruthy();
     expect(getByText('Eu')).toBeTruthy();
     expect(getByText('Kata')).toBeTruthy();
@@ -174,13 +192,13 @@ describe('<CreateEventScreen />', () => {
       render(<CreateEventScreen {...buildProps({ activeTab: 'event', onSelectTab })} />)
     );
 
-    expect(getByTestId('create-event-tab-event').props.accessibilityState).toEqual({
+    expect(getByTestId('create-event-tab-event').props.accessibilityState).toMatchObject({
       selected: true,
     });
-    expect(getByTestId('create-event-tab-suggestion').props.accessibilityState).toEqual({
+    expect(getByTestId('create-event-tab-suggestion').props.accessibilityState).toMatchObject({
       selected: false,
     });
-    expect(getByPlaceholderText('Definir nome do evento')).toBeTruthy();
+    expect(getByPlaceholderText('Definir nome')).toBeTruthy();
     expect(getByText('Adicione uma imagem que representa seu evento')).toBeTruthy();
 
     fireEvent.press(getByTestId('create-event-tab-suggestion'));
@@ -190,13 +208,13 @@ describe('<CreateEventScreen />', () => {
     rerender(<CreateEventScreen {...buildProps({ activeTab: 'suggestion', onSelectTab })} />);
     await Promise.resolve();
 
-    expect(getByTestId('create-event-tab-event').props.accessibilityState).toEqual({
+    expect(getByTestId('create-event-tab-event').props.accessibilityState).toMatchObject({
       selected: false,
     });
-    expect(getByTestId('create-event-tab-suggestion').props.accessibilityState).toEqual({
+    expect(getByTestId('create-event-tab-suggestion').props.accessibilityState).toMatchObject({
       selected: true,
     });
-    expect(getByPlaceholderText('Definir nome da sugestão')).toBeTruthy();
+    expect(getByPlaceholderText('Definir nome')).toBeTruthy();
     expect(getByText('Adicione uma imagem que representa sua sugestão')).toBeTruthy();
 
     fireEvent.press(getByTestId('create-event-tab-event'));

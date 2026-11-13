@@ -74,7 +74,6 @@ export default function MatchController() {
 
   return (
     <MatchScreen
-      groupId={groupId}
       participants={participants}
       currentUserId={currentUserId}
       isLoadingParticipants={isLoadingParticipants}
