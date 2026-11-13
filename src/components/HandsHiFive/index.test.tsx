@@ -1,7 +1,7 @@
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { AccessibilityInfo } from 'react-native';
 
-import loginAnimation from '@/assets/animations/login-hands-hi-five.json';
+import loginAnimation from '@/assets/animations/login-hi-five-hands.json';
 
 import { HandsHiFive } from './index';
 

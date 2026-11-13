@@ -9,7 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 
-import ProfileDecoration from '@/assets/images/create-group-decoration.svg';
+import ProfileDecoration from '@/assets/images/lime-coral-spin-1.svg';
 
 // Aumenta o viewBox original do SVG para ele não ficar cortado nessa tela
 const DECORATION_VIEW_BOX = '0 -19 167 166';

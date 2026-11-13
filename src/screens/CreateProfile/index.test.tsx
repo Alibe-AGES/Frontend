@@ -1,7 +1,7 @@
 import { fireEvent, render, within } from '@testing-library/react-native';
 import { CreateProfileScreen } from '.';
 
-jest.mock('@/assets/images/create-group-decoration.svg', () => {
+jest.mock('@/assets/images/lime-coral-spin-1.svg', () => {
   const RN = jest.requireActual<typeof import('react-native')>('react-native');
   return () => <RN.View testID="mock-decoration-svg" />;
 });

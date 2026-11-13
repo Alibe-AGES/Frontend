@@ -4,9 +4,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo } from 'react-native';
 import tw from 'twrnc';
 
-import loginAnimation from '@/assets/animations/login-hands-hi-five.json';
-import SignUpHands from '@/assets/images/auth-hands-decoration.svg';
-import EventCreatedHands from '@/assets/images/hands-green.svg';
+import loginAnimation from '@/assets/animations/login-hi-five-hands.json';
+import SignUpHands from '@/assets/images/default-pink-hi-five-hands.svg';
+import EventCreatedHands from '@/assets/images/default-green-hi-five-hands.svg';
 import LoginHands from '@/assets/images/login-hands-decoration.svg';
 import { theme } from '@/theme';
 import { recolorLottie } from '@/utils/lottie';
