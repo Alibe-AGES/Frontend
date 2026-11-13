@@ -23,6 +23,9 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
   testID,
 }) => {
   const isSuggestion = variant === 'suggestion';
+  let imagePickerLabel = 'Adicionar imagem do evento';
+  if (draft.imageUri) imagePickerLabel = 'Trocar imagem do evento';
+  if (readOnly) imagePickerLabel = 'Imagem do local';
 
   const updateDraft = (changes: Partial<EventCardDraft>) => {
     if (readOnly) return;
@@ -72,13 +75,7 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
   const image = (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={
-        readOnly
-          ? 'Imagem do local'
-          : draft.imageUri
-            ? 'Trocar imagem do evento'
-            : 'Adicionar imagem do evento'
-      }
+      accessibilityLabel={imagePickerLabel}
       accessibilityState={{ disabled: readOnly }}
       disabled={readOnly}
       onPress={() => {
