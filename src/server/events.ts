@@ -378,7 +378,7 @@ export async function createEvent(groupId: string, input: CreateEventInput): Pro
     await appendImage(formData, 'image', input.image, 'event-image');
   }
 
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/groups/${groupId}/events`, {
+  const response = await authenticatedFetch(`${API_BASE_URL}/groups/${groupId}/events`, {
     method: 'POST',
     body: formData,
   });
