@@ -1,0 +1,140 @@
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { useGroups } from '@/hooks/useGroups';
+import { GroupsList } from './index';
+
+jest.mock('@/hooks/useGroups', () => ({
+  useGroups: jest.fn(),
+}));
+
+const mockUseGroups = useGroups as jest.MockedFunction<typeof useGroups>;
+
+const GROUPS = [
+  { id: '1', name: 'Hermanas', photoUri: null, color: 'bg-lime' as const },
+  { id: '2', name: 'Pela cidade', photoUri: null, color: 'bg-pink' as const },
+  { id: '3', name: 'Galera 2012', photoUri: null, color: 'bg-coral' as const },
+];
+
+describe('<GroupsList />', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('shows a loading indicator while the groups are being fetched', async () => {
+    mockUseGroups.mockReturnValue({
+      groups: [],
+      isLoading: true,
+      isRefreshing: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    const { getByTestId } = await Promise.resolve(render(<GroupsList />));
+
+    expect(getByTestId('alibe-groups-list-loading')).toBeTruthy();
+  });
+
+  test('shows an error state with a retry action when the request fails', async () => {
+    const refetch = jest.fn();
+    mockUseGroups.mockReturnValue({
+      groups: [],
+      isLoading: false,
+      isRefreshing: false,
+      error: 'Não foi possível carregar os grupos.',
+      refetch,
+    });
+
+    const { getByText, getByLabelText } = await Promise.resolve(render(<GroupsList />));
+
+    expect(getByText('Não foi possível carregar os grupos.')).toBeTruthy();
+
+    fireEvent.press(getByLabelText('Tentar novamente'));
+    await Promise.resolve();
+
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
+  test('shows an empty state when the user has no groups', async () => {
+    mockUseGroups.mockReturnValue({
+      groups: [],
+      isLoading: false,
+      isRefreshing: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    const { getByTestId } = await Promise.resolve(render(<GroupsList />));
+
+    expect(getByTestId('alibe-groups-list-empty')).toBeTruthy();
+  });
+
+  test('shows every available group', async () => {
+    mockUseGroups.mockReturnValue({
+      groups: GROUPS,
+      isLoading: false,
+      isRefreshing: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    const { getByText } = await Promise.resolve(render(<GroupsList />));
+
+    await waitFor(() => {
+      expect(getByText('Hermanas')).toBeTruthy();
+      expect(getByText('Pela cidade')).toBeTruthy();
+      expect(getByText('Galera 2012')).toBeTruthy();
+    });
+  });
+
+  test('fades the cards out at the top edge only once the list scrolls', async () => {
+    mockUseGroups.mockReturnValue({
+      groups: GROUPS,
+      isLoading: false,
+      isRefreshing: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    const { getByTestId } = await Promise.resolve(render(<GroupsList />));
+    const getFadeOpacity = () => {
+      const styles = [getByTestId('screen-frame-top-fade').props.style as unknown].flat(
+        Infinity
+      ) as { opacity?: number }[];
+      return (Object.assign({}, ...styles) as { opacity?: number }).opacity;
+    };
+
+    expect(getFadeOpacity()).toBe(0);
+
+    fireEvent.scroll(getByTestId('alibe-groups-list'), {
+      nativeEvent: {
+        contentOffset: { x: 0, y: 48 },
+        contentSize: { width: 400, height: 1000 },
+        layoutMeasurement: { width: 400, height: 500 },
+      },
+    });
+
+    expect(getFadeOpacity()).toBe(1);
+  });
+
+  test('opens a group when its card is pressed', async () => {
+    mockUseGroups.mockReturnValue({
+      groups: GROUPS,
+      isLoading: false,
+      isRefreshing: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+    const onGroupPress = jest.fn();
+    const { getByTestId } = await Promise.resolve(
+      render(<GroupsList onGroupPress={onGroupPress} />)
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('alibe-groups-list-item-1')).toBeTruthy();
+    });
+
+    fireEvent.press(getByTestId('alibe-groups-list-item-1'));
+    await Promise.resolve();
+
+    expect(onGroupPress).toHaveBeenCalledWith('1');
+  });
+});

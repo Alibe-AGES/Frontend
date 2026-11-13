@@ -1,0 +1,467 @@
+import { DayMark } from '@/components/Calendar/Calendar.types';
+import { getGroupCalendar } from '@/server/calendar';
+import { getEventDetails, getEventMemories, getMemoryImageUrl } from '@/server/events';
+import { getGroup, getGroupMembers, getMe } from '@/server/groups';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { GroupScreen } from './index';
+
+jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
+  useLocalSearchParams: jest.fn(),
+  useRouter: jest.fn(),
+}));
+
+jest.mock('@/server/calendar', () => ({
+  getGroupCalendar: jest.fn(),
+}));
+
+jest.mock('@/server/events', () => ({
+  getEventDetails: jest.fn(),
+  getEventMemories: jest.fn().mockResolvedValue([]),
+  getMemoryImageUrl: jest.fn(),
+}));
+
+jest.mock('@/server/groups', () => ({
+  getGroup: jest.fn(),
+  getGroupMembers: jest.fn(),
+  getMe: jest.fn(),
+}));
+
+jest.mock('@/components/NavigationBar', () => ({
+  NavigationBar: () => null,
+}));
+
+let mockDayPress: ((date: string) => void) | undefined;
+let mockDayCreatePress: ((date: string) => void) | undefined;
+let mockDayMarks: Record<string, DayMark> | undefined;
+
+jest.mock('@/components/Calendar', () => ({
+  Calendar: ({
+    onDayPress,
+    onDayCreatePress,
+    dayMarks,
+  }: {
+    onDayPress: (date: string) => void;
+    onDayCreatePress: (date: string) => void;
+    onMonthChange: (date: string) => void;
+    dayMarks: Record<string, DayMark>;
+  }) => {
+    mockDayPress = onDayPress;
+    mockDayCreatePress = onDayCreatePress;
+    mockDayMarks = dayMarks;
+    return null;
+  },
+}));
+
+const mockUseLocalSearchParams = useLocalSearchParams as jest.MockedFunction<
+  typeof useLocalSearchParams
+>;
+const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
+const mockGetGroupCalendar = getGroupCalendar as jest.MockedFunction<typeof getGroupCalendar>;
+const mockGetEventDetails = jest.mocked(getEventDetails);
+const mockGetEventMemories = jest.mocked(getEventMemories);
+const mockGetMemoryImageUrl = jest.mocked(getMemoryImageUrl);
+const mockGetGroup = getGroup as jest.MockedFunction<typeof getGroup>;
+const mockGetGroupMembers = getGroupMembers as jest.MockedFunction<typeof getGroupMembers>;
+const mockGetMe = jest.mocked(getMe);
+
+async function renderGroup() {
+  const result = render(<GroupScreen />);
+  const requests = [
+    mockGetGroup.mock.results.at(-1)?.value,
+    mockGetGroupMembers.mock.results.at(-1)?.value,
+    mockGetGroupCalendar.mock.results.at(-1)?.value,
+  ];
+  await act(async () => {
+    await Promise.all(requests.map((request) => Promise.resolve(request)));
+  });
+  return result;
+}
+
+describe('GroupScreen', () => {
+  const push = jest.fn();
+
+  beforeEach(() => {
+    mockUseLocalSearchParams.mockReturnValue({ id: 'group-1' });
+    mockUseRouter.mockReturnValue({ push } as unknown as ReturnType<typeof useRouter>);
+    mockGetGroup.mockResolvedValue({
+      id: 'group-1',
+      name: 'Hermanas',
+      profilePic: null,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      ownerId: null,
+      participants: [],
+    });
+    mockGetGroupMembers.mockResolvedValue([
+      { id: 'user-1', name: 'Ana', profilePic: null },
+      { id: 'user-2', name: 'Bia', profilePic: null },
+    ]);
+    // Someone outside the group by default, so every member is listed by name.
+    mockGetMe.mockResolvedValue({ id: 'user-9', name: 'Kata', profilePic: null });
+    mockGetGroupCalendar.mockResolvedValue([]);
+    mockGetEventDetails.mockImplementation((eventId) =>
+      Promise.resolve({
+        id: eventId,
+        proposal: { responses: [] },
+      } as unknown as Awaited<ReturnType<typeof getEventDetails>>)
+    );
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+    mockDayPress = undefined;
+    mockDayCreatePress = undefined;
+    mockDayMarks = undefined;
+  });
+
+  test('loads and renders the group name and members', async () => {
+    const { getByText, getByText: findText } = await renderGroup();
+
+    await waitFor(() => {
+      expect(getByText('Hermanas')).toBeTruthy();
+      expect(findText('Ana, Bia')).toBeTruthy();
+    });
+    expect(mockGetGroup).toHaveBeenCalledWith('group-1');
+    expect(mockGetGroupMembers).toHaveBeenCalledWith('group-1');
+  });
+
+  test('shows the current user first as "Eu", like the group card', async () => {
+    mockGetMe.mockResolvedValue({ id: 'user-2', name: 'Bia', profilePic: null });
+    const { getByText } = await renderGroup();
+
+    await waitFor(() => {
+      expect(getByText('Eu, Ana')).toBeTruthy();
+    });
+  });
+
+  test('shows the empty member state when no members are returned', async () => {
+    mockGetGroupMembers.mockResolvedValue([]);
+
+    const { getByText } = await renderGroup();
+
+    await waitFor(() => {
+      expect(getByText('Nenhum membro encontrado neste grupo.')).toBeTruthy();
+    });
+  });
+
+  test('navigates to day availability and group info', async () => {
+    const { getByTestId } = await renderGroup();
+
+    await waitFor(() => {
+      expect(getByTestId('group-screen')).toBeTruthy();
+    });
+
+    mockDayPress?.('2026-09-22');
+    fireEvent.press(getByTestId('group-screen-members'));
+    await Promise.resolve();
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/group/[id]/day/[date]/availability',
+      params: { id: 'group-1', date: '2026-09-22' },
+    });
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/group/[id]/info',
+      params: { id: 'group-1' },
+    });
+  });
+
+  test('opens the user profile from the header keeping the group context', async () => {
+    const { getByTestId } = await renderGroup();
+
+    await waitFor(() => {
+      expect(getByTestId('group-screen')).toBeTruthy();
+    });
+
+    fireEvent.press(getByTestId('group-screen-profile'));
+    await Promise.resolve();
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/(profile)/profile/[userId]',
+      params: { userId: 'user-1', groupId: 'group-1' },
+    });
+  });
+
+  test('starts event creation with the pressed calendar date', async () => {
+    await renderGroup();
+
+    mockDayCreatePress?.('2026-10-15');
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/group/[id]/create-event',
+      params: { id: 'group-1', date: '2026-10-15' },
+    });
+  });
+
+  test('matches backend event and proposal IDs to their calendar dates', async () => {
+    mockGetGroupCalendar.mockResolvedValue([
+      {
+        date: '2026-09-30',
+        scheduledEventIds: ['event-1', 'event-2'],
+        proposalIds: ['proposal-1'],
+        availableUserIds: [],
+        completedEventIds: [],
+        allUsersAvailable: false,
+      },
+      {
+        date: '2026-10-01',
+        scheduledEventIds: [],
+        proposalIds: [],
+        availableUserIds: [],
+        completedEventIds: ['event-3'],
+        allUsersAvailable: false,
+      },
+      {
+        date: '2026-10-02',
+        scheduledEventIds: [],
+        proposalIds: [],
+        availableUserIds: [],
+        completedEventIds: [],
+        allUsersAvailable: true,
+      },
+      {
+        date: '2026-10-03',
+        scheduledEventIds: [],
+        proposalIds: [],
+        availableUserIds: ['member-1'],
+        completedEventIds: [],
+        allUsersAvailable: false,
+      },
+      {
+        date: '2026-10-04',
+        scheduledEventIds: [],
+        proposalIds: ['proposal-2'],
+        availableUserIds: [],
+        completedEventIds: [],
+        allUsersAvailable: false,
+      },
+      {
+        date: '2026-10-05',
+        scheduledEventIds: ['shared-event'],
+        proposalIds: ['shared-event'],
+        availableUserIds: ['shared-event'],
+        completedEventIds: ['shared-event'],
+        allUsersAvailable: false,
+      },
+      {
+        date: '2026-10-06',
+        scheduledEventIds: [],
+        proposalIds: [],
+        availableUserIds: [],
+        completedEventIds: [],
+        allUsersAvailable: false,
+      },
+    ]);
+
+    await renderGroup();
+
+    await waitFor(() => {
+      expect(mockDayMarks?.['2026-09-30']).toMatchObject({
+        status: 'suggested',
+        eventIds: ['event-1', 'event-2'],
+        proposalIds: ['proposal-1'],
+        dot: 'pink',
+      });
+      expect(mockDayMarks?.['2026-10-01'].status).toBe('realized');
+      expect(mockDayMarks?.['2026-10-02'].status).toBe('allAvailable');
+      expect(mockDayMarks?.['2026-10-03'].status).toBe('available');
+      expect(mockDayMarks?.['2026-10-04']).toMatchObject({ status: 'normal', dot: 'pink' });
+      expect(mockDayMarks?.['2026-10-05']).toMatchObject({
+        status: 'realized',
+        eventIds: ['shared-event'],
+        proposalIds: ['shared-event'],
+        dot: 'pink',
+        availableUserCount: 1,
+        allUsersAvailable: false,
+      });
+      expect(mockDayMarks?.['2026-10-02']).toMatchObject({
+        availableUserCount: 0,
+        allUsersAvailable: true,
+      });
+    });
+  });
+
+  test('shows a star status only when every group member confirms an event', async () => {
+    mockGetGroupCalendar.mockResolvedValue([
+      {
+        date: '2026-10-15',
+        scheduledEventIds: ['event-all-confirmed', 'event-pending'],
+        proposalIds: [],
+        availableUserIds: [],
+        completedEventIds: [],
+        allUsersAvailable: false,
+      },
+    ]);
+    mockGetEventDetails.mockImplementation((eventId) =>
+      Promise.resolve({
+        id: eventId,
+        proposal: {
+          responses:
+            eventId === 'event-all-confirmed'
+              ? [
+                  { answer: 'yes', user: { id: 'user-1' } },
+                  { answer: 'yes', user: { id: 'user-2' } },
+                ]
+              : [{ answer: 'yes', user: { id: 'user-1' } }],
+        },
+      } as unknown as Awaited<ReturnType<typeof getEventDetails>>)
+    );
+
+    await renderGroup();
+
+    await waitFor(() => {
+      expect(mockDayMarks?.['2026-10-15'].status).toBe('matched');
+    });
+    expect(mockDayMarks?.['2026-10-15'].eventIds).toEqual(['event-all-confirmed', 'event-pending']);
+    expect(mockDayMarks?.['2026-10-15'].dot).toBeUndefined();
+    expect(mockGetEventDetails).toHaveBeenCalledWith('event-all-confirmed');
+    expect(mockGetEventDetails).toHaveBeenCalledWith('event-pending');
+  });
+
+  test('changes a proposal dot to a star when its linked event gets unanimous confirmation', async () => {
+    mockGetGroupCalendar.mockResolvedValue([
+      {
+        date: '2026-10-16',
+        scheduledEventIds: [],
+        proposalIds: ['proposal-1'],
+        proposalEventIds: [{ proposalId: 'proposal-1', eventId: 'event-1' }],
+        availableUserIds: [],
+        completedEventIds: [],
+        allUsersAvailable: false,
+      },
+    ]);
+    mockGetEventDetails.mockResolvedValue({
+      id: 'event-1',
+      proposal: {
+        responses: [
+          { answer: 'yes', user: { id: 'user-1' } },
+          { answer: 'yes', user: { id: 'user-2' } },
+        ],
+      },
+    } as unknown as Awaited<ReturnType<typeof getEventDetails>>);
+
+    await renderGroup();
+
+    await waitFor(() => {
+      expect(mockDayMarks?.['2026-10-16'].status).toBe('matched');
+      expect(mockDayMarks?.['2026-10-16'].dot).toBeUndefined();
+    });
+    expect(mockDayMarks?.['2026-10-16'].eventIds).toEqual(['event-1']);
+    expect(mockGetEventDetails).toHaveBeenCalledWith('event-1');
+  });
+
+  test('keeps the proposal dot while any group member has not confirmed the linked event', async () => {
+    mockGetGroupCalendar.mockResolvedValue([
+      {
+        date: '2026-10-17',
+        scheduledEventIds: [],
+        proposalIds: ['proposal-1'],
+        proposalEventIds: [{ proposalId: 'proposal-1', eventId: 'event-1' }],
+        availableUserIds: [],
+        completedEventIds: [],
+        allUsersAvailable: false,
+      },
+    ]);
+    mockGetEventDetails.mockResolvedValue({
+      id: 'event-1',
+      proposal: { responses: [{ answer: 'yes', user: { id: 'user-1' } }] },
+    } as unknown as Awaited<ReturnType<typeof getEventDetails>>);
+
+    await renderGroup();
+
+    await waitFor(() => {
+      expect(mockDayMarks?.['2026-10-17'].status).toBe('normal');
+      expect(mockDayMarks?.['2026-10-17'].dot).toBe('pink');
+    });
+  });
+
+  test('navigates to the standalone details screen when the day has events or proposals', async () => {
+    mockGetGroupCalendar.mockResolvedValue([
+      {
+        date: '2026-10-12',
+        scheduledEventIds: ['event-1'],
+        proposalIds: ['proposal-2'],
+        availableUserIds: [],
+        completedEventIds: [],
+        allUsersAvailable: false,
+      },
+    ]);
+
+    await renderGroup();
+
+    await waitFor(() => {
+      expect(mockDayMarks?.['2026-10-12'].proposalIds).toEqual(['proposal-2']);
+    });
+    mockDayPress?.('2026-10-12');
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/group/[id]/day/[date]',
+      params: { id: 'group-1', date: '2026-10-12' },
+    });
+  });
+
+  test('shows the memory picture on a past event day and opens the gallery when pressed', async () => {
+    mockGetGroupCalendar.mockResolvedValue([
+      {
+        date: '2020-01-10',
+        scheduledEventIds: [],
+        proposalIds: [],
+        availableUserIds: [],
+        completedEventIds: ['event-old'],
+        allUsersAvailable: false,
+      },
+    ]);
+    mockGetEventMemories.mockResolvedValue([
+      {
+        id: 'memory-1',
+        picture: '/api/events/event-old/memories/memory-1/image',
+        eventId: 'event-old',
+      },
+    ]);
+    mockGetMemoryImageUrl.mockReturnValue('https://example.com/memory-1.jpg');
+
+    await renderGroup();
+
+    await waitFor(() => {
+      expect(mockDayMarks?.['2020-01-10'].imageUrl).toBe('https://example.com/memory-1.jpg');
+    });
+    expect(mockDayMarks?.['2020-01-10'].memoryIds).toEqual(['memory-1']);
+    mockDayPress?.('2020-01-10');
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/group/[id]/memories/gallery',
+      params: { id: 'group-1', date: '2020-01-10' },
+    });
+  });
+
+  test('shows the next event banner with the event returned by the group', async () => {
+    mockGetGroup.mockResolvedValue({
+      id: 'group-1',
+      name: 'Hermanas',
+      profilePic: null,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      ownerId: null,
+      participants: [],
+      nextEvent: {
+        id: 'event-1',
+        name: 'Cinema',
+        timeslot: new Date(2026, 4, 22, 16, 0).toISOString(),
+        status: 'confirmed',
+      },
+    });
+
+    const { getByText } = await renderGroup();
+
+    await waitFor(() => {
+      expect(getByText('• Cinema')).toBeTruthy();
+    });
+  });
+
+  test('shows the empty next event banner when the group has no events', async () => {
+    const { getByTestId } = await renderGroup();
+
+    await waitFor(() => {
+      expect(getByTestId('alibe-next-event-banner-empty')).toBeTruthy();
+    });
+  });
+});

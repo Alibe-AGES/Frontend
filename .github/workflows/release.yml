@@ -1,0 +1,145 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag-name:
+        description: 'Release Tag'
+        required: false
+        default: ''
+      skip_e2e_tests:
+        description: 'If the E2E tests are FAILING and a release is needed, select this to skip them'
+        type: boolean
+        required: false
+        default: false
+
+  push:
+    branches:
+      - release
+
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    name: Setup & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript check
+        run: npm run typecheck
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run Prettier check
+        run: npm run format:check
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+  call-e2e-tests-workflow:
+    # Runs the Maestro tests on a local APK that points to the Docker backend.
+    # A failure stops the release before the EAS build. Skipped when a manual run sets skip_e2e_tests.
+    name: Call E2E Tests Workflow
+    needs: setup
+    if: ${{ !inputs.skip_e2e_tests }}
+    uses: ./.github/workflows/e2e-tests.yml
+    secrets: inherit
+
+  call-eas-build-workflow:
+    # This job calls the EAS build workflow to build the Android APK.
+    # It will only run if the E2E tests pass or were skipped with skip_e2e_tests.
+    name: Call EAS Build Workflow
+    needs: [setup, call-e2e-tests-workflow]
+    if: >
+      !cancelled() &&
+      needs.setup.result == 'success' &&
+      (
+        needs.call-e2e-tests-workflow.result == 'success' ||
+        needs.call-e2e-tests-workflow.result == 'skipped'
+      )
+    uses: ./.github/workflows/eas-build.yml
+    secrets: inherit
+
+  publish-release:
+    # Publishes the EAS APK. It generates release notes and publishes the release.
+    name: Publish Release
+    needs: call-eas-build-workflow
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Download APK Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-release
+          path: ./artifacts
+
+      - name: Resolve Tag Version
+        id: version
+        env:
+          INPUT_TAG: ${{ github.event.inputs['tag-name'] }}
+        run: |
+          if [ -n "$INPUT_TAG" ]; then
+            VERSION="$INPUT_TAG"
+          else
+            VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+          fi
+
+          echo "Resolved version: $VERSION"
+          echo "tag=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Rename APK for Release
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          mv ./artifacts/*.apk "./artifacts/alibe-${TAG}.apk"
+
+      - name: Generate Release Notes
+        id: notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_VERSION: ${{ steps.version.outputs.tag }}
+        run: |
+          RELEASE_NOTES=$(gh api \
+            -X POST \
+            repos/${{ github.repository }}/releases/generate-notes \
+            -f tag_name="$TAG_VERSION")
+
+          BODY=$(echo "$RELEASE_NOTES" | jq -r '.body')
+
+          delimiter="$(openssl rand -hex 8)"
+          echo "release-notes<<${delimiter}" >> $GITHUB_OUTPUT
+          echo "$BODY" >> $GITHUB_OUTPUT
+          echo "${delimiter}" >> $GITHUB_OUTPUT
+
+      - name: Create & Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          body: ${{ steps.notes.outputs.release-notes }}
+          draft: false
+          prerelease: false
+          files: ./artifacts/*.apk

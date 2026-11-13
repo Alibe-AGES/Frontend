@@ -1,0 +1,47 @@
+# Create group flow: rejects a short name, then creates a group and opens it.
+appId: com.alibe.app
+tags: [ci, groups]
+---
+- runFlow: ../subflows/launch.yaml
+- runFlow: ../subflows/login.yaml
+
+- tapOn:
+    id: create-group-button
+- extendedWaitUntil:
+    visible:
+      id: create-group-screen
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: create-group-name
+    direction: DOWN
+- tapOn:
+    id: create-group-name
+- inputText: A
+# Small screens can hide the button and the message below the fold or behind the keyboard.
+- runFlow: ../subflows/close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: create-group-continue
+    direction: DOWN
+- tapOn:
+    id: create-group-continue
+- scrollUntilVisible:
+    element: 'O nome deve conter entre 2 e 100 caracteres.'
+    direction: UP
+
+- scrollUntilVisible:
+    element:
+      id: alibe-back-button
+    direction: UP
+- tapOn:
+    id: alibe-back-button
+- extendedWaitUntil:
+    visible:
+      id: groups-screen
+    timeout: 10000
+
+- runFlow: ../subflows/create-group.yaml
+- extendedWaitUntil:
+    visible: ${output.groupName}
+    timeout: 30000

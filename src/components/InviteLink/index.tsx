@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import tw from 'twrnc';
 
@@ -11,8 +11,10 @@ import type { InviteLinkProps } from './InviteLink.types';
 export type { InviteLinkProps } from './InviteLink.types';
 
 const PLACEHOLDER = 'Gerando link de convite...';
+const COPIED_LABEL_DURATION_MS = 1600;
 
 export function InviteLink({
+  variant,
   link,
   expiresAt,
   disabled = false,
@@ -22,6 +24,16 @@ export function InviteLink({
   testID = 'alibe-invite-link',
 }: InviteLinkProps) {
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
+  const copiedResetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (copiedResetTimer.current) {
+        clearTimeout(copiedResetTimer.current);
+      }
+    },
+    []
+  );
 
   const expired = expiresAt ? isInviteExpired(expiresAt) : false;
   const isDisabled = disabled || !link;
@@ -48,17 +60,24 @@ export function InviteLink({
 
     setCopiedLink(link);
     onCopy?.(link);
+
+    // Copiar de novo reinicia a contagem para o rótulo voltar a "Copiar".
+    if (copiedResetTimer.current) {
+      clearTimeout(copiedResetTimer.current);
+    }
+    copiedResetTimer.current = setTimeout(() => {
+      setCopiedLink(null);
+      copiedResetTimer.current = null;
+    }, COPIED_LABEL_DURATION_MS);
   };
 
   return (
     <View
-      className={`w-full flex-row items-center rounded-full border-2 border-lime-soft bg-surface py-1 pl-6 pr-1 ${
-        isDisabled ? 'opacity-50' : 'opacity-100'
-      }`}
+      className={`w-full flex-row items-center rounded-full border-2 py-1 pl-6 pr-1 ${isDisabled ? 'opacity-50' : 'opacity-100'} ${variant === 'primary' ? 'border-ink' : 'border-lime-soft'}`}
       testID={`${testID}-field`}
     >
       <Text
-        className="flex-1 font-poppins text-sm text-ink-soft"
+        className={`flex-1 font-poppins text-sm ${variant === 'primary' ? 'text-ink-soft' : 'text-surface'}`}
         ellipsizeMode="tail"
         numberOfLines={1}
         testID={`${testID}-url`}
@@ -69,7 +88,7 @@ export function InviteLink({
         accessibilityLabel="Copiar link de convite"
         accessibilityRole="button"
         accessibilityState={{ disabled: isDisabled }}
-        className="h-11 flex-row items-center justify-center gap-2 rounded-full bg-ink px-5"
+        className={`h-11 flex-row items-center justify-center gap-2 rounded-full px-5 ${variant === 'primary' ? 'bg-ink' : 'bg-lime-soft'}`}
         disabled={isDisabled}
         onPress={() => {
           void handlePress();
@@ -78,11 +97,13 @@ export function InviteLink({
         testID={testID}
       >
         <Ionicons
-          color={theme.colors.lime}
+          color={variant === 'primary' ? theme.colors.surface : theme.colors.ink}
           name="link"
           size={16}
         />
-        <Text className="font-poppins-semibold text-sm text-white">
+        <Text
+          className={`font-poppins-semibold text-sm ${variant === 'primary' ? 'text-surface' : 'text-ink'}`}
+        >
           {copied ? 'Copiado' : 'Copiar'}
         </Text>
       </Pressable>

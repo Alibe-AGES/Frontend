@@ -1,1 +1,1 @@
-export { CreateEventScreen as default } from '@/screens/CreateEventScreen';
+export { default } from '@/screens/CreateEvent/controller';

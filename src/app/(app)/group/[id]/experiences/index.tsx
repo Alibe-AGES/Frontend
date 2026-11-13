@@ -1,1 +1,1 @@
-export { ExperiencesScreen as default } from '@/screens/ExperiencesScreen';
+export { default } from '@/screens/Experiences/controller';

@@ -1,1 +1,1 @@
-export { LeaveGroupScreen as default } from '@/screens/LeaveGroupScreen';
+export { default } from '@/screens/LeaveGroup/controller';

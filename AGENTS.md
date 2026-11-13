@@ -61,6 +61,7 @@ Current route ownership:
 | `/group/[id]/day/[date]`                                 | Day detail stack                               |
 | `/group/[id]/create-event`, `/group/[id]/event-created`  | Event creation modal and confirmation          |
 | `/group/[id]/info`, `/group/[id]/leave`                  | Group information and leave confirmation modal |
+| `/group/[id]/notifications`                              | Group notifications list                       |
 | `/group/[id]/memories`, `/group/[id]/memories/new`       | Memories stack                                 |
 | `/group/[id]/experiences`, `/group/[id]/experiences/new` | Experiences stack                              |
 
@@ -115,6 +116,8 @@ The `/component-gallery` route is a development aid for visually checking reusab
 
 ## UI Implementation Rules
 
+- Wrap every screen in `ScreenFrame` from `@/components/ScreenFrame` instead of a hand-rolled `View`/`ScrollView` root; it owns the default padding, header, footer, and keyboard handling. Do not add per-screen keyboard workarounds.
+- Build modals that contain inputs with `ModalFrame` from `@/components/ModalFrame` instead of using `Modal` directly; a `Modal` is a separate window that `ScreenFrame`'s keyboard handling cannot reach.
 - Build screens from reusable components rather than duplicating markup.
 - Keep UI-only work independent from the API client; use typed fixture data or local state first.
 - Represent meaningful loading, empty, disabled, validation, and error states.
@@ -142,7 +145,7 @@ For runtime UI verification:
 npx expo start -c
 ```
 
-Use Maestro flows under `.maestro/` when that directory exists. Selectors should use accessibility labels or stable `testID` values.
+Use Maestro flows under `.maestro/flows/`; every flow starts with `runFlow: ../subflows/launch.yaml`. Every interactive control gets a `testID` in the `screen-element` kebab-case form (for example `login-submit`); use `accessibilityLabel` for icon-only controls.
 
 Before reporting completion, validate that:
 

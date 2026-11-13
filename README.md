@@ -17,6 +17,33 @@ npm run web
 npm run build
 ```
 
+## Run on a Phone with Expo Go
+
+The phone and development computer must be on the same Wi-Fi network. Start the backend in a separate terminal:
+
+```bash
+cd Backend
+cp .env.template .env
+docker compose up --build
+```
+
+Find the computer's private IPv4 address on that network (on Linux, run `hostname -I` and use the Wi-Fi address). Configure both targets in `Frontend/.env`:
+
+```dotenv
+EXPO_PUBLIC_API_URL=http://localhost:3000
+EXPO_PUBLIC_API_URL_MOBILE=http://<COMPUTER_LAN_IP>:3000
+```
+
+Replace `<COMPUTER_LAN_IP>` with the computer's address; the web app uses the localhost URL, while Expo Go uses the mobile URL because `localhost` on a phone refers to the phone itself. `.env` is ignored by Git, so keep this machine-specific setting local.
+
+Then start Expo in LAN mode from the `Frontend` directory and scan its QR code with Expo Go:
+
+```bash
+npx expo start --lan
+```
+
+If you change `.env`, restart Expo so it reloads the API URL. The phone must be able to reach the computer on ports `8081` (Expo) and `3000` (API); check Wi-Fi client isolation or firewall settings if the QR code loads but API requests fail.
+
 ## Component Gallery
 
 The project includes a dependency-free isolated component gallery at `/component-gallery`. Use it to see reusable components without navigating through the application flow.
@@ -39,6 +66,293 @@ npm run lint
 npm run format:check
 npm run test:unit
 ```
+
+## Splash Animation
+
+The native splash (configured in `app.config.ts`) only shows the canvas color. As soon as the root layout mounts, `src/components/AnimatedSplash` covers the app and plays three `lottie-react-native` animations: the two ribbons and the logo, whose symbol and "Alibe" letters draw themselves in.
+
+The splash stays up while the app loads. The root layout passes `isReady` (today, the fonts being loaded; add any other startup work to `isAppReady` in `src/app/_layout.tsx`):
+
+- If the animation ends before the app is ready, the drawing fades away and plays again from the start.
+- If the app is ready before the animation ends, the animation still plays to the end, then the splash fades out.
+
+With the system "reduce motion" setting on, or if an animation fails to load, it shows the still ribbons and logo until the app is ready.
+
+The files in `assets/animations/` are final Lottie exports, imported directly by the component. The still versions, `assets/images/splash-detail-top.svg`, `assets/images/splash-detail-bottom.svg`, and `assets/images/splash-logo.svg`, match the last frame of each animation; when an animation is replaced, update its still SVG too.
+
+`lottie-react-native` is a native module, so development builds made before it was added must be rebuilt (`npm run android` / `npm run ios`), and so must builds made before the native splash image changed. Expo Go already includes it. On web it renders through `@lottiefiles/dotlottie-react`.
+
+`svgr.config.js` adds SVGO's `prefixIds` to the SVG transformer, so gradient ids stay unique when several SVGs share a web page. Restart Metro with `npx expo start -c` after changing it.
+
+## Notificações push no Android
+
+Esta seção descreve todo o processo para testar localmente o fluxo:
+
+```text
+Aplicativo Android -> Backend -> SQS no MiniStack -> Lambda Go no MiniStack
+                    -> Expo Push Service -> Firebase/FCM -> aplicativo
+```
+
+O MiniStack simula somente a infraestrutura AWS. O Expo Push Service e o Firebase/FCM continuam
+sendo serviços reais, pois são eles que entregam a notificação ao aparelho Android.
+
+### O que é necessário
+
+- aparelho Android físico;
+- conta Expo com acesso ao projeto Alibe;
+- projeto no Firebase;
+- aplicativo Android do Firebase registrado como `com.alibe.app`;
+- Node.js 22 instalado no WSL;
+- Docker funcionando para executar o Backend, PostgreSQL, MiniStack, SQS e Lambda local;
+- computador e celular conectados à mesma rede para o celular alcançar a API local.
+
+O Expo Go não suporta notificações push remotas neste projeto. É obrigatório instalar um
+development build do Alibe. O APK precisa ser gerado novamente quando uma configuração nativa,
+como `google-services.json` ou um plugin Expo, for adicionada ou modificada.
+
+### Resumo da ordem de execução
+
+Faça apenas uma vez:
+
+1. registre `com.alibe.app` no Firebase;
+2. adicione `google-services.json` ao Frontend e configure `app.config.ts`;
+3. envie a chave secreta FCM V1 ao EAS;
+4. gere e instale o APK de desenvolvimento no celular.
+
+A cada sessão de teste:
+
+1. inicie o Backend e o ambiente AWS local com Docker Compose;
+2. inicie o Metro com Expo Dev Client;
+3. abra o aplicativo instalado, faça login e permita notificações;
+4. dispare a notificação pelo Swagger;
+5. encerre o ambiente local com `docker compose down` ao terminar.
+
+### 1. Ativar o Node.js correto no WSL
+
+O `node`, o `npm` e o `npx` devem vir do Linux, e não de `/mnt/c/Program Files/nodejs`.
+
+```bash
+source ~/.nvm/nvm.sh
+nvm use 22.23.2
+nvm alias default 22.23.2
+hash -r
+which node
+which npx
+```
+
+Os dois últimos comandos devem mostrar caminhos iniciados por
+`/home/pedro/.nvm/versions/node/`.
+
+### 2. Registrar o aplicativo no Firebase
+
+Esta configuração é feita uma única vez:
+
+1. Acesse <https://console.firebase.google.com/>.
+2. Crie ou abra o projeto Alibe.
+3. Adicione um aplicativo Android.
+4. Informe `com.alibe.app` como Android package name.
+5. Baixe o arquivo `google-services.json`.
+6. Salve o arquivo como `Frontend/google-services.json`.
+
+Adicione a referência ao arquivo no bloco `android` de `app.config.ts`:
+
+```ts
+android: {
+  package: 'com.alibe.app',
+  googleServicesFile: './google-services.json',
+  // restante da configuracao Android
+},
+```
+
+O `google-services.json` identifica publicamente o aplicativo Firebase e não contém a chave
+privada da conta de serviço.
+
+### 3. Configurar a credencial FCM V1 no Expo
+
+No Firebase Console, abra **Configurações do projeto > Contas de serviço**, gere uma chave privada
+para a conta de serviço e baixe o JSON. Esse segundo JSON é secreto:
+
+- não renomeie esse arquivo para `google-services.json`;
+- não o coloque dentro do repositório;
+- não o envie por mensagem nem o inclua em commit;
+- depois de enviá-lo ao EAS, mantenha-o em local seguro ou remova a cópia local.
+
+No terminal do Frontend, faça login e abra o gerenciador de credenciais:
+
+```bash
+cd /home/pedro/Documents/PUCRS/2026-2/ages/Frontend
+npx eas-cli@latest login
+npx eas-cli@latest credentials -p android
+```
+
+No menu, selecione o aplicativo `com.alibe.app` e siga esta opção:
+
+```text
+Google Service Account
+-> Manage your Google Service Account Key for Push Notifications (FCM V1)
+-> Set up a Google Service Account Key for Push Notifications (FCM V1)
+-> Upload a new service account key
+```
+
+Escolha o JSON secreto da conta de serviço quando solicitado. A credencial fica guardada no EAS e
+não deve ser transformada em variável `EXPO_PUBLIC_*`.
+
+### 4. Configurar o endereço do Backend local
+
+Crie ou atualize `Frontend/.env.local`:
+
+```dotenv
+EXPO_PUBLIC_API_URL=http://<IP_DO_COMPUTADOR>:3000
+```
+
+Exemplo para um computador cujo IPv4 do Wi-Fi seja `192.168.0.6`:
+
+```dotenv
+EXPO_PUBLIC_API_URL=http://192.168.0.6:3000
+```
+
+Não use `localhost`: dentro do celular, `localhost` significa o próprio celular. Se o endereço IP
+do computador mudar, atualize `.env.local` e reinicie o Expo. No Windows, consulte o IPv4 atual
+com `ipconfig` e use o endereço do adaptador Wi-Fi conectado à mesma rede do celular.
+
+### 5. Gerar o APK de desenvolvimento
+
+O perfil `development` do `eas.json` já está configurado para gerar um APK com Expo Dev Client:
+
+```bash
+cd /home/pedro/Documents/PUCRS/2026-2/ages/Frontend
+npx eas-cli@latest build -p android --profile development
+```
+
+Na primeira execução:
+
+- escolha **Generate new keystore** caso o EAS solicite um Android Keystore;
+- permita que o EAS use as credenciais remotas;
+- confirme que o package é `com.alibe.app`.
+
+Quando o build terminar, abra no celular a URL apresentada pelo EAS e instale o APK. Se a URL não
+estiver mais visível, consulte o build mais recente:
+
+```bash
+npx eas-cli@latest build:list -p android --limit 1
+```
+
+Um erro `spawn adb ENOENT` depois de `Successfully downloaded app` significa somente que o EAS não
+conseguiu instalar automaticamente no aparelho. O APK foi criado com sucesso; abra a página do
+build no celular, baixe o arquivo e instale-o manualmente.
+
+O APK não precisa ser reconstruído a cada alteração TypeScript. Gere outro somente quando mudar
+dependências ou configurações nativas.
+
+### 6. Iniciar o ambiente local do Backend
+
+Em um terminal separado:
+
+```bash
+cd /home/pedro/Documents/PUCRS/2026-2/ages/Backend
+docker compose up --build backend
+```
+
+As dependências do Compose iniciam automaticamente:
+
+- PostgreSQL;
+- MiniStack;
+- fila SQS local;
+- empacotamento da Lambda Go;
+- CloudFormation local que conecta SQS e Lambda.
+
+Esse ambiente não acessa nem cria recursos na conta AWS. Para acompanhar o consumidor local:
+
+```bash
+docker compose logs -f ministack
+```
+
+Para desligar preservando os dados locais:
+
+```bash
+docker compose down
+```
+
+Não use `docker compose down -v`, pois `-v` apaga os volumes e o banco local.
+
+### 7. Iniciar o Frontend
+
+Em outro terminal:
+
+```bash
+cd /home/pedro/Documents/PUCRS/2026-2/ages/Frontend
+source ~/.nvm/nvm.sh
+nvm use 22.23.2
+npx expo start --dev-client --tunnel --clear
+```
+
+Abra o aplicativo **Alibe** que foi instalado pelo APK. O QR Code desse comando apenas conecta o
+aplicativo já instalado ao servidor de desenvolvimento; ele não instala o APK.
+
+O túnel conecta o aplicativo ao Metro, mas não encaminha a API. Antes de testar pelo aplicativo,
+abra no navegador do celular:
+
+```text
+http://<IP_DO_COMPUTADOR>:3000/docs
+```
+
+Se essa página não abrir, corrija o IP, confirme que celular e computador estão na mesma rede e
+libere a porta `3000` no firewall.
+
+### 8. Registrar o Expo Push Token
+
+No aplicativo instalado:
+
+1. faça um cadastro ou login;
+2. aceite a permissão de notificações do Android;
+3. aguarde a navegação para a tela de grupos.
+
+Depois de um login bem-sucedido, o aplicativo obtém o Expo Push Token e chama
+`PUT /api/users/me/push-token`. O Backend associa o token ao usuário. Esse processo é repetido em
+todo login para atualizar o token quando necessário. Falhas de notificação não bloqueiam o login.
+
+### 9. Disparar uma notificação de teste
+
+Mantenha o aplicativo minimizado para que o Android exiba a notificação. No computador, abra:
+
+```text
+http://localhost:3000/docs
+```
+
+No Swagger:
+
+1. execute `POST /api/auth/sign-in/email` com o mesmo e-mail e senha usados no celular;
+2. copie o campo `token` retornado pelo login;
+3. clique em **Authorize** e cole o token no campo Bearer;
+4. execute `POST /api/users/me/test-notification`.
+
+O resultado esperado é HTTP `202 Accepted`. O caminho executado será:
+
+```text
+Swagger -> Backend -> SQS local -> Lambda Go local -> Expo -> FCM -> celular
+```
+
+No terminal dos logs do MiniStack deve aparecer uma mensagem semelhante a:
+
+```text
+ESM: Lambda alibe-local-notification processed 1 SQS messages
+```
+
+### 10. Diagnóstico rápido
+
+| Sintoma                              | Causa provável                                    | Verificação                                                 |
+| ------------------------------------ | ------------------------------------------------- | ----------------------------------------------------------- |
+| QR Code não instala o aplicativo     | O QR do Metro não contém o APK                    | Instale o APK pela página do build EAS                      |
+| Aplicativo fica esperando conexão    | Metro não está em execução                        | Rode `npx expo start --dev-client --tunnel --clear`         |
+| Login não alcança o Backend          | IP ou firewall incorreto                          | Abra `http://<IP>:3000/docs` no celular                     |
+| Login funciona, mas não existe token | Permissão negada ou FCM incompleto                | Confira `google-services.json` e a credencial FCM V1 no EAS |
+| Teste retorna `401`                  | Swagger não está autenticado                      | Faça login e use **Authorize** com o token retornado        |
+| Teste retorna `409`                  | Usuário ainda não possui Expo Push Token          | Entre novamente no aplicativo e aceite a permissão          |
+| Teste retorna `404`                  | Endpoint de teste desabilitado                    | Localmente use `ENABLE_NOTIFICATION_TEST_ENDPOINT=true`     |
+| Retorna `202`, mas nada chega        | Aplicativo aberto, credencial FCM ou entrega Expo | Minimize o app e acompanhe os logs do MiniStack             |
+
+O endpoint de teste deve permanecer desabilitado em produção. Nunca coloque senha, chave privada
+do Firebase, token de sessão ou credenciais AWS no Git ou em variáveis `EXPO_PUBLIC_*`.
 
 ## Contributor Guide
 
@@ -87,9 +401,10 @@ npm run lint
 npm run format
 npm run format:check
 npm run test:unit
+npm run test:e2e
 ```
 
-For a focused test, run Jest directly:
+`npm run test:e2e` requires an emulator with the app installed; see the end-to-end tests section. For a focused test, run Jest directly:
 
 ```bash
 npx jest src/app/__tests__/index-test.tsx --runInBand
@@ -200,9 +515,16 @@ src/app/
 │       ├── info.tsx
 │       ├── leave.tsx                   # Leave confirmation modal
 │       ├── memories/                   # Memories stack
+│       │   ├── index.tsx               # /group/[id]/memories
+│       │   ├── gallery.tsx             # /group/[id]/memories/gallery
+│       │   ├── carousel.tsx            # /group/[id]/memories/carousel
+│       │   ├── new.tsx                 # /group/[id]/memories/new
+│       │   └── created.tsx             # /group/[id]/memories/created
 │       └── experiences/                # Experiences stack
 └── __tests__/                          # Route-level tests
 ```
+
+The memory gallery (`memories/gallery`) and the memory carousel (`memories/carousel`) are two views of the same data. Both load it through `src/hooks/useGroupMemories.ts`, which reads the group's calendar for one month, fetches each event and its memories, and returns the events that have photos ordered from the most recent. Tapping a photo in the gallery opens the carousel on that photo and forwards the `date`, `month`, and `year` params so both screens show the same period. The carousel flattens the gallery into one list with `src/utils/memories.ts` and stops at the first and last photo instead of looping.
 
 `package.json` sets `main` to `expo-router/entry`. Expo Router scans `src/app` and turns files into routes. Parenthesized folders such as `(auth)` and `(app)` group screens into stacks without adding a URL segment. Dynamic folders such as `[id]` and `[date]` provide route parameters.
 
@@ -241,6 +563,41 @@ For UI-only work, use local state and fixture data. Do not add API calls merely 
 4. Add interaction state with a typed hook or local `useState`.
 5. Add route and component tests for important states.
 6. Connect `src/server/api.ts` only when real data is required.
+
+### Screen frame
+
+Every page wraps its content in `ScreenFrame` (`src/components/ScreenFrame`). It owns the defaults shared by all screens: background, horizontal gutter, top spacing, an optional fixed `header`, and an optional `footer` pinned to the bottom (usually `NavigationBar`), whose height is reserved below the content automatically. Set `floatingChrome` to float the `header` and `footer` over the content, which then scrolls behind them and starts at the top of the screen; a virtualized list uses `scrollable={false}` and a function as `children` to receive the `topInset` and `bottomInset` it must apply. `topFade` fades content out behind a floating header: it stays hidden until the content scrolls by default, `topFade="always"` keeps it visible on screens that fit without scrolling, and `topFade="header"` keeps it opaque behind a tall header.
+
+By default the content is rendered in a `KeyboardAwareScrollView` from `react-native-keyboard-controller`, which scrolls the focused input above the keyboard on iOS and Android. This only works because `KeyboardProvider` wraps the app in `src/app/_layout.tsx`; do not remove it. Inputs do not need any extra wiring.
+
+```tsx
+<ScreenFrame
+  gap="lg"
+  header={<BackButton fallbackHref="/groups" />}
+  footer={<NavigationBar groupId={groupId} />}
+>
+  {/* screen content */}
+</ScreenFrame>
+```
+
+Use `scrollable={false}` for screens that render their own `FlatList`, and `padding="horizontal"` or `padding="none"` for full-bleed artwork. Render modals as siblings of the frame, not inside it.
+
+### Modal frame
+
+A React Native `Modal` is a separate native window, so `ScreenFrame` cannot keep its inputs visible. Any modal with inputs uses `ModalFrame` (`src/components/ModalFrame`) instead of `Modal` directly. It renders the backdrop and lifts its content above the keyboard with the library's `KeyboardAvoidingView` (`automaticOffset` measures the real position inside the modal window).
+
+```tsx
+<ModalFrame
+  visible={isVisible}
+  onRequestClose={close}
+  title="Alterar Senha"
+  testID="change-password-modal"
+>
+  {/* inputs and buttons; placed in the standard dialog panel */}
+</ModalFrame>
+```
+
+`placement="center"` (default) wraps the children in the standard dialog panel inside a scroll view. `placement="bottom"` anchors the children as a sheet that provides its own surface; add `closeOnBackdropPress` to dismiss it from the backdrop.
 
 ### NativeWind and twrnc
 
@@ -381,7 +738,9 @@ screen or hook -> API client -> remote service
 component      -> props/state -> visual output
 ```
 
-The existing API client uses `fetch`, typed models, and `ApiError`. It currently targets JSONPlaceholder as an example and should be replaced or configured before production use.
+`src/server/api.ts` uses `fetch`, typed models, and `ApiError` as an example client targeting JSONPlaceholder; replace or configure it before production use. `src/server/groups.ts` is a real client, connected to the Backend's `GET /groups` endpoint and consumed by `src/hooks/useGroups.ts`.
+
+The Backend base URLs are configured with `EXPO_PUBLIC_API_URL` for web/local testing and `EXPO_PUBLIC_API_URL_MOBILE` for Expo Go in the ignored `.env` file. Set the mobile URL to the computer's LAN address and backend port.
 
 ## Testing
 
@@ -402,6 +761,32 @@ npx jest src/screens/ComponentGalleryScreen.test.tsx --runInBand
 
 Use the gallery route for visual inspection and React Native Testing Library for behavior such as presses, disabled states, and accessible labels.
 
+### End-to-end tests
+
+End-to-end flows use Maestro and live in `.maestro/flows/`. They run on an Android emulator against a local build; EAS is reserved for releases.
+
+Set up an [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/) and install the [Maestro CLI](https://docs.maestro.dev/getting-started/installing-maestro). Then build the dev app once, keep Metro running, and run the flows:
+
+```bash
+npm run build:android:dev
+npx expo start
+npm run test:e2e:dev
+```
+
+To run without Metro, use a release app (`npm run build:android`, or the `app-release` artifact from the _Android APK - Local Build_ workflow) and `npm run test:e2e`.
+
+CI runs every flow tagged `ci` in releases, and a failure blocks the release. The EAS APK points to the AWS backend, so the _E2E Tests (Maestro) - Android_ workflow does not test it. It first calls the _Android APK - Local Build_ workflow to build a test APK (artifact `app-e2e`) with a `.env` containing `EXPO_PUBLIC_API_URL=http://localhost:3000`. Then it starts the minimal Backend stack (`infra/e2e/docker-compose.yml` from `Alibe-AGES/Backend`) with its seed data, installs the test APK on an Android emulator, and points the emulator's `localhost:3000` at the Backend with `adb reverse`. Log in with the seeded users (password `senha-segura`). Results are uploaded as the `maestro-e2e-results-<run number>` artifact, and Backend logs are printed in the job log when a flow fails.
+
+EAS ignores the local `.env` and uses the `EXPO_PUBLIC_API_URL` set in the `preview` environment on expo.dev, so the published APK uses the AWS backend.
+
+To add a test, copy `.maestro/flows/smoke.yaml`, set its `tags`, and replace the steps after `runFlow`. Run a single test with:
+
+```bash
+npm run test:e2e:dev -- --include-tags <tag you chose>
+```
+
+Select elements by visible text when it is unique, and by `id:` with the component `testID` otherwise. Every interactive control gets a `testID` such as `login-submit` (`screen-element`, kebab-case).
+
 ## Configuration Map
 
 | File                                  | Purpose                                                                       |
@@ -414,6 +799,7 @@ Use the gallery route for visual inspection and React Native Testing Library for
 | `tailwind.config.js`                  | NativeWind preset and class scanning paths                                    |
 | `eslint.config.mjs`                   | ESLint rules and TypeScript project service                                   |
 | `package.json`                        | Dependencies, scripts, Expo Router entry, and Jest configuration              |
+| `.maestro/`                           | Maestro end-to-end flows, shared launch subflow, and workspace configuration  |
 
 ## Definition of Done for a UI Change
 

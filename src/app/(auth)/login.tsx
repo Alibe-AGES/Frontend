@@ -1,1 +1,1 @@
-export { LoginScreen as default } from '@/screens/LoginScreen';
+export { default } from '@/screens/Login/controller';

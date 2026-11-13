@@ -1,5 +1,6 @@
 import {
   PhotoPickerStrategy,
+  SelectedPhoto,
   UsePhotoPickerParams,
 } from '@/components/PhotoPicker/PhotoPicker.types';
 import * as ImagePicker from 'expo-image-picker';
@@ -8,16 +9,20 @@ import Toast from 'react-native-toast-message';
 
 interface UseDefaultPhotoPickerControllerParams extends UsePhotoPickerParams {
   uploadUrl?: string;
+  initialPhotoUri?: string | null;
   successMessageDurationMs?: number;
+  aspect?: [number, number];
 }
 
 export const useDefaultPhotoPickerController = ({
   uploadUrl,
+  initialPhotoUri = null,
   onUploadSuccess,
   onUploadError,
   successMessageDurationMs = 3000,
+  aspect = [1, 1],
 }: UseDefaultPhotoPickerControllerParams = {}): PhotoPickerStrategy => {
-  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [photoUri, setPhotoUri] = useState<string | null>(initialPhotoUri);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -31,6 +36,12 @@ export const useDefaultPhotoPickerController = ({
     };
   }, []);
 
+  useEffect(() => {
+    if (initialPhotoUri) {
+      setPhotoUri(initialPhotoUri);
+    }
+  }, [initialPhotoUri]);
+
   const showSuccess = useCallback(() => {
     setSuccess(true);
     if (successTimeoutRef.current) {
@@ -42,11 +53,13 @@ export const useDefaultPhotoPickerController = ({
   }, [successMessageDurationMs]);
 
   const uploadPhoto = useCallback(
-    async (uri: string) => {
+    async (photo: SelectedPhoto) => {
+      const { uri } = photo;
+
       if (!uploadUrl) {
         setPhotoUri(uri);
-        Toast.show({ type: 'success', text1: 'Sucesso!', text2: 'Foto enviada com sucesso!' });
-        onUploadSuccess?.(uri);
+        Toast.show({ type: 'success', text1: 'Sucesso!', text2: 'Foto selecionada!' });
+        onUploadSuccess?.(photo);
         return;
       }
 
@@ -73,7 +86,7 @@ export const useDefaultPhotoPickerController = ({
 
         setPhotoUri(uri);
         Toast.show({ type: 'success', text1: 'Sucesso!', text2: 'Foto enviada com sucesso!' });
-        onUploadSuccess?.(uri);
+        onUploadSuccess?.(photo);
       } catch (err) {
         Toast.show({
           type: 'error',
@@ -102,14 +115,19 @@ export const useDefaultPhotoPickerController = ({
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
-      aspect: [1, 1],
+      aspect,
       quality: 0.8,
     });
 
     if (!result.canceled && result.assets[0]?.uri) {
-      await uploadPhoto(result.assets[0].uri);
+      const asset = result.assets[0];
+      await uploadPhoto({
+        uri: asset.uri,
+        fileName: asset.fileName,
+        mimeType: asset.mimeType,
+      });
     }
-  }, [uploadPhoto]);
+  }, [uploadPhoto, aspect]);
 
   return { photoUri, isLoading, error, success, pickImage };
 };

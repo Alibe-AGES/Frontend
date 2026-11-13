@@ -1,1 +1,1 @@
-export { GroupsScreen as default } from '@/screens/GroupsScreen';
+export { default } from '@/screens/Groups/controller';

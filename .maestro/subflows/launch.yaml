@@ -1,0 +1,47 @@
+# Launches the app with a clean state. Every flow starts with this.
+# Dev build with Metro (DEV_CLIENT=true): opens the app through the dev client
+# and dismisses the developer menu that shows on first launch.
+appId: com.alibe.app
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_CLIENT == 'true'}
+    commands:
+      - extendedWaitUntil:
+          visible: 'Development Build'
+          timeout: 30000
+      - openLink: 'alibe://expo-development-client/?url=http%3A%2F%2F10.0.2.2%3A8081'
+      - extendedWaitUntil:
+          visible: 'Continue'
+          timeout: 60000
+      - tapOn: 'Continue'
+      - extendedWaitUntil:
+          visible: 'Reload'
+          timeout: 10000
+      # Hides the floating dev Tools button, which sits on top of the profile buttons.
+      - scrollUntilVisible:
+          element:
+            text: 'Tools button'
+          direction: DOWN
+          timeout: 10000
+      - tapOn: 'Tools button'
+      - back
+# On the slow CI emulator, Android sometimes kills the new app process while it removes the task that
+# clearState closed, and the app stays on a blank splash. Launch it again if the first screen does not show up.
+- runFlow:
+    when:
+      true: ${DEV_CLIENT != 'true'}
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: auth-screen
+          timeout: 20000
+          optional: true
+      - runFlow:
+          when:
+            notVisible:
+              id: auth-screen
+          commands:
+            - launchApp

@@ -1,0 +1,80 @@
+name: Main Tag to Release PR
+
+on:
+  push:
+    tags:
+      - 'v*.*.*' # Match SemVer tags (vMAJOR.MINOR.PATCH)
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  # Check if the tag belongs to main, to ensure that we only
+  # create a PR for tags that are on the main branch
+  check-tag:
+    name: Check Tag
+    runs-on: ubuntu-latest
+    outputs:
+      on-main: ${{ steps.contains-tag.outputs.retval }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Check if tag belongs to main
+        id: contains-tag
+        uses: rickstaa/action-contains-tag@v1.2.10
+        with:
+          reference: main
+          tag: ${{ github.ref }}
+
+  create-release-pr:
+    name: Create PR from main to release
+    needs: check-tag
+    if: needs.check-tag.outputs.on-main == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate Release Notes
+        id: notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_VERSION: ${{ github.ref_name }}
+        run: |
+          RELEASE_NOTES=$(gh api \
+            -X POST \
+            repos/${{ github.repository }}/releases/generate-notes \
+            -f tag_name="$TAG_VERSION")
+
+          BODY=$(echo "$RELEASE_NOTES" | jq -r '.body')
+
+          delimiter="$(openssl rand -hex 8)"
+          echo "release-notes<<${delimiter}" >> $GITHUB_OUTPUT
+          echo "$BODY" >> $GITHUB_OUTPUT
+          echo "${delimiter}" >> $GITHUB_OUTPUT
+
+      - name: Create PR from main to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          TAG_VERSION: ${{ github.ref_name }}
+          RELEASE_NOTES: ${{ steps.notes.outputs.release-notes }}
+        run: |
+          echo "Creating PR for tag: $TAG_VERSION"
+
+          # Check if PR already exists
+          EXISTING_PR=$(gh pr list --base release --head main --state open --json url --jq '.[0].url // empty')
+
+          if [ -z "$EXISTING_PR" ]; then
+            gh pr create \
+              --base release \
+              --head main \
+              --title "Release: Merge main ($TAG_VERSION) to release" \
+              --body "$RELEASE_NOTES"
+          else
+            echo "A PR from main to release already exists: $EXISTING_PR"
+          fi

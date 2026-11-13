@@ -1,0 +1,51 @@
+import { fireEvent, render } from '@testing-library/react-native';
+
+import { MemoryCreatedScreen } from '.';
+
+const mockDismissTo = jest.fn();
+
+jest.mock('expo-router', () => ({
+  useRouter: () => ({
+    dismissTo: mockDismissTo,
+  }),
+  useLocalSearchParams: () => ({ id: 'group-42' }),
+}));
+
+jest.mock('@/components/HandsHiFive', () => {
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    HandsHiFive: ({ variant }: { variant: string }) => <View testID={`hands-hi-five-${variant}`} />,
+  };
+});
+
+describe('<MemoryCreatedScreen />', () => {
+  beforeEach(() => {
+    mockDismissTo.mockClear();
+  });
+
+  test('renders the confirmation headline and hint', async () => {
+    const { getByRole, getByText } = await Promise.resolve(render(<MemoryCreatedScreen />));
+
+    expect(getByRole('header', { name: 'Memória adicionada!' })).toBeTruthy();
+    expect(getByText('Volte a galeria de memórias para conferir!')).toBeTruthy();
+  });
+
+  test('renders a single back button', async () => {
+    const { getAllByRole, getByText } = await Promise.resolve(render(<MemoryCreatedScreen />));
+
+    expect(getByText('Voltar')).toBeTruthy();
+    expect(getAllByRole('button')).toHaveLength(1);
+  });
+
+  test('returns to the memories gallery when the back button is pressed', async () => {
+    const { getByTestId } = await Promise.resolve(render(<MemoryCreatedScreen />));
+
+    fireEvent.press(getByTestId('memory-created-back'));
+    await Promise.resolve();
+
+    expect(mockDismissTo).toHaveBeenCalledWith({
+      pathname: '/group/[id]/memories',
+      params: { id: 'group-42' },
+    });
+  });
+});

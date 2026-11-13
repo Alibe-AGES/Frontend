@@ -1,0 +1,412 @@
+import { Avatar } from '@/components/Avatar';
+import { Calendar } from '@/components/Calendar';
+import { DayMark } from '@/components/Calendar/Calendar.types';
+import { NavigationBar } from '@/components/NavigationBar';
+import { NextEventBanner } from '@/components/NextEventBanner';
+import { ProfileButton } from '@/components/ProfileButton';
+import { ScreenFrame } from '@/components/ScreenFrame';
+import { CalendarDay, getGroupCalendar } from '@/server/calendar';
+import {
+  EventMemoryResponse,
+  getEventDetails,
+  getEventMemories,
+  getMemoryImageUrl,
+} from '@/server/events';
+import { getGroup, getGroupMembers, getMe, GroupMember, GroupNextEvent } from '@/server/groups';
+import { theme } from '@/theme';
+import { buildMembersPreview } from '@/utils/membersPreview';
+import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
+
+function formatDate(date: Date): string {
+  const year = String(date.getFullYear());
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+function getDayEventIds(day: CalendarDay): string[] {
+  return [
+    ...new Set([
+      ...day.scheduledEventIds,
+      ...day.completedEventIds,
+      ...(day.proposalEventIds ?? []).map(({ eventId }) => eventId),
+    ]),
+  ];
+}
+
+interface MemoryMark {
+  memoryIds: string[];
+  imageUrl: string;
+}
+
+/** Past event days with memories show the first picture, as in the memories calendar. */
+async function getPastMemoryMarks(
+  days: CalendarDay[],
+  today: string
+): Promise<Record<string, MemoryMark>> {
+  const pastDays = days.filter((day) => day.date < today && getDayEventIds(day).length > 0);
+  const eventIds = [...new Set(pastDays.flatMap(getDayEventIds))];
+  const results = await Promise.allSettled(eventIds.map((eventId) => getEventMemories(eventId)));
+
+  const memoriesByEventId = new Map<string, EventMemoryResponse[]>();
+  results.forEach((result, index) => {
+    if (result.status === 'fulfilled') {
+      memoriesByEventId.set(eventIds[index], result.value);
+    }
+  });
+
+  const marks: Record<string, MemoryMark> = {};
+  for (const day of pastDays) {
+    const memories = getDayEventIds(day).flatMap((eventId) => memoriesByEventId.get(eventId) ?? []);
+    if (memories.length > 0) {
+      marks[day.date] = {
+        memoryIds: memories.map((memory) => memory.id),
+        imageUrl: getMemoryImageUrl(memories[0]),
+      };
+    }
+  }
+
+  return marks;
+}
+
+function getDayStatus(
+  day: CalendarDay,
+  confirmedEventIds: Set<string>
+): DayMark['status'] | undefined {
+  const eventIds = getDayEventIds(day);
+  if (eventIds.some((id) => confirmedEventIds.has(id))) {
+    return 'matched';
+  }
+  if (day.completedEventIds.length > 0) return 'realized';
+  if (day.scheduledEventIds.length > 0) return 'suggested';
+  if (day.allUsersAvailable) return 'allAvailable';
+  if (day.availableUserIds.length > 0) return 'available';
+  return undefined;
+}
+
+function buildDayMarks(
+  days: CalendarDay[],
+  today: string,
+  confirmedEventIds: Set<string>,
+  memoryMarks: Record<string, MemoryMark>
+): Record<string, DayMark> {
+  const marks: Record<string, DayMark> = {};
+
+  for (const day of days) {
+    const status = getDayStatus(day, confirmedEventIds);
+
+    const eventIds = getDayEventIds(day);
+    const hasConfirmedEvent = eventIds.some((eventId) => confirmedEventIds.has(eventId));
+    const hasUnconfirmedProposal = day.proposalEventIds
+      ? day.proposalEventIds.some(({ eventId }) => !confirmedEventIds.has(eventId))
+      : day.proposalIds.length > 0 && !hasConfirmedEvent;
+    if (status !== undefined || eventIds.length > 0 || day.proposalIds.length > 0) {
+      marks[day.date] = {
+        status: status ?? 'normal',
+        dot: hasUnconfirmedProposal ? 'pink' : undefined,
+        eventIds,
+        proposalIds: day.proposalIds,
+        availableUserCount: day.availableUserIds.length,
+        allUsersAvailable: day.allUsersAvailable,
+        ...(memoryMarks[day.date] ?? {}),
+      };
+    }
+  }
+
+  return new Proxy(marks, {
+    get(target, date: string) {
+      if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date) && date < today) {
+        return target[date] ?? { status: 'past' as const };
+      }
+
+      return target[date];
+    },
+  });
+}
+
+export function GroupScreen() {
+  const router = useRouter();
+  const { id: groupId } = useLocalSearchParams<{ id: string }>();
+
+  const [members, setMembers] = useState<GroupMember[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
+  const [groupName, setGroupName] = useState('');
+  const [groupPhoto, setGroupPhoto] = useState<string | null>(null);
+  const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
+  const [confirmedEventIds, setConfirmedEventIds] = useState<Set<string>>(() => new Set());
+  const [memoryMarks, setMemoryMarks] = useState<Record<string, MemoryMark>>({});
+  const [nextEvent, setNextEvent] = useState<GroupNextEvent | null | undefined>(undefined);
+  const [visibleMonth, setVisibleMonth] = useState(() => {
+    const now = new Date();
+    return { month: now.getMonth() + 1, year: now.getFullYear() };
+  });
+
+  const today = formatDate(new Date());
+
+  const dayMarks = useMemo(
+    () => buildDayMarks(calendarDays, today, confirmedEventIds, memoryMarks),
+    [calendarDays, confirmedEventIds, memoryMarks, today]
+  );
+
+  const loadGroup = useCallback(async () => {
+    if (!groupId) {
+      return;
+    }
+
+    try {
+      const data = await getGroup(groupId);
+      setGroupName(data.name);
+      setGroupPhoto(data.profilePic);
+      setNextEvent(data.nextEvent ?? null);
+    } catch (error) {
+      console.error('Erro ao buscar o grupo', error);
+    }
+  }, [groupId]);
+
+  const loadCalendar = useCallback(async () => {
+    if (!groupId) {
+      return;
+    }
+
+    try {
+      const [calendarResult, membersResult] = await Promise.allSettled([
+        getGroupCalendar(groupId, visibleMonth.month, visibleMonth.year),
+        getGroupMembers(groupId),
+      ]);
+      if (calendarResult.status === 'rejected') {
+        throw calendarResult.reason;
+      }
+
+      const days = calendarResult.value;
+      setCalendarDays(days);
+      setMemoryMarks(await getPastMemoryMarks(days, formatDate(new Date())));
+
+      if (membersResult.status === 'rejected') {
+        console.error('Erro ao buscar membros do grupo', membersResult.reason);
+        setMembers([]);
+        setConfirmedEventIds(new Set());
+        return;
+      }
+
+      const groupMembers = membersResult.value;
+      setMembers(groupMembers);
+
+      const eventIds = [...new Set(days.flatMap(getDayEventIds))];
+      const eventResults = await Promise.allSettled(
+        eventIds.map((eventId) => getEventDetails(eventId))
+      );
+      const memberIds = new Set(groupMembers.map((member) => member.id));
+      const unanimouslyConfirmedEventIds = new Set<string>();
+
+      if (memberIds.size > 0) {
+        eventResults.forEach((result, index) => {
+          if (result.status !== 'fulfilled') return;
+
+          const confirmedMemberIds = new Set(
+            result.value.proposal.responses
+              .filter((response) => response.answer === 'yes')
+              .map((response) => response.user.id)
+          );
+          if ([...memberIds].every((memberId) => confirmedMemberIds.has(memberId))) {
+            unanimouslyConfirmedEventIds.add(eventIds[index]);
+          }
+        });
+      }
+
+      setConfirmedEventIds(unanimouslyConfirmedEventIds);
+    } catch (error) {
+      console.error('Erro ao buscar o calendário do grupo', error);
+    }
+  }, [groupId, visibleMonth]);
+
+  useEffect(() => {
+    void loadGroup();
+  }, [loadGroup]);
+
+  // Best effort: without it the names are listed as they are, without "Eu".
+  useEffect(() => {
+    let isActive = true;
+    getMe()
+      .then((user) => {
+        if (isActive) setCurrentUserId(user.id);
+      })
+      .catch(() => {
+        if (isActive) setCurrentUserId(undefined);
+      });
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    void loadCalendar();
+  }, [loadCalendar]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadGroup();
+      void loadCalendar();
+    }, [loadGroup, loadCalendar])
+  );
+
+  const handleDayPress = (dateString: string) => {
+    if (!groupId) {
+      return;
+    }
+
+    if (dateString < today && dateString in memoryMarks) {
+      router.push({
+        pathname: '/group/[id]/memories/gallery',
+        params: { id: groupId, date: dateString },
+      });
+      return;
+    }
+
+    const day = calendarDays.find((calendarDay) => calendarDay.date === dateString);
+    if (
+      day &&
+      (day.scheduledEventIds.length > 0 ||
+        day.completedEventIds.length > 0 ||
+        day.proposalIds.length > 0)
+    ) {
+      router.push({
+        pathname: '/group/[id]/day/[date]',
+        params: { id: groupId, date: dateString },
+      });
+      return;
+    }
+
+    router.push({
+      pathname: '/group/[id]/day/[date]/availability',
+      params: { id: groupId, date: dateString },
+    });
+  };
+
+  const handleDayCreatePress = (dateString: string) => {
+    if (!groupId) {
+      return;
+    }
+
+    router.push({
+      pathname: '/group/[id]/create-event',
+      params: { id: groupId, date: dateString },
+    });
+  };
+
+  const handleMonthChange = (dateString: string) => {
+    const [year, month] = dateString.split('-').map(Number);
+
+    if (!year || !month) {
+      return;
+    }
+
+    setVisibleMonth({ month, year });
+  };
+
+  const handleOpenInfo = () => {
+    if (!groupId) {
+      return;
+    }
+
+    router.push({ pathname: '/group/[id]/info', params: { id: groupId } });
+  };
+
+  const handleOpenNotifications = () => {
+    if (!groupId) {
+      return;
+    }
+
+    router.push({ pathname: '/group/[id]/notifications', params: { id: groupId } });
+  };
+
+  // Same preview as the group card: the current user first, as "Eu".
+  const membersText = buildMembersPreview(members, currentUserId);
+
+  return (
+    <ScreenFrame
+      gap="lg"
+      footer={groupId ? <NavigationBar groupId={groupId} /> : undefined}
+      testID="group-screen"
+    >
+      <View className="flex-row items-center justify-between">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Ver notificações do grupo"
+          hitSlop={12}
+          onPress={handleOpenNotifications}
+          testID="group-screen-notifications"
+        >
+          <View className="rounded-full bg-surface p-2">
+            <Ionicons
+              name="notifications-outline"
+              size={24}
+              color={theme.colors.ink}
+            />
+          </View>
+        </Pressable>
+
+        <ProfileButton
+          groupId={groupId}
+          testID="group-screen-profile"
+        />
+      </View>
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Ver informações do grupo"
+        onPress={handleOpenInfo}
+        className="flex-row items-center gap-3"
+        testID="group-screen-members"
+      >
+        <View className="overflow-hidden rounded-full bg-lime-soft">
+          <Avatar
+            photoUri={groupPhoto}
+            accessibilityLabel={`Foto do grupo ${groupName}`}
+            imageClassName="h-16 w-16 rounded-full"
+            iconSize={34}
+            fallbackIconColor={theme.colors.ink}
+            testID="group-screen-avatar"
+          />
+        </View>
+
+        <View className="flex-1">
+          <Text
+            className="font-poppins-semibold text-xl text-wine"
+            numberOfLines={1}
+          >
+            {groupName}
+          </Text>
+
+          {members.length > 0 ? (
+            <Text
+              className="font-poppins text-base text-wine"
+              numberOfLines={1}
+              testID="group-screen-members-names"
+            >
+              {membersText}
+            </Text>
+          ) : (
+            <Text className="text-inkSoft text-sm font-medium">
+              Nenhum membro encontrado neste grupo.
+            </Text>
+          )}
+        </View>
+      </Pressable>
+
+      {nextEvent !== undefined ? <NextEventBanner event={nextEvent} /> : null}
+
+      <Calendar
+        initialDate={today}
+        dayMarks={dayMarks}
+        onDayPress={handleDayPress}
+        onDayCreatePress={handleDayCreatePress}
+        onMonthChange={handleMonthChange}
+        showLegend
+      />
+    </ScreenFrame>
+  );
+}

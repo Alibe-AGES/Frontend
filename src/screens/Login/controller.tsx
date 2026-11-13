@@ -1,0 +1,50 @@
+import { useGoogleSignIn } from '@/hooks/useGoogleSignIn';
+import { LoginScreen, type LoginData } from '@/screens/Login';
+import { synchronizePushToken } from '@/notifications/synchronize-push-token';
+import { authClient } from '@/server/auth';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+
+export default function LoginController() {
+  const router = useRouter();
+  const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const google = useGoogleSignIn('/login');
+
+  const handleContinue = async ({ email, password }: LoginData) => {
+    setErrorMessage(undefined);
+    setIsSubmitting(true);
+
+    try {
+      const { error } = await authClient.signIn.email({
+        email: email.toLowerCase(),
+        password,
+        rememberMe: true,
+      });
+      if (error) {
+        setErrorMessage('Não foi possível entrar. Confira seu e-mail e senha.');
+        return;
+      }
+
+      await synchronizePushToken();
+      router.replace('/groups');
+    } catch {
+      setErrorMessage('Não foi possível conectar. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <LoginScreen
+      onContinue={handleContinue}
+      onGoogleSignIn={() => {
+        setErrorMessage(undefined);
+        void google.signInWithGoogle();
+      }}
+      errorMessage={errorMessage ?? google.errorMessage}
+      isLoading={isSubmitting}
+      isGoogleLoading={google.isLoading}
+    />
+  );
+}

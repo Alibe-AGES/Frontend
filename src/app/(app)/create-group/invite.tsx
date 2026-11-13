@@ -1,1 +1,1 @@
-export { InviteGroupScreen as default } from '@/screens/InviteGroupScreen';
+export { default } from '@/screens/InviteGroup/controller';

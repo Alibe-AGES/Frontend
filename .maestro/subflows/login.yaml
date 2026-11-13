@@ -1,0 +1,59 @@
+# Logs in with a seeded user and waits for the groups screen. Run it after launch.yaml.
+# Pass EMAIL and PASSWORD to log in as someone else; the default is ana.silva.
+appId: com.alibe.app
+---
+- extendedWaitUntil:
+    visible:
+      id: auth-screen
+    timeout: 60000
+- tapOn:
+    id: auth-login
+    # A dev-only React warning can swallow this tap; tap again if the screen does not change.
+    retryTapIfNoChange: true
+# On small screens fields and buttons can sit below the fold or behind the keyboard,
+# so close the keyboard and scroll to each element before using it.
+- scrollUntilVisible:
+    element:
+      id: login-email
+    direction: DOWN
+- tapOn:
+    id: login-email
+- inputText: ${EMAIL || 'ana.silva@example.com'}
+- runFlow: close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: login-password
+    direction: DOWN
+- tapOn:
+    id: login-password
+- inputText: ${PASSWORD || 'senha-segura'}
+- runFlow: close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: login-continue
+    direction: DOWN
+- tapOn:
+    id: login-continue
+- extendedWaitUntil:
+    visible:
+      id: groups-screen
+    timeout: 30000
+    optional: true
+# Dev builds sometimes cover the app with a React warning right after login. Release builds never show it.
+- runFlow:
+    when:
+      visible: 'Dismiss'
+    commands:
+      - tapOn: 'Dismiss'
+# The warning can take the tap meant for "Continuar", so tap it again if the login screen is still open.
+- runFlow:
+    when:
+      visible:
+        id: login-continue
+    commands:
+      - tapOn:
+          id: login-continue
+- extendedWaitUntil:
+    visible:
+      id: groups-screen
+    timeout: 30000

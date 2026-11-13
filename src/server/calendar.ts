@@ -1,0 +1,33 @@
+import { API_BASE_URL } from '@/constants';
+import { ApiError } from './api';
+import { authenticatedFetch } from './auth';
+
+export interface CalendarDay {
+  date: string;
+  scheduledEventIds: string[];
+  proposalIds: string[];
+  proposalEventIds?: { proposalId: string; eventId: string }[];
+  availableUserIds: string[];
+  completedEventIds: string[];
+  allUsersAvailable: boolean;
+}
+
+export async function getGroupCalendar(
+  groupId: string,
+  month: number,
+  year: number
+): Promise<CalendarDay[]> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/groups/${groupId}/calendar?month=${String(month)}&year=${String(year)}`
+  );
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new ApiError(
+      text || response.statusText || 'Falha ao buscar o calendário do grupo',
+      response.status
+    );
+  }
+
+  return (await response.json()) as CalendarDay[];
+}
