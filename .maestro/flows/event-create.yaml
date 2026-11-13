@@ -61,7 +61,8 @@ tags: [ci, events]
 - tapOn:
     id: event-created-back-home
 
-# The new event is pending answers: it shows as the next event and as a suggestion on its day.
+# The creator is the only member of the new group, and their own "yes" confirms the event:
+# it shows as the next event and with a star on its day.
 - extendedWaitUntil:
     visible: '• ${output.eventName}'
     timeout: 30000
@@ -73,7 +74,9 @@ tags: [ci, events]
     # Keeps the day away from the floating navigation bar, which covers the bottom of small screens.
     centerElement: true
 - assertVisible:
-    id: calendar-proposal-indicator-${output.calendarDay}
+    id: calendar-day-icon-matched
+    childOf:
+      id: calendar-day-button-${output.calendarDay}
 - tapOn:
     id: calendar-day-button-${output.calendarDay}
 - extendedWaitUntil:
