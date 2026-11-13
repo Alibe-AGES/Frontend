@@ -156,7 +156,7 @@ function DayContent({ status, day, hasImage }: DayContentProps) {
   if (status === 'matched') {
     return (
       <Ionicons
-        name="star"
+        name="star-outline"
         size={20}
         color={theme.colors.white}
         testID="calendar-day-icon-matched"

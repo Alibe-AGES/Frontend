@@ -41,9 +41,9 @@ export const EventCardDetails: FC<Omit<EventCardReadProps, 'mode'> & { testID: s
       testID={`${testID}-image-placeholder`}
     >
       <Ionicons
-        name="location-outline"
+        name="image-outline"
         size={64}
-        color={theme.colors.ink}
+        color={theme.colors.surface}
       />
     </View>
   );
