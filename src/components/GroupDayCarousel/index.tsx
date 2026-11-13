@@ -367,6 +367,14 @@ export function GroupDayCarousel({
       className="gap-3 rounded-3xl bg-canvas"
       testID={testID}
     >
+      <Pressable
+        accessibilityRole="button"
+        className="mb-4 self-center rounded-full bg-pink px-5 py-3"
+        onPress={onAvailabilityPress}
+        testID={`${testID}-availability`}
+      >
+        <Text className="font-poppins-semibold text-sm text-ink">Ver disponibilidade</Text>
+      </Pressable>
       <View className="mb-2 flex-row items-center">
         <Text className="font-poppins-semibold text-lg text-wine">
           {items.length > 1 ? `${String(items.length)} eventos` : 'Detalhes do dia'}
@@ -374,15 +382,6 @@ export function GroupDayCarousel({
       </View>
 
       {carouselContent}
-
-      <Pressable
-        accessibilityRole="button"
-        className="self-center rounded-full bg-pink px-5 py-3"
-        onPress={onAvailabilityPress}
-        testID={`${testID}-availability`}
-      >
-        <Text className="font-poppins-semibold text-sm text-ink">Ver disponibilidade</Text>
-      </Pressable>
     </View>
   );
 }

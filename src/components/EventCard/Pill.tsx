@@ -26,6 +26,7 @@ export const InfoPill: FC<InfoPillProps> = ({ icon, label, testID }) => (
     <Text
       className="flex-1 font-poppins-medium text-lg text-white"
       numberOfLines={1}
+      ellipsizeMode="tail"
     >
       {label}
     </Text>
@@ -54,25 +55,34 @@ export const PillInput: FC<PillInputProps> = ({
   multiline,
   editable = true,
   testID,
-}) => (
-  <View className={PILL_CLASS_NAME}>
-    <Ionicons
-      name={icon}
-      size={20}
-      color={theme.colors.white}
-    />
-    <TextInput
-      accessibilityLabel={placeholder}
-      className="flex-1 py-3 font-poppins-medium text-lg text-white outline-none"
-      editable={editable}
-      keyboardType={keyboardType}
-      maxLength={maxLength}
-      multiline={multiline}
-      onChangeText={onChangeText}
-      placeholder={placeholder}
-      placeholderTextColor={theme.colors.coralSoft}
+}) =>
+  // A TextInput scrolls long text instead of truncating it, so a fixed value is shown as text.
+  editable ? (
+    <View className={PILL_CLASS_NAME}>
+      <Ionicons
+        name={icon}
+        size={20}
+        color={theme.colors.white}
+      />
+      <TextInput
+        accessibilityLabel={placeholder}
+        className="flex-1 py-3 font-poppins-medium text-lg text-white outline-none"
+        editable={editable}
+        keyboardType={keyboardType}
+        maxLength={maxLength}
+        multiline={multiline}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        style={{ includeFontPadding: false, textAlignVertical: 'center' }}
+        placeholderTextColor={theme.colors.coralSoft}
+        testID={testID}
+        value={value}
+      />
+    </View>
+  ) : (
+    <InfoPill
+      icon={icon}
+      label={value}
       testID={testID}
-      value={value}
     />
-  </View>
-);
+  );

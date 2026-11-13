@@ -22,7 +22,7 @@ export const EventCardFrame: FC<EventCardFrameProps> = ({
     className="w-full"
     testID={testID}
   >
-    {header ? <View className="mb-2">{header}</View> : null}
+    {header ? <View className="mb-4">{header}</View> : null}
 
     <View className="relative w-full">
       <View
