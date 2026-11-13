@@ -60,6 +60,9 @@ export function ComponentGalleryScreen() {
         onConfirm={() => {
           setMatchPreviewCount(null);
         }}
+        onDismiss={() => {
+          setMatchPreviewCount(null);
+        }}
       />
     );
   }

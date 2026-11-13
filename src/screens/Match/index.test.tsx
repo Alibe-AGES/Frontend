@@ -9,6 +9,13 @@ jest.mock('expo-router', () => ({
   }),
 }));
 
+jest.mock('@/components/MatchHiFive', () => ({
+  MatchHiFive: () => {
+    const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+    return <View testID="match-hi-five-mock" />;
+  },
+}));
+
 const participants: GroupMember[] = [
   { id: 'user-1', name: 'Luiza Costa', profilePic: null },
   { id: 'user-2', name: 'Kata Silva', profilePic: null },
@@ -27,6 +34,7 @@ describe('<MatchScreen />', () => {
           isLoadingParticipants={false}
           isConfirmDisabled={false}
           onConfirm={onConfirm}
+          onDismiss={jest.fn()}
         />
       )
     );
@@ -37,6 +45,13 @@ describe('<MatchScreen />', () => {
     expect(getByText('Kata')).toBeTruthy();
     expect(getByText('Manu')).toBeTruthy();
     expect(getByText('May')).toBeTruthy();
+    // The high five sits after the participants, just above the buttons.
+    expect(
+      within(getByTestId('match-hi-five', { includeHiddenElements: true })).getByTestId(
+        'match-hi-five-mock',
+        { includeHiddenElements: true }
+      )
+    ).toBeTruthy();
     fireEvent.press(getByTestId('match-create-event'));
     await Promise.resolve();
     expect(onConfirm).toHaveBeenCalledTimes(1);
@@ -53,6 +68,7 @@ describe('<MatchScreen />', () => {
           isLoadingParticipants={false}
           isConfirmDisabled={false}
           onConfirm={jest.fn()}
+          onDismiss={jest.fn()}
         />
       )
     );
@@ -69,6 +85,7 @@ describe('<MatchScreen />', () => {
           isLoadingParticipants
           isConfirmDisabled
           onConfirm={jest.fn()}
+          onDismiss={jest.fn()}
         />
       )
     );
@@ -94,6 +111,7 @@ describe('<MatchScreen />', () => {
           isLoadingParticipants={false}
           isConfirmDisabled={false}
           onConfirm={onConfirm}
+          onDismiss={jest.fn()}
         />
       )
     );
