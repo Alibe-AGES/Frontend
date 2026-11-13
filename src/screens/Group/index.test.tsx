@@ -399,7 +399,11 @@ describe('GroupScreen', () => {
       },
     ]);
     mockGetEventMemories.mockResolvedValue([
-      { id: 'memory-1', picture: '/api/events/event-old/memories/memory-1/image', eventId: 'event-old' },
+      {
+        id: 'memory-1',
+        picture: '/api/events/event-old/memories/memory-1/image',
+        eventId: 'event-old',
+      },
     ]);
     mockGetMemoryImageUrl.mockReturnValue('https://example.com/memory-1.jpg');
 

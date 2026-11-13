@@ -1,11 +1,5 @@
 export type DayStatus =
-  | 'available'
-  | 'realized'
-  | 'suggested'
-  | 'matched'
-  | 'allAvailable'
-  | 'past'
-  | 'normal';
+  'available' | 'realized' | 'suggested' | 'matched' | 'allAvailable' | 'past' | 'normal';
 
 export type DayDot = 'pink' | 'coral';
 

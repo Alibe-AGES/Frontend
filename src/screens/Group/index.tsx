@@ -6,7 +6,12 @@ import { NextEventBanner } from '@/components/NextEventBanner';
 import { ProfileButton } from '@/components/ProfileButton';
 import { ScreenFrame } from '@/components/ScreenFrame';
 import { CalendarDay, getGroupCalendar } from '@/server/calendar';
-import { EventMemoryResponse, getEventDetails, getEventMemories, getMemoryImageUrl } from '@/server/events';
+import {
+  EventMemoryResponse,
+  getEventDetails,
+  getEventMemories,
+  getMemoryImageUrl,
+} from '@/server/events';
 import { getGroup, getGroupMembers, GroupMember, GroupNextEvent } from '@/server/groups';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -55,9 +60,7 @@ async function getPastMemoryMarks(
 
   const marks: Record<string, MemoryMark> = {};
   for (const day of pastDays) {
-    const memories = getDayEventIds(day).flatMap(
-      (eventId) => memoriesByEventId.get(eventId) ?? []
-    );
+    const memories = getDayEventIds(day).flatMap((eventId) => memoriesByEventId.get(eventId) ?? []);
     if (memories.length > 0) {
       marks[day.date] = {
         memoryIds: memories.map((memory) => memory.id),
