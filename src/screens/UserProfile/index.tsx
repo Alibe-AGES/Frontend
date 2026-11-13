@@ -539,9 +539,14 @@ export const UserProfileScreen = ({
             }`}
             testID="user-profile-logout-confirm"
           >
-            <Text className="font-poppins-semibold leading-none text-surface">
-              {isLoggingOut ? 'Saindo...' : 'Sair'}
-            </Text>
+            {isLoggingOut ? (
+              <ActivityIndicator
+                color={theme.colors.surface}
+                testID="user-profile-logout-confirm-loading"
+              />
+            ) : (
+              <Text className="font-poppins-semibold leading-none text-surface">Sair</Text>
+            )}
           </TouchableOpacity>
         </View>
       </ModalFrame>
