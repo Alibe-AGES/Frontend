@@ -1,0 +1,89 @@
+# Profile flow: edits the user name and password, logs in again with the new password and checks that the name was saved.
+# It uses bruno.souza, which no other flow uses, because it leaves his password changed.
+# CI starts with a clean database; locally, recreate the backend database before running it again.
+appId: com.alibe.app
+tags: [ci, profile]
+env:
+  EMAIL: bruno.souza@example.com
+  OLD_PASSWORD: senha-segura
+  NEW_PASSWORD: senha-nova-e2e
+---
+- runFlow: ../subflows/launch.yaml
+- runFlow:
+    file: ../subflows/login.yaml
+    env:
+      EMAIL: ${EMAIL}
+      PASSWORD: ${OLD_PASSWORD}
+- tapOn:
+    id: groups-user-profile
+- extendedWaitUntil:
+    visible:
+      id: user-profile-screen-name
+    timeout: 30000
+
+# Edit the name.
+- evalScript: ${output.userName = 'Bruno E2E ' + Date.now()}
+- tapOn:
+    id: user-profile-edit-button
+- extendedWaitUntil:
+    visible:
+      id: user-profile-edit-modal
+    timeout: 10000
+# Tap the end of the field so the cursor goes after the current name and eraseText removes all of it.
+- tapOn:
+    id: user-profile-edit-name
+    point: '95%,50%'
+- eraseText
+- inputText: ${output.userName}
+- tapOn: 'Editar Perfil'
+- tapOn:
+    id: user-profile-edit-save
+- extendedWaitUntil:
+    visible:
+      id: user-profile-screen-name
+      text: ${output.userName}
+    timeout: 30000
+
+# Change the password.
+- tapOn:
+    id: user-profile-password-button
+- extendedWaitUntil:
+    visible:
+      id: user-profile-password-modal
+    timeout: 10000
+- tapOn:
+    id: user-profile-current-password
+- inputText: ${OLD_PASSWORD}
+- tapOn:
+    id: user-profile-new-password
+- inputText: ${NEW_PASSWORD}
+- tapOn:
+    id: user-profile-confirm-password
+- inputText: ${NEW_PASSWORD}
+- tapOn: 'Senha Atual'
+- tapOn:
+    id: user-profile-password-save
+- extendedWaitUntil:
+    notVisible:
+      id: user-profile-password-modal
+    timeout: 30000
+
+# Log out and log in again with the new password.
+- tapOn:
+    id: user-profile-logout-button
+- tapOn:
+    id: user-profile-logout-confirm
+- runFlow:
+    file: ../subflows/login.yaml
+    env:
+      EMAIL: ${EMAIL}
+      PASSWORD: ${NEW_PASSWORD}
+
+# The new name was saved.
+- tapOn:
+    id: groups-user-profile
+- extendedWaitUntil:
+    visible:
+      id: user-profile-screen-name
+      text: ${output.userName}
+    timeout: 30000

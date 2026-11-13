@@ -4,9 +4,20 @@ on:
   workflow_call:
 
 jobs:
+  build-e2e-apk:
+    # The EAS APK points to AWS, so the tests build their own APK for the Docker backend.
+    name: Build E2E APK
+    uses: ./.github/workflows/local-build.yml
+    with:
+      artifact-name: app-e2e
+      architectures: x86_64
+
   maestro:
     name: Maestro
+    needs: build-e2e-apk
     runs-on: ubuntu-latest
+    # Stops a stuck run instead of waiting for GitHub's 6-hour job limit.
+    timeout-minutes: 60
     env:
       ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: 10
 
@@ -17,7 +28,7 @@ jobs:
       - name: Download APK Artifact
         uses: actions/download-artifact@v4
         with:
-          name: app-release
+          name: app-e2e
           path: ./artifacts
 
       - name: Find APK
@@ -59,6 +70,17 @@ jobs:
             echo "KVM is not available on this runner. Continuing without it."
           fi
 
+      - name: Checkout backend
+        uses: actions/checkout@v4
+        with:
+          repository: Alibe-AGES/Backend
+          ref: develop
+          path: backend
+
+      - name: Start backend
+        working-directory: backend
+        run: docker compose -f infra/e2e/docker-compose.yml up -d --build --wait
+
       - name: Run Maestro E2E on Android Emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -80,8 +102,15 @@ jobs:
             echo "Installing APK on emulator..."
             adb install -r "${{ steps.apk.outputs.path }}"
 
+            adb reverse tcp:3000 tcp:3000
+
+            # The default emulator screen is too small for the app; 411x914 dp at low density keeps a phone
+            # layout without slowing down the emulator, which draws on the CPU.
+            adb shell wm size 411x914
+            adb shell wm density 160
+
             echo "Starting Maestro E2E tests..."
-            maestro test .maestro/ --include-tags smoke --test-output-dir=./maestro-results
+            maestro test .maestro/ --include-tags ci --test-output-dir=./maestro-results
 
       - name: Upload Maestro results
         if: always()
@@ -91,3 +120,8 @@ jobs:
           path: ./maestro-results
           if-no-files-found: warn
           retention-days: 7
+
+      - name: Backend logs
+        if: failure()
+        working-directory: backend
+        run: docker compose -f infra/e2e/docker-compose.yml logs

@@ -1,0 +1,48 @@
+# Availability flow: opens a future day on the calendar of a new group, marks the whole day as available and sees it on the calendar.
+appId: com.alibe.app
+tags: [ci, groups]
+---
+- runFlow: ../subflows/launch.yaml
+- runFlow: ../subflows/login.yaml
+# A new group has only the logged user, so one answer makes everyone available.
+- runFlow: ../subflows/create-group.yaml
+
+# Past days are disabled, so the flow uses the 15th of next month, which is always in the future.
+- evalScript: ${output.calendarDay = new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth() + 1, 15)).toISOString().slice(0, 10)}
+- tapOn:
+    id: calendar-next-month
+- scrollUntilVisible:
+    element:
+      id: calendar-day-button-${output.calendarDay}
+    direction: DOWN
+    timeout: 10000
+    # Keeps the day away from the floating navigation bar, which covers the bottom of small screens.
+    centerElement: true
+- tapOn:
+    id: calendar-day-button-${output.calendarDay}
+
+- extendedWaitUntil:
+    visible:
+      id: availability-screen
+    timeout: 10000
+- assertVisible:
+    id: availability-screen-confirm
+    enabled: false
+- tapOn:
+    id: alibe-availability-card-all-day
+- assertVisible:
+    id: availability-screen-confirm
+    enabled: true
+- tapOn:
+    id: availability-screen-confirm
+
+# Back on the calendar, the day is described as available for everyone.
+- extendedWaitUntil:
+    visible:
+      id: group-screen
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: calendar-day-button-${output.calendarDay}
+      text: 'Dia ${output.calendarDay}, todos disponíveis'
+    timeout: 30000

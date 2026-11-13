@@ -1,0 +1,105 @@
+# Event flow: creates an event on a future day of a new group, sees it on the calendar and the day details, and finds its notification.
+appId: com.alibe.app
+tags: [ci, events]
+---
+- runFlow: ../subflows/launch.yaml
+- runFlow: ../subflows/login.yaml
+- runFlow: ../subflows/create-group.yaml
+
+# Past days cannot get events, so the flow uses the 20th of next month, which is always in the future.
+- evalScript: ${output.calendarDay = new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth() + 1, 20)).toISOString().slice(0, 10)}
+- evalScript: ${output.eventName = 'Evento E2E ' + Date.now()}
+- tapOn:
+    id: calendar-next-month
+- scrollUntilVisible:
+    element:
+      id: calendar-create-${output.calendarDay}
+    direction: DOWN
+    timeout: 10000
+    # Keeps the day away from the floating navigation bar, which covers the bottom of small screens.
+    centerElement: true
+- tapOn:
+    id: calendar-create-${output.calendarDay}
+
+- extendedWaitUntil:
+    visible:
+      id: create-event-card-name-input
+    timeout: 10000
+# Small screens can hide fields and buttons below the fold or behind the keyboard,
+# so close the keyboard and scroll to each element before using it.
+- tapOn:
+    id: create-event-card-name-input
+- inputText: ${output.eventName}
+- runFlow: ../subflows/close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: create-event-card-address-input
+    direction: DOWN
+- tapOn:
+    id: create-event-card-address-input
+- inputText: Rua dos Testes, 123
+- runFlow: ../subflows/close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: create-event-card-time-input
+    direction: DOWN
+- tapOn:
+    id: create-event-card-time-input
+- inputText: '2000'
+- runFlow: ../subflows/close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: create-event-card-confirm
+    direction: DOWN
+- tapOn:
+    id: create-event-card-confirm
+
+- extendedWaitUntil:
+    visible:
+      id: event-created-screen
+    timeout: 30000
+- tapOn:
+    id: event-created-back-home
+
+# The creator is the only member of the new group, and their own "yes" confirms the event:
+# it shows as the next event and with a star on its day.
+- extendedWaitUntil:
+    visible: '• ${output.eventName}'
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: calendar-day-button-${output.calendarDay}
+    direction: DOWN
+    timeout: 10000
+    # Keeps the day away from the floating navigation bar, which covers the bottom of small screens.
+    centerElement: true
+- assertVisible:
+    id: calendar-day-icon-matched
+    childOf:
+      id: calendar-day-button-${output.calendarDay}
+- tapOn:
+    id: calendar-day-button-${output.calendarDay}
+- extendedWaitUntil:
+    visible:
+      id: group-day-screen
+    timeout: 10000
+- extendedWaitUntil:
+    visible: ${output.eventName}
+    timeout: 30000
+
+# Creating an event adds a notification to the group.
+- tapOn:
+    id: alibe-back-button
+- extendedWaitUntil:
+    visible:
+      id: group-screen
+    timeout: 10000
+- tapOn:
+    id: group-screen-notifications
+- extendedWaitUntil:
+    visible:
+      id: notifications-screen
+    timeout: 10000
+- extendedWaitUntil:
+    visible: '.*criou o evento "${output.eventName}".*'
+    timeout: 30000

@@ -80,6 +80,7 @@ export function ExperiencesScreen() {
           </View>
         }
         footer={<NavigationBar groupId={groupId} />}
+        testID="experiences-screen"
       >
         {({ topInset, bottomInset }: ScreenFrameLayout) => (
           <PlaceList

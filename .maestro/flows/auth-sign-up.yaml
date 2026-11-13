@@ -1,0 +1,119 @@
+#Sign up flow: shows the password errors, creates an account and lands on an empty groups screen.
+appId: com.alibe.app
+tags: [ci, auth]
+---
+- runFlow: ../subflows/launch.yaml
+- extendedWaitUntil:
+    visible:
+      id: auth-screen
+    timeout: 60000
+- tapOn:
+    id: auth-sign-up
+    # A dev-only React warning can swallow this tap; tap again if the screen does not change.
+    retryTapIfNoChange: true
+
+# On small screens fields, messages and buttons can sit below the fold or behind the keyboard,
+# so close the keyboard and scroll to each element before using it.
+- scrollUntilVisible:
+    element:
+      id: sign-up-continue
+    direction: DOWN
+- assertVisible:
+    id: sign-up-continue
+    enabled: false
+
+- scrollUntilVisible:
+    element:
+      id: sign-up-email
+    direction: UP
+- tapOn:
+    id: sign-up-email
+- inputRandomEmail
+- runFlow: ../subflows/close-keyboard.yaml
+
+- scrollUntilVisible:
+    element:
+      id: sign-up-password
+    direction: DOWN
+- tapOn:
+    id: sign-up-password
+- inputText: curta
+- runFlow: ../subflows/close-keyboard.yaml
+- scrollUntilVisible:
+    element: 'A senha deve ter pelo menos 8 caracteres.'
+    direction: DOWN
+- tapOn:
+    id: sign-up-password
+- eraseText
+- inputText: senha-segura
+- runFlow: ../subflows/close-keyboard.yaml
+
+- scrollUntilVisible:
+    element:
+      id: sign-up-password-confirmation
+    direction: DOWN
+- tapOn:
+    id: sign-up-password-confirmation
+- inputText: outra-senha
+- runFlow: ../subflows/close-keyboard.yaml
+- scrollUntilVisible:
+    element: 'As senhas não coincidem.'
+    direction: DOWN
+- scrollUntilVisible:
+    element:
+      id: sign-up-continue
+    direction: DOWN
+- assertVisible:
+    id: sign-up-continue
+    enabled: false
+- scrollUntilVisible:
+    element:
+      id: sign-up-password-confirmation
+    direction: UP
+- tapOn:
+    id: sign-up-password-confirmation
+- eraseText
+- inputText: senha-segura
+- runFlow: ../subflows/close-keyboard.yaml
+
+- scrollUntilVisible:
+    element:
+      id: sign-up-continue
+    direction: DOWN
+- tapOn:
+    id: sign-up-continue
+- extendedWaitUntil:
+    visible:
+      id: create-profile-screen
+    timeout: 10000
+
+- scrollUntilVisible:
+    element:
+      id: create-profile-continue
+    direction: DOWN
+- assertVisible:
+    id: create-profile-continue
+    enabled: false
+- scrollUntilVisible:
+    element:
+      id: create-profile-nickname
+    direction: UP
+- tapOn:
+    id: create-profile-nickname
+- inputText: Teste E2E
+- runFlow: ../subflows/close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: create-profile-continue
+    direction: DOWN
+- tapOn:
+    id: create-profile-continue
+
+- extendedWaitUntil:
+    visible:
+      id: groups-screen
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: alibe-groups-list-empty
+    timeout: 30000

@@ -1,0 +1,11 @@
+# Closes the keyboard. On small screens it hides the fields and buttons below it.
+# Back only closes the keyboard while it is open, so press it only when the keyboard is on screen;
+# hideKeyboard and tapping the screen can leave the screen or hit a control that scrolled under the tap.
+appId: com.alibe.app
+---
+- runFlow:
+    when:
+      visible:
+        id: '.*inputmethod.*'
+    commands:
+      - pressKey: back
