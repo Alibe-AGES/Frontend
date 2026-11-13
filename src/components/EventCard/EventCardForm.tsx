@@ -1,3 +1,4 @@
+import { useAuthenticatedImageSource } from '@/hooks/use-authenticated-image-source';
 import { useDefaultPhotoPickerController } from '@/components/PhotoPicker/controllers/useDefaultPhotoPickerController';
 import { theme } from '@/theme';
 import { maskTime, TIME_LENGTH } from '@/utils/time';
@@ -9,6 +10,23 @@ import tw from 'twrnc';
 import { EventCardCreateProps, EventCardDraft } from './EventCard.types';
 import { EventCardFrame } from './EventCardFrame';
 import { PillInput } from './Pill';
+
+function EventImage({ uri, testID }: { uri: string; testID: string }) {
+  const source = useAuthenticatedImageSource(uri);
+
+  if (!source) {
+    return null;
+  }
+
+  return (
+    <Image
+      source={source}
+      contentFit="cover"
+      style={tw`h-full w-full`}
+      testID={testID}
+    />
+  );
+}
 
 export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: string }> = ({
   variant = 'event',
@@ -42,10 +60,8 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
   const renderImageContent = () => {
     if (draft.imageUri) {
       return (
-        <Image
-          source={{ uri: draft.imageUri }}
-          contentFit="cover"
-          style={tw`h-full w-full`}
+        <EventImage
+          uri={draft.imageUri}
           testID={`${testID}-image`}
         />
       );
