@@ -8,7 +8,7 @@ on:
         required: false
         default: ''
       skip_e2e_tests:
-        description: 'Skip the E2E tests and publish with the EAS build only'
+        description: 'If the E2E tests are FAILING and a release is needed, select this to skip them'
         type: boolean
         required: false
         default: false
