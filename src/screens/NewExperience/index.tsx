@@ -61,6 +61,10 @@ export interface NewExperienceScreenProps {
   onBack: () => void;
 }
 
+function formatLikes(count: number): string {
+  return count === 1 ? '1 curtiu este local' : `${String(count)} curtiram este local`;
+}
+
 function resolveImageUrl(imageUrl: string | null | undefined): string | null {
   if (!imageUrl) return null;
   if (imageUrl.startsWith('http')) return imageUrl;
@@ -216,29 +220,34 @@ export function NewExperienceScreen({
 }: NewExperienceScreenProps) {
   return (
     <ScreenFrame
-      padding="none"
-      footer={<NavigationBar groupId={groupId} />}
       testID="new-experience-screen"
-    >
-      <View className="px-6 pt-8">
-        <BackButton
-          accessibilityLabel="Voltar para o calendário do grupo"
-          useController={() => ({ handleBack: onBack })}
-        />
-      </View>
-      <View className="flex-1 items-center justify-center px-6 pt-16">
-        <View className="mb-6 items-center gap-2">
-          <Text className={`text-center text-3xl text-ink ${theme.typography.display}`}>
+      topFade="header"
+      floatingChrome
+      footer={<NavigationBar groupId={groupId} />}
+      header={
+        <View className="flex-row items-center gap-4">
+          <BackButton
+            accessibilityLabel="Voltar para o calendário do grupo"
+            useController={() => ({ handleBack: onBack })}
+          />
+          <Text
+            accessibilityRole="header"
+            className="flex-1 font-poppins-semibold text-2xl text-ink"
+            testID="user-profile-title"
+          >
             Match de rolês
           </Text>
-          {proposal ? (
-            <Text className="font-poppins text-sm text-ink-soft">
-              {proposal.myAnswer === 'yes'
-                ? 'Você já sugeriu este local'
-                : `${String(proposal.responses.yes)} curtiram este local`}
-            </Text>
-          ) : null}
         </View>
+      }
+    >
+      <View className="mt-14 flex-1 items-center justify-center gap-4">
+        {proposal ? (
+          <Text className="font-poppins text-sm text-coral">
+            {proposal.myAnswer === 'yes'
+              ? 'Você já sugeriu este local'
+              : formatLikes(proposal.responses.yes)}
+          </Text>
+        ) : null}
 
         {renderProposalState({
           groupId,
