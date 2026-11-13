@@ -187,7 +187,7 @@ describe('<EventCard mode="create" />', () => {
       )
     );
 
-    expect(getByPlaceholderText('Definir nome do evento')).toBeTruthy();
+    expect(getByPlaceholderText('Definir nome')).toBeTruthy();
     expect(getByPlaceholderText('Adicionar endereço')).toBeTruthy();
     expect(getByTestId('alibe-event-card-date-button')).toBeTruthy();
     expect(getByText('Escolher dia')).toBeTruthy();
