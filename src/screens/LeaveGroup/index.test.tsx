@@ -39,3 +39,30 @@ describe('LeaveGroupScreen', () => {
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('LeaveGroupScreen while leaving', () => {
+  test('shows a spinner and disables both actions', async () => {
+    const onConfirm = jest.fn();
+    const onCancel = jest.fn();
+    const { getByTestId, queryByText } = await Promise.resolve(
+      render(
+        <LeaveGroupScreen
+          isLeaving
+          onConfirm={onConfirm}
+          onCancel={onCancel}
+        />
+      )
+    );
+
+    expect(getByTestId('leave-group-loading')).toBeTruthy();
+    expect(queryByText('Sair do grupo')).toBeNull();
+    // A disabled Pressable lets the press bubble up to the dialog, which stops propagation.
+    const event = { stopPropagation: jest.fn() };
+    fireEvent.press(getByTestId('leave-group-confirm'), event);
+    fireEvent.press(getByTestId('leave-group-cancel'), event);
+    await Promise.resolve();
+
+    expect(onConfirm).not.toHaveBeenCalled();
+    expect(onCancel).not.toHaveBeenCalled();
+  });
+});

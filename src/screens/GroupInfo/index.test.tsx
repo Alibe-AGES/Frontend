@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 import { GroupInfoScreen } from './index';
 
 const group = {
@@ -79,5 +79,102 @@ describe('GroupInfoScreen', () => {
     );
 
     expect(getByText('Nenhum membro encontrado neste grupo.')).toBeTruthy();
+  });
+  describe('removing members', () => {
+    const renderOwnerScreen = (
+      onRemoveMember: jest.Mock,
+      canEdit = true,
+      onMemberRemoved: jest.Mock = jest.fn()
+    ) =>
+      Promise.resolve(
+        render(
+          <GroupInfoScreen
+            group={group}
+            availabilities={[]}
+            currentUserId="user-1"
+            inviteUrl={null}
+            isLoading={false}
+            canEdit={canEdit}
+            onRemoveMember={onRemoveMember}
+            onMemberRemoved={onMemberRemoved}
+            onLeaveGroup={jest.fn()}
+            onRefreshInvite={jest.fn()}
+          />
+        )
+      );
+
+    test('shows the remove button only to the owner and never for themselves', async () => {
+      const { queryByTestId, rerender } = await renderOwnerScreen(jest.fn());
+
+      expect(queryByTestId('group-info-member-user-2-remove')).toBeTruthy();
+      expect(queryByTestId('group-info-member-user-1-remove')).toBeNull();
+
+      rerender(
+        <GroupInfoScreen
+          group={group}
+          availabilities={[]}
+          currentUserId="user-2"
+          inviteUrl={null}
+          isLoading={false}
+          onRemoveMember={jest.fn()}
+          onLeaveGroup={jest.fn()}
+          onRefreshInvite={jest.fn()}
+        />
+      );
+
+      expect(queryByTestId('group-info-member-user-1-remove')).toBeNull();
+    });
+
+    test('asks for confirmation and removes the member', async () => {
+      const onRemoveMember = jest.fn().mockResolvedValue(true);
+      const onMemberRemoved = jest.fn();
+      const { getByTestId, getByText, queryByText } = await renderOwnerScreen(
+        onRemoveMember,
+        true,
+        onMemberRemoved
+      );
+
+      fireEvent.press(getByTestId('group-info-member-user-2-remove'));
+      expect(getByText('Remover Bia do grupo?')).toBeTruthy();
+      expect(onRemoveMember).not.toHaveBeenCalled();
+
+      await act(async () => {
+        fireEvent.press(getByTestId('group-info-remove-confirm'));
+        await Promise.resolve();
+      });
+
+      expect(queryByText('Remover Bia do grupo?')).toBeNull();
+      expect(onRemoveMember).toHaveBeenCalledWith(group.participants[1]);
+      expect(onMemberRemoved).toHaveBeenCalledTimes(1);
+      expect(onMemberRemoved).toHaveBeenCalledWith(group.participants[1]);
+    });
+
+    test('closes the confirmation without removing on cancel', async () => {
+      const onRemoveMember = jest.fn();
+      const { getByTestId, queryByText } = await renderOwnerScreen(onRemoveMember);
+
+      fireEvent.press(getByTestId('group-info-member-user-2-remove'));
+      fireEvent.press(getByTestId('group-info-remove-cancel'));
+
+      expect(queryByText('Remover Bia do grupo?')).toBeNull();
+      expect(onRemoveMember).not.toHaveBeenCalled();
+    });
+
+    test('keeps the confirmation open when removing fails', async () => {
+      const onRemoveMember = jest.fn().mockResolvedValue(false);
+      const onMemberRemoved = jest.fn();
+      const { getByTestId, findByText } = await renderOwnerScreen(
+        onRemoveMember,
+        true,
+        onMemberRemoved
+      );
+
+      fireEvent.press(getByTestId('group-info-member-user-2-remove'));
+      fireEvent.press(getByTestId('group-info-remove-confirm'));
+
+      expect(await findByText('Remover')).toBeTruthy();
+      expect(await findByText('Remover Bia do grupo?')).toBeTruthy();
+      expect(onMemberRemoved).not.toHaveBeenCalled();
+    });
   });
 });

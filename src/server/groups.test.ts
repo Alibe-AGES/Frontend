@@ -8,7 +8,9 @@ import {
   getGroupMembers,
   getMe,
   joinGroupByInvite,
+  leaveGroup,
   listGroups,
+  removeGroupMember,
   updateGroup,
 } from './groups';
 
@@ -338,5 +340,64 @@ describe('group invites', () => {
     });
 
     await expect(joinGroupByInvite('expired-token')).rejects.toBeInstanceOf(ApiError);
+  });
+});
+
+describe('leaveGroup', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.clearAllMocks();
+  });
+
+  test('sends a PUT to the leave endpoint', async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, status: 201 });
+
+    await expect(leaveGroup('1')).resolves.toBeUndefined();
+    expect(global.fetch).toHaveBeenCalledWith(API_BASE_URL + '/groups/1/leave', {
+      method: 'PUT',
+      credentials: 'include',
+    });
+  });
+
+  test('throws an ApiError when the user is not a member', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      statusText: 'Bad Request',
+      text: () => Promise.resolve('Usuário não pertence ao grupo ou grupo não existe'),
+    });
+
+    await expect(leaveGroup('1')).rejects.toMatchObject({
+      status: 400,
+      message: 'Usuário não pertence ao grupo ou grupo não existe',
+    });
+  });
+});
+
+describe('removeGroupMember', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.clearAllMocks();
+  });
+
+  test('sends a DELETE to the member endpoint', async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, status: 204 });
+
+    await expect(removeGroupMember('1', 'user-2')).resolves.toBeUndefined();
+    expect(global.fetch).toHaveBeenCalledWith(API_BASE_URL + '/groups/1/members/user-2', {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+  });
+
+  test('throws an ApiError when the user is not the owner', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 403,
+      statusText: 'Forbidden',
+      text: () => Promise.resolve('Somente o owner pode remover participantes'),
+    });
+
+    await expect(removeGroupMember('1', 'user-2')).rejects.toMatchObject({ status: 403 });
   });
 });

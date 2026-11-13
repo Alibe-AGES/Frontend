@@ -15,10 +15,17 @@ import PinkSpin from '@/assets/images/pink-spin.svg';
 
 export function GroupsScreen() {
   const router = useRouter();
-  const { invite } = useLocalSearchParams<{ invite?: string }>();
+  const { invite, left } = useLocalSearchParams<{ invite?: string; left?: string }>();
   const { getPendingInvite, setPendingInvite } = usePendingInvite();
   const handledToken = useRef<string | null>(null);
   const [groupsListVersion, setGroupsListVersion] = useState(0);
+
+  useEffect(() => {
+    // Ao voltar depois de sair de um grupo, a lista já montada precisa ser recarregada.
+    if (left) {
+      setGroupsListVersion((currentVersion) => currentVersion + 1);
+    }
+  }, [left]);
 
   useEffect(() => {
     // Convite da URL ou guardado antes do login/cadastro.
