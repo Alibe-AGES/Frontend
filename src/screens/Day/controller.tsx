@@ -7,6 +7,7 @@ import {
   respondToEventProposal,
 } from '@/server/events';
 import { getGroupMembers, getMe, type GroupMember } from '@/server/groups';
+import { getStoredLocationDetails } from '@/server/places';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import Toast from 'react-native-toast-message';
@@ -22,10 +23,35 @@ function getEventIds(day: CalendarDay): string[] {
   ];
 }
 
+/**
+ * The event only carries its location description. A typed address is stored there, but a saved
+ * place (from ExperienceDetails or a custom suggestion) keeps its address on the location itself,
+ * so it is loaded from there. Best effort: a failed lookup falls back to the description.
+ */
+async function loadLocationAddresses(
+  events: EventDetailsResponse[]
+): Promise<Record<string, string>> {
+  const locationIds = [
+    ...new Set(events.flatMap((event) => (event.location ? [event.location.id] : []))),
+  ];
+  const entries = await Promise.all(
+    locationIds.map(async (locationId) => {
+      try {
+        const { address } = await getStoredLocationDetails(locationId);
+        return address ? [[locationId, address] as const] : [];
+      } catch {
+        return [];
+      }
+    })
+  );
+  return Object.fromEntries(entries.flat());
+}
+
 function mapEventToCarouselItem(
   event: EventDetailsResponse,
   currentUserId: string | null,
-  groupMembers: GroupMember[]
+  groupMembers: GroupMember[],
+  addressesByLocationId: Record<string, string>
 ): GroupDayCarouselItem {
   const timeslot = event.date && event.time ? `${event.date}T${event.time}:00` : null;
   const { owner, responses } = event.proposal;
@@ -38,7 +64,11 @@ function mapEventToCarouselItem(
       budgetStart: event.budgetStart,
       budgetEnd: event.budgetEnd,
       status: event.status,
-      location: { address: event.location?.description },
+      location: {
+        address:
+          (event.location && addressesByLocationId[event.location.id]) ??
+          event.location?.description,
+      },
       imageUrl: event.image,
     },
     owner: { id: owner.id, name: owner.name, photoUri: owner.image },
@@ -65,6 +95,7 @@ export default function DayController() {
   const { id: groupId, date } = useLocalSearchParams<{ id: string; date: string }>();
   const requestIdRef = useRef(0);
   const [eventDetails, setEventDetails] = useState<EventDetailsResponse[]>([]);
+  const [addressesByLocationId, setAddressesByLocationId] = useState<Record<string, string>>({});
   const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -108,9 +139,11 @@ export default function DayController() {
         const details = await Promise.all(
           getEventIds(selectedDay).map((eventId) => getEventDetails(eventId))
         );
+        const addresses = await loadLocationAddresses(details);
         if (requestIdRef.current !== requestId) {
           return;
         }
+        setAddressesByLocationId(addresses);
         setEventDetails(details);
       } catch (loadError: unknown) {
         if (requestIdRef.current !== requestId) {
@@ -164,7 +197,9 @@ export default function DayController() {
 
   const items: GroupDayCarouselItem[] = [...eventDetails]
     .sort(compareByTime)
-    .map((event) => mapEventToCarouselItem(event, currentUserId, groupMembers));
+    .map((event) =>
+      mapEventToCarouselItem(event, currentUserId, groupMembers, addressesByLocationId)
+    );
 
   return (
     <DayScreen

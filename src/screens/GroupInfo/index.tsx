@@ -253,7 +253,7 @@ export function GroupInfoScreen({
       }
       testID="group-info-screen"
     >
-      <View className="relative mt-28 rounded-[2rem] bg-ink px-6 pb-10 pt-16">
+      <View className="relative mt-24 rounded-[2rem] bg-ink px-6 pb-10 pt-16">
         <View className="absolute -top-12 left-0 right-0 items-center">
           <View className="h-24 w-24 overflow-hidden rounded-full border-4 border-canvas bg-surface">
             {group ? (

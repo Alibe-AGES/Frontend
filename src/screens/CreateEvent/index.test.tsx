@@ -69,6 +69,24 @@ function buildProps(overrides: Partial<CreateEventScreenProps> = {}): CreateEven
 }
 
 describe('<CreateEventScreen />', () => {
+  test('disables the suggestion tab for a matched place', async () => {
+    const onSelectTab = jest.fn();
+    const { getByTestId } = await Promise.resolve(
+      render(<CreateEventScreen {...buildProps({ isLocationReadOnly: true, onSelectTab })} />)
+    );
+
+    const suggestionTab = getByTestId('create-event-tab-suggestion');
+    expect(suggestionTab.props.accessibilityState).toMatchObject({ disabled: true });
+    fireEvent.press(suggestionTab);
+    await Promise.resolve();
+
+    expect(onSelectTab).not.toHaveBeenCalled();
+    expect(getByTestId('create-event-tab-event').props.accessibilityState).toMatchObject({
+      selected: true,
+      disabled: false,
+    });
+  });
+
   test('renders the tabs, event form, and participants', async () => {
     const { getByText, getByPlaceholderText, getByTestId } = await Promise.resolve(
       render(<CreateEventScreen {...buildProps()} />)
