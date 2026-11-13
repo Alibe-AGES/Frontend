@@ -312,9 +312,15 @@ describe('CreateEventController', () => {
       address: 'Av. João Wallig, 1800',
     });
     expect(mockCreateEvent).not.toHaveBeenCalled();
-    expect(replace).toHaveBeenCalledWith({
-      pathname: '/group/[id]/experiences/new',
-      params: { id: 'group-1' },
+    expect(replace).not.toHaveBeenCalled();
+    expect(mockToastShow).toHaveBeenCalledWith({
+      type: 'success',
+      text1: 'Sugestão enviada!',
+      text2: 'Bloom Café foi sugerido para o grupo.',
+    });
+    expect(mockScreenProps.activeTab).toBe('suggestion');
+    await waitFor(() => {
+      expect(mockScreenProps.draft).toMatchObject({ name: '', address: '', imageUri: null });
     });
   });
 
@@ -348,10 +354,7 @@ describe('CreateEventController', () => {
       name: 'Um café tranquilo para conversar',
       address: 'Rua das Flores, 123',
     });
-    expect(replace).toHaveBeenCalledWith({
-      pathname: '/group/[id]/experiences/new',
-      params: { id: 'group-1' },
-    });
+    expect(replace).not.toHaveBeenCalled();
   });
 
   test('sends the picked image with a manual suggestion', async () => {
