@@ -5,7 +5,6 @@ export type DayStatus =
   | 'matched'
   | 'allAvailable'
   | 'past'
-  | 'pastEvent'
   | 'normal';
 
 export type DayDot = 'pink' | 'coral';

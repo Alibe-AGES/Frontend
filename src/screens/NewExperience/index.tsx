@@ -1,3 +1,4 @@
+import { BackButton } from '@/components/BackButton';
 import { EventCard } from '@/components/EventCard';
 import { NavigationBar } from '@/components/NavigationBar';
 import { ScreenFrame } from '@/components/ScreenFrame';
@@ -57,6 +58,7 @@ export interface NewExperienceScreenProps {
   error: string | null;
   onRetry: () => void;
   onAnswer: (answer: EventPresenceAnswer) => void;
+  onBack: () => void;
 }
 
 function resolveImageUrl(imageUrl: string | null | undefined): string | null {
@@ -145,7 +147,7 @@ function renderProposalCard(
   );
 }
 
-function renderProposalState(props: NewExperienceScreenProps): ReactNode {
+function renderProposalState(props: Omit<NewExperienceScreenProps, 'onBack'>): ReactNode {
   if (props.isLoading) {
     return (
       <View
@@ -210,12 +212,19 @@ export function NewExperienceScreen({
   error,
   onRetry,
   onAnswer,
+  onBack,
 }: NewExperienceScreenProps) {
   return (
     <ScreenFrame
       padding="none"
       footer={<NavigationBar groupId={groupId} />}
     >
+      <View className="px-6 pt-8">
+        <BackButton
+          accessibilityLabel="Voltar para o calendário do grupo"
+          useController={() => ({ handleBack: onBack })}
+        />
+      </View>
       <View className="flex-1 items-center justify-center px-6 pt-16">
         <View className="mb-6 items-center gap-2">
           <Text className={`text-center text-3xl text-ink ${theme.typography.display}`}>

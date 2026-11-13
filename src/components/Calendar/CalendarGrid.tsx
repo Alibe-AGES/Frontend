@@ -36,23 +36,21 @@ const dayContainerClasses: Record<DayStatus, string> = {
   normal: 'bg-transparent',
   // Availability is shown by the coral dot below the day, not by the background.
   available: 'bg-transparent',
-  realized: 'bg-ink',
+  realized: 'bg-lime',
   suggested: 'bg-pink-deep',
-  matched: 'bg-ink',
+  matched: 'bg-pink-deep',
   allAvailable: 'bg-coral',
   past: 'bg-gray-200',
-  pastEvent: 'bg-gray-200',
 };
 
 const dayTextClasses: Record<DayStatus, string> = {
   normal: 'text-ink',
   available: 'text-ink',
-  realized: 'text-canvas',
+  realized: 'text-ink',
   suggested: 'text-canvas',
-  matched: 'text-lime',
+  matched: 'text-canvas',
   allAvailable: 'text-canvas',
   past: 'text-ink-soft',
-  pastEvent: 'text-ink',
 };
 
 function getAvailableUserCount(mark: DayMark): number {
@@ -70,8 +68,9 @@ function getDisplayStatus(dateString: string, eventCount: number, status: DaySta
     return status;
   }
 
+  // A past event day is a lime square without a star, whatever its planning status was.
   if (eventCount > 0 || status === 'realized' || status === 'suggested' || status === 'matched') {
-    return status === 'normal' ? 'pastEvent' : status;
+    return 'realized';
   }
 
   return 'past';
@@ -159,7 +158,7 @@ function DayContent({ status, day, hasImage }: DayContentProps) {
       <Ionicons
         name="star"
         size={20}
-        color={theme.colors.pinkDeep}
+        color={theme.colors.white}
         testID="calendar-day-icon-matched"
       />
     );

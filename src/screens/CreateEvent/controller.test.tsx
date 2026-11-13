@@ -312,15 +312,9 @@ describe('CreateEventController', () => {
       address: 'Av. João Wallig, 1800',
     });
     expect(mockCreateEvent).not.toHaveBeenCalled();
-    expect(replace).not.toHaveBeenCalled();
-    expect(mockToastShow).toHaveBeenCalledWith({
-      type: 'success',
-      text1: 'Sugestão enviada!',
-      text2: 'Bloom Café foi sugerido para o grupo.',
-    });
-    expect(mockScreenProps.activeTab).toBe('suggestion');
-    await waitFor(() => {
-      expect(mockScreenProps.draft).toMatchObject({ name: '', address: '', imageUri: null });
+    expect(replace).toHaveBeenCalledWith({
+      pathname: '/group/[id]/experiences/new',
+      params: { id: 'group-1' },
     });
   });
 
@@ -354,7 +348,10 @@ describe('CreateEventController', () => {
       name: 'Um café tranquilo para conversar',
       address: 'Rua das Flores, 123',
     });
-    expect(replace).not.toHaveBeenCalled();
+    expect(replace).toHaveBeenCalledWith({
+      pathname: '/group/[id]/experiences/new',
+      params: { id: 'group-1' },
+    });
   });
 
   test('sends the picked image with a manual suggestion', async () => {
@@ -453,7 +450,7 @@ describe('CreateEventController', () => {
     }
   );
 
-  test('stays on the screen even when the suggestion matches right away', async () => {
+  test('opens the match screen when the suggestion matches right away', async () => {
     mockCreateProposal.mockResolvedValueOnce({
       id: 'proposal-match',
       matched: true,
@@ -477,8 +474,17 @@ describe('CreateEventController', () => {
       await Promise.resolve();
     });
 
-    expect(replace).not.toHaveBeenCalled();
-    expect(mockToastShow).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }));
+    expect(replace).toHaveBeenCalledWith({
+      pathname: '/group/[id]/match',
+      params: {
+        id: 'group-1',
+        matchedSuggestionId: 'proposal-match',
+        locationId: 'location-1',
+        name: 'Bloom Café',
+        address: 'Rua Padre Chagas, 320',
+        imageUrl: '/api/locations/location-1/image',
+      },
+    });
     expect(mockCreateEvent).not.toHaveBeenCalled();
   });
 
