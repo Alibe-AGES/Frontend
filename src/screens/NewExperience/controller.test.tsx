@@ -57,7 +57,7 @@ const proposal = {
     phoneNumber: null,
     website: null,
     priceRange: { start: null, end: null, currencyCode: null },
-    imageUrl: null,
+    imageUrl: '/api/locations/location-1/image',
     manuallyCreated: false,
   },
   responses: { yes: 1, no: 0, pending: 2 },
@@ -175,6 +175,7 @@ describe('NewExperienceController', () => {
         locationId: 'location-1',
         name: 'Bloom Café',
         address: 'Rua Padre Chagas, 320',
+        imageUrl: '/api/locations/location-1/image',
       },
     });
   });

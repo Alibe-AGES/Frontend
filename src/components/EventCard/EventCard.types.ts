@@ -51,6 +51,7 @@ export interface EventCardCreateProps {
   draft: EventCardDraft;
   onChangeDraft: (draft: EventCardDraft) => void;
   readOnly?: boolean;
+  imageReadOnly?: boolean;
   onDatePress?: () => void;
   onImageSelected?: (photo: SelectedPhoto) => void;
   onConfirm?: () => void;

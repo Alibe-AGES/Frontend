@@ -1,5 +1,6 @@
 import type { EventCardDraft } from '@/components/EventCard';
 import type { SelectedPhoto } from '@/components/PhotoPicker/PhotoPicker.types';
+import { API_BASE_URL } from '@/constants';
 import type { CreateEventTab } from '@/screens/CreateEvent';
 import { createEvent, createProposal } from '@/server/events';
 import { getGroup, getMe } from '@/server/groups';
@@ -13,6 +14,7 @@ interface MockScreenProps {
   openDatePickerOnMount?: boolean;
   activeTab?: CreateEventTab;
   isSuggestionReadOnly?: boolean;
+  isLocationImageReadOnly?: boolean;
   onSelectTab?: (tab: CreateEventTab) => void;
   draft: EventCardDraft;
   onChangeDraft: (draft: EventCardDraft) => void;
@@ -220,6 +222,7 @@ describe('CreateEventController', () => {
       id: 'group-1',
       matchedSuggestionId: 'proposal-1',
       locationId: 'location-1',
+      imageUrl: '/api/locations/location-1/image',
       name: 'Bloom Café',
       address: 'Rua Padre Chagas, 320',
     });
@@ -228,7 +231,9 @@ describe('CreateEventController', () => {
     expect(mockScreenProps.draft).toMatchObject({
       name: 'Bloom Café',
       address: 'Rua Padre Chagas, 320',
+      imageUri: `${API_BASE_URL}/api/locations/location-1/image`,
     });
+    expect(mockScreenProps.isLocationImageReadOnly).toBe(true);
 
     await fillDraft({
       ...mockScreenProps.draft,
@@ -246,6 +251,7 @@ describe('CreateEventController', () => {
       time: '20:00',
       locationId: 'location-1',
     });
+    expect(mockCreateProposal).not.toHaveBeenCalled();
   });
 
   test('shows an error toast and stays on the screen when creation fails', async () => {
@@ -493,6 +499,65 @@ describe('CreateEventController', () => {
     );
   });
 
+  test.each(['external', 'internal'] as const)(
+    'switches from a matched %s suggestion to event mode after route params change',
+    async (suggestionType) => {
+      const suggestionParams: Record<string, string> = {};
+      if (suggestionType === 'external') {
+        suggestionParams.externalId = 'google-place-1';
+        suggestionParams.imageUrl = 'https://api.example.com/place.jpg';
+      } else {
+        suggestionParams.locationId = 'catalog-location-1';
+      }
+      mockUseLocalSearchParams.mockReturnValue({
+        id: 'group-1',
+        tab: 'suggestion',
+        name: 'Old suggestion title',
+        address: 'Old suggestion address',
+        ...suggestionParams,
+      });
+      const { rerender } = await renderController();
+      expect(mockScreenProps.activeTab).toBe('suggestion');
+
+      mockUseLocalSearchParams.mockReturnValue({
+        id: 'group-1',
+        locationId: 'matched-location-1',
+        imageUrl: '/api/locations/matched-location-1/image',
+        name: 'Matched place',
+        address: 'Matched address',
+      });
+      await act(async () => {
+        rerender(<CreateEventController />);
+        await Promise.resolve();
+      });
+
+      expect(mockScreenProps.activeTab).toBe('event');
+      expect(mockScreenProps.isSuggestionReadOnly).toBe(false);
+      expect(mockScreenProps.isLocationImageReadOnly).toBe(true);
+      expect(mockScreenProps.draft).toMatchObject({
+        name: 'Matched place',
+        address: 'Matched address',
+        imageUri: `${API_BASE_URL}/api/locations/matched-location-1/image`,
+        date: '',
+        time: '',
+      });
+
+      await fillDraft({ ...mockScreenProps.draft, date: '2026-10-15', time: '20:00' });
+      await act(async () => {
+        mockScreenProps.onConfirm();
+        await Promise.resolve();
+      });
+
+      expect(mockCreateEvent).toHaveBeenCalledWith('group-1', {
+        name: 'Matched place',
+        date: '2026-10-15',
+        time: '20:00',
+        locationId: 'matched-location-1',
+      });
+      expect(mockCreateProposal).not.toHaveBeenCalled();
+    }
+  );
+
   test('routes an immediately matched suggestion to the match confirmation with location details', async () => {
     mockCreateProposal.mockResolvedValueOnce({
       id: 'proposal-match',
@@ -502,6 +567,7 @@ describe('CreateEventController', () => {
         name: 'Bloom Café',
         address: 'Rua Padre Chagas, 320',
         description: null,
+        imageUrl: '/api/locations/location-1/image',
       },
     } as Awaited<ReturnType<typeof createProposal>>);
     await Promise.resolve(render(<CreateEventController />));
@@ -524,6 +590,7 @@ describe('CreateEventController', () => {
         locationId: 'location-1',
         name: 'Bloom Café',
         address: 'Rua Padre Chagas, 320',
+        imageUrl: '/api/locations/location-1/image',
       },
     });
     expect(mockCreateEvent).not.toHaveBeenCalled();

@@ -48,6 +48,7 @@ describe('MatchController', () => {
       locationId: 'location-1',
       name: 'Bloom Café',
       address: 'Rua Padre Chagas, 320',
+      imageUrl: '/api/locations/location-1/image',
     });
     mockUseRouter.mockReturnValue({ replace } as unknown as ReturnType<typeof useRouter>);
     mockGetGroup.mockResolvedValue({
@@ -90,6 +91,7 @@ describe('MatchController', () => {
         locationId: 'location-1',
         name: 'Bloom Café',
         address: 'Rua Padre Chagas, 320',
+        imageUrl: '/api/locations/location-1/image',
       },
     });
   });
