@@ -1,7 +1,10 @@
 import { Button } from '@/components/Button';
 import { EventCard, type EventCardEvent } from '@/components/EventCard';
 import { MemoryCard } from '@/components/MemoryCard';
+import { MatchScreen } from '@/screens/Match';
+import type { GroupMember } from '@/server/groups';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
 const completeEvent: EventCardEvent = {
@@ -24,8 +27,42 @@ const partialEvent: EventCardEvent = {
   location: { address: 'Parque Farroupilha' },
 };
 
+const matchParticipants: GroupMember[] = [
+  'Ana',
+  'Bruno',
+  'Camila',
+  'Daniel',
+  'Eduarda',
+  'Felipe',
+  'Gabriela',
+  'Henrique',
+  'Isabela',
+  'João',
+  'Larissa',
+  'Matheus',
+].map((name, index) => ({
+  id: `gallery-participant-${String(index)}`,
+  name,
+  profilePic: null,
+}));
+
 export function ComponentGalleryScreen() {
   const router = useRouter();
+  const [matchPreviewCount, setMatchPreviewCount] = useState<number | null>(null);
+
+  if (matchPreviewCount !== null) {
+    return (
+      <MatchScreen
+        participants={matchParticipants.slice(0, matchPreviewCount)}
+        currentUserId="gallery-participant-0"
+        isLoadingParticipants={false}
+        isConfirmDisabled={false}
+        onConfirm={() => {
+          setMatchPreviewCount(null);
+        }}
+      />
+    );
+  }
 
   return (
     <ScrollView
@@ -75,6 +112,27 @@ export function ComponentGalleryScreen() {
           name="Sample Memory"
           address="123 Main St, City, State 12345"
           imageUri="https://picsum.photos/600/800"
+        />
+      </View>
+
+      <View className="gap-3 rounded-3xl bg-surface p-5">
+        <Text className="text-xl font-black text-ink">Match</Text>
+        <Text className="text-sm text-ink-soft">
+          Prévia com dados fictícios. Criar evento fecha a prévia.
+        </Text>
+        <Button
+          title="Prévia do match (4 participantes)"
+          onPress={() => {
+            setMatchPreviewCount(4);
+          }}
+          testID="gallery-match-four-preview"
+        />
+        <Button
+          title="Prévia do match (12 participantes)"
+          onPress={() => {
+            setMatchPreviewCount(12);
+          }}
+          testID="gallery-match-preview"
         />
       </View>
 
