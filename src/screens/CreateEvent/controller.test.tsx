@@ -12,6 +12,7 @@ interface MockScreenProps {
   groupId?: string;
   openDatePickerOnMount?: boolean;
   activeTab?: CreateEventTab;
+  isSuggestionReadOnly?: boolean;
   onSelectTab?: (tab: CreateEventTab) => void;
   draft: EventCardDraft;
   onChangeDraft: (draft: EventCardDraft) => void;
@@ -462,6 +463,34 @@ describe('CreateEventController', () => {
       })
     );
     expect(mockCreateEvent).not.toHaveBeenCalled();
+  });
+
+  test('marks backend place suggestions read-only and submits their image URL', async () => {
+    const imageUrl = 'https://api.example.com/places/google-place-1/image';
+    mockUseLocalSearchParams.mockReturnValue({
+      id: 'group-1',
+      tab: 'suggestion',
+      externalId: 'google-place-1',
+      imageUrl,
+      address: 'Rua Padre Chagas, 320',
+      name: 'Bloom Café',
+    });
+
+    await renderController();
+
+    expect(mockScreenProps.isSuggestionReadOnly).toBe(true);
+    expect(mockScreenProps.draft.imageUri).toBe(imageUrl);
+
+    await fillDraft({ ...mockScreenProps.draft, ...COMPLETE_DRAFT, name: 'Bloom Café' });
+    await act(async () => {
+      mockScreenProps.onConfirm();
+      await Promise.resolve();
+    });
+
+    expect(mockCreateProposal).toHaveBeenCalledWith(
+      'group-1',
+      expect.objectContaining({ externalId: 'google-place-1', imageUrl })
+    );
   });
 
   test('routes an immediately matched suggestion to the match confirmation with location details', async () => {

@@ -14,6 +14,7 @@ export interface CreateEventScreenProps {
   groupId?: string;
   openDatePickerOnMount?: boolean;
   activeTab?: CreateEventTab;
+  isSuggestionReadOnly?: boolean;
   onSelectTab?: (tab: CreateEventTab) => void;
   draft: EventCardDraft;
   onChangeDraft: (draft: EventCardDraft) => void;
@@ -87,6 +88,7 @@ export function CreateEventScreen({
   groupId,
   openDatePickerOnMount = false,
   activeTab = 'event',
+  isSuggestionReadOnly = false,
   onSelectTab,
   draft,
   onChangeDraft,
@@ -131,6 +133,7 @@ export function CreateEventScreen({
         <EventCard
           mode="create"
           variant={activeTab}
+          readOnly={activeTab === 'suggestion' && isSuggestionReadOnly}
           draft={draft}
           onChangeDraft={onChangeDraft}
           onDatePress={() => {
