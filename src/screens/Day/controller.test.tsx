@@ -181,6 +181,26 @@ describe('DayController', () => {
     });
   });
 
+  test('shows available stored location details in the calendar event card', async () => {
+    mockGetStoredLocationDetails.mockResolvedValue({
+      ...storedLocation('Rua das Flores, 123'),
+      imageUrl: 'https://cdn.alibe.com/cafe.jpg',
+      priceRange: { start: 20, end: 100, currencyCode: 'BRL' },
+      phoneNumber: '(51) 3333-3333',
+      openingHours: ['Segunda: 9:00 - 18:00'],
+      website: 'https://cafe.example',
+    });
+
+    const { getAllByText, getByTestId } = await Promise.resolve(render(<DayController />));
+    await waitFor(() => {
+      expect(getAllByText('R$ 20 - 100')).toHaveLength(2);
+      expect(getAllByText('(51) 3333-3333')).toHaveLength(2);
+      expect(getAllByText('Segunda: 9:00 - 18:00')).toHaveLength(2);
+      expect(getAllByText('https://cafe.example')).toHaveLength(2);
+      expect(getByTestId('group-day-carousel-event-event-1-image')).toBeTruthy();
+    });
+  });
+
   test('orders the events by time and shows the photos each request returns', async () => {
     mockGetGroupMembers.mockResolvedValue([
       { id: 'user-1', name: 'Ana', profilePic: null },

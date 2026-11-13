@@ -33,52 +33,42 @@ export const EventCardAdditionalDetails: FC<EventCardAdditionalDetailsProps> = (
   website,
   testID,
 }) => {
-  if (!budget && !phone && !openingHours && !website) {
-    return null;
-  }
-
+  const budgetValue = budget?.trim() ? budget : null;
+  const phoneValue = phone?.trim() ? phone : null;
+  const hoursValue = openingHours?.trim() ? openingHours : null;
+  const websiteValue = website?.trim() ? website : null;
   return (
     <View className="mt-4 gap-4 px-2">
-      {budget || phone ? (
-        <View className="flex-row gap-4">
-          {budget ? (
-            <InfoItem
-              label="Faixa de Preço"
-              className="flex-1"
-              testID={`${testID}-budget`}
-            >
-              {budget}
-            </InfoItem>
-          ) : null}
-          {phone ? (
-            <InfoItem
-              label="Número"
-              className="flex-1"
-              testID={`${testID}-phone`}
-            >
-              {phone}
-            </InfoItem>
-          ) : null}
-        </View>
-      ) : null}
-
-      {openingHours ? (
+      <View className="flex-row gap-4">
         <InfoItem
-          label="Horários"
-          testID={`${testID}-hours`}
+          label="Faixa de Preço"
+          className="flex-1"
+          testID={`${testID}-budget`}
         >
-          {openingHours}
+          {budgetValue ?? '--'}
         </InfoItem>
-      ) : null}
-
-      {website ? (
         <InfoItem
-          label="Site"
-          testID={`${testID}-website`}
+          label="Número"
+          className="flex-1"
+          testID={`${testID}-phone`}
         >
-          {website}
+          {phoneValue ?? '(00) 00000-0000'}
         </InfoItem>
-      ) : null}
+      </View>
+
+      <InfoItem
+        label="Horários"
+        testID={`${testID}-hours`}
+      >
+        {hoursValue ?? '--'}
+      </InfoItem>
+
+      <InfoItem
+        label="Site"
+        testID={`${testID}-website`}
+      >
+        {websiteValue ?? '--'}
+      </InfoItem>
     </View>
   );
 };

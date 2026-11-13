@@ -97,13 +97,15 @@ describe('<EventCard />', () => {
     expect(queryByTestId('alibe-event-card-image')).toBeNull();
   });
 
-  test('hides optional sections when only the id is provided', async () => {
-    const { getByTestId, queryByTestId } = await Promise.resolve(
+  test('shows additional detail placeholders when only the id is provided', async () => {
+    const { getByTestId, getByText, getAllByText, queryByTestId } = await Promise.resolve(
       render(<EventCard event={{ id: 'event-2' }} />)
     );
 
     expect(getByTestId('alibe-event-card-title').props.children).toBe('Evento');
-    for (const part of ['address', 'time', 'budget', 'phone', 'hours', 'website', 'edit']) {
+    expect(getByText('(00) 00000-0000')).toBeTruthy();
+    expect(getAllByText('--')).toHaveLength(3);
+    for (const part of ['address', 'time', 'edit']) {
       expect(queryByTestId(`alibe-event-card-${part}`)).toBeNull();
     }
   });
@@ -142,13 +144,14 @@ describe('<EventCard />', () => {
     expect(queryByTestId('alibe-event-card-time')).toBeNull();
   });
 
-  test('shows the phone even without a budget', async () => {
-    const { getByTestId, queryByTestId } = await Promise.resolve(
+  test('shows the phone and a placeholder when the budget is missing', async () => {
+    const { getByText, getByTestId } = await Promise.resolve(
       render(<EventCard event={{ id: 'event-7', phone: '(51) 99999-0000' }} />)
     );
 
     expect(getByTestId('alibe-event-card-phone')).toBeTruthy();
-    expect(queryByTestId('alibe-event-card-budget')).toBeNull();
+    expect(getByText('(51) 99999-0000')).toBeTruthy();
+    expect(getByTestId('alibe-event-card-budget')).toBeTruthy();
   });
 
   test('calls onEditPress when the edit button is tapped', async () => {
