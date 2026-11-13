@@ -1,7 +1,7 @@
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { ComponentProps, FC } from 'react';
-import { KeyboardTypeOptions, TextInput, Text, View } from 'react-native';
+import { KeyboardTypeOptions, Text, TextInput, View } from 'react-native';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -40,6 +40,7 @@ interface PillInputProps {
   keyboardType?: KeyboardTypeOptions;
   maxLength?: number;
   multiline?: boolean;
+  editable?: boolean;
   testID: string;
 }
 
@@ -51,6 +52,7 @@ export const PillInput: FC<PillInputProps> = ({
   keyboardType,
   maxLength,
   multiline,
+  editable = true,
   testID,
 }) => (
   <View className={PILL_CLASS_NAME}>
@@ -62,6 +64,7 @@ export const PillInput: FC<PillInputProps> = ({
     <TextInput
       accessibilityLabel={placeholder}
       className="flex-1 py-3 font-poppins-medium text-lg text-white outline-none"
+      editable={editable}
       keyboardType={keyboardType}
       maxLength={maxLength}
       multiline={multiline}

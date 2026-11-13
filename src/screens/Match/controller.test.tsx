@@ -87,7 +87,6 @@ describe('MatchController', () => {
       pathname: '/group/[id]/create-event',
       params: {
         id: 'group-1',
-        matchedSuggestionId: 'proposal-1',
         locationId: 'location-1',
         name: 'Bloom Café',
         address: 'Rua Padre Chagas, 320',

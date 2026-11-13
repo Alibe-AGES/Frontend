@@ -6,8 +6,10 @@ import {
   getGroup,
   getGroupInviteLink,
   getMe,
+  removeGroupMember,
   updateGroup,
   type GroupDetails,
+  type GroupMember,
   type UpdateGroupInput,
 } from '@/server/groups';
 import * as Linking from 'expo-linking';
@@ -33,7 +35,8 @@ function buildMemberAvailabilities(
 
   return [...byMember.entries()].map(([memberId, dates]) => ({
     memberId,
-    dates: dates.toSorted((first, second) => first.localeCompare(second)),
+    // Hermes doesn't implement Array.prototype.toSorted on every target, so sort a copy instead.
+    dates: [...dates].sort((first, second) => first.localeCompare(second)),
   }));
 }
 
@@ -160,6 +163,46 @@ export default function GroupInfoController() {
     return saved ? null : 'Não foi possível salvar o nome.';
   };
 
+  const handleRemoveMember = async (member: GroupMember): Promise<boolean> => {
+    if (!groupId) {
+      return false;
+    }
+
+    try {
+      await removeGroupMember(groupId, member.id);
+      setGroup((current) =>
+        current
+          ? {
+              ...current,
+              participants: current.participants.filter(
+                (participant) => participant.id !== member.id
+              ),
+            }
+          : current
+      );
+      setAvailabilities((current) =>
+        current.filter((availability) => availability.memberId !== member.id)
+      );
+      return true;
+    } catch (error) {
+      console.error('Erro ao remover participante', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Erro',
+        text2: 'Não foi possível remover o participante. Tente novamente.',
+      });
+      return false;
+    }
+  };
+
+  const handleMemberRemoved = (member: GroupMember) => {
+    Toast.show({
+      type: 'success',
+      text1: 'Sucesso!',
+      text2: `${member.name} foi removido(a) do grupo.`,
+    });
+  };
+
   const handleLeaveGroup = () => {
     if (!groupId) {
       return;
@@ -180,6 +223,8 @@ export default function GroupInfoController() {
       isSaving={isSaving || photoPicker.isLoading}
       onEditImage={() => void photoPicker.pickImage()}
       onRenameGroup={handleRenameGroup}
+      onRemoveMember={handleRemoveMember}
+      onMemberRemoved={handleMemberRemoved}
       onLeaveGroup={handleLeaveGroup}
       onRefreshInvite={() => void loadInvite()}
     />

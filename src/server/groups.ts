@@ -198,3 +198,34 @@ export async function joinGroupByInvite(token: string): Promise<JoinGroupByInvit
 
   return (await response.json()) as JoinGroupByInviteResponse;
 }
+
+// Removes the authenticated user from the group. The backend answers 201 with an empty body.
+export async function leaveGroup(groupId: string): Promise<void> {
+  const response = await authenticatedFetch(`${API_BASE_URL}/groups/${groupId}/leave`, {
+    method: 'PUT',
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new ApiError(
+      text || response.statusText || 'Não foi possível sair do grupo',
+      response.status
+    );
+  }
+}
+
+// Only the group owner may remove other members; the backend answers 204 with an empty body.
+export async function removeGroupMember(groupId: string, memberId: string): Promise<void> {
+  const response = await authenticatedFetch(
+    `${API_BASE_URL}/groups/${groupId}/members/${memberId}`,
+    { method: 'DELETE' }
+  );
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new ApiError(
+      text || response.statusText || 'Não foi possível remover o participante',
+      response.status
+    );
+  }
+}

@@ -50,6 +50,7 @@ export interface EventCardCreateProps {
   variant?: 'event' | 'suggestion';
   draft: EventCardDraft;
   onChangeDraft: (draft: EventCardDraft) => void;
+  readOnly?: boolean;
   onDatePress?: () => void;
   onImageSelected?: (photo: SelectedPhoto) => void;
   onConfirm?: () => void;

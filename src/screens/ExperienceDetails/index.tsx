@@ -72,6 +72,7 @@ export function ExperienceDetailsScreen({
           ? { priceStart: String(details.priceRange.start) }
           : {}),
         ...(details.priceRange?.end != null ? { priceEnd: String(details.priceRange.end) } : {}),
+        ...(details.imageUrl ? { imageUrl: details.imageUrl } : {}),
         address: details.address ?? '',
         name: details.name,
       },
