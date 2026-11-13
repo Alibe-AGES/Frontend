@@ -362,6 +362,40 @@ describe('createProposal', () => {
     );
   });
 
+  test('downloads and uploads a backend place image with the proposal', async () => {
+    const append = jest.spyOn(FormData.prototype, 'append');
+    const downloadedImage = { uri: 'file:///cache/suggestion-image.jpg', delete: jest.fn() };
+    const downloadFile = jest
+      .spyOn(File, 'downloadFileAsync')
+      .mockResolvedValue(downloadedImage as unknown as File);
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(CREATED_PROPOSAL),
+    });
+
+    await expect(
+      createProposal('group-1', {
+        externalId: 'google-place-1',
+        name: 'Bloom Café',
+        address: 'Rua Padre Chagas, 320',
+        imageUrl: `${API_BASE_URL}/api/locations/google-places/google-place-1/image`,
+      })
+    ).resolves.toEqual(CREATED_PROPOSAL);
+
+    expect(downloadFile).toHaveBeenCalledWith(
+      `${API_BASE_URL}/api/locations/google-places/google-place-1/image`,
+      expect.any(File),
+      expect.objectContaining({ idempotent: true })
+    );
+    expect(append).toHaveBeenCalledWith('externalId', 'google-place-1');
+    expect(append).toHaveBeenCalledWith('image', expect.any(File));
+    expect(mockAuthenticatedFetch).toHaveBeenCalledWith(
+      `${API_BASE_URL}/api/groups/group-1/proposals`,
+      expect.objectContaining({ method: 'POST', body: expect.any(FormData) as FormData })
+    );
+    expect(downloadedImage.delete).toHaveBeenCalledTimes(1);
+  });
+
   test('throws an ApiError with the backend message when proposal creation fails', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: false,

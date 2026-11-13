@@ -1,8 +1,12 @@
+import { File, Paths } from 'expo-file-system';
+import { Platform } from 'react-native';
+
 import { API_BASE_URL } from '@/constants';
 import { resolveApiImageUrl } from '@/utils/apiImageUrl';
 import { getMemoryImageUrl as buildMemoryImageUrl } from '@/utils/memoryImageUrl';
 import { ApiError } from './api';
 import { authenticatedFetch } from './auth';
+import { getAuthenticationHeaders } from './authenticated-fetch';
 import { appendImage, UploadImage } from './images';
 
 export type EventStatus = 'pending' | 'confirmed' | 'declined';
@@ -192,7 +196,9 @@ export interface CreateProposalFields {
   description?: string;
 }
 
-export type CreateProposalInput = CreateProposalFields;
+export interface CreateProposalInput extends CreateProposalFields {
+  imageUrl?: string;
+}
 
 export interface CreatedProposal {
   id: string;
@@ -287,11 +293,56 @@ export async function createProposal(
     ...(input.description?.trim() ? { description: input.description.trim() } : {}),
   };
 
-  const response = await authenticatedFetch(`${API_BASE_URL}/api/groups/${groupId}/proposals`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
+  const url = `${API_BASE_URL}/api/groups/${groupId}/proposals`;
+  let response: Response;
+
+  if (input.imageUrl) {
+    const imageUrl = new URL(input.imageUrl);
+    if (imageUrl.protocol !== 'https:' && imageUrl.protocol !== 'http:') {
+      throw new ApiError('A imagem do local deve usar uma URL HTTP válida', 400);
+    }
+    const isApiImage = imageUrl.origin === new URL(API_BASE_URL).origin;
+    const formData = new FormData();
+    if (payload.locationId) formData.append('locationId', payload.locationId);
+    if (payload.externalId) formData.append('externalId', payload.externalId);
+    formData.append('name', payload.name);
+    formData.append('address', payload.address);
+    if (payload.description) formData.append('description', payload.description);
+
+    if (Platform.OS === 'web') {
+      const imageResponse = isApiImage ? await authenticatedFetch(imageUrl) : await fetch(imageUrl);
+      if (!imageResponse.ok) {
+        throw new ApiError('Não foi possível carregar a imagem do local', imageResponse.status);
+      }
+      const image = await imageResponse.blob();
+      const extension = image.type === 'image/png' ? 'png' : 'jpg';
+      formData.append('image', image, `suggestion-image.${extension}`);
+      response = await authenticatedFetch(url, { method: 'POST', body: formData });
+    } else {
+      const imageFile = new File(Paths.cache, `suggestion-image-${String(Date.now())}.jpg`);
+      const downloadedImage = await File.downloadFileAsync(input.imageUrl, imageFile, {
+        idempotent: true,
+        headers: isApiImage ? await getAuthenticationHeaders() : {},
+      });
+      try {
+        await appendImage(
+          formData,
+          'image',
+          { uri: downloadedImage.uri, fileName: 'suggestion-image.jpg', mimeType: 'image/jpeg' },
+          'suggestion-image'
+        );
+        response = await authenticatedFetch(url, { method: 'POST', body: formData });
+      } finally {
+        downloadedImage.delete();
+      }
+    }
+  } else {
+    response = await authenticatedFetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  }
 
   if (!response.ok) {
     const text = await response.text();
