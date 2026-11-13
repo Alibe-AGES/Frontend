@@ -3,10 +3,10 @@ import { theme } from '@/theme';
 import tw from 'twrnc';
 
 export interface LeaveGroupScreenProps {
-  groupName?: string;
-  isLeaving?: boolean;
-  onConfirm: () => void;
-  onCancel: () => void;
+  readonly groupName?: string;
+  readonly isLeaving?: boolean;
+  readonly onConfirm: () => void;
+  readonly onCancel: () => void;
 }
 
 export function LeaveGroupScreen({

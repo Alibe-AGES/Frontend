@@ -113,6 +113,83 @@ function MemberRow({
   );
 }
 
+function RemoveMemberModal({
+  member,
+  onRemove,
+  onClose,
+  onRemoved,
+}: {
+  member: GroupMember | null;
+  onRemove?: (member: GroupMember) => Promise<boolean>;
+  onClose: () => void;
+  onRemoved: (member: GroupMember) => void;
+}) {
+  const [isRemoving, setIsRemoving] = useState(false);
+
+  const close = () => {
+    if (!isRemoving) {
+      onClose();
+    }
+  };
+
+  const confirm = async () => {
+    if (!member || !onRemove) {
+      return;
+    }
+
+    setIsRemoving(true);
+    const removed = await onRemove(member);
+    setIsRemoving(false);
+
+    if (removed) {
+      onRemoved(member);
+    }
+  };
+
+  return (
+    <ModalFrame
+      visible={member !== null}
+      onRequestClose={close}
+      closeOnBackdropPress
+      title={member ? `Remover ${member.name} do grupo?` : undefined}
+      testID="group-info-remove-modal"
+    >
+      <Text className="text-center font-poppins text-sm text-ink">
+        A pessoa deixará de ver os encontros deste grupo.
+      </Text>
+
+      <View className="flex-row gap-4">
+        <TouchableOpacity
+          disabled={isRemoving}
+          onPress={close}
+          className="flex-1 items-center justify-center rounded-full border-2 border-coral py-4"
+          testID="group-info-remove-cancel"
+        >
+          <Text className="font-poppins-semibold leading-none text-coral">Cancelar</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => void confirm()}
+          disabled={isRemoving}
+          className={`flex-1 items-center justify-center rounded-full bg-coral py-4 ${
+            isRemoving ? 'opacity-60' : ''
+          }`}
+          testID="group-info-remove-confirm"
+        >
+          {isRemoving ? (
+            <ActivityIndicator
+              color={theme.colors.surface}
+              testID="group-info-remove-confirm-loading"
+            />
+          ) : (
+            <Text className="font-poppins-semibold leading-none text-surface">Remover</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    </ModalFrame>
+  );
+}
+
 export function GroupInfoScreen({
   group,
   availabilities,
@@ -134,7 +211,6 @@ export function GroupInfoScreen({
   const [draftName, setDraftName] = useState('');
   const [nameError, setNameError] = useState<string | null>(null);
   const [memberToRemove, setMemberToRemove] = useState<GroupMember | null>(null);
-  const [isRemoving, setIsRemoving] = useState(false);
   const [removedMember, setRemovedMember] = useState<GroupMember | null>(null);
 
   // Runs after the commit that unmounted the modal (and the Toast it hosts).
@@ -160,27 +236,6 @@ export function GroupInfoScreen({
     }
 
     setIsEditingName(false);
-  };
-
-  const closeRemoveModal = () => {
-    if (!isRemoving) {
-      setMemberToRemove(null);
-    }
-  };
-
-  const confirmRemoveMember = async () => {
-    if (!memberToRemove || !onRemoveMember) {
-      return;
-    }
-
-    setIsRemoving(true);
-    const removed = await onRemoveMember(memberToRemove);
-    setIsRemoving(false);
-
-    if (removed) {
-      setRemovedMember(memberToRemove);
-      setMemberToRemove(null);
-    }
   };
 
   return (
@@ -322,46 +377,17 @@ export function GroupInfoScreen({
         <Text className="font-poppins-semibold text-sm text-canvas">Sair do grupo</Text>
       </Pressable>
 
-      <ModalFrame
-        visible={memberToRemove !== null}
-        onRequestClose={closeRemoveModal}
-        closeOnBackdropPress
-        title={memberToRemove ? `Remover ${memberToRemove.name} do grupo?` : undefined}
-        testID="group-info-remove-modal"
-      >
-        <Text className="text-center font-poppins text-sm text-ink">
-          A pessoa deixará de ver os encontros deste grupo.
-        </Text>
-
-        <View className="flex-row gap-4">
-          <TouchableOpacity
-            disabled={isRemoving}
-            onPress={closeRemoveModal}
-            className="flex-1 items-center justify-center rounded-full border-2 border-coral py-4"
-            testID="group-info-remove-cancel"
-          >
-            <Text className="font-poppins-semibold leading-none text-coral">Cancelar</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => void confirmRemoveMember()}
-            disabled={isRemoving}
-            className={`flex-1 items-center justify-center rounded-full bg-coral py-4 ${
-              isRemoving ? 'opacity-60' : ''
-            }`}
-            testID="group-info-remove-confirm"
-          >
-            {isRemoving ? (
-              <ActivityIndicator
-                color={theme.colors.surface}
-                testID="group-info-remove-confirm-loading"
-              />
-            ) : (
-              <Text className="font-poppins-semibold leading-none text-surface">Remover</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </ModalFrame>
+      <RemoveMemberModal
+        member={memberToRemove}
+        onRemove={onRemoveMember}
+        onClose={() => {
+          setMemberToRemove(null);
+        }}
+        onRemoved={(member) => {
+          setRemovedMember(member);
+          setMemberToRemove(null);
+        }}
+      />
     </ScreenFrame>
   );
 }
