@@ -11,8 +11,8 @@ interface LegendItemProps {
 
 function LegendItem({ label, symbol }: LegendItemProps) {
   const symbolClass = {
-    event: 'rounded-sm bg-pink',
-    suggestion: 'rounded-full bg-pink-deep',
+    event: 'rounded-sm bg-pink-deep',
+    suggestion: 'rounded-full bg-pink',
     available: 'rounded-full bg-coral',
     allAvailable: 'rounded-sm bg-coral',
     realized: 'rounded-sm bg-lime',

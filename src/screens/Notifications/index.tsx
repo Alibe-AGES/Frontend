@@ -162,7 +162,7 @@ export function NotificationsScreen({
                 height={240}
                 preserveAspectRatio="xMidYMid slice"
               />
-              <Text className="px-10 text-center font-poppins-semibold text-xl text-wine">
+              <Text className="px-10 text-center font-poppins-medium text-lg text-wine">
                 Nenhuma novidade do grupo por enquanto
               </Text>
             </View>

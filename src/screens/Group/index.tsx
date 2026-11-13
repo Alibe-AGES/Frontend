@@ -12,8 +12,9 @@ import {
   getEventMemories,
   getMemoryImageUrl,
 } from '@/server/events';
-import { getGroup, getGroupMembers, GroupMember, GroupNextEvent } from '@/server/groups';
+import { getGroup, getGroupMembers, getMe, GroupMember, GroupNextEvent } from '@/server/groups';
 import { theme } from '@/theme';
+import { buildMembersPreview } from '@/utils/membersPreview';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -132,6 +133,7 @@ export function GroupScreen() {
   const { id: groupId } = useLocalSearchParams<{ id: string }>();
 
   const [members, setMembers] = useState<GroupMember[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
   const [groupName, setGroupName] = useState('');
   const [groupPhoto, setGroupPhoto] = useState<string | null>(null);
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
@@ -225,6 +227,21 @@ export function GroupScreen() {
     void loadGroup();
   }, [loadGroup]);
 
+  // Best effort: without it the names are listed as they are, without "Eu".
+  useEffect(() => {
+    let isActive = true;
+    getMe()
+      .then((user) => {
+        if (isActive) setCurrentUserId(user.id);
+      })
+      .catch(() => {
+        if (isActive) setCurrentUserId(undefined);
+      });
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
   useEffect(() => {
     void loadCalendar();
   }, [loadCalendar]);
@@ -306,7 +323,8 @@ export function GroupScreen() {
     router.push({ pathname: '/group/[id]/notifications', params: { id: groupId } });
   };
 
-  const membersText = members.map((member) => member.name).join(', ');
+  // Same preview as the group card: the current user first, as "Eu".
+  const membersText = buildMembersPreview(members, currentUserId);
 
   return (
     <ScreenFrame

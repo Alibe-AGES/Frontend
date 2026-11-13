@@ -76,6 +76,21 @@ describe('<NewExperienceScreen />', () => {
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 
+  test.each([
+    [0, '0 curtiram este local'],
+    [3, '3 curtiram este local'],
+  ])('uses the plural for %i likes', async (yes, label) => {
+    const { getByText } = await Promise.resolve(
+      render(
+        <NewExperienceScreen
+          {...buildProps({ proposal: { ...proposal, responses: { yes, no: 0, pending: 0 } } })}
+        />
+      )
+    );
+
+    expect(getByText(label)).toBeTruthy();
+  });
+
   test('shows the current location proposal and yes/no decisions', async () => {
     const { getByText, getByTestId, queryByTestId } = await Promise.resolve(
       render(<NewExperienceScreen {...buildProps()} />)
@@ -83,7 +98,7 @@ describe('<NewExperienceScreen />', () => {
 
     expect(getByText('Match de rolês')).toBeTruthy();
     expect(queryByTestId('new-experience-back')).toBeNull();
-    expect(getByText('1 curtiram este local')).toBeTruthy();
+    expect(getByText('1 curtiu este local')).toBeTruthy();
     expect(getByTestId('new-experience-proposal-proposal-1').props.children).toBe('Bloom Café');
     expect(getByTestId('new-experience-proposal-proposal-1').props.accessibilityLabel).toBe(
       'proposal'
