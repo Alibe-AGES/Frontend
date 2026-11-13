@@ -243,11 +243,11 @@ describe('createEvent', () => {
     await expect(createEvent('group-1', INPUT)).resolves.toEqual(CREATED_EVENT);
 
     expect(mockAuthenticatedFetch).toHaveBeenCalledWith(
-      `${API_BASE_URL}/api/groups/group-1/events`,
+      `${API_BASE_URL}/groups/group-1/events`,
       expect.objectContaining({ method: 'POST', body: expect.any(FormData) as FormData })
     );
     expect(global.fetch).toHaveBeenCalledWith(
-      `${API_BASE_URL}/api/groups/group-1/events`,
+      `${API_BASE_URL}/groups/group-1/events`,
       expect.objectContaining({ method: 'POST', body: expect.any(FormData) as FormData })
     );
     expect(append).toHaveBeenCalledWith('name', 'Bloom Café');
