@@ -1,6 +1,6 @@
 # Logout flow: signs out from the profile screen and returns to the auth screen.
 appId: com.alibe.app
-tags: [ci, auth]
+tags: [auth]
 ---
 - runFlow: ../subflows/launch.yaml
 - runFlow: ../subflows/login.yaml

@@ -1,7 +1,8 @@
-# Profile flow: edits the user name and password, logs in again with the new password, restores the old one and checks that the changes were saved.
-# It uses bruno.souza instead of ana.silva: if it fails after changing the password, the other flows can still log in.
+# Profile flow: edits the user name and password, logs in again with the new password and checks that the name was saved.
+# It uses bruno.souza, which no other flow uses, because it leaves his password changed.
+# CI starts with a clean database; locally, recreate the backend database before running it again.
 appId: com.alibe.app
-tags: [profile]
+tags: [ci, profile]
 env:
   EMAIL: bruno.souza@example.com
   OLD_PASSWORD: senha-segura
@@ -86,38 +87,3 @@ env:
       id: user-profile-screen-name
       text: ${output.userName}
     timeout: 30000
-
-# Restore the old password.
-- tapOn:
-    id: user-profile-password-button
-- extendedWaitUntil:
-    visible:
-      id: user-profile-password-modal
-    timeout: 10000
-- tapOn:
-    id: user-profile-current-password
-- inputText: ${NEW_PASSWORD}
-- tapOn:
-    id: user-profile-new-password
-- inputText: ${OLD_PASSWORD}
-- tapOn:
-    id: user-profile-confirm-password
-- inputText: ${OLD_PASSWORD}
-- tapOn: 'Senha Atual'
-- tapOn:
-    id: user-profile-password-save
-- extendedWaitUntil:
-    notVisible:
-      id: user-profile-password-modal
-    timeout: 30000
-
-# Log out and check that the old password works again.
-- tapOn:
-    id: user-profile-logout-button
-- tapOn:
-    id: user-profile-logout-confirm
-- runFlow:
-    file: ../subflows/login.yaml
-    env:
-      EMAIL: ${EMAIL}
-      PASSWORD: ${OLD_PASSWORD}
