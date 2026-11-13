@@ -6,7 +6,12 @@ import { NextEventBanner } from '@/components/NextEventBanner';
 import { ProfileButton } from '@/components/ProfileButton';
 import { ScreenFrame } from '@/components/ScreenFrame';
 import { CalendarDay, getGroupCalendar } from '@/server/calendar';
-import { getEventDetails } from '@/server/events';
+import {
+  EventMemoryResponse,
+  getEventDetails,
+  getEventMemories,
+  getMemoryImageUrl,
+} from '@/server/events';
 import { getGroup, getGroupMembers, GroupMember, GroupNextEvent } from '@/server/groups';
 import { theme } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,6 +37,41 @@ function getDayEventIds(day: CalendarDay): string[] {
   ];
 }
 
+interface MemoryMark {
+  memoryIds: string[];
+  imageUrl: string;
+}
+
+/** Past event days with memories show the first picture, as in the memories calendar. */
+async function getPastMemoryMarks(
+  days: CalendarDay[],
+  today: string
+): Promise<Record<string, MemoryMark>> {
+  const pastDays = days.filter((day) => day.date < today && getDayEventIds(day).length > 0);
+  const eventIds = [...new Set(pastDays.flatMap(getDayEventIds))];
+  const results = await Promise.allSettled(eventIds.map((eventId) => getEventMemories(eventId)));
+
+  const memoriesByEventId = new Map<string, EventMemoryResponse[]>();
+  results.forEach((result, index) => {
+    if (result.status === 'fulfilled') {
+      memoriesByEventId.set(eventIds[index], result.value);
+    }
+  });
+
+  const marks: Record<string, MemoryMark> = {};
+  for (const day of pastDays) {
+    const memories = getDayEventIds(day).flatMap((eventId) => memoriesByEventId.get(eventId) ?? []);
+    if (memories.length > 0) {
+      marks[day.date] = {
+        memoryIds: memories.map((memory) => memory.id),
+        imageUrl: getMemoryImageUrl(memories[0]),
+      };
+    }
+  }
+
+  return marks;
+}
+
 function getDayStatus(
   day: CalendarDay,
   confirmedEventIds: Set<string>
@@ -50,7 +90,8 @@ function getDayStatus(
 function buildDayMarks(
   days: CalendarDay[],
   today: string,
-  confirmedEventIds: Set<string>
+  confirmedEventIds: Set<string>,
+  memoryMarks: Record<string, MemoryMark>
 ): Record<string, DayMark> {
   const marks: Record<string, DayMark> = {};
 
@@ -70,6 +111,7 @@ function buildDayMarks(
         proposalIds: day.proposalIds,
         availableUserCount: day.availableUserIds.length,
         allUsersAvailable: day.allUsersAvailable,
+        ...(memoryMarks[day.date] ?? {}),
       };
     }
   }
@@ -94,6 +136,7 @@ export function GroupScreen() {
   const [groupPhoto, setGroupPhoto] = useState<string | null>(null);
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
   const [confirmedEventIds, setConfirmedEventIds] = useState<Set<string>>(() => new Set());
+  const [memoryMarks, setMemoryMarks] = useState<Record<string, MemoryMark>>({});
   const [nextEvent, setNextEvent] = useState<GroupNextEvent | null | undefined>(undefined);
   const [visibleMonth, setVisibleMonth] = useState(() => {
     const now = new Date();
@@ -103,8 +146,8 @@ export function GroupScreen() {
   const today = formatDate(new Date());
 
   const dayMarks = useMemo(
-    () => buildDayMarks(calendarDays, today, confirmedEventIds),
-    [calendarDays, confirmedEventIds, today]
+    () => buildDayMarks(calendarDays, today, confirmedEventIds, memoryMarks),
+    [calendarDays, confirmedEventIds, memoryMarks, today]
   );
 
   const loadGroup = useCallback(async () => {
@@ -138,6 +181,7 @@ export function GroupScreen() {
 
       const days = calendarResult.value;
       setCalendarDays(days);
+      setMemoryMarks(await getPastMemoryMarks(days, formatDate(new Date())));
 
       if (membersResult.status === 'rejected') {
         console.error('Erro ao buscar membros do grupo', membersResult.reason);
@@ -194,6 +238,14 @@ export function GroupScreen() {
 
   const handleDayPress = (dateString: string) => {
     if (!groupId) {
+      return;
+    }
+
+    if (dateString < today && dateString in memoryMarks) {
+      router.push({
+        pathname: '/group/[id]/memories/gallery',
+        params: { id: groupId, date: dateString },
+      });
       return;
     }
 

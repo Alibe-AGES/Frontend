@@ -1,6 +1,6 @@
 import { DayMark } from '@/components/Calendar/Calendar.types';
 import { getGroupCalendar } from '@/server/calendar';
-import { getEventDetails } from '@/server/events';
+import { getEventDetails, getEventMemories, getMemoryImageUrl } from '@/server/events';
 import { getGroup, getGroupMembers } from '@/server/groups';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -18,6 +18,8 @@ jest.mock('@/server/calendar', () => ({
 
 jest.mock('@/server/events', () => ({
   getEventDetails: jest.fn(),
+  getEventMemories: jest.fn().mockResolvedValue([]),
+  getMemoryImageUrl: jest.fn(),
 }));
 
 jest.mock('@/server/groups', () => ({
@@ -57,6 +59,8 @@ const mockUseLocalSearchParams = useLocalSearchParams as jest.MockedFunction<
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
 const mockGetGroupCalendar = getGroupCalendar as jest.MockedFunction<typeof getGroupCalendar>;
 const mockGetEventDetails = jest.mocked(getEventDetails);
+const mockGetEventMemories = jest.mocked(getEventMemories);
+const mockGetMemoryImageUrl = jest.mocked(getMemoryImageUrl);
 const mockGetGroup = getGroup as jest.MockedFunction<typeof getGroup>;
 const mockGetGroupMembers = getGroupMembers as jest.MockedFunction<typeof getGroupMembers>;
 
@@ -380,6 +384,40 @@ describe('GroupScreen', () => {
     expect(push).toHaveBeenCalledWith({
       pathname: '/group/[id]/day/[date]',
       params: { id: 'group-1', date: '2026-10-12' },
+    });
+  });
+
+  test('shows the memory picture on a past event day and opens the gallery when pressed', async () => {
+    mockGetGroupCalendar.mockResolvedValue([
+      {
+        date: '2020-01-10',
+        scheduledEventIds: [],
+        proposalIds: [],
+        availableUserIds: [],
+        completedEventIds: ['event-old'],
+        allUsersAvailable: false,
+      },
+    ]);
+    mockGetEventMemories.mockResolvedValue([
+      {
+        id: 'memory-1',
+        picture: '/api/events/event-old/memories/memory-1/image',
+        eventId: 'event-old',
+      },
+    ]);
+    mockGetMemoryImageUrl.mockReturnValue('https://example.com/memory-1.jpg');
+
+    await renderGroup();
+
+    await waitFor(() => {
+      expect(mockDayMarks?.['2020-01-10'].imageUrl).toBe('https://example.com/memory-1.jpg');
+    });
+    expect(mockDayMarks?.['2020-01-10'].memoryIds).toEqual(['memory-1']);
+    mockDayPress?.('2020-01-10');
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/group/[id]/memories/gallery',
+      params: { id: 'group-1', date: '2020-01-10' },
     });
   });
 

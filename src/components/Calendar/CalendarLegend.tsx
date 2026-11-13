@@ -15,7 +15,7 @@ function LegendItem({ label, symbol }: LegendItemProps) {
     suggestion: 'rounded-full bg-pink-deep',
     available: 'rounded-full bg-coral',
     allAvailable: 'rounded-sm bg-coral',
-    realized: 'rounded-sm bg-ink',
+    realized: 'rounded-sm bg-lime',
   }[symbol];
 
   return (

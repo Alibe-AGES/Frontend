@@ -171,16 +171,27 @@ export default function CreateEventController() {
 
     try {
       if (activeTab === 'suggestion') {
-        await createProposal(groupId, buildProposalInput(draft, photo));
+        const proposal = await createProposal(groupId, buildProposalInput(draft, photo));
 
-        // Stay on the screen; the form is cleared so the same suggestion isn't sent twice.
-        Toast.show({
-          type: 'success',
-          text1: 'Sugestão enviada!',
-          text2: `${draft.name.trim()} foi sugerido para o grupo.`,
+        if (proposal.matched) {
+          router.replace({
+            pathname: '/group/[id]/match',
+            params: {
+              id: groupId,
+              matchedSuggestionId: proposal.id,
+              locationId: proposal.location.id,
+              name: proposal.name ?? proposal.location.name ?? '',
+              address: proposal.location.address ?? proposal.location.description ?? '',
+              ...(proposal.location.imageUrl ? { imageUrl: proposal.location.imageUrl } : {}),
+            },
+          });
+          return;
+        }
+
+        router.replace({
+          pathname: '/group/[id]/experiences/new',
+          params: { id: groupId },
         });
-        setDraft((currentDraft) => ({ ...EMPTY_DRAFT, date: currentDraft.date }));
-        setPhoto(null);
         return;
       }
 

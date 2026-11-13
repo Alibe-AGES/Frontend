@@ -60,10 +60,22 @@ const buildProps = (overrides: Partial<React.ComponentProps<typeof NewExperience
   error: null,
   onRetry: jest.fn(),
   onAnswer: jest.fn(),
+  onBack: jest.fn(),
   ...overrides,
 });
 
 describe('<NewExperienceScreen />', () => {
+  test('goes back to the group calendar from the back button', async () => {
+    const onBack = jest.fn();
+    const { getByLabelText } = await Promise.resolve(
+      render(<NewExperienceScreen {...buildProps({ onBack })} />)
+    );
+
+    fireEvent.press(getByLabelText('Voltar para o calendário do grupo'));
+
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
   test('shows the current location proposal and yes/no decisions', async () => {
     const { getByText, getByTestId, queryByTestId } = await Promise.resolve(
       render(<NewExperienceScreen {...buildProps()} />)
