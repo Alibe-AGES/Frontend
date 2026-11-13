@@ -9,6 +9,7 @@ import {
   type CreateProposalInput,
 } from '@/server/events';
 import { getGroup, getMe } from '@/server/groups';
+import { resolveApiImageUrl } from '@/utils/apiImageUrl';
 import { isValidApiDate } from '@/utils/date';
 import { isValidTime } from '@/utils/time';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -16,6 +17,36 @@ import { useEffect, useState } from 'react';
 import Toast from 'react-native-toast-message';
 
 const EMPTY_DRAFT: EventCardDraft = { name: '', imageUri: null, address: '', date: '', time: '' };
+
+interface InitialEventDraftParams {
+  date?: string;
+  externalId?: string;
+  imageUrl?: string;
+  phoneNumber?: string;
+  website?: string;
+  openingHours?: string;
+  priceStart?: string;
+  priceEnd?: string;
+  address?: string;
+  name?: string;
+}
+
+function buildInitialDraft(params: InitialEventDraftParams): EventCardDraft {
+  const validDate = params.date && isValidApiDate(params.date) ? params.date : '';
+
+  return {
+    ...EMPTY_DRAFT,
+    name: params.name?.trim() ?? '',
+    address: params.address?.trim() ?? '',
+    imageUri: resolveApiImageUrl(params.imageUrl),
+    date: validDate,
+    ...(params.phoneNumber ? { phoneNumber: params.phoneNumber } : {}),
+    ...(params.website ? { website: params.website } : {}),
+    ...(params.openingHours ? { openingHours: params.openingHours } : {}),
+    ...(params.priceStart ? { priceStart: params.priceStart } : {}),
+    ...(params.priceEnd ? { priceEnd: params.priceEnd } : {}),
+  };
+}
 
 function parsePrice(value?: string): number | undefined {
   if (!value?.trim()) return undefined;
@@ -107,27 +138,60 @@ export default function CreateEventController() {
     tab?: CreateEventTab;
   }>();
 
-  const validInitialDate = initialDate && isValidApiDate(initialDate) ? initialDate : '';
   const initialActiveTab: CreateEventTab = initialTab === 'suggestion' ? 'suggestion' : 'event';
 
   const [activeTab, setActiveTab] = useState<CreateEventTab>(initialActiveTab);
-  const [draft, setDraft] = useState<EventCardDraft>({
-    ...EMPTY_DRAFT,
-    name: initialName?.trim() ?? '',
-    address: initialAddress?.trim() ?? '',
-    imageUri: initialExternalId ? (initialImageUrl ?? null) : null,
-    date: validInitialDate,
-    ...(initialPhoneNumber ? { phoneNumber: initialPhoneNumber } : {}),
-    ...(initialWebsite ? { website: initialWebsite } : {}),
-    ...(initialOpeningHours ? { openingHours: initialOpeningHours } : {}),
-    ...(initialPriceStart ? { priceStart: initialPriceStart } : {}),
-    ...(initialPriceEnd ? { priceEnd: initialPriceEnd } : {}),
-  });
+  const [draft, setDraft] = useState<EventCardDraft>(() =>
+    buildInitialDraft({
+      date: initialDate,
+      externalId: initialExternalId,
+      imageUrl: initialImageUrl,
+      phoneNumber: initialPhoneNumber,
+      website: initialWebsite,
+      openingHours: initialOpeningHours,
+      priceStart: initialPriceStart,
+      priceEnd: initialPriceEnd,
+      address: initialAddress,
+      name: initialName,
+    })
+  );
   const [photo, setPhoto] = useState<SelectedPhoto | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
   const [isLoadingParticipants, setIsLoadingParticipants] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    setActiveTab(initialActiveTab);
+    setDraft(
+      buildInitialDraft({
+        date: initialDate,
+        externalId: initialExternalId,
+        imageUrl: initialImageUrl,
+        phoneNumber: initialPhoneNumber,
+        website: initialWebsite,
+        openingHours: initialOpeningHours,
+        priceStart: initialPriceStart,
+        priceEnd: initialPriceEnd,
+        address: initialAddress,
+        name: initialName,
+      })
+    );
+    setPhoto(null);
+  }, [
+    initialActiveTab,
+    initialAddress,
+    initialDate,
+    initialExternalId,
+    initialImageUrl,
+    initialLocationId,
+    initialOpeningHours,
+    initialPhoneNumber,
+    initialPriceEnd,
+    initialPriceStart,
+    initialWebsite,
+    initialName,
+  ]);
 
   useEffect(() => {
     if (!groupId) {
@@ -189,6 +253,7 @@ export default function CreateEventController() {
               locationId: proposal.location.id,
               name: proposal.name ?? proposal.location.name ?? '',
               address: proposal.location.address ?? proposal.location.description ?? '',
+              ...(proposal.location.imageUrl ? { imageUrl: proposal.location.imageUrl } : {}),
             },
           });
           return;
@@ -231,6 +296,7 @@ export default function CreateEventController() {
       openDatePickerOnMount={false}
       activeTab={activeTab}
       isSuggestionReadOnly={Boolean(initialExternalId)}
+      isLocationImageReadOnly={Boolean(initialLocationId)}
       onSelectTab={setActiveTab}
       draft={draft}
       onChangeDraft={setDraft}

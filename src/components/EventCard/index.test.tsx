@@ -278,6 +278,25 @@ describe('<EventCard mode="create" />', () => {
     expect(mockRequestPermissions).not.toHaveBeenCalled();
   });
 
+  test('keeps a matched location image read-only while event details remain editable', async () => {
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <EventCard
+          mode="create"
+          draft={{ ...emptyDraft, name: 'Bloom Café', imageUri: 'https://example.com/cafe.jpg' }}
+          onChangeDraft={jest.fn()}
+          imageReadOnly
+        />
+      )
+    );
+
+    const imagePicker = getByTestId('alibe-event-card-image-picker') as unknown as {
+      props: { accessibilityState: { disabled: boolean } };
+    };
+    expect(imagePicker.props.accessibilityState.disabled).toBe(true);
+    expect(getByTestId('alibe-event-card-name-input').props.editable).toBe(true);
+  });
+
   test('picks an image from the gallery and stores it in the draft', async () => {
     const photo = { uri: 'file:///bloom.jpg', fileName: 'bloom.jpg', mimeType: 'image/jpeg' };
     mockRequestPermissions.mockResolvedValue({ granted: true });
