@@ -96,7 +96,7 @@ describe('<MatchScreen />', () => {
     });
   });
 
-  test('keeps a large group scrollable and the event action outside the scrolling content', async () => {
+  test('keeps a large group scrollable with the actions at the end of the content', async () => {
     const manyParticipants = Array.from({ length: 12 }, (_, index) => ({
       id: `participant-${String(index)}`,
       name: `Pessoa${String(index)} Sobrenome`,
@@ -124,7 +124,9 @@ describe('<MatchScreen />', () => {
     expect(renderedParticipants).toHaveLength(12);
     expect(renderedParticipants[0].props.testID).toBe('match-participant-participant-11');
     expect(getByText('Pessoa10')).toBeTruthy();
-    expect(scroll).not.toContainElement(getByTestId('match-create-event'));
+    // The actions scroll with the content, after the participants and the high five.
+    expect(scroll).toContainElement(getByTestId('match-create-event'));
+    expect(scroll).toContainElement(getByTestId('dismiss-match-create-event'));
     fireEvent.press(getByTestId('match-create-event'));
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });

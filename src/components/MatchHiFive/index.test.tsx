@@ -30,8 +30,9 @@ describe('<MatchHiFive />', () => {
     expect(animation.props.source).toBe(matchAnimation);
   });
 
-  test('replays every 1.5 seconds', () => {
-    expect((matchAnimation.op - matchAnimation.ip) / matchAnimation.fr).toBe(1.5);
+  test('replays about every 2.2 seconds', () => {
+    // 133 frames at 60 fps.
+    expect((matchAnimation.op - matchAnimation.ip) / matchAnimation.fr).toBeCloseTo(2.2, 1);
   });
 
   test('shows the static drawing when motion is reduced', async () => {

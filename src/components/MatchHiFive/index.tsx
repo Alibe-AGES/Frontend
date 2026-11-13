@@ -7,10 +7,8 @@ import matchAnimation from '@/assets/animations/match-hi-five-hands.json';
 import MatchHands from '@/assets/images/match-hi-five-hands.svg';
 
 /**
- * Two arms giving each other a high five, on loop. One cycle of the animation lasts 1.5 s: the
- * slap takes the first part and the rest holds the drawing, so the high five replays every 1.5 s.
- * The animation is generated from the SVG (scripts/generate-match-hi-five-animation.js), so it
- * rests on the same drawing that is shown when motion is reduced or the animation fails.
+ * Two arms giving each other a high five, on loop; one cycle of the animation lasts about 2.2 s.
+ * The SVG is the same drawing, shown instead when motion is reduced or the animation fails.
  */
 export function MatchHiFive() {
   const [reduceMotion, setReduceMotion] = useState<boolean | null>(null);
