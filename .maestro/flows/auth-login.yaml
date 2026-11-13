@@ -1,0 +1,69 @@
+#Login flow: the button starts disabled, a wrong password shows an error and the right one opens the groups screen.
+appId: com.alibe.app
+tags: [ci, auth]
+---
+- runFlow: ../subflows/launch.yaml
+- extendedWaitUntil:
+    visible:
+      id: auth-screen
+    timeout: 60000
+- tapOn:
+    id: auth-login
+    # A dev-only React warning can swallow this tap; tap again if the screen does not change.
+    retryTapIfNoChange: true
+
+# On small screens fields and buttons can sit below the fold or behind the keyboard,
+# so close the keyboard and scroll to each element before using it.
+- scrollUntilVisible:
+    element:
+      id: login-continue
+    direction: DOWN
+- assertVisible:
+    id: login-continue
+    enabled: false
+
+- scrollUntilVisible:
+    element:
+      id: login-email
+    direction: UP
+- tapOn:
+    id: login-email
+- inputText: ana.silva@example.com
+- runFlow: ../subflows/close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: login-password
+    direction: DOWN
+- tapOn:
+    id: login-password
+- inputText: senha-errada
+- runFlow: ../subflows/close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: login-continue
+    direction: DOWN
+- tapOn:
+    id: login-continue
+- extendedWaitUntil:
+    visible: 'Não foi possível entrar. Confira seu e-mail e senha.'
+    timeout: 30000
+
+- scrollUntilVisible:
+    element:
+      id: login-password
+    direction: UP
+- tapOn:
+    id: login-password
+- eraseText
+- inputText: senha-segura
+- runFlow: ../subflows/close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: login-continue
+    direction: DOWN
+- tapOn:
+    id: login-continue
+- extendedWaitUntil:
+    visible:
+      id: groups-screen
+    timeout: 30000

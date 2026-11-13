@@ -347,11 +347,13 @@ export const UserProfileScreen = ({
               icon="person-outline"
               label="Editar perfil"
               onPress={handleOpenEditModal}
+              testID="user-profile-edit-button"
             />
             <ProfileMenuButton
               icon="lock-closed-outline"
               label="Alterar Senha"
               onPress={handleOpenPasswordModal}
+              testID="user-profile-password-button"
             />
             <ProfileMenuButton
               icon="log-out-outline"
@@ -377,6 +379,7 @@ export const UserProfileScreen = ({
           cachePolicy="none"
           onUploadSuccess={setEditPhoto}
           disabled={isSubmittingProfile}
+          testID="user-profile-edit-photo"
         />
 
         <View className="mt-4 gap-3">

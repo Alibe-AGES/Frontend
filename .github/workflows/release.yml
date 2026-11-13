@@ -7,6 +7,11 @@ on:
         description: 'Release Tag'
         required: false
         default: ''
+      skip_e2e_tests:
+        description: 'If the E2E tests are FAILING and a release is needed, select this to skip them'
+        type: boolean
+        required: false
+        default: false
 
   push:
     branches:
@@ -47,44 +52,34 @@ jobs:
       - name: Run unit tests
         run: npm run test:unit
 
-  call-eas-build-workflow:
-    # This job calls the EAS build workflow to build the Android APK.
-    # It will only run if the "setup" job passes all tests and checks.
-    name: Call EAS Build Workflow
-    needs: setup
-    uses: ./.github/workflows/eas-build.yml
-    secrets: inherit
-
-  call-local-build-workflow:
-    # This job calls the local build workflow to build the Android APK.
-    # It will only run if the "setup" job passes all tests and checks, and if the EAS build workflow fails.
-    name: Call Local Build Workflow
-    needs: [setup, call-eas-build-workflow]
-    if: always() && needs.setup.result == 'success' && needs.call-eas-build-workflow.result == 'failure'
-    uses: ./.github/workflows/local-build.yml
-    secrets: inherit
-
   call-e2e-tests-workflow:
-    # This job calls a workflow to run end-to-end tests with Maestro.
-    # It will only run if the "setup" job passes all tests and checks, and if either the EAS or local build workflow succeeds.
+    # Runs the Maestro tests on a local APK that points to the Docker backend.
+    # A failure stops the release before the EAS build. Skipped when a manual run sets skip_e2e_tests.
     name: Call E2E Tests Workflow
-    needs: [setup, call-eas-build-workflow, call-local-build-workflow]
-    if: >
-      always() &&
-      needs.setup.result == 'success' &&
-      (
-        needs.call-eas-build-workflow.result == 'success' ||
-        needs.call-local-build-workflow.result == 'success'
-      )
+    needs: setup
+    if: ${{ !inputs.skip_e2e_tests }}
     uses: ./.github/workflows/e2e-tests.yml
     secrets: inherit
 
+  call-eas-build-workflow:
+    # This job calls the EAS build workflow to build the Android APK.
+    # It will only run if the E2E tests pass or were skipped with skip_e2e_tests.
+    name: Call EAS Build Workflow
+    needs: [setup, call-e2e-tests-workflow]
+    if: >
+      !cancelled() &&
+      needs.setup.result == 'success' &&
+      (
+        needs.call-e2e-tests-workflow.result == 'success' ||
+        needs.call-e2e-tests-workflow.result == 'skipped'
+      )
+    uses: ./.github/workflows/eas-build.yml
+    secrets: inherit
+
   publish-release:
-    # This job will only run if the one of the build workflows (EAS or local) succeeds.
-    # It generates release notes and publishes the release.
+    # Publishes the EAS APK. It generates release notes and publishes the release.
     name: Publish Release
-    needs: call-e2e-tests-workflow
-    if: always() && needs.call-e2e-tests-workflow.result == 'success'
+    needs: call-eas-build-workflow
     runs-on: ubuntu-latest
     permissions:
       contents: write

@@ -51,6 +51,7 @@ export function CreateGroupScreen() {
 
   return (
     <ScreenFrame
+      testID="create-group-screen"
       backdrop={
         <View className="absolute -right-2 -top-2 h-40 w-40">
           <CreateGroupDecoration
@@ -85,6 +86,7 @@ export function CreateGroupScreen() {
             setGroupPhoto(photo);
           }}
           disabled={isSubmitting}
+          testID="create-group-photo"
         />
 
         <View className="mt-6">
@@ -104,6 +106,7 @@ export function CreateGroupScreen() {
                 height={20}
               />
             }
+            testID="create-group-name"
           />
         </View>
 
@@ -112,6 +115,7 @@ export function CreateGroupScreen() {
             onPress={() => void handleCreateGroup()}
             disabled={isSubmitting}
             isLoading={isSubmitting}
+            testID="create-group-continue"
           />
         </View>
       </View>

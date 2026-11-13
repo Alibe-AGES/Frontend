@@ -2,6 +2,14 @@ name: Android APK - Local Build
 
 on:
   workflow_call:
+    inputs:
+      artifact-name:
+        # The E2E workflow passes "app-e2e" so its test APK never mixes with the EAS app-release.
+        type: string
+        default: app-release
+      architectures:
+        type: string
+        default: ''
   workflow_dispatch:
 
 jobs:
@@ -23,9 +31,15 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
+          # android/ only exists after prebuild, so the cache key comes from package-lock.json.
+          cache: gradle
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Create .env
+        run: Set-Content -Path .env -Value "EXPO_PUBLIC_API_URL=http://localhost:3000" -Encoding utf8NoBOM
 
       - name: Expo Prebuild for Android
         run: npx expo prebuild --platform android --clean
@@ -33,11 +47,16 @@ jobs:
 
       - name: Compile Android APK
         working-directory: android
-        run: .\gradlew assembleRelease
+        run: |
+          if ("${{ inputs.architectures }}") {
+            .\gradlew assembleRelease "-PreactNativeArchitectures=${{ inputs.architectures }}"
+          } else {
+            .\gradlew assembleRelease
+          }
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
+          name: ${{ inputs.artifact-name || 'app-release' }}
           path: android/app/build/outputs/apk/release/app-release.apk
           retention-days: 7

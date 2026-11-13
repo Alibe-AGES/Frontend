@@ -51,6 +51,7 @@ export const GroupsList: FC<GroupsListProps> = ({
           }}
           style={({ pressed }) => tw`${pressed ? 'opacity-75' : 'opacity-100'}`}
           className="rounded-full bg-ink px-5 py-2"
+          testID={`${testID}-retry`}
         >
           <Text className="font-poppins-semibold text-sm text-white">Tentar novamente</Text>
         </Pressable>

@@ -1,0 +1,110 @@
+# Create memory flow: adds a photo to a past confirmed event of a seeded group and sees it in the gallery of that day.
+appId: com.alibe.app
+tags: [ci, memories]
+---
+- runFlow: ../subflows/launch.yaml
+- runFlow: ../subflows/login.yaml
+
+# Puts the test photo in the device gallery, so the photo picker has something to choose.
+- addMedia:
+    - '../assets/memory-photo.png'
+
+# Seeded group of ana.silva. Its event "Jantar de encerramento" (2026-10-03) is confirmed and in the past.
+- runFlow:
+    file: ../subflows/open-group.yaml
+    env:
+      NAME: 'Turma da Faculdade'
+- extendedWaitUntil:
+    visible:
+      id: group-screen
+    timeout: 30000
+- tapOn:
+    id: alibe-navigation-bar-memories
+- extendedWaitUntil:
+    visible:
+      id: memories-screen
+    timeout: 30000
+
+# The seeded dates are fixed, so move from the current month to October 2026 in either direction.
+- evalScript: ${output.monthOffset = (2026 - new Date().getFullYear()) * 12 + (9 - new Date().getMonth())}
+- repeat:
+    while:
+      true: ${output.monthOffset > 0}
+    commands:
+      - tapOn:
+          id: calendar-next-month
+      - evalScript: ${output.monthOffset = output.monthOffset - 1}
+- repeat:
+    while:
+      true: ${output.monthOffset < 0}
+    commands:
+      - tapOn:
+          id: calendar-previous-month
+      - evalScript: ${output.monthOffset = output.monthOffset + 1}
+
+# The new memory screen lists the completed events of the month shown on the calendar.
+- tapOn:
+    id: memories-add
+- extendedWaitUntil:
+    visible:
+      id: new-memory-screen
+    timeout: 30000
+- tapOn:
+    id: new-memory-card-photo
+
+# Android photo picker: the newest photo is first, which is the one added above.
+- extendedWaitUntil:
+    visible: 'Photo taken on.*'
+    timeout: 30000
+- tapOn:
+    text: 'Photo taken on.*'
+    index: 0
+# Some Android versions return as soon as a photo is picked, others ask for "Done".
+- tapOn:
+    text: 'Done'
+    optional: true
+# Crop screen from expo-image-picker.
+- extendedWaitUntil:
+    visible: 'CROP'
+    timeout: 30000
+- tapOn: 'CROP'
+
+- extendedWaitUntil:
+    visible:
+      id: new-memory-card-photo-image
+    timeout: 30000
+- tapOn:
+    id: new-memory-card-event
+- tapOn: 'Jantar de encerramento'
+- tapOn:
+    id: new-memory-submit
+- extendedWaitUntil:
+    visible:
+      id: memory-created-screen
+    timeout: 30000
+- tapOn:
+    id: memory-created-back
+
+# Back on the memories calendar, the day of the event opens its gallery with the new memory.
+- extendedWaitUntil:
+    visible:
+      id: memories-screen
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: calendar-day-button-2026-10-03
+    direction: DOWN
+    timeout: 10000
+    # Keeps the day away from the floating navigation bar, which covers the bottom of small screens.
+    centerElement: true
+- tapOn:
+    id: calendar-day-button-2026-10-03
+- extendedWaitUntil:
+    visible:
+      id: memories-gallery-screen
+    timeout: 30000
+- extendedWaitUntil:
+    visible: 'Jantar de encerramento'
+    timeout: 30000
+- assertVisible:
+    id: 'memories-gallery-photo-.*'

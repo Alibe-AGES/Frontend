@@ -218,6 +218,7 @@ export function NewExperienceScreen({
     <ScreenFrame
       padding="none"
       footer={<NavigationBar groupId={groupId} />}
+      testID="new-experience-screen"
     >
       <View className="px-6 pt-8">
         <BackButton

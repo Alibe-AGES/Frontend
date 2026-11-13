@@ -10,6 +10,7 @@
     "@lottiefiles/dotlottie-react": "^0.13.5",
     "better-auth": "^1.7.7",
     "expo": "~57.0.31",
+    "expo-build-properties": "~57.0.23",
     "expo-clipboard": "~57.0.2",
     "expo-constants": "~57.0.10",
     "expo-crypto": "~57.0.3",
