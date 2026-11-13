@@ -82,6 +82,7 @@ export default function CreateEventController() {
     date: initialDate,
     locationId: initialLocationId,
     externalId: initialExternalId,
+    imageUrl: initialImageUrl,
     phoneNumber: initialPhoneNumber,
     website: initialWebsite,
     openingHours: initialOpeningHours,
@@ -95,6 +96,7 @@ export default function CreateEventController() {
     date?: string;
     locationId?: string;
     externalId?: string;
+    imageUrl?: string;
     phoneNumber?: string;
     website?: string;
     openingHours?: string;
@@ -113,6 +115,7 @@ export default function CreateEventController() {
     ...EMPTY_DRAFT,
     name: initialName?.trim() ?? '',
     address: initialAddress?.trim() ?? '',
+    imageUri: initialExternalId ? (initialImageUrl ?? null) : null,
     date: validInitialDate,
     ...(initialPhoneNumber ? { phoneNumber: initialPhoneNumber } : {}),
     ...(initialWebsite ? { website: initialWebsite } : {}),
@@ -172,10 +175,10 @@ export default function CreateEventController() {
 
     try {
       if (activeTab === 'suggestion') {
-        const proposal = await createProposal(
-          groupId,
-          buildProposalInput(draft, initialLocationId, initialExternalId)
-        );
+        const proposal = await createProposal(groupId, {
+          ...buildProposalInput(draft, initialLocationId, initialExternalId),
+          ...(initialExternalId && initialImageUrl ? { imageUrl: initialImageUrl } : {}),
+        });
 
         if (proposal.matched) {
           router.replace({
@@ -227,6 +230,7 @@ export default function CreateEventController() {
       groupId={groupId}
       openDatePickerOnMount={false}
       activeTab={activeTab}
+      isSuggestionReadOnly={Boolean(initialExternalId)}
       onSelectTab={setActiveTab}
       draft={draft}
       onChangeDraft={setDraft}

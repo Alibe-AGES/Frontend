@@ -1,5 +1,6 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import Toast from 'react-native-toast-message';
 
 import { useGroups } from '@/hooks/useGroups';
@@ -302,6 +303,31 @@ describe('<GroupsScreen />', () => {
       type: 'error',
       text1: 'Não foi possível aceitar o convite',
       text2: 'O link pode ser inválido ou ter expirado.',
+    });
+  });
+  test('reloads the groups list after the user leaves a group', async () => {
+    const onMount = jest.fn();
+    mockUseGroups.mockImplementation(() => {
+      // Runs once per GroupsList instance, so a remount means a fresh fetch.
+      useEffect(() => {
+        onMount();
+      }, []);
+      return {
+        groups: GROUPS,
+        isLoading: false,
+        isRefreshing: false,
+        error: null,
+        refetch: jest.fn(),
+      };
+    });
+    const { rerender } = await Promise.resolve(render(<GroupsScreen />));
+    expect(onMount).toHaveBeenCalledTimes(1);
+
+    mockUseLocalSearchParams.mockReturnValue({ left: '1' });
+    rerender(<GroupsScreen />);
+
+    await waitFor(() => {
+      expect(onMount).toHaveBeenCalledTimes(2);
     });
   });
 });

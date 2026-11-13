@@ -14,6 +14,7 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
   variant = 'event',
   draft,
   onChangeDraft,
+  readOnly = false,
   onDatePress,
   onImageSelected,
   onConfirm,
@@ -22,8 +23,12 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
   testID,
 }) => {
   const isSuggestion = variant === 'suggestion';
+  let imagePickerLabel = 'Adicionar imagem do evento';
+  if (draft.imageUri) imagePickerLabel = 'Trocar imagem do evento';
+  if (readOnly) imagePickerLabel = 'Imagem do local';
 
   const updateDraft = (changes: Partial<EventCardDraft>) => {
+    if (readOnly) return;
     onChangeDraft({ ...draft, ...changes });
   };
 
@@ -70,7 +75,9 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
   const image = (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={draft.imageUri ? 'Trocar imagem do evento' : 'Adicionar imagem do evento'}
+      accessibilityLabel={imagePickerLabel}
+      accessibilityState={{ disabled: readOnly }}
+      disabled={readOnly}
       onPress={() => {
         void pickImage();
       }}
@@ -143,6 +150,7 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
         }}
         placeholder={isSuggestion ? 'Definir nome da sugestão' : 'Definir nome do evento'}
         placeholderTextColor={theme.colors.wineSoft}
+        editable={!readOnly}
         testID={`${testID}-name-input`}
         value={draft.name}
       />
@@ -154,6 +162,7 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
         onChangeText={(address) => {
           updateDraft({ address });
         }}
+        editable={!readOnly}
         testID={`${testID}-address-input`}
       />
 
@@ -168,6 +177,7 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
                 onChangeText={(priceStart) => {
                   updateDraft({ priceStart });
                 }}
+                editable={!readOnly}
                 keyboardType="decimal-pad"
                 testID={`${testID}-price-start-input`}
               />
@@ -180,6 +190,7 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
                 onChangeText={(priceEnd) => {
                   updateDraft({ priceEnd });
                 }}
+                editable={!readOnly}
                 keyboardType="decimal-pad"
                 testID={`${testID}-price-end-input`}
               />
@@ -192,6 +203,7 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
             onChangeText={(phoneNumber) => {
               updateDraft({ phoneNumber });
             }}
+            editable={!readOnly}
             keyboardType="phone-pad"
             testID={`${testID}-phone-input`}
           />
@@ -202,6 +214,7 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
             onChangeText={(openingHours) => {
               updateDraft({ openingHours });
             }}
+            editable={!readOnly}
             multiline
             testID={`${testID}-opening-hours-input`}
           />
@@ -212,6 +225,7 @@ export const EventCardForm: FC<Omit<EventCardCreateProps, 'mode'> & { testID: st
             onChangeText={(website) => {
               updateDraft({ website });
             }}
+            editable={!readOnly}
             keyboardType="url"
             testID={`${testID}-website-input`}
           />

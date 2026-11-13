@@ -1,7 +1,15 @@
 import { getGroupCalendar } from '@/server/calendar';
-import { getGroup, getGroupInviteLink, getMe, updateGroup } from '@/server/groups';
+import {
+  getGroup,
+  getGroupInviteLink,
+  getMe,
+  removeGroupMember,
+  updateGroup,
+  type GroupMember,
+} from '@/server/groups';
 import { act, render, waitFor } from '@testing-library/react-native';
 import { createURL } from 'expo-linking';
+import Toast from 'react-native-toast-message';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import GroupInfoController from './controller';
 
@@ -24,6 +32,7 @@ jest.mock('@/server/groups', () => ({
   getGroup: jest.fn(),
   getGroupInviteLink: jest.fn(),
   getMe: jest.fn(),
+  removeGroupMember: jest.fn(),
   updateGroup: jest.fn(),
 }));
 
@@ -57,6 +66,7 @@ const mockGetGroupCalendar = getGroupCalendar as jest.MockedFunction<typeof getG
 const mockGetGroupInviteLink = getGroupInviteLink as jest.MockedFunction<typeof getGroupInviteLink>;
 const mockGetMe = getMe as jest.MockedFunction<typeof getMe>;
 const mockUpdateGroup = updateGroup as jest.MockedFunction<typeof updateGroup>;
+const mockRemoveGroupMember = removeGroupMember as jest.MockedFunction<typeof removeGroupMember>;
 const mockCreateURL = createURL as jest.MockedFunction<typeof createURL>;
 
 async function renderController() {
@@ -226,6 +236,77 @@ describe('GroupInfoController', () => {
     await waitFor(() => {
       expect(mockUpdateGroup).toHaveBeenCalledWith('group-1', { image: photo });
       expect(mockGroupInfoProps.group).toMatchObject({ profilePic: 'file:///picked.jpg' });
+    });
+  });
+  describe('removing a member', () => {
+    const bia: GroupMember = { id: 'user-2', name: 'Bia', profilePic: null };
+
+    beforeEach(() => {
+      mockGetGroup.mockResolvedValue({
+        id: 'group-1',
+        name: 'Hermanas',
+        profilePic: null,
+        createdAt: '2026-01-01T00:00:00.000Z',
+        ownerId: 'user-1',
+        participants: [{ id: 'user-1', name: 'Ana', profilePic: null }, bia],
+      });
+      jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    test('removes the member and drops them from the screen', async () => {
+      mockRemoveGroupMember.mockResolvedValue(undefined);
+      await renderController();
+      const onRemoveMember = mockGroupInfoProps.onRemoveMember as (
+        member: GroupMember
+      ) => Promise<boolean>;
+
+      let removed = false;
+      await act(async () => {
+        removed = await onRemoveMember(bia);
+      });
+
+      expect(removed).toBe(true);
+      expect(mockRemoveGroupMember).toHaveBeenCalledWith('group-1', 'user-2');
+      expect(mockGroupInfoProps.group).toMatchObject({
+        participants: [{ id: 'user-1', name: 'Ana', profilePic: null }],
+      });
+      expect(Toast.show).not.toHaveBeenCalled();
+    });
+
+    test('shows the success toast once the screen reports the removal', async () => {
+      await renderController();
+      const onMemberRemoved = mockGroupInfoProps.onMemberRemoved as (member: GroupMember) => void;
+
+      onMemberRemoved(bia);
+
+      expect(Toast.show).toHaveBeenCalledWith({
+        type: 'success',
+        text1: 'Sucesso!',
+        text2: 'Bia foi removido(a) do grupo.',
+      });
+    });
+
+    test('keeps the member and shows an error when the request fails', async () => {
+      mockRemoveGroupMember.mockRejectedValue(new Error('Forbidden'));
+      await renderController();
+      const onRemoveMember = mockGroupInfoProps.onRemoveMember as (
+        member: GroupMember
+      ) => Promise<boolean>;
+
+      let removed = true;
+      await act(async () => {
+        removed = await onRemoveMember(bia);
+      });
+
+      expect(removed).toBe(false);
+      expect(
+        (mockGroupInfoProps.group as { participants: GroupMember[] }).participants
+      ).toHaveLength(2);
+      expect(Toast.show).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }));
     });
   });
 });

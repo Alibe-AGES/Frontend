@@ -247,6 +247,37 @@ describe('<EventCard mode="create" />', () => {
     expect(queryByTestId('alibe-event-card-time-input')).toBeNull();
   });
 
+  test('keeps backend-provided suggestions and their image read-only', async () => {
+    const onChangeDraft = jest.fn();
+    const draft = { ...emptyDraft, name: 'Bloom Café', imageUri: 'https://example.com/cafe.jpg' };
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <EventCard
+          mode="create"
+          variant="suggestion"
+          draft={draft}
+          onChangeDraft={onChangeDraft}
+          readOnly
+        />
+      )
+    );
+
+    expect(getByTestId('alibe-event-card-name-input').props.editable).toBe(false);
+    expect(getByTestId('alibe-event-card-address-input').props.editable).toBe(false);
+    expect(getByTestId('alibe-event-card-price-start-input').props.editable).toBe(false);
+    expect(getByTestId('alibe-event-card-phone-input').props.editable).toBe(false);
+    const imagePicker = getByTestId('alibe-event-card-image-picker') as unknown as {
+      props: { accessibilityState: { disabled: boolean } };
+    };
+    expect(imagePicker.props.accessibilityState.disabled).toBe(true);
+
+    fireEvent.changeText(getByTestId('alibe-event-card-name-input'), 'Changed name');
+    fireEvent.press(getByTestId('alibe-event-card-image-picker'));
+
+    expect(onChangeDraft).not.toHaveBeenCalled();
+    expect(mockRequestPermissions).not.toHaveBeenCalled();
+  });
+
   test('picks an image from the gallery and stores it in the draft', async () => {
     const photo = { uri: 'file:///bloom.jpg', fileName: 'bloom.jpg', mimeType: 'image/jpeg' };
     mockRequestPermissions.mockResolvedValue({ granted: true });
