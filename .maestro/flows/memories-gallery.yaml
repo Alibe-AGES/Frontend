@@ -1,6 +1,6 @@
 # Memories flow: opens the memories calendar of a seeded group, taps a day with a memory, sees it in the gallery and opens it in the carousel.
 appId: com.alibe.app
-tags: [memories]
+tags: [ci, memories]
 ---
 - runFlow: ../subflows/launch.yaml
 - runFlow: ../subflows/login.yaml
