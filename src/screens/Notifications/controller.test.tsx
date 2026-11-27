@@ -1,6 +1,6 @@
 import type { AppNotification } from '@/components/NotificationCard';
 import { getEventDetails, type EventDetailsResponse } from '@/server/events';
-import { getGroup, type GroupDetails } from '@/server/groups';
+import { getGroup, getMe, type GroupDetails } from '@/server/groups';
 import { mockNotifications } from '@/server/mock/notifications';
 import {
   getGroupNotifications,
@@ -34,6 +34,7 @@ jest.mock('expo-router', () => ({
 
 jest.mock('@/server/groups', () => ({
   getGroup: jest.fn(),
+  getMe: jest.fn(),
 }));
 
 jest.mock('@/server/events', () => ({
@@ -58,6 +59,7 @@ const mockUseLocalSearchParams = useLocalSearchParams as jest.MockedFunction<
 >;
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
 const mockGetGroup = getGroup as jest.MockedFunction<typeof getGroup>;
+const mockGetMe = getMe as jest.MockedFunction<typeof getMe>;
 const mockGetEventDetails = getEventDetails as jest.MockedFunction<typeof getEventDetails>;
 const mockGetGroupNotifications = getGroupNotifications as jest.MockedFunction<
   typeof getGroupNotifications
@@ -105,6 +107,8 @@ describe('NotificationsController', () => {
     mockUseLocalSearchParams.mockReturnValue({ id: 'group-hermanas' });
     mockUseRouter.mockReturnValue({ navigate, push } as unknown as ReturnType<typeof useRouter>);
     mockGetGroup.mockResolvedValue(group);
+    // Someone outside the group by default, so the names are listed as they are.
+    mockGetMe.mockResolvedValue({ id: 'user-3' } as Awaited<ReturnType<typeof getMe>>);
     mockGetGroupNotifications.mockResolvedValue({
       notifications: mockNotifications,
       hasMore: false,
@@ -120,6 +124,24 @@ describe('NotificationsController', () => {
     expect(screenProps().groupName).toBe('Hermanas');
     expect(screenProps().membersText).toBe('Kata, Manu');
     expect(screenProps().notifications).toHaveLength(mockNotifications.length);
+  });
+
+  test('lists the current user first, as "Eu"', async () => {
+    mockGetMe.mockResolvedValue({ id: 'user-2' } as Awaited<ReturnType<typeof getMe>>);
+
+    await renderLoaded();
+
+    await waitFor(() => {
+      expect(screenProps().membersText).toBe('Eu, Kata');
+    });
+  });
+
+  test('keeps the names as they are when the current user cannot be loaded', async () => {
+    mockGetMe.mockRejectedValue(new Error('boom'));
+
+    await renderLoaded();
+
+    expect(screenProps().membersText).toBe('Kata, Manu');
   });
 
   test('shows an error but keeps the group header when the notifications fail', async () => {

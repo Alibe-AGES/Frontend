@@ -1,12 +1,13 @@
 import type { AppNotification } from '@/components/NotificationCard';
 import { NotificationsScreen } from '@/screens/Notifications';
 import { getEventDetails } from '@/server/events';
-import { getGroup, type GroupDetails } from '@/server/groups';
+import { getGroup, getMe, type GroupDetails } from '@/server/groups';
 import {
   getGroupNotifications,
   markAllNotificationsAsRead,
   markNotificationAsRead,
 } from '@/server/notifications';
+import { buildMembersPreview } from '@/utils/membersPreview';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -68,6 +69,22 @@ export default function NotificationsController() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  // Best effort, as on the group screen: without it the names are listed as they are, without "Eu".
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    let isActive = true;
+    getMe()
+      .then((user) => {
+        if (isActive) setCurrentUserId(user.id);
+      })
+      .catch(() => {
+        if (isActive) setCurrentUserId(undefined);
+      });
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   const handleLoadMore = async () => {
     if (!groupId || isLoadingMore) {
@@ -175,7 +192,7 @@ export default function NotificationsController() {
       groupId={groupId}
       groupName={group?.name ?? ''}
       groupPhoto={group?.profilePic ?? null}
-      membersText={group?.participants.map((member) => member.name).join(', ') ?? ''}
+      membersText={buildMembersPreview(group?.participants ?? [], currentUserId) ?? ''}
       notifications={notifications}
       hasMore={hasMore}
       isLoading={isLoading}
