@@ -796,7 +796,9 @@ npm run test:e2e:coverage -- --check             # exit 1 when a selector matche
 npm run test:e2e:coverage -- --json e2e-coverage.json
 ```
 
-CI runs it twice. The _Maestro Selectors_ job in _Pull Request Quality Checks_ runs it with `--check`, so a PR that renames or removes a `testID` a flow uses fails before a release. The _E2E Tests (Maestro) - Android_ workflow publishes the report as the `maestro-e2e-coverage-<run number>` artifact (`ci.*` for the flows tagged `ci`, `all.*` for every flow, each as text and JSON) and shows the `ci` summary on the run page.
+CI runs it twice. The _Maestro Selectors_ job in _Pull Request Quality Checks_ runs it with `--check`, so a PR that renames or removes a `testID` a flow uses fails before a release. The _E2E Tests (Maestro) - Android_ workflow publishes the report as the `maestro-e2e-coverage-<run number>` artifact (`run.*` for the flows that run executed, `all.*` for every flow, each as text and JSON) and shows both summaries on the run page.
+
+The release runs that workflow with the flows tagged `ci`. To try other flows on the same emulator and Docker backend without a release, open _Actions → E2E Tests (Maestro) - Android → Run workflow_, pick the branch and set `include-tags`, for example `groups,memories,experiences,auth` (comma-separated, no spaces). Tag a flow `ci` once it passes there.
 
 ## Configuration Map
 

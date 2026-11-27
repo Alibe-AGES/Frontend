@@ -1,6 +1,6 @@
 # Rename flow: the owner of a new group renames it from the group info and sees the new name on the group screen.
 appId: com.alibe.app
-tags: [groups]
+tags: [ci, groups]
 ---
 - runFlow: ../subflows/launch.yaml
 - runFlow: ../subflows/login.yaml
