@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, within } from '@testing-library/react-native';
 import { useState } from 'react';
 
 import { Dropdown } from './index';
@@ -119,6 +119,42 @@ describe('<Dropdown />', () => {
     expect(getByTestId('alibe-dropdown-options').props.onContentSizeChange).toBeDefined();
     expect(getByText('Evento 1')).toBeTruthy();
     expect(getByText('Evento 20')).toBeTruthy();
+  });
+
+  test('keeps a long selected label on one line, cut with an ellipsis', async () => {
+    const longLabel = 'Jantar de encerramento do semestre com toda a turma no restaurante';
+    const { getByText } = await Promise.resolve(
+      render(
+        <Dropdown
+          onChange={jest.fn()}
+          options={[{ label: longLabel, value: 'long' }]}
+          value="long"
+        />
+      )
+    );
+
+    expect(getByText(longLabel)).toHaveProp('numberOfLines', 1);
+  });
+
+  test('keeps long options on one line, cut with an ellipsis', async () => {
+    const longLabel =
+      'Grupo de estudos para a prova final de Cálculo II com revisão de todos os capítulos';
+    const { getByTestId } = await Promise.resolve(
+      render(
+        <Dropdown
+          onChange={jest.fn()}
+          options={[{ label: longLabel, value: 'long' }]}
+          value={null}
+        />
+      )
+    );
+
+    fireEvent.press(getByTestId('alibe-dropdown'));
+
+    expect(within(getByTestId('alibe-dropdown-option-long')).getByText(longLabel)).toHaveProp(
+      'numberOfLines',
+      1
+    );
   });
 
   test('does not open while disabled', async () => {

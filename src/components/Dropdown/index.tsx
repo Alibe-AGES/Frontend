@@ -58,13 +58,18 @@ export function Dropdown({
         accessibilityLabel={selectedOption?.label ?? placeholder}
         accessibilityRole="combobox"
         accessibilityState={{ disabled, expanded: isExpanded }}
-        className={`flex-row items-center gap-2 self-center px-4 py-3 ${disabled ? 'opacity-50' : 'opacity-100'}`}
+        className={`max-w-full flex-row items-center gap-2 self-center px-4 py-3 ${disabled ? 'opacity-50' : 'opacity-100'}`}
         disabled={disabled}
         onPress={handleTriggerPress}
         style={({ pressed }) => tw`${pressed ? 'opacity-75' : ''}`}
         testID={testID}
       >
-        <Text className="font-poppins text-sm text-wine">
+        {/* A long label is cut with an ellipsis at 16rem, or earlier when the parent is narrower,
+            so the trigger stays within the menu's max width. */}
+        <Text
+          className="max-w-64 shrink font-poppins text-sm text-wine"
+          numberOfLines={1}
+        >
           {selectedOption?.label ?? placeholder}
         </Text>
         <ChevronUpIcon

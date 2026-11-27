@@ -12,6 +12,9 @@ export interface NewMemoryScreenProps {
   groupId: string;
   events: DropdownOption[];
   selectedEventId: string | null;
+  // Name the period the event list covers; see NewMemoryCard.
+  emptyEventsMessage?: string;
+  eventsHint?: string;
   hasPhoto: boolean;
   isLoadingEvents: boolean;
   isSubmitting: boolean;
@@ -29,6 +32,8 @@ export function NewMemoryScreen({
   groupId,
   events,
   selectedEventId,
+  emptyEventsMessage,
+  eventsHint,
   hasPhoto,
   isLoadingEvents,
   isSubmitting,
@@ -83,7 +88,9 @@ export function NewMemoryScreen({
 
       <View className="mt-14 gap-4 px-4">
         <NewMemoryCard
+          emptyEventsMessage={emptyEventsMessage}
           events={events}
+          eventsHint={eventsHint}
           isLoadingEvents={isLoadingEvents}
           onClose={onClose}
           onPhotoSelected={onPhotoSelected}

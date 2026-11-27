@@ -90,6 +90,7 @@ export function NotificationsScreen({
             <Text
               className="font-poppins text-base text-wine"
               numberOfLines={1}
+              testID="notifications-members"
             >
               {membersText}
             </Text>
