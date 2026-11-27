@@ -11,11 +11,12 @@ jobs:
     timeout-minutes: 30
 
     steps:
+      # Only the latest state of main goes to GitLab, not its history, so only the last commit is needed.
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: main
-          fetch-depth: 0
+          fetch-depth: 1
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Git
@@ -44,6 +45,16 @@ jobs:
           git remote add gitlab https://tools.ages.pucrs.br/2026-2/6lmnp/alibe/frontend.git
           git remote -v
 
+      # GitLab rejects a push from a shallow clone when it lacks the parent commits, so the latest
+      # state goes as a new commit with no parents. Each run replaces the history of main on GitLab.
+      - name: Build a single-commit copy of main
+        run: |
+          source_sha=$(git rev-parse HEAD)
+          git checkout --orphan gitlab-latest
+          git commit --quiet -m "Mirror of ${source_sha} from GitHub main"
+          git log --oneline -1
+          echo "Objects to send: $(git count-objects -vH | grep size-pack)"
+
       - name: Push to GitLab
         env:
           GITLAB_USERNAME: ${{ secrets.GITLAB_USERNAME }}
@@ -51,5 +62,5 @@ jobs:
         run: |
           echo "Starting push to GitLab..."
           git remote set-url gitlab "https://${GITLAB_USERNAME}:${GITLAB_PASSWORD}@tools.ages.pucrs.br/2026-2/6lmnp/alibe/frontend.git"
-          git push --force gitlab main:main
+          git push --force gitlab gitlab-latest:main
           echo "Push completed successfully"
