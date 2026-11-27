@@ -47,7 +47,7 @@ tags: [ci, groups]
       text: 'Dia ${output.calendarDay}, todos disponíveis'
     timeout: 30000
 
-# Opening the day again lists who is available: the creator, shown as "Eu".
+# Opening the day again lists who is available: the creator, the only member.
 - tapOn:
     id: calendar-day-button-${output.calendarDay}
 - extendedWaitUntil:
@@ -57,7 +57,9 @@ tags: [ci, groups]
 - assertVisible:
     id: availability-screen-participants-heading
     text: 'Participantes disponíveis'
-- assertVisible:
-    text: 'Eu'
-    childOf:
-      id: availability-screen-participants
+# Matched by the participant's testID (user uuid) rather than the "Eu" label, which Maestro did not find
+# inside the list on CI.
+- extendedWaitUntil:
+    visible:
+      id: 'availability-participant-[0-9a-f-]{36}'
+    timeout: 30000
