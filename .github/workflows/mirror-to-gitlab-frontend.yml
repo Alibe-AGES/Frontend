@@ -7,6 +7,10 @@ on:
 
 jobs:
   mirror:
+    # Off until the repository variable GITLAB_MIRROR_ENABLED is "true", like the Backend mirror.
+    # Cloudflare in front of tools.ages.pucrs.br blocks GitHub's runners, so the push fails for now;
+    # a skipped job does not fail the checks of the commit or of PRs that contain it.
+    if: ${{ vars.GITLAB_MIRROR_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -67,7 +71,7 @@ jobs:
           for service in git-upload-pack git-receive-pack; do
             echo "=== ${service}"
             curl -sS -A "${user_agent}" -o response.txt \
-              -w "HTTP %{http_code} | server: %header{server} | cf-mitigated: %header{cf-mitigated}\n" \
+              -w "HTTP %{http_code} | server: %header{server} | cf-ray: %header{cf-ray} | cf-mitigated: %header{cf-mitigated}\n" \
               -u "${GITLAB_USERNAME}:${GITLAB_PASSWORD}" \
               "https://tools.ages.pucrs.br/2026-2/6lmnp/alibe/frontend.git/info/refs?service=${service}" || true
             head -c 400 response.txt | tr -c '[:print:]\n' '.'
