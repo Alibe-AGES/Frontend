@@ -80,6 +80,7 @@ jobs:
     # Publishes the EAS APK. It generates release notes and publishes the release.
     name: Publish Release
     needs: call-eas-build-workflow
+    if: ${{ !cancelled() && needs.call-eas-build-workflow.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
