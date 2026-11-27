@@ -9,6 +9,7 @@ import { getGroupCalendar } from '@/server/calendar';
 import { getEventDetails } from '@/server/events';
 import { createMemory } from '@/server/memories';
 import { resolveCalendarMonth, type CalendarMonth } from '@/utils/calendarMonth';
+import { describeEventsPeriod } from './eventsPeriod';
 import { NewMemoryScreen } from '.';
 
 // Memories are made from events that already happened, so the dropdown lists
@@ -97,10 +98,17 @@ export default function NewMemoryController() {
     }
   };
 
+  const eventsPeriod = describeEventsPeriod(
+    resolveCalendarMonth(monthParam, yearParam),
+    selectedDate
+  );
+
   return (
     <NewMemoryScreen
+      emptyEventsMessage={eventsPeriod.emptyMessage}
       error={error}
       events={events}
+      eventsHint={eventsPeriod.hint}
       groupId={groupId}
       hasPhoto={photo !== null}
       isLoadingEvents={isLoadingEvents}
