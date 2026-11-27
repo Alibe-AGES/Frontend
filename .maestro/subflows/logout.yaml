@@ -1,0 +1,21 @@
+# Logs out from the groups screen and waits for the auth screen.
+appId: com.alibe.app
+---
+- tapOn:
+    id: groups-user-profile
+- extendedWaitUntil:
+    visible:
+      id: user-profile-screen
+    timeout: 10000
+- tapOn:
+    id: user-profile-logout-button
+- extendedWaitUntil:
+    visible:
+      id: user-profile-logout-modal
+    timeout: 10000
+- tapOn:
+    id: user-profile-logout-confirm
+- extendedWaitUntil:
+    visible:
+      id: auth-screen
+    timeout: 30000

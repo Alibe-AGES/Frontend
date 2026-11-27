@@ -110,6 +110,7 @@
     "test:e2e": "maestro test .maestro/",
     "test:e2e:dev": "maestro test -e DEV_CLIENT=true .maestro/",
     "test:e2e:studio": "maestro studio",
+    "test:e2e:coverage": "node scripts/e2e-coverage.mjs",
     "build:android": "npx expo prebuild --platform android --clean && npx expo run:android --variant release",
     "build:android:dev": "npx expo prebuild --platform android --clean && npx expo run:android"
   },

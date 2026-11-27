@@ -1,0 +1,53 @@
+# Rename flow: the owner of a new group renames it from the group info and sees the new name on the group screen.
+appId: com.alibe.app
+tags: [groups]
+---
+- runFlow: ../subflows/launch.yaml
+- runFlow: ../subflows/login.yaml
+- runFlow: ../subflows/create-group.yaml
+
+- evalScript: ${output.newGroupName = 'Renomeado E2E ' + Date.now()}
+- tapOn:
+    id: group-screen-members
+- extendedWaitUntil:
+    visible:
+      id: group-info-screen
+    timeout: 30000
+# The name sits inside the edit button, whose accessibility label is "Editar nome do grupo",
+# so the flow matches the name by its text alone.
+- extendedWaitUntil:
+    visible: ${output.groupName}
+    timeout: 30000
+- tapOn:
+    id: group-info-edit-name
+
+# The name turns into a field. Tap its end so the cursor goes after the current name and eraseText removes all of it.
+- extendedWaitUntil:
+    visible:
+      id: group-info-name-input
+    timeout: 10000
+- tapOn:
+    id: group-info-name-input
+    point: '95%,50%'
+- eraseText
+- inputText: ${output.newGroupName}
+# The name is saved when the field loses focus; Enter submits it and blurs the field.
+- pressKey: Enter
+- runFlow: ../subflows/close-keyboard.yaml
+- extendedWaitUntil:
+    visible: ${output.newGroupName}
+    timeout: 30000
+
+- scrollUntilVisible:
+    element:
+      id: alibe-back-button
+    direction: UP
+- tapOn:
+    id: alibe-back-button
+- extendedWaitUntil:
+    visible:
+      id: group-screen
+    timeout: 10000
+- extendedWaitUntil:
+    visible: ${output.newGroupName}
+    timeout: 30000

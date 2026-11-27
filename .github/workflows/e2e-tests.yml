@@ -12,6 +12,43 @@ jobs:
       artifact-name: app-e2e
       architectures: x86_64
 
+  # Static report of what the flows cover (testIDs, screens, routes). It reads the code only,
+  # so it runs alongside the APK build and its artifact is there even when a flow fails.
+  selector-coverage:
+    name: Maestro Selector Coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Measure selector coverage
+        run: |
+          mkdir -p e2e-coverage
+          # `ci` is what this workflow runs; `all` also counts the flows that only run locally.
+          node scripts/e2e-coverage.mjs --include-tags ci --details --json e2e-coverage/ci.json > e2e-coverage/ci.txt
+          node scripts/e2e-coverage.mjs --details --json e2e-coverage/all.json > e2e-coverage/all.txt
+          {
+            echo '## Maestro selector coverage (flows tagged `ci`)'
+            echo '```'
+            node scripts/e2e-coverage.mjs --include-tags ci
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload selector coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-e2e-coverage-${{ github.run_number }}
+          path: e2e-coverage
+          if-no-files-found: error
+          retention-days: 7
+
   maestro:
     name: Maestro
     needs: build-e2e-apk

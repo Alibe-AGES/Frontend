@@ -103,3 +103,29 @@ tags: [ci, events]
 - extendedWaitUntil:
     visible: '.*criou o evento "${output.eventName}".*'
     timeout: 30000
+- assertVisible:
+    id: 'notifications-card-.*'
+
+# The notification opens the day of the event.
+- tapOn: 'Ver encontro'
+- extendedWaitUntil:
+    visible:
+      id: group-day-screen
+    timeout: 30000
+- extendedWaitUntil:
+    visible: ${output.eventName}
+    timeout: 30000
+- tapOn:
+    id: alibe-back-button
+- extendedWaitUntil:
+    visible:
+      id: notifications-screen
+    timeout: 10000
+
+# Clearing marks every notification as read and shows the empty state.
+- tapOn:
+    id: notifications-clear
+- extendedWaitUntil:
+    visible:
+      id: notifications-empty
+    timeout: 30000
