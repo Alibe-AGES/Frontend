@@ -55,6 +55,25 @@ jobs:
           git log --oneline -1
           echo "Objects to send: $(git count-objects -vH | grep size-pack)"
 
+      # git only prints "403". The server sits behind Cloudflare, which can refuse the request before GitLab
+      # sees it, so print who answered and why. git-upload-pack checks read access and git-receive-pack push
+      # access. The requests use git's user agent, because Cloudflare refuses curl's own one.
+      - name: Check GitLab access
+        env:
+          GITLAB_USERNAME: ${{ secrets.GITLAB_USERNAME }}
+          GITLAB_PASSWORD: ${{ secrets.GITLAB_PASSWORD }}
+        run: |
+          user_agent="git/$(git --version | awk '{print $3}')"
+          for service in git-upload-pack git-receive-pack; do
+            echo "=== ${service}"
+            curl -sS -A "${user_agent}" -o response.txt \
+              -w "HTTP %{http_code} | server: %header{server} | cf-mitigated: %header{cf-mitigated}\n" \
+              -u "${GITLAB_USERNAME}:${GITLAB_PASSWORD}" \
+              "https://tools.ages.pucrs.br/2026-2/6lmnp/alibe/frontend.git/info/refs?service=${service}" || true
+            head -c 400 response.txt | tr -c '[:print:]\n' '.'
+            echo
+          done
+
       - name: Push to GitLab
         env:
           GITLAB_USERNAME: ${{ secrets.GITLAB_USERNAME }}
