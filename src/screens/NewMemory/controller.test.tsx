@@ -75,6 +75,20 @@ describe('<NewMemoryController />', () => {
     expect(mockScreenProps?.events).toEqual([{ label: 'Churrasco', value: 'event-1' }]);
   });
 
+  test('names the month of the list in the empty message and the hint', async () => {
+    mockSearchParams = { id: 'group-1', month: '11', year: '2026' };
+    mockedCalendar.mockResolvedValue([]);
+
+    render(<NewMemoryController />);
+
+    await waitFor(() => {
+      expect(mockScreenProps?.isLoadingEvents).toBe(false);
+    });
+
+    expect(mockScreenProps?.emptyEventsMessage).toBe('Nenhum evento em novembro');
+    expect(mockScreenProps?.eventsHint).toContain('novembro de 2026');
+  });
+
   test('lists only completed events for the selected day', async () => {
     mockSearchParams = { id: 'group-1', month: '11', year: '2026', date: '2026-11-01' };
     mockedCalendar.mockResolvedValue([

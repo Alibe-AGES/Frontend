@@ -162,6 +162,44 @@ describe('<NewMemoryCard />', () => {
     expect(getByText('Nenhum evento disponível')).toBeTruthy();
   });
 
+  test('uses the given empty message', async () => {
+    const { getByTestId, getByText } = await Promise.resolve(
+      render(
+        <ControlledCard
+          emptyEventsMessage="Nenhum evento em novembro"
+          events={[]}
+        />
+      )
+    );
+
+    fireEvent.press(getByTestId('new-memory-card-event'));
+
+    expect(getByText('Nenhum evento em novembro')).toBeTruthy();
+  });
+
+  test('shows and hides the events hint from the info button', async () => {
+    const hint = 'A lista mostra os eventos que já aconteceram em novembro de 2026.';
+    const { getByRole, getByText, queryByText } = await Promise.resolve(
+      render(<ControlledCard eventsHint={hint} />)
+    );
+    const toggle = getByRole('button', { name: 'Sobre a lista de eventos' });
+
+    expect(queryByText(hint)).toBeNull();
+
+    fireEvent.press(toggle);
+    expect(getByText(hint)).toBeTruthy();
+    expect(toggle).toBeExpanded();
+
+    fireEvent.press(toggle);
+    expect(queryByText(hint)).toBeNull();
+  });
+
+  test('has no info button without a hint', async () => {
+    const { queryByRole } = await Promise.resolve(render(<ControlledCard />));
+
+    expect(queryByRole('button', { name: 'Sobre a lista de eventos' })).toBeNull();
+  });
+
   test('calls onClose from the close button', async () => {
     const onClose = jest.fn();
     const { getByRole } = await Promise.resolve(render(<ControlledCard onClose={onClose} />));

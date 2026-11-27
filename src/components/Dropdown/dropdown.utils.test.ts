@@ -1,4 +1,4 @@
-import { getMenuPlacement } from './dropdown.utils';
+import { getMenuLeft, getMenuMaxWidth, getMenuPlacement } from './dropdown.utils';
 
 const SCREEN = { height: 800, topInset: 40, bottomInset: 20 };
 const TRIGGER_SIZE = { x: 100, width: 160, height: 40 };
@@ -38,5 +38,35 @@ describe('getMenuPlacement', () => {
     });
 
     expect(placement.maxHeight).toBe(0);
+  });
+});
+
+describe('getMenuMaxWidth', () => {
+  test('stops at a fixed max width on regular screens', () => {
+    expect(getMenuMaxWidth(411)).toBe(220);
+  });
+
+  test('keeps a margin on both sides of a narrow screen', () => {
+    expect(getMenuMaxWidth(200)).toBe(184);
+  });
+});
+
+describe('getMenuLeft', () => {
+  const trigger = { ...TRIGGER_SIZE, y: 200 };
+
+  test('centers a menu wider than the trigger under it', () => {
+    expect(getMenuLeft(trigger, 200, 400)).toBe(80);
+  });
+
+  test('lines up a menu as wide as the trigger with it', () => {
+    expect(getMenuLeft(trigger, 160, 400)).toBe(100);
+  });
+
+  test('moves the menu back inside the right edge', () => {
+    expect(getMenuLeft({ ...trigger, x: 300 }, 220, 400)).toBe(172);
+  });
+
+  test('moves the menu back inside the left edge', () => {
+    expect(getMenuLeft({ ...trigger, x: 0 }, 220, 400)).toBe(8);
   });
 });

@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import tw from 'twrnc';
 
@@ -23,6 +24,8 @@ export function NewMemoryCard({
   selectedEventId,
   isLoadingEvents = false,
   onSelectEvent,
+  emptyEventsMessage = 'Nenhum evento disponível',
+  eventsHint,
   onPhotoSelected,
   onClose,
   usePhotoController = useMemoryPhotoController,
@@ -31,6 +34,7 @@ export function NewMemoryCard({
   const { photoUri, isLoading, pickImage } = usePhotoController({
     onUploadSuccess: onPhotoSelected,
   });
+  const [isHintVisible, setIsHintVisible] = useState(false);
 
   return (
     <View
@@ -105,15 +109,51 @@ export function NewMemoryCard({
       </Pressable>
 
       <View className="py-1">
-        <Dropdown
-          disabled={isLoadingEvents}
-          emptyMessage="Nenhum evento disponível"
-          onChange={onSelectEvent}
-          options={events}
-          placeholder={isLoadingEvents ? 'Carregando eventos...' : 'Selecionar evento'}
-          testID={`${testID}-event`}
-          value={selectedEventId}
-        />
+        <View className="flex-row items-center justify-center px-3">
+          {/* Same width as the info button, so the dropdown stays centered on the card and its
+              list, centered under the dropdown, lines up with the card too. */}
+          {eventsHint ? <View className="w-5" /> : null}
+          <View className="shrink">
+            <Dropdown
+              disabled={isLoadingEvents}
+              emptyMessage={emptyEventsMessage}
+              onChange={onSelectEvent}
+              options={events}
+              placeholder={isLoadingEvents ? 'Carregando eventos...' : 'Selecionar evento'}
+              testID={`${testID}-event`}
+              value={selectedEventId}
+            />
+          </View>
+          {eventsHint ? (
+            <Pressable
+              accessibilityLabel="Sobre a lista de eventos"
+              accessibilityRole="button"
+              accessibilityState={{ expanded: isHintVisible }}
+              className="w-5 items-start"
+              hitSlop={12}
+              onPress={() => {
+                setIsHintVisible((visible) => !visible);
+              }}
+              style={({ pressed }) => tw`${pressed ? 'opacity-75' : ''}`}
+              testID={`${testID}-events-hint-toggle`}
+            >
+              <Ionicons
+                color={theme.colors.wine}
+                name="information-circle-outline"
+                size={18}
+              />
+            </Pressable>
+          ) : null}
+        </View>
+        {/* The hint sits below the dropdown, so a long explanation never squeezes the list. */}
+        {eventsHint && isHintVisible ? (
+          <View
+            className="mx-4 mb-2 rounded-2xl bg-ink px-4 py-3"
+            testID={`${testID}-events-hint`}
+          >
+            <Text className="font-poppins text-sm text-white">{eventsHint}</Text>
+          </View>
+        ) : null}
       </View>
     </View>
   );
