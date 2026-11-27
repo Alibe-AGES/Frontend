@@ -1,12 +1,44 @@
 name: E2E Tests (Maestro) - Android
 
 on:
+  # The release runs the flows tagged `ci`; a failure blocks it.
   workflow_call:
+    inputs:
+      include-tags:
+        type: string
+        default: ci
+  # Manual run from the Actions tab, to try flows that are not tagged `ci` yet without touching a release.
+  workflow_dispatch:
+    inputs:
+      include-tags:
+        description: 'Flow tags to run, comma-separated (e.g. groups,memories,experiences,auth). Leave "ci" for the release set.'
+        type: string
+        default: ci
+
+env:
+  # Same value for both triggers; `ci` when nothing is passed.
+  E2E_TAGS: ${{ inputs.include-tags || 'ci' }}
 
 jobs:
+  # A tag list goes into shell commands, so only letters, digits, commas, hyphens and underscores pass.
+  check-tags:
+    name: Check Tags
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Validate include-tags
+        run: |
+          if ! printf '%s' "$E2E_TAGS" | grep -Eq '^[A-Za-z0-9_-]+(,[A-Za-z0-9_-]+)*$'; then
+            echo "::error::include-tags must be tag names separated by commas, without spaces. Got: $E2E_TAGS"
+            exit 1
+          fi
+          echo "Running flows tagged: $E2E_TAGS" | tee -a "$GITHUB_STEP_SUMMARY"
+
   build-e2e-apk:
     # The EAS APK points to AWS, so the tests build their own APK for the Docker backend.
     name: Build E2E APK
+    needs: check-tags
     uses: ./.github/workflows/local-build.yml
     with:
       artifact-name: app-e2e
@@ -16,6 +48,7 @@ jobs:
   # so it runs alongside the APK build and its artifact is there even when a flow fails.
   selector-coverage:
     name: Maestro Selector Coverage
+    needs: check-tags
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -31,13 +64,17 @@ jobs:
       - name: Measure selector coverage
         run: |
           mkdir -p e2e-coverage
-          # `ci` is what this workflow runs; `all` also counts the flows that only run locally.
-          node scripts/e2e-coverage.mjs --include-tags ci --details --json e2e-coverage/ci.json > e2e-coverage/ci.txt
+          # `run` covers the flows this run executes (`ci` on a release); `all` also counts every other flow.
+          node scripts/e2e-coverage.mjs --include-tags "$E2E_TAGS" --details --json e2e-coverage/run.json > e2e-coverage/run.txt
           node scripts/e2e-coverage.mjs --details --json e2e-coverage/all.json > e2e-coverage/all.txt
           {
-            echo '## Maestro selector coverage (flows tagged `ci`)'
+            echo "## Maestro selector coverage (flows tagged \`${E2E_TAGS}\`)"
             echo '```'
-            node scripts/e2e-coverage.mjs --include-tags ci
+            node scripts/e2e-coverage.mjs --include-tags "$E2E_TAGS"
+            echo '```'
+            echo '## Maestro selector coverage (all flows)'
+            echo '```'
+            node scripts/e2e-coverage.mjs
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -146,8 +183,8 @@ jobs:
             adb shell wm size 411x914
             adb shell wm density 160
 
-            echo "Starting Maestro E2E tests..."
-            maestro test .maestro/ --include-tags ci --test-output-dir=./maestro-results
+            echo "Starting Maestro E2E tests (tags: $E2E_TAGS)..."
+            maestro test .maestro/ --include-tags "$E2E_TAGS" --test-output-dir=./maestro-results
 
       - name: Upload Maestro results
         if: always()
