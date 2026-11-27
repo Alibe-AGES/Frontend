@@ -1,7 +1,7 @@
 # Logout flow: closes the profile modals with "Cancelar", then signs out from the profile screen and returns
 # to the auth screen.
 appId: com.alibe.app
-tags: [auth]
+tags: [ci, auth]
 ---
 - runFlow: ../subflows/launch.yaml
 - runFlow: ../subflows/login.yaml

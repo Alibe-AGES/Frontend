@@ -1,7 +1,7 @@
 # Leave group flow: a new user creates a group, leaves it from the group info and is back to an empty groups screen.
 # A new account keeps the check simple: after leaving its only group, the list is empty.
 appId: com.alibe.app
-tags: [groups]
+tags: [ci, groups]
 ---
 - runFlow: ../subflows/launch.yaml
 - runFlow: ../subflows/sign-up.yaml
