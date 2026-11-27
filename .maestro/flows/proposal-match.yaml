@@ -50,15 +50,12 @@ tags: [ci, events]
     timeout: 30000
 - assertVisible:
     id: match-headline
-# The only participant is the creator, shown as "Eu".
+# The creator, the only member, is listed once the participants load. The list container is there while
+# loading too, so wait for the participant itself, by its testID (user uuid).
 - extendedWaitUntil:
     visible:
-      id: match-participants
+      id: 'match-participant-[0-9a-f-]{36}'
     timeout: 30000
-- assertVisible:
-    text: 'Eu'
-    childOf:
-      id: match-participants
 # The buttons are no longer pinned to the bottom: they sit below the hi-five artwork, which can push
 # them below the fold on small screens, so scroll to each one before using it.
 - scrollUntilVisible:
