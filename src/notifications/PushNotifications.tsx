@@ -3,6 +3,19 @@ import { useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 
+// Without a handler, expo-notifications drops notifications that arrive while the app is open:
+// they only show when the app is in the background. This shows them as a banner in the foreground too.
+// Set at import time so it is in place before the first notification arrives.
+Notifications.setNotificationHandler({
+  handleNotification: () =>
+    Promise.resolve({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+});
+
 export function PushNotifications() {
   const router = useRouter();
   const handledResponses = useRef(new Set<string>());
