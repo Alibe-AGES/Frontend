@@ -1,0 +1,67 @@
+# Creates a new account with a random e-mail and waits for its empty groups screen. Run it after launch.yaml.
+# Use it when a flow needs a user with no groups; auth-sign-up.yaml tests the form itself.
+appId: com.alibe.app
+---
+- extendedWaitUntil:
+    visible:
+      id: auth-screen
+    timeout: 60000
+- tapOn:
+    id: auth-sign-up
+    # A dev-only React warning can swallow this tap; tap again if the screen does not change.
+    retryTapIfNoChange: true
+# On small screens fields and buttons can sit below the fold or behind the keyboard,
+# so close the keyboard and scroll to each element before using it.
+- scrollUntilVisible:
+    element:
+      id: sign-up-email
+    direction: DOWN
+- tapOn:
+    id: sign-up-email
+- inputRandomEmail
+- runFlow: close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: sign-up-password
+    direction: DOWN
+- tapOn:
+    id: sign-up-password
+- inputText: senha-segura
+- runFlow: close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: sign-up-password-confirmation
+    direction: DOWN
+- tapOn:
+    id: sign-up-password-confirmation
+- inputText: senha-segura
+- runFlow: close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: sign-up-continue
+    direction: DOWN
+- tapOn:
+    id: sign-up-continue
+
+- extendedWaitUntil:
+    visible:
+      id: create-profile-screen
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: create-profile-nickname
+    direction: DOWN
+- tapOn:
+    id: create-profile-nickname
+- inputText: Teste E2E
+- runFlow: close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: create-profile-continue
+    direction: DOWN
+- tapOn:
+    id: create-profile-continue
+- extendedWaitUntil:
+    visible:
+      id: groups-screen
+    timeout: 30000

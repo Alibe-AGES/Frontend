@@ -1,4 +1,5 @@
-# Logout flow: signs out from the profile screen and returns to the auth screen.
+# Logout flow: closes the profile modals with "Cancelar", then signs out from the profile screen and returns
+# to the auth screen.
 appId: com.alibe.app
 tags: [auth]
 ---
@@ -11,6 +12,45 @@ tags: [auth]
     visible:
       id: user-profile-screen
     timeout: 10000
+
+# Each modal closes with "Cancelar" and leaves the profile screen open.
+- tapOn:
+    id: user-profile-edit-button
+- extendedWaitUntil:
+    visible:
+      id: user-profile-edit-modal
+    timeout: 10000
+- tapOn:
+    id: user-profile-edit-cancel
+- extendedWaitUntil:
+    notVisible:
+      id: user-profile-edit-modal
+    timeout: 10000
+- tapOn:
+    id: user-profile-password-button
+- extendedWaitUntil:
+    visible:
+      id: user-profile-password-modal
+    timeout: 10000
+- tapOn:
+    id: user-profile-password-cancel
+- extendedWaitUntil:
+    notVisible:
+      id: user-profile-password-modal
+    timeout: 10000
+- tapOn:
+    id: user-profile-logout-button
+- extendedWaitUntil:
+    visible:
+      id: user-profile-logout-modal
+    timeout: 10000
+- tapOn:
+    id: user-profile-logout-cancel
+- extendedWaitUntil:
+    notVisible:
+      id: user-profile-logout-modal
+    timeout: 10000
+
 - tapOn:
     id: user-profile-logout-button
 - extendedWaitUntil:

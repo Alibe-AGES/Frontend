@@ -112,7 +112,7 @@ export function AvailabilityScreen({
           <BackButton testID="availability-back-button" />
           <Text
             className="flex-1 font-poppins-semibold text-2xl text-ink"
-            testID='testID="availability-title"'
+            testID="availability-title"
           >
             Disponibilidade
           </Text>

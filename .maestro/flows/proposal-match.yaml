@@ -1,4 +1,4 @@
-# Suggestion flow: suggests a place in a new group and reaches the match screen.
+# Suggestion flow: suggests a place in a new group, reaches the match screen and goes back to the group.
 appId: com.alibe.app
 tags: [ci, events]
 ---
@@ -50,5 +50,32 @@ tags: [ci, events]
     timeout: 30000
 - assertVisible:
     id: match-headline
+# The only participant is the creator, shown as "Eu".
+- extendedWaitUntil:
+    visible:
+      id: match-participants
+    timeout: 30000
+- assertVisible:
+    text: 'Eu'
+    childOf:
+      id: match-participants
+# The buttons are no longer pinned to the bottom: they sit below the hi-five artwork, which can push
+# them below the fold on small screens, so scroll to each one before using it.
+- scrollUntilVisible:
+    element:
+      id: match-create-event
+    direction: DOWN
 - assertVisible:
     id: match-create-event
+
+# "Voltar a tela inicial" leaves the match screen and returns to the group calendar.
+- scrollUntilVisible:
+    element:
+      id: dismiss-match-create-event
+    direction: DOWN
+- tapOn:
+    id: dismiss-match-create-event
+- extendedWaitUntil:
+    visible:
+      id: group-screen
+    timeout: 30000
