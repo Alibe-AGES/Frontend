@@ -1,0 +1,172 @@
+# Vote flow with two users: Ana creates a group and Daniel joins it with the invite link. Daniel sees no
+# proposals yet and suggests a place, which does not match because Ana has not voted. Ana opens "Match de
+# rolês", sees the suggestion with Daniel's like, likes it too and reaches the match screen.
+# It uses daniel.martins, whom no other flow uses.
+appId: com.alibe.app
+tags: [events, experiences]
+env:
+  SECOND_EMAIL: daniel.martins@example.com
+  SECOND_PASSWORD: senha-segura
+---
+- runFlow: ../subflows/launch.yaml
+- runFlow: ../subflows/login.yaml
+- runFlow: ../subflows/create-group.yaml
+
+# Ana copies the invite link from the group info.
+- tapOn:
+    id: group-screen-members
+- extendedWaitUntil:
+    visible:
+      id: group-info-screen
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: alibe-invite-link-url
+    direction: DOWN
+    timeout: 10000
+# The field shows a placeholder until the link is loaded.
+- extendedWaitUntil:
+    visible:
+      id: alibe-invite-link-url
+      text: '.*invite=.*'
+    timeout: 30000
+- copyTextFrom:
+    id: alibe-invite-link-url
+- evalScript: ${output.inviteLink = maestro.copiedText}
+- scrollUntilVisible:
+    element:
+      id: alibe-back-button
+    direction: UP
+- tapOn:
+    id: alibe-back-button
+- extendedWaitUntil:
+    visible:
+      id: group-screen
+    timeout: 10000
+- tapOn:
+    id: alibe-navigation-bar-groups
+- extendedWaitUntil:
+    visible:
+      id: groups-screen
+    timeout: 10000
+- runFlow: ../subflows/logout.yaml
+
+# Daniel joins the group with the link.
+- runFlow:
+    file: ../subflows/login.yaml
+    env:
+      EMAIL: ${SECOND_EMAIL}
+      PASSWORD: ${SECOND_PASSWORD}
+- openLink: ${output.inviteLink}
+- extendedWaitUntil:
+    visible: 'Convite aceito!'
+    timeout: 30000
+    optional: true
+- runFlow:
+    file: ../subflows/open-group.yaml
+    env:
+      NAME: ${output.groupName}
+- extendedWaitUntil:
+    visible:
+      id: group-screen
+    timeout: 30000
+
+# Nobody has suggested a place yet.
+- tapOn:
+    id: alibe-navigation-bar-matches
+- extendedWaitUntil:
+    visible:
+      id: new-experience-screen
+    timeout: 10000
+- extendedWaitUntil:
+    visible:
+      id: new-experience-empty
+    timeout: 30000
+- tapOn:
+    id: alibe-back-button
+- extendedWaitUntil:
+    visible:
+      id: group-screen
+    timeout: 10000
+
+# Daniel suggests a place. With two members his own "yes" is not a match, so the screen stays open with a toast.
+- evalScript: ${output.suggestionName = 'Sugestão E2E ' + Date.now()}
+- tapOn:
+    id: alibe-navigation-bar-create
+- extendedWaitUntil:
+    visible:
+      id: create-event-tab-suggestion
+    timeout: 10000
+- tapOn:
+    id: create-event-tab-suggestion
+# Small screens can hide fields and buttons below the fold or behind the keyboard,
+# so close the keyboard and scroll to each element before using it.
+- scrollUntilVisible:
+    element:
+      id: create-event-card-name-input
+    direction: DOWN
+- tapOn:
+    id: create-event-card-name-input
+- inputText: ${output.suggestionName}
+- runFlow: ../subflows/close-keyboard.yaml
+# The suggestion card is taller, so typing the name scrolls the address field out of view.
+- scrollUntilVisible:
+    element:
+      id: create-event-card-address-input
+    direction: UP
+    timeout: 10000
+- tapOn:
+    id: create-event-card-address-input
+- inputText: Rua dos Testes, 123
+- runFlow: ../subflows/close-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: create-event-card-confirm
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: create-event-card-confirm
+- extendedWaitUntil:
+    visible: 'Sugestão enviada!'
+    timeout: 30000
+- tapOn:
+    id: alibe-navigation-bar-groups
+- extendedWaitUntil:
+    visible:
+      id: groups-screen
+    timeout: 10000
+- runFlow: ../subflows/logout.yaml
+
+# Ana sees the suggestion with one like and likes it, which matches everyone.
+- runFlow: ../subflows/login.yaml
+- runFlow:
+    file: ../subflows/open-group.yaml
+    env:
+      NAME: ${output.groupName}
+- extendedWaitUntil:
+    visible:
+      id: group-screen
+    timeout: 30000
+- tapOn:
+    id: alibe-navigation-bar-matches
+- extendedWaitUntil:
+    visible:
+      id: new-experience-screen
+    timeout: 10000
+- extendedWaitUntil:
+    visible: ${output.suggestionName}
+    timeout: 30000
+- assertVisible: '1 curtiu este local'
+- scrollUntilVisible:
+    element:
+      id: new-experience-like
+    direction: DOWN
+- tapOn:
+    id: new-experience-like
+
+- extendedWaitUntil:
+    visible:
+      id: match-screen
+    timeout: 30000
+- assertVisible:
+    id: match-headline

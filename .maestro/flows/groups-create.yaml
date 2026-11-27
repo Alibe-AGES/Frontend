@@ -45,3 +45,9 @@ tags: [ci, groups]
 - extendedWaitUntil:
     visible: ${output.groupName}
     timeout: 30000
+# The creator is the only member, listed as "Eu".
+- extendedWaitUntil:
+    visible:
+      id: group-screen-members-names
+      text: 'Eu'
+    timeout: 30000

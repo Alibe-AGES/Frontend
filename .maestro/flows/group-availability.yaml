@@ -46,3 +46,18 @@ tags: [ci, groups]
       id: calendar-day-button-${output.calendarDay}
       text: 'Dia ${output.calendarDay}, todos disponíveis'
     timeout: 30000
+
+# Opening the day again lists who is available: the creator, shown as "Eu".
+- tapOn:
+    id: calendar-day-button-${output.calendarDay}
+- extendedWaitUntil:
+    visible:
+      id: availability-screen-participants
+    timeout: 30000
+- assertVisible:
+    id: availability-screen-participants-heading
+    text: 'Participantes disponíveis'
+- assertVisible:
+    text: 'Eu'
+    childOf:
+      id: availability-screen-participants

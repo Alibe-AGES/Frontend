@@ -787,6 +787,17 @@ npm run test:e2e:dev -- --include-tags <tag you chose>
 
 Select elements by visible text when it is unique, and by `id:` with the component `testID` otherwise. Every interactive control gets a `testID` such as `login-submit` (`screen-element`, kebab-case).
 
+To see what the flows cover, run `npm run test:e2e:coverage`. It needs no emulator: it compares the `id:` selectors in the flows with the `testID`s in `src` and lists the routes, screens and components the flows reach, plus any selector that no longer matches a `testID` (usually a renamed or removed id). Text selectors are counted but not traced to `src`, so a screen reached only by text shows as not reached. Options, passed after `--`:
+
+```bash
+npm run test:e2e:coverage -- --include-tags ci   # only the flows CI runs
+npm run test:e2e:coverage -- --details           # every testID and the flows that use it
+npm run test:e2e:coverage -- --check             # exit 1 when a selector matches no testID
+npm run test:e2e:coverage -- --json e2e-coverage.json
+```
+
+CI runs it twice. The _Maestro Selectors_ job in _Pull Request Quality Checks_ runs it with `--check`, so a PR that renames or removes a `testID` a flow uses fails before a release. The _E2E Tests (Maestro) - Android_ workflow publishes the report as the `maestro-e2e-coverage-<run number>` artifact (`ci.*` for the flows tagged `ci`, `all.*` for every flow, each as text and JSON) and shows the `ci` summary on the run page.
+
 ## Configuration Map
 
 | File                                  | Purpose                                                                       |

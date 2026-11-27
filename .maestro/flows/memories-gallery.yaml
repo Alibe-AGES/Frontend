@@ -1,4 +1,4 @@
-# Memories flow: opens the memories calendar of a seeded group, taps a day with a memory and sees it in the gallery.
+# Memories flow: opens the memories calendar of a seeded group, taps a day with a memory, sees it in the gallery and opens it in the carousel.
 appId: com.alibe.app
 tags: [memories]
 ---
@@ -37,6 +37,26 @@ tags: [memories]
       - tapOn:
           id: calendar-previous-month
       - evalScript: ${output.monthOffset = output.monthOffset + 1}
+
+# "Ver todas" opens the gallery of the whole month shown on the calendar.
+- tapOn:
+    id: memories-see-all
+- extendedWaitUntil:
+    visible:
+      id: memories-gallery-screen
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: 'memories-gallery-event-.*-name'
+      text: 'Jantar da turma'
+    timeout: 30000
+- tapOn:
+    id: alibe-back-button
+- extendedWaitUntil:
+    visible:
+      id: memories-screen
+    timeout: 10000
+
 - scrollUntilVisible:
     element:
       id: calendar-day-button-2026-12-05
@@ -56,3 +76,13 @@ tags: [memories]
     timeout: 30000
 - assertVisible:
     id: 'memories-gallery-photo-.*'
+
+# Tapping the photo opens it in the carousel.
+- tapOn:
+    id: 'memories-gallery-photo-.*'
+- extendedWaitUntil:
+    visible:
+      id: memories-carousel-list
+    timeout: 30000
+- assertVisible:
+    id: 'memories-carousel-card-.*'
