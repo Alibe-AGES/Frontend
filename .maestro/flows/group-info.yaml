@@ -1,6 +1,6 @@
 # Group info flow: opens the information of a seeded group and sees its members.
 appId: com.alibe.app
-tags: [groups]
+tags: [ci, groups]
 ---
 - runFlow: ../subflows/launch.yaml
 - runFlow: ../subflows/login.yaml

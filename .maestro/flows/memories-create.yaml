@@ -73,6 +73,17 @@ tags: [ci, memories]
     visible:
       id: new-memory-card-photo-image
     timeout: 30000
+# The info button next to the event list says which month the list covers.
+- tapOn:
+    id: new-memory-card-events-hint-toggle
+- assertVisible:
+    id: new-memory-card-events-hint
+# The text belongs to the Text inside the hint, not to the hint's container.
+- assertVisible: '.*outubro de 2026.*'
+- tapOn:
+    id: new-memory-card-events-hint-toggle
+- assertNotVisible:
+    id: new-memory-card-events-hint
 - tapOn:
     id: new-memory-card-event
 - tapOn: 'Jantar de encerramento'

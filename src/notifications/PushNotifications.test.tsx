@@ -19,7 +19,13 @@ jest.mock('expo-notifications', () => ({
   ),
   clearLastNotificationResponse: jest.fn(),
   getLastNotificationResponse: jest.fn().mockReturnValue(null),
+  setNotificationHandler: jest.fn(),
 }));
+
+// Read before clearAllMocks wipes the calls: the handler is set once, when the module is imported.
+const [[foregroundHandler]] = (Notifications.setNotificationHandler as jest.Mock).mock.calls as [
+  [Notifications.NotificationHandler],
+];
 
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>;
 const originalPlatform = Platform.OS;
@@ -88,5 +94,16 @@ describe('<PushNotifications />', () => {
 
     expect(Notifications.addNotificationResponseReceivedListener).not.toHaveBeenCalled();
     expect(Notifications.getLastNotificationResponse).not.toHaveBeenCalled();
+  });
+
+  test('shows notifications that arrive while the app is open', async () => {
+    await expect(
+      foregroundHandler.handleNotification({} as Notifications.Notification)
+    ).resolves.toEqual({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    });
   });
 });

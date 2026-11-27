@@ -100,6 +100,12 @@ tags: [ci, events]
     visible:
       id: notifications-screen
     timeout: 10000
+# The new group has only the logged user, listed as "Eu" like on the group screen.
+- extendedWaitUntil:
+    visible:
+      id: notifications-members
+      text: 'Eu'
+    timeout: 30000
 - extendedWaitUntil:
     visible: '.*criou o evento "${output.eventName}".*'
     timeout: 30000

@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import tw from 'twrnc';
 
 import type { DropdownMenuProps } from './Dropdown.types';
-import { getMenuPlacement } from './dropdown.utils';
+import { getMenuLeft, getMenuMaxWidth, getMenuPlacement } from './dropdown.utils';
 
 export function DropdownMenu({
   options,
@@ -16,8 +16,9 @@ export function DropdownMenu({
   testID,
 }: Readonly<DropdownMenuProps>) {
   const insets = useSafeAreaInsets();
-  const { height: windowHeight } = useWindowDimensions();
+  const { height: windowHeight, width: windowWidth } = useWindowDimensions();
   const [contentHeight, setContentHeight] = useState<number | null>(null);
+  const [menuWidth, setMenuWidth] = useState<number | null>(null);
 
   const placement = getMenuPlacement(
     triggerFrame ?? { x: 0, y: 0, width: 0, height: 0 },
@@ -25,8 +26,14 @@ export function DropdownMenu({
     { height: windowHeight, topInset: insets.top, bottomInset: insets.bottom }
   );
   const opensUpward = placement.direction === 'up';
-  // Stays invisible until both measurements arrive, so the menu never flashes in the wrong spot.
-  const isMeasured = triggerFrame !== null && contentHeight !== null;
+  // Stays invisible until every measurement arrives, so the menu never flashes in the wrong spot.
+  const isMeasured = triggerFrame !== null && contentHeight !== null && menuWidth !== null;
+  const maxWidth = getMenuMaxWidth(windowWidth);
+  // Measured at the left edge first, so the screen width alone limits its natural width.
+  const left =
+    triggerFrame !== null && menuWidth !== null
+      ? getMenuLeft(triggerFrame, menuWidth, windowWidth)
+      : 0;
 
   // A modal lets the menu overlap content outside the parent card and close on outside taps.
   return (
@@ -46,10 +53,17 @@ export function DropdownMenu({
       <View
         accessibilityRole="menu"
         className={`absolute rounded-2xl bg-white shadow-md ${opensUpward ? 'mb-1' : 'mt-1'}`}
+        onLayout={(event) => {
+          setMenuWidth(event.nativeEvent.layout.width);
+        }}
         style={{
           ...(opensUpward ? { bottom: placement.offset } : { top: placement.offset }),
-          left: triggerFrame?.x ?? 0,
-          minWidth: triggerFrame?.width ?? 0,
+          // A menu wider than the trigger (a long option or the empty message) stays centered under it.
+          left,
+          // At least as wide as the trigger, up to the cap: a longer label is cut with an ellipsis
+          // instead of widening the menu.
+          minWidth: Math.min(triggerFrame?.width ?? 0, maxWidth),
+          maxWidth,
           maxHeight: placement.maxHeight,
           opacity: isMeasured ? 1 : 0,
         }}
@@ -65,7 +79,12 @@ export function DropdownMenu({
           testID={`${testID}-options`}
         >
           {options.length === 0 ? (
-            <Text className="px-3 py-2 font-poppins text-sm text-wine-soft">{emptyMessage}</Text>
+            <Text
+              className="px-3 py-2 font-poppins text-sm text-wine-soft"
+              numberOfLines={1}
+            >
+              {emptyMessage}
+            </Text>
           ) : null}
           {options.map((option) => {
             const isSelected = option.value === value;
@@ -82,7 +101,12 @@ export function DropdownMenu({
                 style={({ pressed }) => tw`${pressed ? 'opacity-75' : ''}`}
                 testID={`${testID}-option-${option.value}`}
               >
-                <Text className="font-poppins text-sm text-wine">{option.label}</Text>
+                <Text
+                  className="font-poppins text-sm text-wine"
+                  numberOfLines={1}
+                >
+                  {option.label}
+                </Text>
               </Pressable>
             );
           })}
