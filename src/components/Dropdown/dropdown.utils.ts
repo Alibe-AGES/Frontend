@@ -23,6 +23,22 @@ export interface MenuPlacement {
 // Space kept between the menu and the screen edge, in density-independent units.
 const SCREEN_EDGE_MARGIN = 8;
 
+// Widest the menu gets, in density-independent units; longer labels end with an ellipsis.
+const MENU_MAX_WIDTH = 220;
+
+// Caps the menu at MENU_MAX_WIDTH, or at the screen minus a margin on each side on narrow screens.
+export function getMenuMaxWidth(screenWidth: number): number {
+  return Math.max(Math.min(MENU_MAX_WIDTH, screenWidth - SCREEN_EDGE_MARGIN * 2), 0);
+}
+
+// Centers the menu under the trigger, then shifts it back inside the screen when it would cross an edge.
+export function getMenuLeft(trigger: TriggerFrame, menuWidth: number, screenWidth: number): number {
+  const centered = trigger.x + (trigger.width - menuWidth) / 2;
+  const rightmost = screenWidth - SCREEN_EDGE_MARGIN - menuWidth;
+
+  return Math.max(Math.min(centered, rightmost), SCREEN_EDGE_MARGIN);
+}
+
 // Opens the menu below the trigger, or above it when there is more room there, and caps its
 // height so it never runs past the screen edges.
 export function getMenuPlacement(
